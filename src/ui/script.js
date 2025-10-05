@@ -3,6 +3,8 @@
  */
 
 let biezacaPostac = null;
+let wybranePochodzenie = null;
+let dostepnePochodzenia = [];
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,16 +25,11 @@ async function zaladujOpcje() {
         const response = await fetch('/api/options');
         const opcje = await response.json();
 
-        // Wypełnianie selecta pochodzeń
-        const pochodzenieSelect = document.getElementById('pochodzenie');
-        pochodzenieSelect.innerHTML = '<option value="">Wybierz pochodzenie...</option>';
+        // Ładowanie szczegółowych danych pochodzeń
+        dostepnePochodzenia = await zaladujSzczegolyPochodzen(opcje.pochodzenia);
 
-        opcje.pochodzenia.forEach(id => {
-            const option = document.createElement('option');
-            option.value = id;
-            option.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-            pochodzenieSelect.appendChild(option);
-        });
+        // Generowanie kafelków pochodzeń
+        generujKafelkiPochodzen(dostepnePochodzenia);
 
         // Wypełnianie selecta ścieżek
         const sciezkaSelect = document.getElementById('sciezka');
@@ -51,18 +48,139 @@ async function zaladujOpcje() {
 }
 
 /**
+ * Ładuje szczegółowe dane pochodzeń z serwera
+ */
+async function zaladujSzczegolyPochodzen(pochodzeniaIds) {
+    const pochodzenia = [];
+    
+    for (const id of pochodzeniaIds) {
+        try {
+            // Tworzymy tymczasową postać aby uzyskać dane pochodzenia
+            const response = await fetch('/api/build', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    pochodzenie: id, 
+                    atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+                })
+            });
+            
+            if (response.ok) {
+                const postac = await response.json();
+                pochodzenia.push(postac.pochodzenie);
+            }
+        } catch (error) {
+            console.warn(`Nie udało się załadować danych dla pochodzenia ${id}:`, error);
+        }
+    }
+    
+    return pochodzenia;
+}
+
+/**
+ * Generuje kafelki pochodzeń
+ */
+function generujKafelkiPochodzen(pochodzenia) {
+    const container = document.getElementById('pochodzenie-tiles');
+    container.innerHTML = '';
+
+    pochodzenia.forEach(pochodzenie => {
+        const tile = document.createElement('div');
+        tile.className = 'origin-tile';
+        tile.dataset.originId = pochodzenie.id;
+        
+        // Krótki opis (2 zdania)
+        const krotkiOpis = utworzKrotkiOpis(pochodzenie);
+        
+        // Statystyki
+        const atrybuty = pochodzenie.atrybuty;
+        const najwyzszyAtrybut = Object.entries(atrybuty)
+            .sort(([,a], [,b]) => b - a)[0];
+        const najnizszyAtrybut = Object.entries(atrybuty)
+            .sort(([,a], [,b]) => a - b)[0];
+
+        tile.innerHTML = `
+            <div class="size-badge">${pochodzenie.rozmiar}</div>
+            <h4>${pochodzenie.nazwa}</h4>
+            <div class="description">${krotkiOpis}</div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value">${najwyzszyAtrybut[1]}</span>
+                    <span>${najwyzszyAtrybut[0]}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">${pochodzenie.predkosc}</span>
+                    <span>Prędkość</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">${najnizszyAtrybut[1]}</span>
+                    <span>${najnizszyAtrybut[0]}</span>
+                </div>
+            </div>
+        `;
+
+        tile.addEventListener('click', () => wybierzPochodzenie(pochodzenie.id));
+        container.appendChild(tile);
+    });
+}
+
+/**
+ * Tworzy krótki opis pochodzenia (2 zdania)
+ */
+function utworzKrotkiOpis(pochodzenie) {
+    const opisy = {
+        'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję.',
+        'automaton': 'Mechaniczne istoty stworzone przez dawnych magów. Nie oddychają, nie śpią i są odporne na choroby.',
+        'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości. Znane z zamiłowania do mechaniki i psot.',
+        'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła. Odporni na magię i posiadający widzenie w ciemności.',
+        'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach. Posiadają częściową odporność na efekty magiczne.',
+        'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki. Mogą wpadać w szał bojowy.',
+        'faun': 'Leśne istoty o kozich nogach związane z naturą. Potrafią porozumiewać się ze zwierzętami.',
+        'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu. Posiadają naturalne szczęście i zwinność.',
+        'chochlik': 'Maleńkie istoty magiczne znane z psot. Mogą latać i mają dostęp do chaotycznych zaklęć.',
+        'elf': 'Długowieczne istoty o niezwykłej urodzie. Posiadają zdolności magiczne i widzenie w ciemności.',
+        'hobgoblin': 'Większe i bardziej wojownicze niż gobliny. Znane z dyscypliny bojowej i odporności na strach.',
+        'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie. Mogą oddychać pod wodą i mają mroczne moce.',
+        'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły. Posiadają naturalne pazury i mogą hibernować.',
+        'warg': 'Wilcze istoty o niezwykłej zwinności. Mają wyczulone zmysły i zdolności tropienia.',
+        'inkarnacja': 'Istoty wcielone z innych płaszczyzn. Posiadają zdolności płaszczyznowe i odporność na magię.',
+        'kambion': 'Potomkowie demonów o mrocznych mocach. Odporni na ogień i mogą wywołać strach u wrogów.',
+        'jotunn': 'Potężni giganci z północnych krain. Znani z siły, honoru bojowego i odporności na zimno.'
+    };
+    
+    return opisy[pochodzenie.id] || pochodzenie.opis;
+}
+
+/**
+ * Wybiera pochodzenie
+ */
+function wybierzPochodzenie(originId) {
+    wybranePochodzenie = originId;
+    
+    // Usuń selekcję z wszystkich kafelków
+    document.querySelectorAll('.origin-tile').forEach(tile => {
+        tile.classList.remove('selected');
+    });
+    
+    // Dodaj selekcję do wybranego kafelka
+    const wybranyTile = document.querySelector(`[data-origin-id="${originId}"]`);
+    if (wybranyTile) {
+        wybranyTile.classList.add('selected');
+    }
+}
+
+/**
  * Tworzy nową postać
  */
 async function utworzPostac() {
-    const pochodzenie = document.getElementById('pochodzenie').value;
-    if (!pochodzenie) {
+    if (!wybranePochodzenie) {
         pokazBlad('Wybierz pochodzenie postaci!');
         return;
     }
 
     // Przygotowanie specyfikacji
     const spec = {
-        pochodzenie: pochodzenie,
+        pochodzenie: wybranePochodzenie,
         sciezka: document.getElementById('sciezka').value || undefined
     };
 

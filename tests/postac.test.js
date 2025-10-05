@@ -40,9 +40,9 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
     });
 
     test('powinien rzucić błędem dla nieznanego pochodzenia', () => {
-      const spec = { pochodzenie: 'elf' };
+      const spec = { pochodzenie: 'nieznane_pochodzenie' };
 
-      expect(() => budujPostac(spec)).toThrow('Nieznane pochodzenie: elf');
+      expect(() => budujPostac(spec)).toThrow('Nieznane pochodzenie: nieznane_pochodzenie');
     });
 
     test('powinien rzucić błędem gdy brak pochodzenia', () => {
@@ -75,6 +75,63 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(postac.sciezka).toBeDefined();
       expect(postac.sciezka.nazwa).toBe('Wojownik');
     });
+
+    test('powinien utworzyć goblina z małym rozmiarem', () => {
+      const spec = {
+        pochodzenie: 'goblin',
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+      };
+
+      const postac = budujPostac(spec);
+
+      expect(postac.pochodzenie.nazwa).toBe('Goblin');
+      expect(postac.atrybuty.zrecznosc).toBe(12); // 10 + 2 modyfikator
+      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/2');
+      expect(postac.atrybuty_drugorzedne.obrona).toBe(14); // 12 + 2 za mały rozmiar
+      expect(postac.jezyki).toContain('gobliński');
+    });
+
+    test('powinien utworzyć chochlika z bardzo małym rozmiarem', () => {
+      const spec = {
+        pochodzenie: 'chochlik',
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+      };
+
+      const postac = budujPostac(spec);
+
+      expect(postac.pochodzenie.nazwa).toBe('Chochlik');
+      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/4');
+      expect(postac.atrybuty_drugorzedne.obrona).toBe(16); // 12 + 4 za bardzo mały rozmiar
+      expect(postac.atrybuty.intelekt).toBe(12); // 10 + 2 modyfikator
+    });
+
+    test('powinien utworzyć niedźwiedziadło z wysoką siłą', () => {
+      const spec = {
+        pochodzenie: 'niedzwiedziadlo',
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+      };
+
+      const postac = budujPostac(spec);
+
+      expect(postac.pochodzenie.nazwa).toBe('Niedźwiedziadło');
+      expect(postac.atrybuty.sila).toBe(13); // 10 + 3 modyfikator
+      expect(postac.atrybuty_drugorzedne.zdrowie).toBe(13);
+      expect(postac.profesje).toContain('wojownik');
+    });
+
+    test('powinien utworzyć elf z wysoką zręcznością', () => {
+      const spec = {
+        pochodzenie: 'elf',
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+      };
+
+      const postac = budujPostac(spec);
+
+      expect(postac.pochodzenie.nazwa).toBe('Elf');
+      expect(postac.atrybuty.zrecznosc).toBe(12); // 10 + 2 modyfikator
+      expect(postac.atrybuty.intelekt).toBe(11); // 10 + 1 modyfikator
+      expect(postac.jezyki).toContain('elficki');
+    });
   });
 
   describe('DANE_GRY.obliczenia', () => {
@@ -99,6 +156,25 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(drugorzedne.obrona).toBe(14); // = Zręczność  
       expect(drugorzedne.zdrowie).toBe(12); // = Siła
       expect(drugorzedne.szybkosc_zdrowienia).toBe(3); // = Siła/4
+    });
+
+    test('atrybuty_drugorzedne() powinien uwzględnić modyfikatory rozmiaru', () => {
+      const atrybuty = { sila: 10, zrecznosc: 12, intelekt: 10, wola: 10 };
+      
+      // Test małego rozmiaru (goblin)
+      const goblin = DANE_GRY.pochodzenia.goblin;
+      const goblinDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, goblin);
+      expect(goblinDrugorzedne.obrona).toBe(14); // 12 + 2 za rozmiar 1/2
+
+      // Test bardzo małego rozmiaru (chochlik)
+      const chochlik = DANE_GRY.pochodzenia.chochlik;
+      const chochlikDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, chochlik);
+      expect(chochlikDrugorzedne.obrona).toBe(16); // 12 + 4 za rozmiar 1/4
+
+      // Test dużego rozmiaru (jotunn)
+      const jotunn = DANE_GRY.pochodzenia.jotunn;
+      const jotunnDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, jotunn);
+      expect(jotunnDrugorzedne.obrona).toBe(10); // 12 - 2 za rozmiar 2
     });
   });
 });
