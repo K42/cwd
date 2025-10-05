@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname, 'ui')));
  * @param {string} spec.pochodzenie - ID pochodzenia
  * @param {Object} [spec.atrybuty] - Własne wartości atrybutów lub null dla losowych
  * @param {string} [spec.sciezka] - ID ścieżki nowicjusza
+ * @param {number} [spec.poziom] - Poziom postaci (0-4, domyślnie 0)
  * @returns {Object} Kompletny obiekt postaci
  */
 function budujPostac(spec) {
@@ -30,6 +31,15 @@ function budujPostac(spec) {
   const pochodzenie = DANE_GRY.pochodzenia[spec.pochodzenie];
   if (!pochodzenie) {
     throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
+  }
+
+  // Poziom postaci - domyślnie 0 (Nowicjusz)
+  const poziom = spec.poziom !== undefined ? parseInt(spec.poziom) : 0;
+  
+  // Sprawdzenie czy poziom istnieje
+  const poziomData = DANE_GRY.poziomy[poziom];
+  if (!poziomData) {
+    throw new Error(`Nieznany poziom: ${poziom}`);
   }
 
   // Atrybuty podstawowe - zadane lub domyślne (10, 10, 10, 10)
@@ -55,6 +65,7 @@ function budujPostac(spec) {
   // Składanie finalnego obiektu postaci
   return {
     pochodzenie: pochodzenie,
+    poziom: poziomData,
     atrybuty: atrybuty_finalne,
     atrybuty_drugorzedne: drugorzedne,
     sciezka: sciezka,
@@ -84,6 +95,35 @@ app.get('/api/options', (req, res) => {
     pochodzenia: Object.keys(DANE_GRY.pochodzenia),
     sciezki: Object.keys(DANE_GRY.sciezki_nowicjuszy)
   });
+});
+
+// Endpoint do pobierania dostępnych poziomów
+app.get('/api/levels', (req, res) => {
+  res.json({
+    poziomy: Object.values(DANE_GRY.poziomy).map((poziom, index) => ({
+      id: index,
+      nazwa: poziom.nazwa,
+      opis: poziom.opis,
+      kolor: poziom.kolor
+    }))
+  });
+});
+
+// Endpoint do pobierania ścieżek dla danego poziomu
+app.get('/api/paths/:level', (req, res) => {
+  const poziom = parseInt(req.params.level);
+  
+  if (!DANE_GRY.poziomy[poziom]) {
+    return res.status(404).json({ error: 'Nieznany poziom' });
+  }
+  
+  const poziomData = DANE_GRY.poziomy[poziom];
+  const sciezki = poziomData.dostepne_sciezki.map(sciezkaId => ({
+    id: sciezkaId,
+    nazwa: sciezkaId.charAt(0).toUpperCase() + sciezkaId.slice(1)
+  }));
+  
+  res.json({ sciezki });
 });
 
 // Strona główna

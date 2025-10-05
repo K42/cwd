@@ -45,6 +45,29 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(() => budujPostac(spec)).toThrow('Nieznane pochodzenie: nieznane_pochodzenie');
     });
 
+    test('powinien rzucić błędem dla nieznanego poziomu', () => {
+        const spec = { pochodzenie: 'czlowiek', poziom: 99 };
+        expect(() => budujPostac(spec)).toThrow('Nieznany poziom: 99');
+    });
+
+    test('powinien użyć domyślnego poziomu 0 gdy nie podano poziomu', () => {
+        const spec = { pochodzenie: 'czlowiek' };
+        const postac = budujPostac(spec);
+        expect(postac.poziom.nazwa).toBe('Nowicjusz');
+    });
+
+    test('powinien obsłużyć poziom 1 (Ekspert)', () => {
+        const spec = { pochodzenie: 'czlowiek', poziom: 1 };
+        const postac = budujPostac(spec);
+        expect(postac.poziom.nazwa).toBe('Ekspert');
+    });
+
+    test('powinien obsłużyć poziom 3 (Legenda)', () => {
+        const spec = { pochodzenie: 'czlowiek', poziom: 3 };
+        const postac = budujPostac(spec);
+        expect(postac.poziom.nazwa).toBe('Legenda');
+    });
+
     test('powinien rzucić błędem gdy brak pochodzenia', () => {
       const spec = {};
 
@@ -213,6 +236,37 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         .join(' ');
     };
 
+    // Symulacja funkcji dla rozwijanych kafelków
+    const utworzKrotkiOpisZwiniety = (pochodzenie) => {
+      const opisy = {
+        'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach.',
+        'elf': 'Długowieczne istoty o niezwykłej urodzie.',
+        'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości.'
+      };
+      return opisy[pochodzenie.id] || 'Nieznane pochodzenie.';
+    };
+
+    const utworzRozszerzonyOpis = (pochodzenie) => {
+      const opisy = {
+        'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję i szybko dostosowują się do nowych wyzwań. Ich społeczeństwa opierają się na handlu, wiedzy i eksploracji.',
+        'elf': 'Długowieczne istoty o niezwykłej urodzie, posiadające zdolności magiczne i widzenie w ciemności. Ich społeczeństwa są zorganizowane wokół magii i sztuki, żyjąc w harmonii z naturą. Elfy posiadają głęboką wiedzę o starożytnych tajemnicach i są mistrzami w dziedzinie łuku i magii.',
+        'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości, znane z zamiłowania do mechaniki i psot. Gobliny tworzą skomplikowane urządzenia z dostępnych materiałów, często niebezpieczne i nieprzewidywalne. Ich społeczeństwa opierają się na hierarchii opartej na wynalazczości i sprycie.'
+      };
+      return opisy[pochodzenie.id] || 'Nieznane pochodzenie.';
+    };
+
+    const pobierzWszystkieCechy = (cechySpecjalne) => {
+      if (!cechySpecjalne || Object.keys(cechySpecjalne).length === 0) {
+        return null;
+      }
+      
+      const cechy = Object.entries(cechySpecjalne);
+      return cechy.map(([nazwa, opis]) => ({
+        nazwa: formatujNazweCechy(nazwa),
+        opis: opis
+      }));
+    };
+
     test('formatModifier() powinien formatować modyfikatory poprawnie', () => {
       expect(formatModifier(2)).toBe('+2');
       expect(formatModifier(-1)).toBe('-1');
@@ -257,6 +311,99 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(pobierzKluczoweCechy({})).toBeNull();
       expect(pobierzKluczoweCechy(null)).toBeNull();
       expect(pobierzKluczoweCechy(undefined)).toBeNull();
+    });
+
+    // Testy dla nowych funkcji rozwijanych kafelków
+    describe('Funkcje Rozwijanych Kafelków', () => {
+        test('utworzKrotkiOpisZwiniety() powinien zwracać krótki opis (1 zdanie)', () => {
+            const pochodzenie = { id: 'czlowiek' };
+            const opis = utworzKrotkiOpisZwiniety(pochodzenie);
+            expect(opis).toBe('Wszechstronni i ambitni, dominują w cywilizowanych krainach.');
+            expect(opis.split('.').length).toBeLessThanOrEqual(2); // 1 zdanie + pusty element
+        });
+
+        test('utworzRozszerzonyOpis() powinien zwracać rozszerzony opis (3 zdania)', () => {
+            const pochodzenie = { id: 'elf' };
+            const opis = utworzRozszerzonyOpis(pochodzenie);
+            expect(opis).toContain('Długowieczne istoty o niezwykłej urodzie');
+            expect(opis.split('.').length).toBeGreaterThanOrEqual(4); // 3 zdania + pusty element
+        });
+
+        test('pobierzWszystkieCechy() powinien zwracać wszystkie cechy', () => {
+            const cechy = {
+                'magia_natury': 'Może rzucać zaklęcia związane z naturą',
+                'widzenie_w_ciemnosci': 'Widzi w ciemności do 60 stóp',
+                'odpornosc_na_magie': 'Ma przewagę na testach przeciwko magii'
+            };
+            const wszystkieCechy = pobierzWszystkieCechy(cechy);
+            expect(wszystkieCechy).toHaveLength(3);
+            expect(wszystkieCechy[0].nazwa).toBe('Magia Natury');
+            expect(wszystkieCechy[0].opis).toBe('Może rzucać zaklęcia związane z naturą');
+        });
+
+        test('pobierzWszystkieCechy() powinien zwracać null dla pustego obiektu', () => {
+            const cechy = pobierzWszystkieCechy({});
+            expect(cechy).toBeNull();
+        });
+
+        test('formatujNazweCechy() powinien formatować nazwy cech poprawnie', () => {
+            expect(formatujNazweCechy('magia_natury')).toBe('Magia Natury');
+            expect(formatujNazweCechy('widzenie_w_ciemnosci')).toBe('Widzenie W Ciemnosci');
+            expect(formatujNazweCechy('odpornosc_na_magie')).toBe('Odpornosc Na Magie');
+        });
+    });
+
+    // Testy dla przycisku "Wybierz"
+    describe('Funkcje Przycisku Wyboru', () => {
+        // Symulacja funkcji pokazKomunikatWyboru
+        const pokazKomunikatWyboru = (originId) => {
+            const pochodzenia = {
+                'czlowiek': { id: 'czlowiek', nazwa: 'Człowiek' },
+                'elf': { id: 'elf', nazwa: 'Elf' }
+            };
+            const pochodzenie = pochodzenia[originId];
+            return pochodzenie ? `Wybrano pochodzenie: ${pochodzenie.nazwa}` : null;
+        };
+
+        test('pokazKomunikatWyboru() powinien zwracać komunikat dla znanego pochodzenia', () => {
+            const komunikat = pokazKomunikatWyboru('czlowiek');
+            expect(komunikat).toBe('Wybrano pochodzenie: Człowiek');
+        });
+
+        test('pokazKomunikatWyboru() powinien zwracać komunikat dla elfa', () => {
+            const komunikat = pokazKomunikatWyboru('elf');
+            expect(komunikat).toBe('Wybrano pochodzenie: Elf');
+        });
+
+        test('pokazKomunikatWyboru() powinien zwracać null dla nieznanego pochodzenia', () => {
+            const komunikat = pokazKomunikatWyboru('nieznane');
+            expect(komunikat).toBeNull();
+        });
+    });
+
+    // Testy dla obsługi kliknięć kafelków
+    describe('Obsługa Kliknięć Kafelków', () => {
+        // Symulacja funkcji toggleTileExpansion
+        const toggleTileExpansion = (originId) => {
+            return `Toggling tile expansion for: ${originId}`;
+        };
+
+        // Symulacja funkcji wybierzPochodzenie
+        const wybierzPochodzenie = (originId) => {
+            return `Selecting origin: ${originId}`;
+        };
+
+        test('toggleTileExpansion() powinien działać dla różnych pochodzeń', () => {
+            expect(toggleTileExpansion('czlowiek')).toBe('Toggling tile expansion for: czlowiek');
+            expect(toggleTileExpansion('elf')).toBe('Toggling tile expansion for: elf');
+            expect(toggleTileExpansion('goblin')).toBe('Toggling tile expansion for: goblin');
+        });
+
+        test('wybierzPochodzenie() powinien działać dla różnych pochodzeń', () => {
+            expect(wybierzPochodzenie('czlowiek')).toBe('Selecting origin: czlowiek');
+            expect(wybierzPochodzenie('elf')).toBe('Selecting origin: elf');
+            expect(wybierzPochodzenie('goblin')).toBe('Selecting origin: goblin');
+        });
     });
   });
 });

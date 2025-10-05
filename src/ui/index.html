@@ -109,18 +109,51 @@
             background: #3a2318;
             border: 2px solid #8b0000;
             border-radius: 8px;
-            padding: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            user-select: none; /* Zapobiega zaznaczaniu tekstu przy kliknięciu */
+        }
+        
+        /* Stan zwinięty */
+        .origin-tile.compact {
+            padding: 15px;
+            min-height: auto;
+        }
+        
+        .origin-tile.compact .tile-content-expanded {
+            display: none !important;
+        }
+        
+        /* Stan rozwinięty */
+        .origin-tile.expanded {
+            padding: 20px;
             min-height: 400px;
+        }
+        
+        .origin-tile.expanded .tile-content-collapsed {
+            display: none !important;
         }
 
         .origin-tile:hover {
             border-color: #d4af37;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+        
+        .origin-tile:hover::after {
+            content: 'Kliknij aby rozwinąć/zwinąć';
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #f4e4bc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            pointer-events: none;
+            z-index: 5;
         }
 
         .origin-tile.selected {
@@ -129,12 +162,273 @@
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
         }
 
+        /* Nagłówek kafelka */
+        .tile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .tile-header h4 {
+            margin: 0;
+            color: #d4af37;
+            font-size: 18px;
+            flex: 1;
+        }
+        
+        .tile-expand-icon {
+            background: #8b0000;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .tile-expand-icon:hover {
+            background: #d4af37;
+            color: #3a2318;
+            transform: scale(1.1);
+        }
+        
+        /* Zachowanie dla starych kafelków bez nagłówka */
         .origin-tile h4 {
             margin: 0 0 8px 0;
             color: #d4af37;
             font-size: 18px;
         }
 
+        /* Zawartość zwinięta */
+        .tile-content-collapsed {
+            display: block;
+        }
+        
+        .tile-content-collapsed .description {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            color: #f4e4bc;
+        }
+        
+        /* Zawartość rozwinięta */
+        .tile-content-expanded {
+            display: none;
+        }
+        
+        .expanded-description {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #f4e4bc;
+        }
+        
+        /* Sekcja przycisku wyboru */
+        .tile-select-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #8b0000;
+            text-align: center;
+        }
+        
+        .tile-select-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #2c1810;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 10; /* Upewnia się, że przycisk jest na wierzchu */
+        }
+        
+        .tile-select-btn:hover {
+            background: linear-gradient(135deg, #f4d03f, #d4af37);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .tile-select-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tile-select-btn:focus {
+            outline: 2px solid #f4d03f;
+            outline-offset: 2px;
+        }
+        
+        /* Komunikat o wyborze pochodzenia */
+        .selection-message {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            animation: slideInDown 0.3s ease-out;
+        }
+        
+        .message-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .message-icon {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .message-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Style dla sekcji poziomu postaci */
+        .level-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .level-section h4 {
+            margin: 0 0 15px 0;
+            color: #d4af37;
+            font-size: 18px;
+        }
+
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .level-option {
+            cursor: pointer;
+            display: block;
+        }
+
+        .level-option input[type="radio"] {
+            display: none;
+        }
+
+        .level-card {
+            background: #3a2318;
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card:hover {
+            border-color: #d4af37;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        .level-option input[type="radio"]:checked + .level-card {
+            border-color: #d4af37;
+            background: #4a2d20;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+
+        .level-option input[type="radio"]:checked + .level-card::before {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #d4af37;
+            color: #2c1810;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .level-number {
+            background: #8b0000;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 auto 10px auto;
+        }
+
+        .level-option input[type="radio"]:checked + .level-card .level-number {
+            background: #d4af37;
+            color: #2c1810;
+        }
+
+        .level-info strong {
+            display: block;
+            color: #d4af37;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .level-info small {
+            display: block;
+            color: #f4e4bc;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        /* Style dla sekcji ścieżek */
+        .path-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #8b0000;
+        }
+
+        .path-section h4 {
+            margin: 0 0 10px 0;
+            color: #d4af37;
+            font-size: 16px;
+        }
+        
+        /* Zachowanie dla starych kafelków */
         .origin-tile .description {
             font-size: 14px;
             line-height: 1.4;
@@ -506,14 +800,71 @@
         </div>
     </div>
 
-    <!-- Krok 2: Wybór Atrybutów -->
+    <!-- Krok 2: Wybór Atrybutów i Poziomu -->
     <div id="step-2" class="step">
         <div class="section">
-            <h3>⚡ Krok 2: Atrybuty Postaci</h3>
-            <p>Określ wartości atrybutów swojej postaci. Modyfikatory z pochodzenia zostały już zastosowane.</p>
+            <h3>⚡ Krok 2: Atrybuty i Poziom Postaci</h3>
+            <p>Określ wartości atrybutów swojej postaci i wybierz poziom rozwoju.</p>
 
             <div id="selected-origin-info" class="origin-summary">
                 <!-- Informacje o wybranym pochodzeniu -->
+            </div>
+
+            <!-- Sekcja poziomu postaci -->
+            <div class="level-section">
+                <h4>Poziom Postaci</h4>
+                <div class="level-selector">
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="0" checked>
+                        <div class="level-card">
+                            <div class="level-number">0</div>
+                            <div class="level-info">
+                                <strong>Nowicjusz</strong>
+                                <small>Wybierz ścieżkę nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="1">
+                        <div class="level-card">
+                            <div class="level-number">1</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Wybierz ścieżkę eksperta</small>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="2">
+                        <div class="level-card">
+                            <div class="level-number">2</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Wybierz ścieżkę mistrza</small>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="3">
+                        <div class="level-card">
+                            <div class="level-number">3</div>
+                            <div class="level-info">
+                                <strong>Legenda</strong>
+                                <small>Wybierz ścieżkę legendy</small>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Sekcja ścieżek (dynamiczna) -->
+            <div class="path-section">
+                <h4 id="path-section-title">Ścieżka Nowicjusza</h4>
+                <div class="form-group">
+                    <select id="sciezka-nowicjusza" name="sciezka">
+                        <option value="">Wybierz ścieżkę...</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
