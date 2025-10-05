@@ -5,15 +5,27 @@
 let biezacaPostac = null;
 let wybranePochodzenie = null;
 let dostepnePochodzenia = [];
+let aktualnyKrok = 1;
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
     await zaladujOpcje();
 
     // Toggle własnych atrybutów
-    document.getElementById('losowe-atrybuty').addEventListener('change', (e) => {
+    document.getElementById('domyslne-atrybuty').addEventListener('change', (e) => {
         const customDiv = document.getElementById('custom-attributes');
         customDiv.style.display = e.target.checked ? 'none' : 'block';
+        if (e.target.checked) {
+            // Użyj domyślnych wartości bazujących na pochodzeniu
+            aktualizujDomyślneAtrybuty();
+        } else {
+            aktualizujObliczoneAtrybuty();
+        }
+    });
+
+    // Event listeners dla atrybutów
+    ['sila-base', 'zrecznosc-base', 'intelekt-base', 'wola-base'].forEach(id => {
+        document.getElementById(id).addEventListener('input', aktualizujObliczoneAtrybuty);
     });
 });
 
@@ -78,10 +90,20 @@ async function zaladujSzczegolyPochodzen(pochodzeniaIds) {
 }
 
 /**
- * Generuje kafelki pochodzeń
+ * Generuje kafelki pochodzeń z kompletnymi informacjami
+ * @param {Array} pochodzenia - Lista obiektów pochodzeń z danymi
+ * @throws {Error} Gdy parametr nie jest tablicą
  */
 function generujKafelkiPochodzen(pochodzenia) {
+    if (!Array.isArray(pochodzenia)) {
+        throw new Error('pochodzenia musi być tablicą');
+    }
+    
     const container = document.getElementById('pochodzenie-tiles');
+    if (!container) {
+        throw new Error('Element #pochodzenie-tiles nie został znaleziony');
+    }
+    
     container.innerHTML = '';
 
     pochodzenia.forEach(pochodzenie => {
@@ -92,30 +114,109 @@ function generujKafelkiPochodzen(pochodzenia) {
         // Krótki opis (2 zdania)
         const krotkiOpis = utworzKrotkiOpis(pochodzenie);
         
-        // Statystyki
-        const atrybuty = pochodzenie.atrybuty;
-        const najwyzszyAtrybut = Object.entries(atrybuty)
-            .sort(([,a], [,b]) => b - a)[0];
-        const najnizszyAtrybut = Object.entries(atrybuty)
-            .sort(([,a], [,b]) => a - b)[0];
+        // Oblicz atrybuty drugorzędne - zgodnie z backend (atrybuty pochodzenia to wartości finalne)
+        const atrybutyDomyślne = { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 };
+        const atrybutyFinalne = {
+            sila: atrybutyDomyślne.sila + (pochodzenie.atrybuty.sila - 10),
+            zrecznosc: atrybutyDomyślne.zrecznosc + (pochodzenie.atrybuty.zrecznosc - 10),
+            intelekt: atrybutyDomyślne.intelekt + (pochodzenie.atrybuty.intelekt - 10),
+            wola: atrybutyDomyślne.wola + (pochodzenie.atrybuty.wola - 10)
+        };
+        
+        // Oblicz obronę zgodnie z zasadami gry (z backend)
+        let obrona = atrybutyFinalne.zrecznosc;
+        const rozmiar = pochodzenie.rozmiar;
+        if (rozmiar === '1/4') {
+            obrona += 4;
+        } else if (rozmiar === '1/2') {
+            obrona += 2;
+        } else if (rozmiar === '2') {
+            obrona -= 2;
+        }
+        obrona = Math.max(obrona, 1);
+        
+        const zdrowie = atrybutyFinalne.sila;
+        
+        // Pobierz kluczowe cechy specjalne (maksymalnie 2)
+        const kluczoweCechy = pobierzKluczoweCechy(pochodzenie.cechy_specjalne);
 
         tile.innerHTML = `
             <div class="size-badge">${pochodzenie.rozmiar}</div>
             <h4>${pochodzenie.nazwa}</h4>
             <div class="description">${krotkiOpis}</div>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-value">${najwyzszyAtrybut[1]}</span>
-                    <span>${najwyzszyAtrybut[0]}</span>
+            
+            <div class="tile-sections">
+                <div class="tile-section attributes-section">
+                    <h5>⚔️ Atrybuty</h5>
+                    <div class="attributes-grid">
+                        <div class="attribute-item">
+                            <span class="attr-name">Siła</span>
+                            <span class="attr-value">${pochodzenie.atrybuty.sila}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty.sila - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Zręczność</span>
+                            <span class="attr-value">${pochodzenie.atrybuty.zrecznosc}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty.zrecznosc - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Intelekt</span>
+                            <span class="attr-value">${pochodzenie.atrybuty.intelekt}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty.intelekt - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Wola</span>
+                            <span class="attr-value">${pochodzenie.atrybuty.wola}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty.wola - 10)}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat">
-                    <span class="stat-value">${pochodzenie.predkosc}</span>
-                    <span>Prędkość</span>
+                
+                <div class="tile-section mechanics-section">
+                    <h5>🎲 Mechanika</h5>
+                    <div class="mechanics-grid">
+                        <div class="mechanics-item">
+                            <span class="mech-label">Obrona:</span>
+                            <span class="mech-value">${obrona}</span>
+                        </div>
+                        <div class="mechanics-item">
+                            <span class="mech-label">Zdrowie:</span>
+                            <span class="mech-value">${zdrowie}</span>
+                        </div>
+                        <div class="mechanics-item">
+                            <span class="mech-label">Prędkość:</span>
+                            <span class="mech-value">${pochodzenie.predkosc}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat">
-                    <span class="stat-value">${najnizszyAtrybut[1]}</span>
-                    <span>${najnizszyAtrybut[0]}</span>
+                
+                <div class="tile-section cultural-section">
+                    <h5>🌍 Kulturowe</h5>
+                    <div class="cultural-info">
+                        <div class="cultural-item">
+                            <span class="cultural-label">Języki:</span>
+                            <span class="cultural-value">${pochodzenie.jezyki.join(', ')}</span>
+                        </div>
+                        <div class="cultural-item">
+                            <span class="cultural-label">Profesje:</span>
+                            <span class="cultural-value">${pochodzenie.profesje.join(', ')}</span>
+                        </div>
+                    </div>
                 </div>
+                
+                ${kluczoweCechy ? `
+                <div class="tile-section features-section">
+                    <h5>✨ Cechy</h5>
+                    <div class="features-list">
+                        ${kluczoweCechy.map(cecha => `
+                            <div class="feature-item">
+                                <span class="feature-name">${cecha.nazwa}</span>
+                                <span class="feature-desc">${cecha.opis}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
             </div>
         `;
 
@@ -167,6 +268,314 @@ function wybierzPochodzenie(originId) {
     if (wybranyTile) {
         wybranyTile.classList.add('selected');
     }
+
+    // Aktywuj przycisk "Dalej" w kroku 1
+    document.getElementById('btn-next-1').disabled = false;
+}
+
+/**
+ * Nawigacja do następnego kroku
+ */
+function nextStep(currentStep) {
+    if (currentStep === 1) {
+        if (!wybranePochodzenie) {
+            pokazBlad('Wybierz pochodzenie postaci!');
+            return;
+        }
+        pokazKrok(2);
+        aktualizujPodsumowaniePochodzenia();
+        aktualizujDomyślneAtrybuty();
+    } else if (currentStep === 2) {
+        pokazKrok(3);
+        aktualizujPodgladPostaci();
+    }
+}
+
+/**
+ * Nawigacja do poprzedniego kroku
+ */
+function prevStep(currentStep) {
+    if (currentStep === 2) {
+        pokazKrok(1);
+    } else if (currentStep === 3) {
+        pokazKrok(2);
+    }
+}
+
+/**
+ * Pokazuje określony krok
+ */
+function pokazKrok(stepNumber) {
+    // Ukryj wszystkie kroki
+    document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('active');
+    });
+    
+    // Pokaż wybrany krok
+    document.getElementById(`step-${stepNumber}`).classList.add('active');
+    aktualnyKrok = stepNumber;
+}
+
+/**
+ * Aktualizuje podsumowanie wybranego pochodzenia
+ */
+function aktualizujPodsumowaniePochodzenia() {
+    if (!wybranePochodzenie) return;
+    
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+    if (!pochodzenie) return;
+    
+    const container = document.getElementById('selected-origin-info');
+    container.innerHTML = `
+        <h4>${pochodzenie.nazwa}</h4>
+        <p><strong>Opis:</strong> ${pochodzenie.opis}</p>
+        <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
+        <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
+        <p><strong>Modyfikatory atrybutów:</strong> 
+            Siła ${pochodzenie.atrybuty.sila - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty.sila - 10}, 
+            Zręczność ${pochodzenie.atrybuty.zrecznosc - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty.zrecznosc - 10}, 
+            Intelekt ${pochodzenie.atrybuty.intelekt - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty.intelekt - 10}, 
+            Wola ${pochodzenie.atrybuty.wola - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty.wola - 10}
+        </p>
+    `;
+}
+
+/**
+ * Aktualizuje domyślne atrybuty bazujące na pochodzeniu
+ */
+function aktualizujDomyślneAtrybuty() {
+    if (!wybranePochodzenie) return;
+    
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+    if (!pochodzenie) return;
+    
+    // Domyślne wartości atrybutów bazujące na pochodzeniu
+    // Używamy wartości 10 jako bazę, a następnie stosujemy modyfikatory pochodzenia
+    const atrybutyBazowe = {
+        sila: 10,
+        zrecznosc: 10,
+        intelekt: 10,
+        wola: 10
+    };
+    
+    // Oblicz atrybuty z modyfikatorami pochodzenia
+    const atrybutyFinalne = {
+        sila: atrybutyBazowe.sila + (pochodzenie.atrybuty.sila - 10),
+        zrecznosc: atrybutyBazowe.zrecznosc + (pochodzenie.atrybuty.zrecznosc - 10),
+        intelekt: atrybutyBazowe.intelekt + (pochodzenie.atrybuty.intelekt - 10),
+        wola: atrybutyBazowe.wola + (pochodzenie.atrybuty.wola - 10)
+    };
+    
+    // Aktualizuj wyświetlane wartości
+    document.getElementById('sila-final').textContent = atrybutyFinalne.sila;
+    document.getElementById('zrecznosc-final').textContent = atrybutyFinalne.zrecznosc;
+    document.getElementById('intelekt-final').textContent = atrybutyFinalne.intelekt;
+    document.getElementById('wola-final').textContent = atrybutyFinalne.wola;
+    
+    // Aktualizuj modyfikatory
+    document.getElementById('sila-mod').textContent = formatModifier(pochodzenie.atrybuty.sila - 10);
+    document.getElementById('zrecznosc-mod').textContent = formatModifier(pochodzenie.atrybuty.zrecznosc - 10);
+    document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty.intelekt - 10);
+    document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty.wola - 10);
+    
+    // Aktywuj przycisk "Dalej" w kroku 2
+    document.getElementById('btn-next-2').disabled = false;
+}
+
+/**
+ * Aktualizuje obliczone atrybuty na podstawie pochodzenia
+ */
+function aktualizujObliczoneAtrybuty() {
+    if (!wybranePochodzenie) return;
+    
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+    if (!pochodzenie) return;
+    
+    let atrybutyBazowe;
+    
+    if (document.getElementById('domyslne-atrybuty').checked) {
+        // Użyj domyślnych wartości (bazujących na pochodzeniu)
+        atrybutyBazowe = {
+            sila: 10,
+            zrecznosc: 10,
+            intelekt: 10,
+            wola: 10
+        };
+    } else {
+        // Użyj wartości z formularza
+        atrybutyBazowe = {
+            sila: parseInt(document.getElementById('sila-base').value) || 10,
+            zrecznosc: parseInt(document.getElementById('zrecznosc-base').value) || 10,
+            intelekt: parseInt(document.getElementById('intelekt-base').value) || 10,
+            wola: parseInt(document.getElementById('wola-base').value) || 10
+        };
+    }
+    
+    // Oblicz atrybuty z modyfikatorami pochodzenia
+    const atrybutyFinalne = {
+        sila: atrybutyBazowe.sila + (pochodzenie.atrybuty.sila - 10),
+        zrecznosc: atrybutyBazowe.zrecznosc + (pochodzenie.atrybuty.zrecznosc - 10),
+        intelekt: atrybutyBazowe.intelekt + (pochodzenie.atrybuty.intelekt - 10),
+        wola: atrybutyBazowe.wola + (pochodzenie.atrybuty.wola - 10)
+    };
+    
+    // Aktualizuj wyświetlane wartości
+    document.getElementById('sila-final').textContent = atrybutyFinalne.sila;
+    document.getElementById('zrecznosc-final').textContent = atrybutyFinalne.zrecznosc;
+    document.getElementById('intelekt-final').textContent = atrybutyFinalne.intelekt;
+    document.getElementById('wola-final').textContent = atrybutyFinalne.wola;
+    
+    // Aktualizuj modyfikatory
+    document.getElementById('sila-mod').textContent = formatModifier(pochodzenie.atrybuty.sila - 10);
+    document.getElementById('zrecznosc-mod').textContent = formatModifier(pochodzenie.atrybuty.zrecznosc - 10);
+    document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty.intelekt - 10);
+    document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty.wola - 10);
+    
+    // Aktywuj przycisk "Dalej" w kroku 2
+    document.getElementById('btn-next-2').disabled = false;
+}
+
+/**
+ * Formatuje modyfikator atrybutu
+ * @param {number} modifier - Wartość modyfikatora
+ * @returns {string} Sformatowany modyfikator z + lub -
+ */
+function formatModifier(modifier) {
+    if (modifier >= 0) {
+        return `+${modifier}`;
+    } else {
+        return `${modifier}`;
+    }
+}
+
+
+/**
+ * Pobiera kluczowe cechy specjalne (maksymalnie 2)
+ * @param {Object} cechySpecjalne - Obiekt z cechami specjalnymi
+ * @returns {Array|null} Tablica z maksymalnie 2 kluczowymi cechami
+ */
+function pobierzKluczoweCechy(cechySpecjalne) {
+    if (!cechySpecjalne || Object.keys(cechySpecjalne).length === 0) {
+        return null;
+    }
+    
+    const cechy = Object.entries(cechySpecjalne);
+    const kluczoweCechy = cechy.slice(0, 2).map(([nazwa, opis]) => ({
+        nazwa: formatujNazweCechy(nazwa),
+        opis: opis.length > 60 ? opis.substring(0, 60) + '...' : opis
+    }));
+    
+    return kluczoweCechy.length > 0 ? kluczoweCechy : null;
+}
+
+/**
+ * Formatuje nazwę cechy specjalnej
+ * @param {string} nazwa - Nazwa cechy w formacie snake_case
+ * @returns {string} Sformatowana nazwa cechy
+ */
+function formatujNazweCechy(nazwa) {
+    return nazwa
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+/**
+ * Aktualizuje podgląd postaci w kroku 3
+ */
+function aktualizujPodgladPostaci() {
+    if (!wybranePochodzenie) return;
+    
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+    if (!pochodzenie) return;
+    
+    const container = document.getElementById('character-preview');
+    
+    // Pobierz obliczone atrybuty
+    const atrybuty = {
+        sila: parseInt(document.getElementById('sila-final').textContent),
+        zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
+        intelekt: parseInt(document.getElementById('intelekt-final').textContent),
+        wola: parseInt(document.getElementById('wola-final').textContent)
+    };
+    
+    // Oblicz atrybuty drugorzędne
+    const atrybutyDrugorzedne = {
+        percepcja: atrybuty.intelekt,
+        obrona: atrybuty.zrecznosc,
+        zdrowie: atrybuty.sila,
+        szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
+    };
+    
+    // Modyfikatory obrony na podstawie rozmiaru
+    if (pochodzenie.rozmiar === '1/4') {
+        atrybutyDrugorzedne.obrona += 4;
+    } else if (pochodzenie.rozmiar === '1/2') {
+        atrybutyDrugorzedne.obrona += 2;
+    } else if (pochodzenie.rozmiar === '2') {
+        atrybutyDrugorzedne.obrona -= 2;
+    }
+    
+    container.innerHTML = `
+        <h4>📜 Podgląd Postaci</h4>
+        
+        <div class="preview-section">
+            <h5>${pochodzenie.nazwa}</h5>
+            <p>${pochodzenie.opis}</p>
+        </div>
+        
+        <div class="preview-section">
+            <h5>Atrybuty Podstawowe</h5>
+            <div class="preview-stats">
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Siła</div>
+                    <div class="preview-stat-value">${atrybuty.sila}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Zręczność</div>
+                    <div class="preview-stat-value">${atrybuty.zrecznosc}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Intelekt</div>
+                    <div class="preview-stat-value">${atrybuty.intelekt}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Wola</div>
+                    <div class="preview-stat-value">${atrybuty.wola}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h5>Atrybuty Drugorzędne</h5>
+            <div class="preview-stats">
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Percepcja</div>
+                    <div class="preview-stat-value">${atrybutyDrugorzedne.percepcja}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Obrona</div>
+                    <div class="preview-stat-value">${atrybutyDrugorzedne.obrona}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Zdrowie</div>
+                    <div class="preview-stat-value">${atrybutyDrugorzedne.zdrowie}</div>
+                </div>
+                <div class="preview-stat">
+                    <div class="preview-stat-label">Szybkość Zdrowienia</div>
+                    <div class="preview-stat-value">${atrybutyDrugorzedne.szybkosc_zdrowienia}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h5>Szczegóły</h5>
+            <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
+            <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
+            <p><strong>Profesje:</strong> ${pochodzenie.profesje.join(', ')}</p>
+        </div>
+    `;
 }
 
 /**
@@ -184,20 +593,20 @@ async function utworzPostac() {
         sciezka: document.getElementById('sciezka').value || undefined
     };
 
-    // Własne atrybuty jeśli nie losowe
-    if (!document.getElementById('losowe-atrybuty').checked) {
+    // Własne atrybuty jeśli nie domyślne
+    if (!document.getElementById('domyslne-atrybuty').checked) {
         spec.atrybuty = {
-            sila: parseInt(document.getElementById('sila').value),
-            zrecznosc: parseInt(document.getElementById('zrecznosc').value),
-            intelekt: parseInt(document.getElementById('intelekt').value),
-            wola: parseInt(document.getElementById('wola').value)
+            sila: parseInt(document.getElementById('sila-base').value),
+            zrecznosc: parseInt(document.getElementById('zrecznosc-base').value),
+            intelekt: parseInt(document.getElementById('intelekt-base').value),
+            wola: parseInt(document.getElementById('wola-base').value)
         };
     }
 
     // Pokazanie loadingu
     document.getElementById('loading').style.display = 'block';
     document.getElementById('error').style.display = 'none';
-    document.getElementById('btn-utworz').disabled = true;
+    document.getElementById('btn-create').disabled = true;
 
     try {
         const response = await fetch('/api/build', {
@@ -222,7 +631,7 @@ async function utworzPostac() {
         pokazBlad('Błąd tworzenia postaci: ' + error.message);
     } finally {
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('btn-utworz').disabled = false;
+        document.getElementById('btn-create').disabled = false;
     }
 }
 

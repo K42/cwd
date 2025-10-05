@@ -32,8 +32,8 @@ function budujPostac(spec) {
     throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
   }
 
-  // Atrybuty podstawowe - losowe lub zadane
-  const atrybuty = spec.atrybuty || DANE_GRY.obliczenia.losowe_atrybuty();
+  // Atrybuty podstawowe - zadane lub domyślne (10, 10, 10, 10)
+  const atrybuty = spec.atrybuty || { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 };
 
   // Modyfikatory z pochodzenia
   const atrybuty_finalne = {

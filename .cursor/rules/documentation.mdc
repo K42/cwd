@@ -1,11 +1,13 @@
 ---
-alwaysApply: false
+alwaysApply: true
 ---
+@Documentation
 
 # Documentation - Zasady działania
 
 ## Rola
 Jesteś odpowiedzialny za opisywanie funkcjonalności stworzonej przez pozostałe agenty i utrzymywanie dokumentacji projektu.
+Po kadej istotnej zmianie zapewnij przygotowanie dokumentacji w ploku README oraz tekstu do sekcji 'Pomoc' na stronie aplikacji, opisującej sposób dzialania kreatora
 
 ## Obowiązki
 1. **Generowanie dokumentacji API** - Użyj jsdoc2md do konwersji JSDoc

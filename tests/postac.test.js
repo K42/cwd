@@ -51,16 +51,16 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(() => budujPostac(spec)).toThrow('Brak pochodzenia postaci');
     });
 
-    test('powinien wygenerować losowe atrybuty gdy nie podano własnych', () => {
+    test('powinien użyć domyślnych wartości atrybutów gdy nie podano własnych', () => {
       const spec = { pochodzenie: 'czlowiek' };
 
       const postac = budujPostac(spec);
 
-      // Sprawdź że atrybuty są w zakresie 3-18 (3k6)
-      expect(postac.atrybuty.sila).toBeGreaterThanOrEqual(3);
-      expect(postac.atrybuty.sila).toBeLessThanOrEqual(18);
-      expect(postac.atrybuty.zrecznosc).toBeGreaterThanOrEqual(3);
-      expect(postac.atrybuty.zrecznosc).toBeLessThanOrEqual(18);
+      // Sprawdź że atrybuty są równe domyślnym wartościom (10, 10, 10, 10)
+      expect(postac.atrybuty.sila).toBe(10);
+      expect(postac.atrybuty.zrecznosc).toBe(10);
+      expect(postac.atrybuty.intelekt).toBe(10);
+      expect(postac.atrybuty.wola).toBe(10);
     });
 
     test('powinien dodać ścieżkę nowicjusza jeśli podano', () => {
@@ -175,6 +175,88 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const jotunn = DANE_GRY.pochodzenia.jotunn;
       const jotunnDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, jotunn);
       expect(jotunnDrugorzedne.obrona).toBe(10); // 12 - 2 za rozmiar 2
+    });
+  });
+
+  // Testy dla nowych funkcji frontend (symulowane w środowisku testowym)
+  describe('Funkcje Frontend', () => {
+    // Symulacja funkcji formatModifier
+    const formatModifier = (modifier) => {
+      if (modifier >= 0) {
+        return `+${modifier}`;
+      } else {
+        return `${modifier}`;
+      }
+    };
+
+    // Symulacja funkcji pobierzKluczoweCechy
+    const pobierzKluczoweCechy = (cechySpecjalne) => {
+      if (!cechySpecjalne || Object.keys(cechySpecjalne).length === 0) {
+        return null;
+      }
+      
+      const cechy = Object.entries(cechySpecjalne);
+      const kluczoweCechy = cechy.slice(0, 2).map(([nazwa, opis]) => ({
+        nazwa: formatujNazweCechy(nazwa),
+        opis: opis.length > 60 ? opis.substring(0, 60) + '...' : opis
+      }));
+      
+      return kluczoweCechy.length > 0 ? kluczoweCechy : null;
+    };
+
+    // Symulacja funkcji formatujNazweCechy
+    const formatujNazweCechy = (nazwa) => {
+      return nazwa
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    test('formatModifier() powinien formatować modyfikatory poprawnie', () => {
+      expect(formatModifier(2)).toBe('+2');
+      expect(formatModifier(-1)).toBe('-1');
+      expect(formatModifier(0)).toBe('+0');
+      expect(formatModifier(10)).toBe('+10');
+      expect(formatModifier(-5)).toBe('-5');
+    });
+
+    test('formatujNazweCechy() powinien formatować nazwy cech poprawnie', () => {
+      expect(formatujNazweCechy('magia_elficka')).toBe('Magia Elficka');
+      expect(formatujNazweCechy('widzenie_w_ciemności')).toBe('Widzenie W Ciemności');
+      expect(formatujNazweCechy('determinacja')).toBe('Determinacja');
+      expect(formatujNazweCechy('mechaniczna_precyzja')).toBe('Mechaniczna Precyzja');
+    });
+
+    test('pobierzKluczoweCechy() powinien zwracać maksymalnie 2 cechy', () => {
+      const cechySpecjalne = {
+        cecha1: 'Opis pierwszej cechy',
+        cecha2: 'Opis drugiej cechy',
+        cecha3: 'Opis trzeciej cechy'
+      };
+
+      const wynik = pobierzKluczoweCechy(cechySpecjalne);
+      
+      expect(wynik).toHaveLength(2);
+      expect(wynik[0].nazwa).toBe('Cecha1');
+      expect(wynik[1].nazwa).toBe('Cecha2');
+    });
+
+    test('pobierzKluczoweCechy() powinien skracać długie opisy', () => {
+      const cechySpecjalne = {
+        dluga_cecha: 'To jest bardzo długi opis cechy specjalnej, który przekracza limit sześćdziesięciu znaków i powinien zostać skrócony'
+      };
+
+      const wynik = pobierzKluczoweCechy(cechySpecjalne);
+      
+      expect(wynik[0].opis).toContain('...');
+      expect(wynik[0].opis.length).toBe(63); // 60 + '...'
+    });
+
+    test('pobierzKluczoweCechy() powinien zwracać null dla pustego obiektu', () => {
+      expect(pobierzKluczoweCechy({})).toBeNull();
+      expect(pobierzKluczoweCechy(null)).toBeNull();
+      expect(pobierzKluczoweCechy(undefined)).toBeNull();
     });
   });
 });
