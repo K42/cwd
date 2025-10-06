@@ -260,7 +260,7 @@ function renderPathTile(path, poziomWyboru) {
   const selectedId = poziomWyboru === 1 ? wybraneSciezki.nowicjusz : (poziomWyboru === 3 ? wybraneSciezki.ekspert : wybraneSciezki.mistrz);
   const isSelected = selectedId === path.id;
   const tile = document.createElement('div');
-  tile.className = 'tile path-tile' + (isSelected ? ' selected' : '');
+  tile.className = `tile path-tile${  isSelected ? ' selected' : ''}`;
   tile.style.opacity = canPick ? '1' : '0.5';
   tile.innerHTML = `
     <div class="tile-header">
@@ -290,7 +290,7 @@ function renderPathTile(path, poziomWyboru) {
 function renderPathBenefitsList(path, poziomWyboru) {
   const pkt = (path.korzysci && path.korzysci[poziomWyboru]) || {};
   const talenty = (pkt.talenty || []).map(t => `<li><strong>Talent:</strong> ${t.nazwa || t} – ${t.opis || ''}</li>`).join('');
-  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? '(' + z.tradycja + ')' : ''}</li>`).join('');
+  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? `(${  z.tradycja  })` : ''}</li>`).join('');
   const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Biegłość:</strong> ${b}</li>`).join('');
@@ -395,16 +395,17 @@ function odejmijBenefity(prev) {
  * Aktualizuje dostępne ścieżki na podstawie wybranego poziomu
  * @param {number} poziom - Wybrany poziom postaci
  */
-async function aktualizujSciezkiPoziomu(poziom) {
+async function aktualizujSciezkiPoziomu(_poziom) {
   // Nowy system kafelków - funkcja jest już obsługiwana przez renderPathSectionsVisibility()
   // i renderPathSection() w głównym flow
 }
 
 /**
  * Fallback do ładowania ścieżek gdy API nie działa
- * @param {number} poziom - Wybrany poziom postaci
+ * @param {number} _poziom - Wybrany poziom postaci
  */
-function aktualizujSciezkiFallback(poziom) {
+/* eslint-disable-next-line no-unused-vars */
+function aktualizujSciezkiFallback(_poziom) {
   const selNov = document.getElementById('sciezka-nowicjusza');
   const selExp = document.getElementById('sciezka-eksperta');
   const selMas = document.getElementById('sciezka-mistrza');
@@ -444,14 +445,14 @@ function aktualizujSciezkiFallback(poziom) {
     });
     if (wybraneSciezki.nowicjusz) selNov.value = wybraneSciezki.nowicjusz;
   }
-  if (poziom >= 3 && selExp) {
+  if (_poziom >= 3 && selExp) {
     ekspert.forEach(s => {
       const o = document.createElement('option');
       o.value = s.id; o.textContent = s.nazwa; selExp.appendChild(o);
     });
     if (wybraneSciezki.ekspert) selExp.value = wybraneSciezki.ekspert;
   }
-  if (poziom >= 7 && selMas) {
+  if (_poziom >= 7 && selMas) {
     mistrz.forEach(s => {
       const o = document.createElement('option');
       o.value = s.id; o.textContent = s.nazwa; selMas.appendChild(o);
@@ -487,7 +488,7 @@ function aktualizujTytulSekcjiSciezek(poziom) {
 /**
  * Ustawia widoczność selectów ścieżek w zależności od poziomu
  */
-function aktualizujWidocznoscSciezek(poziom) {
+function aktualizujWidocznoscSciezek(_poziom) {
   // Funkcja jest już obsługiwana przez renderPathSectionsVisibility()
   renderPathSectionsVisibility();
 }
@@ -666,7 +667,7 @@ function aktualizujAtrybutyZPoziomem4() {
  * @param {Array} pochodzeniaZTabelami - Lista metadanych pochodzeń z tabelami
  * @returns {Array} Tablica obiektów pochodzeń z pełnymi danymi
  */
-async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, pochodzeniaZTabelami = []) {
+async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, _pochodzeniaZTabelami = []) {
   const pochodzenia = [];
   
   // Dopuszczalne źródła zgodne z katalogiem SOURCES
@@ -1103,9 +1104,9 @@ function zbierzWynikiTabel(originId) {
               wynikiTabel[originId] = {};
             }
             wynikiTabel[originId][tableName] = {
-              rzut: rzut,
-              wynik: wynik,
-              typ: typ
+              rzut,
+              wynik,
+              typ
             };
           }
         }
@@ -1467,7 +1468,7 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
   const atrybutyDrugorzedne = {
     percepcja: atrybuty.intelekt,
     obrona: atrybuty.zrecznosc,
-    zdrowie: zdrowie,
+    zdrowie,
     szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
   };
   
@@ -1728,15 +1729,14 @@ function generujSekcjeWynikowTabel(originId) {
   
   // Mapowanie nazw tabel na polskie nazwy
   const nazwyTabel = {
-    'przeszlosc': 'Przeszłość',
-    'osobowosc': 'Osobowość', 
-    'religia': 'Religia',
-    'wiek': 'Wiek',
-    'budowa_ciala': 'Budowa Ciała',
-    'wyglad': 'Wygląd',
-    'funkcja': 'Funkcja',
-    'forma': 'Forma',
-    'przeszlosc': 'Przeszłość'
+    przeszlosc: 'Przeszłość',
+    osobowosc: 'Osobowość', 
+    religia: 'Religia',
+    wiek: 'Wiek',
+    budowa_ciala: 'Budowa Ciała',
+    wyglad: 'Wygląd',
+    funkcja: 'Funkcja',
+    forma: 'Forma'
   };
   
   let html = '<div class="preview-section">';
@@ -1748,11 +1748,11 @@ function generujSekcjeWynikowTabel(originId) {
     const typTekst = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
     
     html += '<div class="table-result-item">';
-    html += `<div class="table-result-header">`;
+    html += '<div class="table-result-header">';
     html += `<span class="table-result-name">${nazwaTabeli}</span>`;
     html += `<span class="table-result-type">${ikona} ${typTekst}</span>`;
     html += '</div>';
-    html += `<div class="table-result-content">`;
+    html += '<div class="table-result-content">';
     html += `<div class="table-result-roll">Rzut: ${result.rzut}</div>`;
     html += `<div class="table-result-outcome">${result.wynik}</div>`;
     if (result.efekt) {
@@ -1797,7 +1797,7 @@ function aktualizujPodgladPostaci() {
   const atrybutyDrugorzedne = {
     percepcja: atrybuty.intelekt,
     obrona: atrybuty.zrecznosc,
-    zdrowie: zdrowie,
+    zdrowie,
     szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
   };
     
@@ -2505,8 +2505,8 @@ function zastosujWybranaOpcje(originId, tableName) {
     wynikiTabel[originId] = {};
   }
   wynikiTabel[originId][tableName] = {
-    rzut: rzut,
-    wynik: wynik,
+    rzut,
+    wynik,
     typ: 'wybór'
   };
   
@@ -2738,7 +2738,7 @@ function renderProfessionsSection() {
   });
   
   // Renderuj kafelki
-  Object.entries(kategorie).forEach(([katId, profs]) => {
+  Object.entries(kategorie).forEach(([_katId, profs]) => {
     profs.forEach(prof => {
       const tile = renderProfessionTile(prof);
       grid.appendChild(tile);
@@ -2793,7 +2793,8 @@ function toggleProfession(professionId) {
 /**
  * Losuje profesję
  */
-function randomizeProfession() {
+/* eslint-disable-next-line no-unused-vars */
+function _randomizeProfession() {
   const { profesje } = obliczIloscWyborow();
   const available = dostepneProfesje.filter(prof => !wybraneProfesje.includes(prof.id));
   
@@ -2826,7 +2827,8 @@ function updateSelectedProfessions() {
 /**
  * Usuwa profesję z wybranych
  */
-function removeProfession(professionId) {
+/* eslint-disable-next-line no-unused-vars */
+function _removeProfession(professionId) {
   wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
   renderProfessionsSection();
   updateStep4NextButton();
@@ -2858,7 +2860,7 @@ function renderCuriosSection() {
   });
   
   // Renderuj kafelki
-  Object.entries(kategorie).forEach(([katId, curios]) => {
+  Object.entries(kategorie).forEach(([_katId, curios]) => {
     curios.forEach(curio => {
       const tile = renderCurioTile(curio);
       grid.appendChild(tile);
@@ -2881,7 +2883,7 @@ function renderCurioTile(curio) {
   tile.innerHTML = `
     <div class="tile-category">${curio.kategoria || ''}</div>
     <div class="tile-title">${curio.nazwa || ''}</div>
-    ${curio.opis ? `<div class=\"tile-description\">${curio.opis}</div>` : ''}
+    ${curio.opis ? `<div class="tile-description">${curio.opis}</div>` : ''}
   `;
   
   // Event listenery
@@ -2913,7 +2915,8 @@ function toggleCurio(curioId) {
 /**
  * Losuje kurioza
  */
-function randomizeCurio() {
+/* eslint-disable-next-line no-unused-vars */
+function _randomizeCurio() {
   const { kurioza } = obliczIloscWyborow();
   const available = dostepneKurioza.filter(curio => !wybraneKurioza.includes(curio.id));
   
@@ -2980,7 +2983,8 @@ function updateSelectedCurios() {
 /**
  * Usuwa kurioza z wybranych
  */
-function removeCurio(curioId) {
+/* eslint-disable-next-line no-unused-vars */
+function _removeCurio(curioId) {
   wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
   renderCuriosSection();
   updateStep4NextButton();

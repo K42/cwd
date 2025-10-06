@@ -18,7 +18,6 @@ function rollTable(originId, tableName) {
   
   // Znajdź tabelę po znormalizowanym kluczu
   let table = null;
-  let actualKey = null;
   
   for (const key of Object.keys(origin)) {
     const normalizedKey = key.toLowerCase()
@@ -35,7 +34,6 @@ function rollTable(originId, tableName) {
     
     if (normalizedKey === tableName) {
       table = origin[key];
-      actualKey = key;
       break;
     }
   }
@@ -105,7 +103,6 @@ function getTableDetails(originId, tableName) {
 
   // Znajdź tabelę po znormalizowanym kluczu
   let table = null;
-  let actualKey = null;
   
   for (const key of Object.keys(origin)) {
     const normalizedKey = key.toLowerCase()
@@ -122,7 +119,6 @@ function getTableDetails(originId, tableName) {
     
     if (normalizedKey === tableName) {
       table = origin[key];
-      actualKey = key;
       break;
     }
   }

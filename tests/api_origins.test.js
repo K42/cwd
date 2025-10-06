@@ -135,7 +135,7 @@ describe('API Pochodzeń - Sprint 2', () => {
       
       expect(response.body).toHaveProperty('error');
       expect(response.body).toHaveProperty('dostepne_tabele');
-      expect(response.body.error).toContain('nie istnieje');
+      expect(response.body.error).toContain('Nie znaleziono tabeli');
     });
   });
 

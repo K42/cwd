@@ -5,10 +5,8 @@
 const express = require('express');
 const path = require('path');
 const DANE_GRY = require('./data.js');
-const { EXTENDED_ORIGINS, losujZTabeli } = require('./data/origins_extended');
 const ORIGINS = require('./data/origins');
 const { rollTable, getAvailableTables, getTableDetails, hasTables, getOriginsWithTables } = require('./data/table_utils');
-const ORIGIN_TABLES = require('./data/origin_tables');
 const PATHS = require('./data/paths');
 const PROFESSIONS = require('./data/professions');
 const CURIOS = require('./data/curios');
@@ -558,7 +556,7 @@ app.get('/api/origins/:originId/tables', (req, res) => {
       // Używamy znormalizowanego klucza tabeli, aby roll działał poprawnie
       tabele[key] = {
         ...tabela,
-        opcje: opcje
+        opcje
       };
     });
     
@@ -568,7 +566,7 @@ app.get('/api/origins/:originId/tables', (req, res) => {
         nazwa: originId === 'czlowiek' ? 'Człowiek' : originId.charAt(0).toUpperCase() + originId.slice(1),
         zrodlo: 'PG'
       },
-      tabele: tabele
+      tabele
     });
     
   } catch (error) {
@@ -627,6 +625,7 @@ app.post('/api/origins/:originId/tables/:tableName/roll', (req, res) => {
     });
     
   } catch (error) {
+    const { originId } = req.params;
     // Sprawdź typ błędu i zwróć odpowiedni status
     if (error.message.includes('Nie znaleziono pochodzenia') || error.message.includes('Nieznane pochodzenie')) {
       res.status(404).json({

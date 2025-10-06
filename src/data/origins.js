@@ -29,7 +29,8 @@ const ORIGINS = {
       zdrowie: '+5',
       opcje: ['1 zaklęcie', 'talent Determinacja']
     },
-    strona_zrodlowa: 11
+    strona_zrodlowa: 11,
+    status: 'kompletne'
   },
 
   automaton: {
@@ -56,7 +57,8 @@ const ORIGINS = {
       zdrowie: '+5',
       opcje: ['1 zaklęcie', 'talent Wysokie obroty']
     },
-    strona_zrodlowa: 13
+    strona_zrodlowa: 13,
+    status: 'kompletne'
   },
 
   goblin: {
@@ -84,7 +86,8 @@ const ORIGINS = {
       zdrowie: '+4',
       opcje: ['1 zaklęcie', 'talent Odskok']
     },
-    strona_zrodlowa: 15
+    strona_zrodlowa: 15,
+    status: 'kompletne'
   },
 
   krasnolud: {
@@ -111,7 +114,8 @@ const ORIGINS = {
       zdrowie: '+6',
       opcje: ['1 zaklęcie', 'talent Nie do zdarcia']
     },
-    strona_zrodlowa: 18
+    strona_zrodlowa: 18,
+    status: 'kompletne'
   },
 
   odmieniec: {
@@ -139,7 +143,8 @@ const ORIGINS = {
       zdrowie: '+4',
       opcje: ['1 zaklęcie', 'talent Prymat sobowtóra']
     },
-    strona_zrodlowa: 20
+    strona_zrodlowa: 20,
+    status: 'kompletne'
   },
 
   ork: {
@@ -165,7 +170,8 @@ const ORIGINS = {
       zdrowie: '+6',
       opcje: ['1 zaklęcie', 'talent Furia']
     },
-    strona_zrodlowa: 22
+    strona_zrodlowa: 22,
+    status: 'kompletne'
   },
 
   // Straszliwe Piękno - Nowe pochodzenia faerie
@@ -197,7 +203,8 @@ const ORIGINS = {
       zdrowie: '+2',
       opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
     },
-    strona_zrodlowa: 7
+    strona_zrodlowa: 7,
+    status: 'kompletne'
   },
 
   elf: {
@@ -227,7 +234,8 @@ const ORIGINS = {
       zdrowie: '+3',
       opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
     },
-    strona_zrodlowa: 9
+    strona_zrodlowa: 9,
+    status: 'kompletne'
   },
 
   hobgoblin: {
@@ -255,7 +263,8 @@ const ORIGINS = {
       zdrowie: '+5',
       opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
     },
-    strona_zrodlowa: 14
+    strona_zrodlowa: 14,
+    status: 'kompletne'
   },
 
   // Suplement Władcy Demonów
@@ -278,7 +287,8 @@ const ORIGINS = {
       skakanie: 'Możesz skakać dalej i wyżej niż normalnie.',
       magia_natury: 'Dostęp do podstawowych zaklęć natury.'
     },
-    strona_zrodlowa: 5
+    strona_zrodlowa: 5,
+    status: 'kompletne'
   },
 
   niziol: {
@@ -300,77 +310,10 @@ const ORIGINS = {
       szczescie: 'Raz dziennie możesz ponownie rzucić nieudany test.',
       zwinność: 'Możesz poruszać się przez przestrzeń przeciwnika.'
     },
-    strona_zrodlowa: 9
+    strona_zrodlowa: 9,
+    status: 'kompletne'
   },
 
-  // Straszliwe Piękno
-  chochlik: {
-    id: 'chochlik',
-    nazwa: 'Chochlik',
-    zrodlo: 'SP', // Straszliwe Piękno
-    opis: 'Maleńkie istoty magiczne, znane z psot i niezwykłych mocy.',
-    atrybuty_bazowe: {
-      sila: 6,
-      zrecznosc: 12,
-      intelekt: 12,
-      wola: 10
-    },
-    rozmiar: '0.5',
-    predkosc: 8,
-    jezyki: ['wspólny', 'chochlikowy'],
-    profesje: ['dowolna'],
-    cechy_specjalne: {
-      malutka_postura: 'Rozmiar 1/4. Możesz ukryć się w kieszeni.',
-      magia_chaosu: 'Dostęp do chaotycznych zaklęć.',
-      lot: 'Możesz lecieć na wysokość do 3 metrów.'
-    },
-    strona_zrodlowa: 7
-  },
-
-  elf: {
-    id: 'elf',
-    nazwa: 'Elf',
-    zrodlo: 'SP', // Straszliwe Piękno
-    opis: 'Długowieczne istoty o niezwykłej urodzie i zdolnościach magicznych.',
-    atrybuty_bazowe: {
-      sila: 9,
-      zrecznosc: 12,
-      intelekt: 11,
-      wola: 8
-    },
-    rozmiar: '1',
-    predkosc: 12,
-    jezyki: ['wspólny', 'elficki'],
-    profesje: ['dowolna'],
-    cechy_specjalne: {
-      magia_elficka: 'Dostęp do elfickich zaklęć.',
-      widzenie_w_ciemności: 'Widzisz w ciemności do 20 metrów.',
-      długowieczność: 'Żyjesz znacznie dłużej niż ludzie.'
-    },
-    strona_zrodlowa: 9
-  },
-
-  hobgoblin: {
-    id: 'hobgoblin',
-    nazwa: 'Hobgoblin',
-    zrodlo: 'SP', // Straszliwe Piękno
-    opis: 'Większe od goblinów, znane z dyscypliny i umiejętności wojskowych.',
-    atrybuty_bazowe: {
-      sila: 11,
-      zrecznosc: 10,
-      intelekt: 10,
-      wola: 10
-    },
-    rozmiar: '1',
-    predkosc: 10,
-    jezyki: ['wspólny', 'gobliński'],
-    profesje: ['dowolna'],
-    cechy_specjalne: {
-      odpornosc_na_strach: 'Odporność na efekty strachu.',
-      taktyka: 'Bonus do ataków w grupie.'
-    },
-    strona_zrodlowa: 11
-  },
 
   // Głód w Pustce
   fomor: {
@@ -393,7 +336,8 @@ const ORIGINS = {
       odpornosc_na_wode: 'Możesz oddychać pod wodą.',
       mroczne_moce: 'Dostęp do mrocznych zaklęć.'
     },
-    strona_zrodlowa: 47
+    strona_zrodlowa: 47,
+    status: 'kompletne'
   },
 
   niedzwiedziadlo: {
@@ -416,7 +360,8 @@ const ORIGINS = {
       naturalne_pazury: 'Ataki wręcz zadają dodatkowe obrażenia.',
       hibernacja: 'Możesz hibernować w trudnych warunkach.'
     },
-    strona_zrodlowa: 49
+    strona_zrodlowa: 49,
+    status: 'kompletne'
   },
 
   warg: {
@@ -438,7 +383,8 @@ const ORIGINS = {
       szybkosc: 'Możesz biegać szybciej niż normalnie.',
       tropienie: 'Możesz śledzić ślady na duże odległości.'
     },
-    strona_zrodlowa: 50
+    strona_zrodlowa: 50,
+    status: 'kompletne'
   },
 
   inkarnacja: {
@@ -460,7 +406,8 @@ const ORIGINS = {
       odpornosc_na_magie: 'Częściowa odporność na efekty magiczne.',
       nietypowy_wyglad: 'Twój wygląd wskazuje na inneplanarne pochodzenie.'
     },
-    strona_zrodlowa: 75
+    strona_zrodlowa: 75,
+    status: 'kompletne'
   },
 
   // Rozkoszna Agonia
@@ -483,7 +430,8 @@ const ORIGINS = {
       odpornosc_na_ogien: 'Odporność na obrażenia od ognia.',
       potworny_wyglad: 'Twój wygląd może wywołać strach u wrogów.'
     },
-    strona_zrodlowa: 45
+    strona_zrodlowa: 45,
+    status: 'kompletne'
   },
 
   // Dodatkowe pochodzenie z innych źródeł
@@ -507,7 +455,8 @@ const ORIGINS = {
       naturalny_pancerz: 'Obrona +1 dzięki grubej skórze.',
       odpornosc_na_zimno: 'Odporność na obrażenia od zimna.'
     },
-    strona_zrodlowa: 45
+    strona_zrodlowa: 45,
+    status: 'kompletne'
   }
 };
 

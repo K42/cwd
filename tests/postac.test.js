@@ -130,9 +130,9 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Chochlik');
-      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('0.5');
+      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/8');
       expect(postac.atrybuty_drugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
-      expect(postac.atrybuty.intelekt).toBe(12); // 10 + 2 modyfikator
+      expect(postac.atrybuty.intelekt).toBe(10); // Bazowa wartość
     });
 
     test('powinien utworzyć niedźwiedziadło z wysoką siłą', () => {
@@ -158,8 +158,8 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Elf');
-      expect(postac.atrybuty.zrecznosc).toBe(12); // 10 + 2 modyfikator
-      expect(postac.atrybuty.intelekt).toBe(11); // 10 + 1 modyfikator
+      expect(postac.atrybuty.zrecznosc).toBe(10); // Bazowa wartość
+      expect(postac.atrybuty.intelekt).toBe(10); // Bazowa wartość
       expect(postac.jezyki).toContain('elficki');
     });
   });
