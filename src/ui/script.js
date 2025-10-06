@@ -297,7 +297,8 @@ function renderPathTile(path, poziomWyboru) {
   `;
   const btn = tile.querySelector('button');
   if (btn && canPick) {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       applyPathBenefits({ poziomWyboru, sciezka: path });
       // Po wyborze prze-renderuj sekcję, aby podświetlić kafel
       renderPathSection(poziomWyboru);
@@ -2161,11 +2162,21 @@ function wyswietlKorzysciPoziomuFallback(poziom) {
   levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
   
   // Resetuj wszystkie sekcje
-  document.getElementById('secondary-attributes-growth').style.display = 'none';
-  document.getElementById('primary-attributes-choice').style.display = 'none';
-  document.getElementById('talents-section').style.display = 'none';
-  document.getElementById('magic-section').style.display = 'none';
-  document.getElementById('languages-professions-section').style.display = 'none';
+  // Sprawdź czy elementy istnieją przed ustawieniem display
+  const elements = [
+    'secondary-attributes-growth',
+    'primary-attributes-choice', 
+    'talents-section',
+    'magic-section',
+    'languages-professions-section'
+  ];
+  
+  elements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = 'none';
+    }
+  });
   
   // Wyświetl podstawowe informacje
   const content = document.getElementById('level-benefits-content');
@@ -2195,11 +2206,21 @@ function wyswietlKorzysciPoziomu(benefits) {
   levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
 
   // Resetuj wszystkie sekcje
-  document.getElementById('secondary-attributes-growth').style.display = 'none';
-  document.getElementById('primary-attributes-choice').style.display = 'none';
-  document.getElementById('talents-section').style.display = 'none';
-  document.getElementById('magic-section').style.display = 'none';
-  document.getElementById('languages-professions-section').style.display = 'none';
+  // Sprawdź czy elementy istnieją przed ustawieniem display
+  const elements = [
+    'secondary-attributes-growth',
+    'primary-attributes-choice', 
+    'talents-section',
+    'magic-section',
+    'languages-professions-section'
+  ];
+  
+  elements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = 'none';
+    }
+  });
   document.getElementById('options-section').style.display = 'none';
 
   // Wyświetl atrybuty drugorzędne
@@ -2209,8 +2230,15 @@ function wyswietlKorzysciPoziomu(benefits) {
     if (benefits.korzyści.moc) content.push(`Moc: ${benefits.korzyści.moc}`);
     if (benefits.korzyści.obrona) content.push(`Obrona: ${benefits.korzyści.obrona}`);
     
-    document.getElementById('secondary-attrs-content').innerHTML = content.join(', ');
-    document.getElementById('secondary-attributes-growth').style.display = 'block';
+    const secondaryAttrsContent = document.getElementById('secondary-attrs-content');
+    const secondaryAttributesGrowth = document.getElementById('secondary-attributes-growth');
+    
+    if (secondaryAttrsContent) {
+      secondaryAttrsContent.innerHTML = content.join(', ');
+    }
+    if (secondaryAttributesGrowth) {
+      secondaryAttributesGrowth.style.display = 'block';
+    }
   }
 
   // Wyświetl interaktywny wybór atrybutów głównych
