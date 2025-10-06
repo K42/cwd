@@ -246,7 +246,10 @@ function aktualizujTytulSekcjiSciezek(poziom) {
  */
 async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, pochodzeniaZTabelami = []) {
   const pochodzenia = [];
-    
+  
+  // Dopuszczalne źródła zgodne z katalogiem SOURCES
+  const dozwoloneZrodla = new Set(['PG', 'SP', 'RA', 'NW', 'GWP', 'GP', 'SUP']);
+  
   for (const pochodzenieId of pochodzeniaIds) {
     try {
       // Pobierz podstawowe dane pochodzenia z oryginalnego API
@@ -263,20 +266,23 @@ async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, pochodzeniaZ
         const postac = await basicResponse.json();
         const podstawoweDane = postac.pochodzenie;
         
-        // Sprawdź, czy to pochodzenie ma tabele
-        const metaData = pochodzeniaZTabelami.find(p => p.id === pochodzenieId);
-        if (metaData && metaData.ma_tabele) {
-          try {
-            const tablesResponse = await fetch(`/api/origins/${pochodzenieId}/tables`);
-            if (tablesResponse.ok) {
-              const tablesData = await tablesResponse.json();
-              // Połącz podstawowe dane z tabelami
+        // Filtrowanie pochodzeń tylko do tych z dokumentów SOURCES
+        if (!podstawoweDane || !podstawoweDane.zrodlo || !dozwoloneZrodla.has(podstawoweDane.zrodlo)) {
+          continue;
+        }
+        
+        // Spróbuj zawsze pobrać tabele (niezależnie od metadanych), jeśli endpoint istnieje
+        try {
+          const tablesResponse = await fetch(`/api/origins/${pochodzenieId}/tables`);
+          if (tablesResponse.ok) {
+            const tablesData = await tablesResponse.json();
+            if (tablesData && tablesData.tabele) {
               podstawoweDane.tabele = tablesData.tabele;
             }
-          } catch (tablesError) {
-            // eslint-disable-next-line no-console
-            console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
           }
+        } catch (tablesError) {
+          // eslint-disable-next-line no-console
+          console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
         }
         
         pochodzenia.push(podstawoweDane);
@@ -286,7 +292,7 @@ async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, pochodzeniaZ
       console.warn(`Nie udało się załadować danych dla pochodzenia ${pochodzenieId}:`, error);
     }
   }
-    
+  
   return pochodzenia;
 }
 
@@ -337,7 +343,7 @@ function generujKafelkiPochodzen(pochodzenia) {
     tile.innerHTML = `
             <div class="tile-header">
                 <div class="badges-container">
-                    <div class="size-badge">${pochodzenie.rozmiar}</div>
+                    <div class="feature-desc">rozmiar:</div><div class="size-badge">${pochodzenie.rozmiar}</div>
                     ${pochodzenie.zrodlo ? `<div class="source-badge">${pochodzenie.zrodlo}</div>` : ''}
                 </div>
                 <h4>${pochodzenie.nazwa}</h4>

@@ -6,6 +6,9 @@ const express = require('express');
 const path = require('path');
 const DANE_GRY = require('./data.js');
 const { EXTENDED_ORIGINS, losujZTabeli } = require('./data/origins_extended');
+const ORIGINS = require('./data/origins');
+const { rollTable, getAvailableTables, getTableDetails, hasTables, getOriginsWithTables } = require('./data/table_utils');
+const ORIGIN_TABLES = require('./data/origin_tables');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -374,34 +377,52 @@ app.get('/api/origins/:originId/tables', (req, res) => {
   try {
     const { originId } = req.params;
     
-    // Sprawdź czy pochodzenie istnieje w rozszerzonych danych
-    const pochodzenie = EXTENDED_ORIGINS[originId];
-    if (!pochodzenie) {
+    // Sprawdź czy pochodzenie ma tabele
+    if (!hasTables(originId)) {
       return res.status(404).json({ 
-        error: `Nieznane pochodzenie: ${originId}`,
-        dostepne: Object.keys(EXTENDED_ORIGINS)
+        error: `Pochodzenie ${originId} nie ma tabel losowania`,
+        dostepne: getOriginsWithTables()
       });
     }
     
-    // Sprawdź czy pochodzenie ma tabele
-    if (!pochodzenie.tabele) {
-      return res.status(404).json({ 
-        error: `Pochodzenie ${originId} nie ma tabel losowania`,
-        pochodzenie: {
-          id: pochodzenie.id,
-          nazwa: pochodzenie.nazwa,
-          status: pochodzenie.status
-        }
-      });
-    }
+    // Pobierz dostępne tabele jako obiekt z kluczami
+    const tabeleLista = getAvailableTables(originId);
+    const tabele = {};
+    tabeleLista.forEach(tabela => {
+      // Normalizuj klucz tabeli (usuń polskie znaki i spacje)
+      const key = tabela.klucz.toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/ą/g, 'a')
+        .replace(/ć/g, 'c')
+        .replace(/ę/g, 'e')
+        .replace(/ł/g, 'l')
+        .replace(/ń/g, 'n')
+        .replace(/ó/g, 'o')
+        .replace(/ś/g, 's')
+        .replace(/ź/g, 'z')
+        .replace(/ż/g, 'z');
+      
+      // Pobierz szczegóły tabeli z opcjami (używamy znormalizowanego klucza)
+      const tabelaDetails = getTableDetails(originId, key);
+      const opcje = Object.keys(tabelaDetails.wyniki).map(rzut => ({
+        rzut: parseInt(rzut),
+        wynik: tabelaDetails.wyniki[rzut].wynik
+      }));
+      
+      // Używamy znormalizowanego klucza tabeli, aby roll działał poprawnie
+      tabele[key] = {
+        ...tabela,
+        opcje: opcje
+      };
+    });
     
     res.json({
       pochodzenie: {
-        id: pochodzenie.id,
-        nazwa: pochodzenie.nazwa,
-        zrodlo: pochodzenie.zrodlo
+        id: originId,
+        nazwa: originId === 'czlowiek' ? 'Człowiek' : originId.charAt(0).toUpperCase() + originId.slice(1),
+        zrodlo: 'PG'
       },
-      tabele: pochodzenie.tabele
+      tabele: tabele
     });
     
   } catch (error) {
@@ -423,47 +444,61 @@ app.post('/api/origins/:originId/tables/:tableName/roll', (req, res) => {
   try {
     const { originId, tableName } = req.params;
     
-    // Sprawdź czy pochodzenie istnieje
-    const pochodzenie = EXTENDED_ORIGINS[originId];
-    if (!pochodzenie) {
-      return res.status(404).json({ 
-        error: `Nieznane pochodzenie: ${originId}`,
-        dostepne: Object.keys(EXTENDED_ORIGINS)
-      });
-    }
+    // Konwertuj nazwę tabeli z URL na klucz tabeli (normalizacja)
+    const tableKey = tableName.toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/ą/g, 'a')
+      .replace(/ć/g, 'c')
+      .replace(/ę/g, 'e')
+      .replace(/ł/g, 'l')
+      .replace(/ń/g, 'n')
+      .replace(/ó/g, 'o')
+      .replace(/ś/g, 's')
+      .replace(/ź/g, 'z')
+      .replace(/ż/g, 'z');
     
-    // Sprawdź czy tabela istnieje
-    if (!pochodzenie.tabele || !pochodzenie.tabele[tableName]) {
-      return res.status(404).json({ 
-        error: `Tabela ${tableName} nie istnieje dla pochodzenia ${originId}`,
-        dostepne_tabele: pochodzenie.tabele ? Object.keys(pochodzenie.tabele) : []
-      });
-    }
+    // Wykonaj losowanie z tabeli
+    const wynik = rollTable(originId, tableKey);
     
-    const tabela = pochodzenie.tabele[tableName];
-    
-    // Wykonaj losowanie
-    const wynik = losujZTabeli(tabela.typ, tabela);
+    // Pobierz szczegóły tabeli
+    const tabelaDetails = getTableDetails(originId, tableKey);
     
     res.json({
       pochodzenie: {
-        id: pochodzenie.id,
-        nazwa: pochodzenie.nazwa
+        id: originId,
+        nazwa: originId === 'czlowiek' ? 'Człowiek' : originId.charAt(0).toUpperCase() + originId.slice(1)
       },
       tabela: {
-        nazwa: tabela.nazwa,
-        typ: tabela.typ,
-        opis: tabela.opis
+        nazwa: tabelaDetails.nazwa,
+        typ: tabelaDetails.typ,
+        opis: tabelaDetails.opis
       },
-      wynik,
+      wynik: {
+        ...wynik,
+        wartosc_rzutu: parseInt(wynik.rzut)
+      },
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
-    res.status(400).json({
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
+    // Sprawdź typ błędu i zwróć odpowiedni status
+    if (error.message.includes('Nie znaleziono pochodzenia') || error.message.includes('Nieznane pochodzenie')) {
+      res.status(404).json({
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    } else if (error.message.includes('Nie znaleziono tabeli')) {
+      res.status(404).json({
+        error: error.message,
+        dostepne_tabele: getAvailableTables(originId),
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(400).json({
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 });
 
@@ -473,12 +508,12 @@ app.post('/api/origins/:originId/tables/:tableName/roll', (req, res) => {
  */
 app.get('/api/origins', (req, res) => {
   try {
-    const pochodzenia = Object.values(EXTENDED_ORIGINS).map(pochodzenie => ({
+    const pochodzenia = Object.values(ORIGINS).map(pochodzenie => ({
       id: pochodzenie.id,
       nazwa: pochodzenie.nazwa,
       zrodlo: pochodzenie.zrodlo,
-      ma_tabele: !!pochodzenie.tabele,
-      liczba_tabel: pochodzenie.tabele ? Object.keys(pochodzenie.tabele).length : 0,
+      ma_tabele: hasTables(pochodzenie.id),
+      liczba_tabel: hasTables(pochodzenie.id) ? getAvailableTables(pochodzenie.id).length : 0,
       status: pochodzenie.status,
       strona_zrodlowa: pochodzenie.strona_zrodlowa
     }));

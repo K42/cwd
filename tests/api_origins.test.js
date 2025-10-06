@@ -72,7 +72,7 @@ describe('API Pochodzeń - Sprint 2', () => {
       
       expect(response.body).toHaveProperty('error');
       expect(response.body).toHaveProperty('dostepne');
-      expect(response.body.error).toContain('Nieznane pochodzenie');
+      expect(response.body.error).toContain('nie ma tabel losowania');
     });
 
     test('powinien zwrócić 404 dla pochodzenia bez tabel', async () => {
@@ -93,16 +93,16 @@ describe('API Pochodzeń - Sprint 2', () => {
       expect(response.body).toHaveProperty('timestamp');
       
       expect(response.body.pochodzenie.id).toBe('czlowiek');
-      expect(response.body.tabela.nazwa).toBe('Człowiek: wiek');
+      expect(response.body.tabela.nazwa).toBe('Wiek');
       expect(response.body.tabela.typ).toBe('3k6');
       
       expect(response.body.wynik).toHaveProperty('rzut');
       expect(response.body.wynik).toHaveProperty('wynik');
-      expect(response.body.wynik).toHaveProperty('wartosc_rzutu');
+      expect(response.body.wynik).toHaveProperty('rzut');
       
       // Sprawdź czy wartość rzutu jest w prawidłowym zakresie dla 3k6 (3-18)
-      expect(response.body.wynik.wartosc_rzutu).toBeGreaterThanOrEqual(3);
-      expect(response.body.wynik.wartosc_rzutu).toBeLessThanOrEqual(18);
+      expect(response.body.wynik.rzut).toBeGreaterThanOrEqual(3);
+      expect(response.body.wynik.rzut).toBeLessThanOrEqual(18);
     });
 
     test('powinien wykonać losowanie z tabeli przeszłość', async () => {
@@ -112,7 +112,7 @@ describe('API Pochodzeń - Sprint 2', () => {
       
       expect(response.body.wynik).toHaveProperty('rzut');
       expect(response.body.wynik).toHaveProperty('wynik');
-      expect(response.body.wynik).toHaveProperty('wartosc_rzutu');
+      expect(response.body.wynik).toHaveProperty('rzut');
       
       // Sprawdź czy wartość rzutu jest w prawidłowym zakresie dla k20 (1-20)
       expect(response.body.wynik.wartosc_rzutu).toBeGreaterThanOrEqual(1);
@@ -125,7 +125,7 @@ describe('API Pochodzeń - Sprint 2', () => {
         .expect(404);
       
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Nieznane pochodzenie');
+      expect(response.body.error).toContain('Nie znaleziono pochodzenia');
     });
 
     test('powinien zwrócić 404 dla nieistniejącej tabeli', async () => {
@@ -153,8 +153,8 @@ describe('API Pochodzeń - Sprint 2', () => {
       
       // Sprawdź czy wszystkie wyniki mają prawidłowe wartości
       wyniki.forEach(wynik => {
-        expect(wynik.wartosc_rzutu).toBeGreaterThanOrEqual(3);
-        expect(wynik.wartosc_rzutu).toBeLessThanOrEqual(18);
+        expect(wynik.rzut).toBeGreaterThanOrEqual(3);
+        expect(wynik.rzut).toBeLessThanOrEqual(18);
         expect(wynik.wynik).toBeDefined();
         expect(typeof wynik.wynik).toBe('string');
         expect(wynik.wynik.length).toBeGreaterThan(0);
@@ -230,7 +230,7 @@ describe('API Pochodzeń - Sprint 2', () => {
       
       expect(response.body.wynik).toHaveProperty('rzut');
       expect(response.body.wynik).toHaveProperty('wynik');
-      expect(response.body.wynik).toHaveProperty('wartosc_rzutu');
+      expect(response.body.wynik).toHaveProperty('rzut');
     });
   });
 });

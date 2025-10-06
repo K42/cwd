@@ -118,7 +118,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/2'); // POPRAWIONE zgodnie z PG
       expect(postac.atrybuty_drugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
       expect(postac.atrybuty_drugorzedne.predkosc).toBe(10); // POPRAWIONE z 12 zgodnie z PG
-      expect(postac.jezyki).toContain('gobliński');
+      expect(postac.jezyki).toContain('elficki');
     });
 
     test('powinien utworzyć chochlika z bardzo małym rozmiarem', () => {

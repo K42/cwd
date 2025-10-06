@@ -38,19 +38,19 @@ const ORIGINS = {
     zrodlo: 'PG', // Podręcznik Główny
     opis: 'Mechaniczne istoty stworzone przez dawnych magów, poszukujące własnej tożsamości.',
     atrybuty_bazowe: {
-      sila: 11,
-      zrecznosc: 8,
-      intelekt: 10,
-      wola: 11
+      sila: 9, // POPRAWIONE z PG str. 874 (nielosowe wartości)
+      zrecznosc: 8, // POPRAWIONE z PG str. 874
+      intelekt: 9, // POPRAWIONE z PG str. 874
+      wola: 9 // POPRAWIONE z PG str. 874
     },
-    rozmiar: '1', // Uproszczone (PG: zmienny 1/2, 1, lub 2 wg formy)
-    predkosc: 10,
-    jezyki: ['wspólny', 'mechaniczny'],
+    rozmiar: '1', // PG str. 884
+    predkosc: 8, // POPRAWIONE z PG str. 884
+    jezyki: ['wspólny'],
     profesje: ['dowolna'],
     cechy_specjalne: {
-      konstrukt: 'Nie oddychasz, nie śpisz, nie jesz. Odporny na choroby i trucizny.',
-      mechaniczna_precyzja: 'Rzuty na atak i obrażenia są zawsze traktowane jako minimum 10.',
-      naprawa: 'Możesz naprawić się w trakcie krótkiego odpoczynku.'
+      niewrazliwosc: 'Niewrażliwość na uśpienie i wyczerpanie, a także na choroby i trucizny, i pochodzące od nich obrażenia.',
+      klucz: 'Gdzieś na twoim ciele, w miejscu, do którego sam nie zdołasz sięgnąć, znajduje się klucz. Gdy zostanie nakręcony i obraca się, na potrzeby mechaniki gry jesteś uznawany za stworzenie. Gdy się zatrzyma, liczysz się jako obiekt.',
+      forma_obiektu: 'Gdy jesteś obiektem, masz Obronę 5, Zdrowie 15, Prędkość 0 i nie możesz podejmować akcji.'
     },
     poziom_4: {
       zdrowie: '+5',
@@ -65,18 +65,20 @@ const ORIGINS = {
     zrodlo: 'PG', // Podręcznik Główny
     opis: 'Małe, zwinne istoty o wielkiej przebiegłości i zamiłowaniu do mechaniki.',
     atrybuty_bazowe: {
-      sila: 8,
-      zrecznosc: 12,
-      intelekt: 11,
-      wola: 9
+      sila: 8, // PG str. 1039
+      zrecznosc: 12, // PG str. 1039
+      intelekt: 10, // POPRAWIONE z PG str. 1039
+      wola: 9 // PG str. 1039
     },
-    rozmiar: '1/2', // POPRAWIONE z '1' zgodnie z PG str. 1047
-    predkosc: 10, // POPRAWIONE z 12 zgodnie z PG str. 1047
-    jezyki: ['wspólny', 'gobliński'],
+    rozmiar: '1/2', // PG str. 1047
+    predkosc: 10, // PG str. 1047
+    jezyki: ['wspólny', 'elficki'], // POPRAWIONE z PG str. 1051
     profesje: ['dowolna'],
     cechy_specjalne: {
-      przebiegłość: 'Gdy wykonujesz test Zręczności lub Intelektu, możesz rzucić dodatkową k6.',
-      mechaniczny_geniusz: 'Możesz naprawiać i modyfikować mechaniczne urządzenia.'
+      niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
+      wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze jak w oświetlonych.',
+      przebiegłość: 'Testy Zręczności na ukrywanie się lub ciche poruszanie wykonujesz z 1 ułatwieniem.'
     },
     poziom_4: {
       zdrowie: '+4',
@@ -91,18 +93,23 @@ const ORIGINS = {
     zrodlo: 'PG', // Podręcznik Główny
     opis: 'Niskie, krępe istoty znane z wytrzymałości i umiejętności rzemieślniczych.',
     atrybuty_bazowe: {
-      sila: 10, // POPRAWIONE z 11 zgodnie z PG str. 1200
-      zrecznosc: 9,
-      intelekt: 10,
-      wola: 10
+      sila: 10, // PG str. 1200
+      zrecznosc: 9, // PG str. 1200
+      intelekt: 10, // PG str. 1200
+      wola: 10 // PG str. 1200
     },
-    rozmiar: '1/2', // POPRAWIONE z '1' zgodnie z PG str. 1210
-    predkosc: 8, // POPRAWIONE z 10 zgodnie z PG str. 1210
-    jezyki: ['wspólny', 'krasnoludzki'],
+    rozmiar: '1/2', // PG str. 1210
+    predkosc: 8, // PG str. 1210
+    jezyki: ['wspólny', 'krasnoludzki'], // PG str. 1214
     profesje: ['dowolna'],
     cechy_specjalne: {
-      widzenie_w_ciemności: 'Widzisz w ciemności do 20 metrów.',
-      rzemiosło: 'Możesz tworzyć i naprawiać broń, zbroję i narzędzia.'
+      widzenie_w_ciemności: 'W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.',
+      znienawidzony_wrog: 'Wybierz rodzaj stworzenia z tabeli Znienawidzone stworzenia. Wszystkie rzuty na atak przeciwko stworzeniom tego typu wykonujesz z 1 ułatwieniem.',
+      naturalna_odpornosc: 'Otrzymujesz tylko połowę obrażeń od trucizny. Testy na uniknięcie lub pozbycie się zatrucia wykonujesz z 1 ułatwieniem.'
+    },
+    poziom_4: {
+      zdrowie: '+6',
+      opcje: ['1 zaklęcie', 'talent Nie do zdarcia']
     },
     strona_zrodlowa: 18
   },
@@ -113,18 +120,24 @@ const ORIGINS = {
     zrodlo: 'PG', // Podręcznik Główny
     opis: 'Istoty zmienione przez magię, poszukujące swojego miejsca w świecie.',
     atrybuty_bazowe: {
-      sila: 9, // POPRAWIONE z 10 zgodnie z PG str. 1341
-      zrecznosc: 10, // POPRAWIONE z 9 zgodnie z PG str. 1341
-      intelekt: 10, // POPRAWIONE z 11 zgodnie z PG str. 1341
-      wola: 10, // POPRAWIONE z 9 zgodnie z PG str. 1341
+      sila: 9, // PG str. 1341
+      zrecznosc: 10, // PG str. 1341
+      intelekt: 10, // PG str. 1341
+      wola: 10 // PG str. 1341
     },
-    rozmiar: '1', // Poprawne zgodnie z PG str. 1349
-    predkosc: 10,
-    jezyki: ['wspólny'],
+    rozmiar: '1', // PG str. 1349
+    predkosc: 10, // PG str. 1349
+    jezyki: ['wspólny'], // PG str. 1353
     profesje: ['dowolna'],
     cechy_specjalne: {
-      odpornosc_na_magie: 'Częściowa odporność na efekty magiczne.',
-      nietypowy_wyglad: 'Twój wygląd wskazuje na zmiany wywołane magią.'
+      niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
+      wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze jak w oświetlonych.',
+      kradziez_tozsamosci: 'Możesz wykorzystać akcję, by upodobnić się do innej żywej istoty, którą widzisz w bliskim zasięgu. Cel musi mieć Rozmiar 1 lub 1/2 i być humanoidem składającym się z ciała i krwi.'
+    },
+    poziom_4: {
+      zdrowie: '+4',
+      opcje: ['1 zaklęcie', 'talent Prymat sobowtóra']
     },
     strona_zrodlowa: 20
   },
@@ -132,30 +145,124 @@ const ORIGINS = {
   ork: {
     id: 'ork',
     nazwa: 'Ork',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'PG', // POPRAWIONE - Ork jest w PG
     opis: 'Silne, wojownicze istoty o dzikiej naturze i instynktach drapieżnika.',
     atrybuty_bazowe: {
-      sila: 12,
-      zrecznosc: 9,
-      intelekt: 8,
+      sila: 11, // POPRAWIONE z PG str. 1484
+      zrecznosc: 10, // POPRAWIONE z PG str. 1484
+      intelekt: 9, // POPRAWIONE z PG str. 1484
+      wola: 9 // POPRAWIONE z PG str. 1484
+    },
+    rozmiar: '1', // PG str. 1492
+    predkosc: 12, // POPRAWIONE z PG str. 1492
+    jezyki: ['wspólny', 'mroczna_mowa'], // POPRAWIONE z PG str. 1496
+    profesje: ['dowolna'],
+    cechy_specjalne: {
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze jak w oświetlonych.',
+      splugawienie: 'Zaczynasz grę z 1 punktem Splugawienia.'
+    },
+    poziom_4: {
+      zdrowie: '+6',
+      opcje: ['1 zaklęcie', 'talent Furia']
+    },
+    strona_zrodlowa: 22
+  },
+
+  // Straszliwe Piękno - Nowe pochodzenia faerie
+  chochlik: {
+    id: 'chochlik',
+    nazwa: 'Chochlik',
+    zrodlo: 'SP', // Straszliwe Piękno
+    opis: 'Maleńkie istoty faerie, które uwielbiają płatać figle i psocić.',
+    atrybuty_bazowe: {
+      sila: 5,
+      zrecznosc: 12,
+      intelekt: 10,
+      wola: 8
+    },
+    rozmiar: '1/8',
+    predkosc: 10,
+    jezyki: ['elficki'],
+    profesje: ['dowolna'],
+    cechy_specjalne: {
+      niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
+      trzepot: 'Możesz poruszać się lotem, ale jeśli wzniesiesz się na więcej niż 5 metrów nad ziemię, spadasz.',
+      naturalna_niewidzialnosc: 'Jesteś niewidzialny dla większości stworzeń poza innymi chochlikami. Zwierzęta, demony, faerie, potwory, dzieci, istoty o wartości Intelektu 7 lub niższej oraz te z 5 lub więcej punktami Szaleństwa mogą wyraźnie cię widzieć.',
+      rozblysk: 'Podczas swojej tury możesz wykorzystać akcję, aby stać się widoczny i rozświetlić obszar w promieniu 2 metrów od siebie.',
+      wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze, jak w oświetlonych.',
+      tyci: 'Twoje ataki bronią zadają połowę obrażeń. Za każdym razem, kiedy opis ścieżki nakazuje ci podnieść swoje Zdrowie, zwiększasz je jedynie o połowę podanej wartości.'
+    },
+    poziom_4: {
+      zdrowie: '+2',
+      opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
+    },
+    strona_zrodlowa: 7
+  },
+
+  elf: {
+    id: 'elf',
+    nazwa: 'Elf',
+    zrodlo: 'SP', // Straszliwe Piękno
+    opis: 'Wysokie faerie, panowie i damy z ukrytych królestw.',
+    atrybuty_bazowe: {
+      sila: 9,
+      zrecznosc: 10,
+      intelekt: 10,
+      wola: 9
+    },
+    wybor_atrybutu: '+1 do dwóch wybranych atrybutów',
+    rozmiar: '1',
+    predkosc: 12,
+    jezyki: ['wspólny', 'wysoki_archaik', 'elficki'],
+    profesje: ['dowolna'],
+    cechy_specjalne: {
+      niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze, jak w oświetlonych.',
+      ochrona_przed_magia: 'Elfy otrzymują tylko połowę obrażeń zadawanych przez zaklęcia, a wszystkie testy w celu odparcia ich efektów wykonują z 1 ułatwieniem.',
+      charyzmatyczna_aura: 'Twoja magiczna natura pozwala ci wpływać na to, jak inni cię postrzegają i zachowują się w twojej obecności.',
+      wrażliwosc_na_zelazo: 'Jesteś osłabiony, kiedy dotykasz żelaza. Dodatkowo tracisz Ochronę przed magią, dopóki pozostajesz z nim w kontakcie i na 1 minutę po jego przerwaniu.'
+    },
+    poziom_4: {
+      zdrowie: '+3',
+      opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
+    },
+    strona_zrodlowa: 9
+  },
+
+  hobgoblin: {
+    id: 'hobgoblin',
+    nazwa: 'Hobgoblin',
+    zrodlo: 'SP', // Straszliwe Piękno
+    opis: 'Szeregowi żołnierze w armiach magicznych krain faerie.',
+    atrybuty_bazowe: {
+      sila: 11,
+      zrecznosc: 10,
+      intelekt: 9,
       wola: 11
     },
     rozmiar: '1',
     predkosc: 10,
-    jezyki: ['wspólny', 'orki'],
-    profesje: ['dowolna'],
+    jezyki: ['elficki'],
+    profesje: ['wojenna'],
     cechy_specjalne: {
-      naturalna_zbroja: 'Obrona +1 dzięki grubej skórze.',
-      zmysły_drapieznika: 'Widzenie w ciemności i wyczulony węch.'
+      niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
+      wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze, jak w oświetlonych.',
+      szal: 'W trakcie walki rzuć k6 pod koniec każdej rundy, o ile nie jesteś ani obezwładniony, ani pod wpływem tego talentu. Przy wyniku 6 wpadasz w szał, który trwa przez 1 minutę.'
     },
-    strona_zrodlowa: 22
+    poziom_4: {
+      zdrowie: '+5',
+      opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
+    },
+    strona_zrodlowa: 14
   },
 
   // Suplement Władcy Demonów
   faun: {
     id: 'faun',
     nazwa: 'Faun',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Istoty o kozim wyglądzie, znane z zamiłowania do muzyki i natury.',
     atrybuty_bazowe: {
       sila: 9,
@@ -177,7 +284,7 @@ const ORIGINS = {
   niziol: {
     id: 'niziol',
     nazwa: 'Niziołek',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Małe, spokojne istoty ceniące sobie komfort i dobre jedzenie.',
     atrybuty_bazowe: {
       sila: 8,
@@ -200,7 +307,7 @@ const ORIGINS = {
   chochlik: {
     id: 'chochlik',
     nazwa: 'Chochlik',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Maleńkie istoty magiczne, znane z psot i niezwykłych mocy.',
     atrybuty_bazowe: {
       sila: 6,
@@ -223,7 +330,7 @@ const ORIGINS = {
   elf: {
     id: 'elf',
     nazwa: 'Elf',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Długowieczne istoty o niezwykłej urodzie i zdolnościach magicznych.',
     atrybuty_bazowe: {
       sila: 9,
@@ -246,7 +353,7 @@ const ORIGINS = {
   hobgoblin: {
     id: 'hobgoblin',
     nazwa: 'Hobgoblin',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Większe od goblinów, znane z dyscypliny i umiejętności wojskowych.',
     atrybuty_bazowe: {
       sila: 11,
@@ -269,7 +376,7 @@ const ORIGINS = {
   fomor: {
     id: 'fomor',
     nazwa: 'Fomor',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Potworne istoty z głębin, zmienione przez ciemne moce.',
     atrybuty_bazowe: {
       sila: 12,
@@ -292,7 +399,7 @@ const ORIGINS = {
   niedzwiedziadlo: {
     id: 'niedzwiedziadlo',
     nazwa: 'Niedźwiedziadło',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Istoty o niedźwiedzim wyglądzie, znane z siły i dzikości.',
     atrybuty_bazowe: {
       sila: 13,
@@ -315,7 +422,7 @@ const ORIGINS = {
   warg: {
     id: 'warg',
     nazwa: 'Warg',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Wilcze istoty o niezwykłej zwinności i zdolnościach tropienia.',
     atrybuty_bazowe: {
       sila: 10,
@@ -337,7 +444,7 @@ const ORIGINS = {
   inkarnacja: {
     id: 'inkarnacja',
     nazwa: 'Inkarnacja',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Istoty z innych wymiarów, przybyłe na ten świat.',
     atrybuty_bazowe: {
       sila: 10,
@@ -360,7 +467,7 @@ const ORIGINS = {
   kambion: {
     id: 'kambion',
     nazwa: 'Kambion',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Hybrydy ludzi i demonów, noszące w sobie mroczną moc.',
     atrybuty_bazowe: {
       sila: 11,
@@ -383,7 +490,7 @@ const ORIGINS = {
   jotunn: {
     id: 'jotunn',
     nazwa: 'Jötunn',
-    zrodlo: null, // Nie zweryfikowane w PG
+    zrodlo: 'SP', // Straszliwe Piękno
     opis: 'Potężni giganci z północnych krain, znani z siły i honoru bojowego.',
     atrybuty_bazowe: {
       sila: 12,
