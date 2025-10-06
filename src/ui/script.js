@@ -2846,8 +2846,8 @@ function updateSelectedProfessions() {
     const prof = dostepneProfesje.find(p => p.id === id);
     return prof ? `
       <div class="selected-item">
-        ${prof.nazwa}
         <button class="remove-btn" onclick="removeProfession('${id}')">×</button>
+        ${prof.nazwa}
       </div>
     ` : '';
   }).join('');
@@ -3002,8 +3002,8 @@ function updateSelectedCurios() {
     const curio = dostepneKurioza.find(c => c.id === id);
     return curio ? `
       <div class="selected-item">
-        ${curio.nazwa}
         <button class="remove-btn" onclick="removeCurio('${id}')">×</button>
+        ${curio.nazwa}
       </div>
     ` : '';
   }).join('');
