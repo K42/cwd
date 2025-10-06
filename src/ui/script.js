@@ -228,14 +228,33 @@ async function zaladujSciezkiDoKafelkow() {
 function renderPathSectionsVisibility() {
   const can3 = wybranyPoziom >= 3;
   const can7 = wybranyPoziom >= 7;
+  const g1 = document.getElementById('path-grid-1');
+  const s1 = document.getElementById('path-summary-1');
   const g3 = document.getElementById('path-grid-3');
   const s3 = document.getElementById('path-summary-3');
   const g7 = document.getElementById('path-grid-7');
   const s7 = document.getElementById('path-summary-7');
-  if (g3) g3.style.opacity = can3 ? '1' : '0.5';
-  if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
-  if (g7) g7.style.opacity = can7 ? '1' : '0.5';
-  if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
+  
+  // Dla poziomu 0 ukryj wszystkie sekcje ścieżek
+  if (wybranyPoziom === 0) {
+    if (g1) g1.style.display = 'none';
+    if (s1) s1.style.display = 'none';
+    if (g3) g3.style.display = 'none';
+    if (s3) s3.style.display = 'none';
+    if (g7) g7.style.display = 'none';
+    if (s7) s7.style.display = 'none';
+  } else {
+    // Pokaż sekcję nowicjusza dla poziomów > 0
+    if (g1) g1.style.display = 'block';
+    if (s1) s1.style.display = 'block';
+    
+    // Sekcje eksperta i mistrza
+    if (g3) g3.style.opacity = can3 ? '1' : '0.5';
+    if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
+    if (g7) g7.style.opacity = can7 ? '1' : '0.5';
+    if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
+  }
+  
   updateStep3NextButton();
 }
 
@@ -333,6 +352,13 @@ function applyPathBenefits({ poziomWyboru, sciezka }) {
 function updateStep3NextButton() {
   const btn = document.getElementById('btn-next-3');
   if (!btn) return;
+  
+  // Dla poziomu 0 nie wymagaj żadnych ścieżek
+  if (wybranyPoziom === 0) {
+    btn.disabled = false;
+    return;
+  }
+  
   const hasNovice = !!wybraneSciezki.nowicjusz;
   const needExpert = wybranyPoziom >= 3;
   const needMaster = wybranyPoziom >= 7;
@@ -1289,6 +1315,9 @@ function goToStep(stepNumber) {
     if (!wybranePochodzenie) return;
   }
   if (stepNumber === 4) {
+    // Dla poziomu 0 nie wymagaj żadnych ścieżek
+    if (wybranyPoziom === 0) return;
+    
     // Wymagane ścieżki zgodnie z poziomem
     const needExpert = wybranyPoziom >= 3;
     const needMaster = wybranyPoziom >= 7;
