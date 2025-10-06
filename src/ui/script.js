@@ -4,18 +4,80 @@
 
 let biezacaPostac = null;
 let wybranePochodzenie = null;
-let wybranyPoziom = 1; // Gra zaczyna się od poziomu 1, nie ma poziomu 0
+let wybranyPoziom = 0; // Gra zaczyna się od poziomu 0
 let dostepnePochodzenia = [];
 let wynikiTabel = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
+let wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
+let przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
+let wybraneProfesje = [];
+let wybraneKurioza = [];
+let dostepneProfesje = [];
+let dostepneKurioza = [];
+let wylosowaneSrebrniki = null; // 2k6 za każdy poziom powyżej 0
+let liczbaKuriozow = 0; // Po 1 za poziomy wyboru ścieżek: 1, 3, 7
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
   await zaladujOpcje();
   await zaladujPoziomy();
   inicjalizujPoziomy();
+  await zaladujSciezkiDoKafelkow();
+  await zaladujProfesjeIKurioza();
   
   // Inicjalizuj system pomocy
   initializeHelpSystem();
+
+  // Handlery zwijania/rozwijania list
+  const btnToggleProf = document.getElementById('btn-toggle-professions');
+  const profGrid = document.getElementById('professions-grid');
+  if (btnToggleProf && profGrid) {
+    btnToggleProf.addEventListener('click', () => {
+      const expanded = btnToggleProf.getAttribute('data-expanded') === 'true';
+      btnToggleProf.setAttribute('data-expanded', expanded ? 'false' : 'true');
+      btnToggleProf.textContent = expanded ? 'Rozwiń' : 'Zwiń';
+      profGrid.style.display = expanded ? 'none' : 'grid';
+    });
+  }
+  const btnToggleCur = document.getElementById('btn-toggle-curios');
+  const curGrid = document.getElementById('curios-grid');
+  if (btnToggleCur && curGrid) {
+    btnToggleCur.addEventListener('click', () => {
+      const expanded = btnToggleCur.getAttribute('data-expanded') === 'true';
+      btnToggleCur.setAttribute('data-expanded', expanded ? 'false' : 'true');
+      btnToggleCur.textContent = expanded ? 'Rozwiń' : 'Zwiń';
+      curGrid.style.display = expanded ? 'none' : 'grid';
+    });
+  }
+
+  // Centralne losowanie
+  const btnRandProf = document.getElementById('btn-randomize-professions');
+  if (btnRandProf) {
+    btnRandProf.addEventListener('click', () => losujProfesjeCentralnie());
+  }
+  const btnRandCur = document.getElementById('btn-randomize-curios');
+  if (btnRandCur) {
+    btnRandCur.addEventListener('click', () => losujKuriozaCentralnie());
+  }
+
+  // Handlery wyboru ścieżek i zasobów - nowy system kafelków
+  // Event listenery dla ścieżek są dodawane dynamicznie w renderPathTile()
+  const btnWealth = document.getElementById('btn-roll-wealth');
+  if (btnWealth) {
+    btnWealth.addEventListener('click', () => {
+      if (wybranyPoziom <= 0) return;
+      // 2k6 srebrników za każdy poziom powyżej 0
+      let suma = 0;
+      const rzuty = [];
+      for (let i = 0; i < wybranyPoziom * 2; i++) {
+        const r = Math.floor(Math.random() * 6) + 1;
+        rzuty.push(r);
+        suma += r;
+      }
+      wylosowaneSrebrniki = suma;
+      aktualizujWealthUI(rzuty, suma);
+      aktualizujPodgladPostaci();
+    });
+  }
 
   // Toggle własnych atrybutów
   document.getElementById('domyslne-atrybuty').addEventListener('change', (e) => {
@@ -67,16 +129,18 @@ async function zaladujOpcje() {
     // Generowanie kafelków pochodzeń
     generujKafelkiPochodzen(dostepnePochodzenia);
 
-    // Wypełnianie selecta ścieżek
+    // Wypełnianie selecta ścieżek (jeśli istnieje - dla kompatybilności wstecznej)
     const sciezkaSelect = document.getElementById('sciezka');
-    sciezkaSelect.innerHTML = '<option value="">Brak ścieżki</option>';
+    if (sciezkaSelect) {
+      sciezkaSelect.innerHTML = '<option value="">Brak ścieżki</option>';
 
-    opcje.sciezki.forEach(id => {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-      sciezkaSelect.appendChild(option);
-    });
+      opcje.sciezki.forEach(id => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = id.charAt(0).toUpperCase() + id.slice(1);
+        sciezkaSelect.appendChild(option);
+      });
+    }
 
   } catch (error) {
     pokazBlad(`Nie można załadować opcji: ${  error.message}`);
@@ -109,17 +173,222 @@ function inicjalizujPoziomy() {
   levelInputs.forEach(input => {
     input.addEventListener('change', async (e) => {
       wybranyPoziom = parseInt(e.target.value);
+      aktualizujWidocznoscSciezek(wybranyPoziom);
       aktualizujSciezkiPoziomu(wybranyPoziom);
       aktualizujTytulSekcjiSciezek(wybranyPoziom);
+      aktualizujWealthSection(wybranyPoziom);
+      aktualizujOriginBenefits(wybranyPoziom);
+
+      // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
+      // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
+      renderPathSectionsVisibility();
+      await renderPathSection(1);
+      await renderPathSection(3);
+      await renderPathSection(7);
+
       // Załaduj korzyści dla wybranego poziomu
       await zaladujKorzysciPoziomu(wybranyPoziom);
     });
   });
 
-  // Inicjalizuj ścieżki dla poziomu 1 (domyślnego - gra nie ma poziomu 0)
-  aktualizujSciezkiPoziomu(1);
-  // Załaduj korzyści dla poziomu 1
-  zaladujKorzysciPoziomu(1);
+  // Inicjalizuj ścieżki dla poziomu 0 (domyślnego)
+  aktualizujWidocznoscSciezek(0);
+  aktualizujSciezkiPoziomu(0);
+  aktualizujWealthSection(0);
+  aktualizujOriginBenefits(0);
+  // Załaduj korzyści dla poziomu 0
+  zaladujKorzysciPoziomu(0);
+
+  // Breadcrumbs
+  const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
+  crumbs.forEach(c => {
+    c.addEventListener('click', () => {
+      const step = parseInt(c.getAttribute('data-step'));
+      goToStep(step);
+    });
+  });
+}
+
+/**
+ * Ładuje i renderuje kafelki ścieżek w Kroku 3
+ */
+async function zaladujSciezkiDoKafelkow() {
+  try {
+    renderPathSectionsVisibility();
+    await renderPathSection(1);
+    await renderPathSection(3);
+    await renderPathSection(7);
+    updateStep3NextButton();
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Nie udało się załadować ścieżek:', e);
+  }
+}
+
+function renderPathSectionsVisibility() {
+  const can3 = wybranyPoziom >= 3;
+  const can7 = wybranyPoziom >= 7;
+  const g3 = document.getElementById('path-grid-3');
+  const s3 = document.getElementById('path-summary-3');
+  const g7 = document.getElementById('path-grid-7');
+  const s7 = document.getElementById('path-summary-7');
+  if (g3) g3.style.opacity = can3 ? '1' : '0.5';
+  if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
+  if (g7) g7.style.opacity = can7 ? '1' : '0.5';
+  if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
+  updateStep3NextButton();
+}
+
+async function renderPathSection(poziomWyboru) {
+  const gridId = `path-grid-${poziomWyboru}`;
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = '';
+  const resp = await fetch(`/api/paths/${poziomWyboru}`);
+  if (!resp.ok) return;
+  const data = await resp.json();
+  const paths = data.sciezki || [];
+  for (const p of paths) {
+    const tile = renderPathTile(p, poziomWyboru);
+    grid.appendChild(tile);
+  }
+  updateStep3NextButton();
+}
+
+function renderPathTile(path, poziomWyboru) {
+  const canPick = wybranyPoziom >= poziomWyboru;
+  const selectedId = poziomWyboru === 1 ? wybraneSciezki.nowicjusz : (poziomWyboru === 3 ? wybraneSciezki.ekspert : wybraneSciezki.mistrz);
+  const isSelected = selectedId === path.id;
+  const tile = document.createElement('div');
+  tile.className = 'tile path-tile' + (isSelected ? ' selected' : '');
+  tile.style.opacity = canPick ? '1' : '0.5';
+  tile.innerHTML = `
+    <div class="tile-header">
+      <div>
+        <div class="tile-title">${path.nazwa}</div>
+        <small>${path.zrodlo || 'PG'} • Poziom wyboru ${poziomWyboru}</small>
+      </div>
+    </div>
+    <div class="tile-body">
+      ${renderPathBenefitsList(path, poziomWyboru)}
+    </div>
+    <div class="tile-footer">
+      <button class="btn-primary" ${canPick ? '' : 'disabled'} data-path-id="${path.id}" data-pick-level="${poziomWyboru}">${isSelected ? 'Wybrano' : 'Wybierz tę ścieżkę'}</button>
+    </div>
+  `;
+  const btn = tile.querySelector('button');
+  if (btn && canPick) {
+    btn.addEventListener('click', () => {
+      applyPathBenefits({ poziomWyboru, sciezka: path });
+      // Po wyborze prze-renderuj sekcję, aby podświetlić kafel
+      renderPathSection(poziomWyboru);
+    });
+  }
+  return tile;
+}
+
+function renderPathBenefitsList(path, poziomWyboru) {
+  const pkt = (path.korzysci && path.korzysci[poziomWyboru]) || {};
+  const talenty = (pkt.talenty || []).map(t => `<li><strong>Talent:</strong> ${t.nazwa || t} – ${t.opis || ''}</li>`).join('');
+  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? '(' + z.tradycja + ')' : ''}</li>`).join('');
+  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Biegłość:</strong> ${b}</li>`).join('');
+  const sprz = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
+  return `
+    <div class="benefit-category"><h5>Korzyści poziomu ${poziomWyboru}</h5>
+      <ul class="path-benefits">
+        ${talenty}
+        ${zaklecia}
+        ${modAttr?`<li><strong>Modyfikatory atrybutów:</strong> ${modAttr}</li>`:''}
+        ${modSec?`<li><strong>Modyfikatory drugorzędne:</strong> ${modSec}</li>`:''}
+        ${biegl}
+        ${sprz}
+      </ul>
+    </div>`;
+}
+
+function applyPathBenefits({ poziomWyboru, sciezka }) {
+  // Usuń poprzednie benefity z tego progu
+  if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
+    odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
+  }
+  // Zapisz wybór ścieżki w stanie uproszczonym
+  if (poziomWyboru === 1) wybraneSciezki.nowicjusz = sciezka.id;
+  if (poziomWyboru === 3) wybraneSciezki.ekspert = sciezka.id;
+  if (poziomWyboru === 7) wybraneSciezki.mistrz = sciezka.id;
+
+  // Zastosuj nowy pakiet korzyści
+  const pkt = (sciezka.korzysci && sciezka.korzysci[poziomWyboru]) || {};
+  przyznaneKorzysciZeSciezek[poziomWyboru] = { sciezkaId: sciezka.id, poziomWyboru, pkt };
+  dodajBenefity(pkt);
+  aktualizujPodgladPostaci();
+  renderPathSummary(poziomWyboru, sciezka);
+  updateStep3NextButton();
+}
+
+/**
+ * Włącza przycisk "Dalej" w Kroku 3, gdy wybrane są wymagane ścieżki
+ */
+function updateStep3NextButton() {
+  const btn = document.getElementById('btn-next-3');
+  if (!btn) return;
+  const hasNovice = !!wybraneSciezki.nowicjusz;
+  const needExpert = wybranyPoziom >= 3;
+  const needMaster = wybranyPoziom >= 7;
+  const hasExpert = !!wybraneSciezki.ekspert;
+  const hasMaster = !!wybraneSciezki.mistrz;
+  const canProceed = hasNovice && (!needExpert || hasExpert) && (!needMaster || hasMaster);
+  btn.disabled = !canProceed;
+}
+
+function renderPathSummary(poziomWyboru, sciezka) {
+  const box = document.getElementById(`path-summary-${poziomWyboru}`);
+  if (!box) return;
+  box.innerHTML = `<div class="inline-box">Wybrana ścieżka: <strong>${sciezka.nazwa}</strong> – zastosowano korzyści poziomu ${poziomWyboru}</div>`;
+}
+
+function dodajBenefity(pkt) {
+  // Modyfikatory atrybutów podstawowych
+  if (pkt.mod_atrybuty) {
+    const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
+    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
+      const el = document.getElementById(map[k]);
+      if (el) el.textContent = (parseInt(el.textContent)||0) + v;
+    });
+  }
+  // Atrybuty drugorzędne – przeliczenie przez naszą funkcję
+  const pochodzenie = wybranePochodzenie && dostepnePochodzenia.find(p=>p.id===wybranePochodzenie);
+  if (pochodzenie) {
+    const atrybuty = {
+      sila: parseInt(document.getElementById('sila-final').textContent),
+      zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
+      intelekt: parseInt(document.getElementById('intelekt-final').textContent),
+      wola: parseInt(document.getElementById('wola-final').textContent)
+    };
+    aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
+  }
+}
+
+function odejmijBenefity(prev) {
+  const pkt = prev.pkt || {};
+  if (pkt.mod_atrybuty) {
+    const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
+    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
+      const el = document.getElementById(map[k]);
+      if (el) el.textContent = (parseInt(el.textContent)||0) - v;
+    });
+  }
+  const pochodzenie = wybranePochodzenie && dostepnePochodzenia.find(p=>p.id===wybranePochodzenie);
+  if (pochodzenie) {
+    const atrybuty = {
+      sila: parseInt(document.getElementById('sila-final').textContent),
+      zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
+      intelekt: parseInt(document.getElementById('intelekt-final').textContent),
+      wola: parseInt(document.getElementById('wola-final').textContent)
+    };
+    aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
+  }
 }
 
 /**
@@ -127,27 +396,8 @@ function inicjalizujPoziomy() {
  * @param {number} poziom - Wybrany poziom postaci
  */
 async function aktualizujSciezkiPoziomu(poziom) {
-  try {
-    const response = await fetch(`/api/paths/${poziom}`);
-    const data = await response.json();
-        
-    const sciezkaSelect = document.getElementById('sciezka-nowicjusza');
-    if (sciezkaSelect && data.sciezki) {
-      sciezkaSelect.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-            
-      data.sciezki.forEach(sciezka => {
-        const option = document.createElement('option');
-        option.value = sciezka.id;
-        option.textContent = sciezka.nazwa;
-        sciezkaSelect.appendChild(option);
-      });
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Błąd ładowania ścieżek:', error);
-    // Fallback do domyślnych ścieżek
-    aktualizujSciezkiFallback(poziom);
-  }
+  // Nowy system kafelków - funkcja jest już obsługiwana przez renderPathSectionsVisibility()
+  // i renderPathSection() w głównym flow
 }
 
 /**
@@ -155,63 +405,59 @@ async function aktualizujSciezkiPoziomu(poziom) {
  * @param {number} poziom - Wybrany poziom postaci
  */
 function aktualizujSciezkiFallback(poziom) {
-  const sciezkaSelect = document.getElementById('sciezka-nowicjusza');
-  if (!sciezkaSelect) return;
+  const selNov = document.getElementById('sciezka-nowicjusza');
+  const selExp = document.getElementById('sciezka-eksperta');
+  const selMas = document.getElementById('sciezka-mistrza');
+  if (selNov) selNov.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
+  if (selExp) selExp.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
+  if (selMas) selMas.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
 
-  sciezkaSelect.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-    
-  const sciezkiPoziomu = {
-    1: [
-      { id: 'wojownik', nazwa: 'Wojownik' }, 
-      { id: 'mag', nazwa: 'Mag' }, 
-      { id: 'kapłan', nazwa: 'Kapłan' }, 
-      { id: 'łotr', nazwa: 'Łotr' }
-    ],
-    2: [
-      { id: 'kontynuacja_nowicjusza', nazwa: 'Kontynuacja Nowicjusza' }
-    ],
-    3: [
-      { id: 'berserker', nazwa: 'Berserker' }, 
-      { id: 'czarodziej', nazwa: 'Czarodziej' }, 
-      { id: 'uzdrowiciel', nazwa: 'Uzdrowiciel' }, 
-      { id: 'zabójca', nazwa: 'Zabójca' }
-    ],
-    4: [
-      { id: 'kontynuacja_eksperta', nazwa: 'Kontynuacja Eksperta' }
-    ],
-    5: [
-      { id: 'barbarzyńca', nazwa: 'Barbarzyńca' }, 
-      { id: 'arcymag', nazwa: 'Arcymag' }, 
-      { id: 'święty', nazwa: 'Święty' }, 
-      { id: 'cień', nazwa: 'Cień' }
-    ],
-    6: [
-      { id: 'kontynuacja_mistrza', nazwa: 'Kontynuacja Mistrza' }
-    ],
-    7: [
-      { id: 'władca_wojny', nazwa: 'Władca Wojny' }, 
-      { id: 'władca_magii', nazwa: 'Władca Magii' }, 
-      { id: 'władca_życia', nazwa: 'Władca Życia' }, 
-      { id: 'władca_śmierci', nazwa: 'Władca Śmierci' }
-    ],
-    8: [
-      { id: 'kontynuacja_legendy', nazwa: 'Kontynuacja Legendy' }
-    ],
-    9: [
-      { id: 'wszystkie_ścieżki', nazwa: 'Wszystkie Ścieżki' }
-    ],
-    10: [
-      { id: 'wszystkie_ścieżki', nazwa: 'Wszystkie Ścieżki' }
-    ]
-  };
+  const nowicjusz = [
+    { id: 'kleryk', nazwa: 'Kleryk' },
+    { id: 'magik', nazwa: 'Magik' },
+    { id: 'łotr', nazwa: 'Łotr' },
+    { id: 'wojownik', nazwa: 'Wojownik' }
+  ];
+  const ekspert = [
+    { id: 'berserker', nazwa: 'Berserker' },
+    { id: 'czarnoksiężnik', nazwa: 'Czarnoksiężnik' },
+    { id: 'odkrywca', nazwa: 'Odkrywca' },
+    { id: 'pancerniak', nazwa: 'Pancerniak' },
+    { id: 'rewolwerowiec', nazwa: 'Rewolwerowiec' },
+    { id: 'strzelec_wyborowy', nazwa: 'Strzelec Wyborowy' },
+    { id: 'szelma', nazwa: 'Szelma' },
+    { id: 'taumaturg', nazwa: 'Taumaturg' },
+    { id: 'technomanta', nazwa: 'Technomanta' },
+    { id: 'templariusz', nazwa: 'Templariusz' }
+  ];
+  const mistrz = [
+    { id: 'mistrz_oręża', nazwa: 'Mistrz Oręża' },
+    { id: 'mędrzec', nazwa: 'Mędrzec' },
+    { id: 'negator', nazwa: 'Negator' },
+    { id: 'niszczyciel', nazwa: 'Niszczyciel' }
+  ];
 
-  const sciezki = sciezkiPoziomu[poziom] || [];
-  sciezki.forEach(sciezka => {
-    const option = document.createElement('option');
-    option.value = sciezka.id;
-    option.textContent = sciezka.nazwa;
-    sciezkaSelect.appendChild(option);
-  });
+  if (selNov) {
+    nowicjusz.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.id; o.textContent = s.nazwa; selNov.appendChild(o);
+    });
+    if (wybraneSciezki.nowicjusz) selNov.value = wybraneSciezki.nowicjusz;
+  }
+  if (poziom >= 3 && selExp) {
+    ekspert.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.id; o.textContent = s.nazwa; selExp.appendChild(o);
+    });
+    if (wybraneSciezki.ekspert) selExp.value = wybraneSciezki.ekspert;
+  }
+  if (poziom >= 7 && selMas) {
+    mistrz.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.id; o.textContent = s.nazwa; selMas.appendChild(o);
+    });
+    if (wybraneSciezki.mistrz) selMas.value = wybraneSciezki.mistrz;
+  }
 }
 
 /**
@@ -235,9 +481,184 @@ function aktualizujTytulSekcjiSciezek(poziom) {
     10: 'Wszystkie Ścieżki'
   };
 
-  tytul.textContent = nazwyPoziomow[poziom] || 'Ścieżka';
+  tytul.textContent = nazwyPoziomow[poziom] || 'Ścieżki';
 }
 
+/**
+ * Ustawia widoczność selectów ścieżek w zależności od poziomu
+ */
+function aktualizujWidocznoscSciezek(poziom) {
+  // Funkcja jest już obsługiwana przez renderPathSectionsVisibility()
+  renderPathSectionsVisibility();
+}
+
+/**
+ * Aktualizuje sekcję zasobów (złoto i kurioza) na podstawie poziomu
+ */
+function aktualizujWealthSection(poziom) {
+  const sec = document.getElementById('wealth-section');
+  if (!sec) return;
+  sec.style.display = poziom > 0 ? 'block' : 'none';
+  liczbaKuriozow = (poziom >= 1 ? 1 : 0) + (poziom >= 3 ? 1 : 0) + (poziom >= 7 ? 1 : 0);
+  const curiosSpan = document.getElementById('curios-summary');
+  if (curiosSpan) curiosSpan.textContent = `Kurioza: ${liczbaKuriozow}`;
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan && wylosowaneSrebrniki != null) {
+    wealthSpan.textContent = `Srebrniki: ${wylosowaneSrebrniki}`;
+  }
+}
+
+/**
+ * Uaktualnia wyświetlanie bogactwa po losowaniu
+ */
+function aktualizujWealthUI(rzuty, suma) {
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan) {
+    wealthSpan.textContent = `Srebrniki: ${suma} (rzuty: ${rzuty.join(', ')})`;
+  }
+}
+
+/**
+ * Aktualizuje sekcję korzyści z pochodzenia na podstawie poziomu
+ */
+function aktualizujOriginBenefits(poziom) {
+  const sec = document.getElementById('origin-benefits-section');
+  if (!sec) return;
+  
+  // Pokaż sekcję tylko dla poziomu 4
+  sec.style.display = poziom >= 4 ? 'block' : 'none';
+  
+  if (poziom >= 4 && wybranePochodzenie) {
+    aktualizujOriginBenefitsContent();
+    // Zaktualizuj atrybuty z bonusem z poziomu 4
+    aktualizujAtrybutyZPoziomem4();
+  }
+}
+
+/**
+ * Aktualizuje zawartość korzyści z pochodzenia
+ */
+function aktualizujOriginBenefitsContent() {
+  const content = document.getElementById('origin-benefits-content');
+  if (!content || !wybranePochodzenie) return;
+  
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie || !pochodzenie.poziom_4) return;
+  
+  const benefits = pochodzenie.poziom_4;
+  
+  // Wyświetl korzyści z pochodzenia dla poziomu 4
+  content.innerHTML = `
+    <div class="benefit-item">
+      <h5>Korzyści z Pochodzenia: ${pochodzenie.nazwa} (Poziom 4)</h5>
+      <div class="origin-benefits-details">
+        <div class="health-bonus">
+          <h6>🏥 Bonus do Zdrowia</h6>
+          <p><strong>Zdrowie:</strong> +${benefits.zdrowie.replace('+', '')}</p>
+        </div>
+        
+        <div class="options-selection">
+          <h6>⚡ Wybierz Opcję</h6>
+          <p>Możesz nauczyć się jednego zaklęcia lub zyskać talent:</p>
+          <div class="options-list">
+            ${benefits.opcje.map(opcja => `
+              <label class="option-choice">
+                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}">
+                <span class="option-text">${opcja}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="talent-descriptions">
+          <h6>📖 Opisy Talentów</h6>
+          ${generujOpisyTalentow(benefits.opcje)}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Dodaj event listenery dla wyboru opcji
+  dodajEventListeneryOpcji(pochodzenie.id);
+}
+
+/**
+ * Generuje opisy talentów na podstawie opcji
+ */
+function generujOpisyTalentow(opcje) {
+  const opisyTalentow = {
+    'talent Determinacja': 'Gdy wyrzucisz 1 na kości ułatwienia, możesz rzucić ponownie i wybrać, którego wyniku użyć.',
+    'talent Wysokie obroty': 'Możesz wykonać dodatkową akcję w swojej turze. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
+    'talent Odskok': 'Gdy stworzenie, które widzisz, chybi, atakując twoją Obronę lub Zręczność, możesz użyć reakcji, by wykonać odwrót.',
+    'talent Nie do zdarcia': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia, a także pozbyć się jednego z następujących stanów: wyczerpanie, osłabienie lub zatrucie. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
+    'talent Prymat sobowtóra': 'W trakcie swojej tury możesz użyć Kradzieży tożsamości jako reakcji. Ponadto gdy skradniesz tożsamość jakiejś istoty, to dopóki naśladujesz jej wygląd, wszelkie ataki przeciw niej wykonujesz z 1 ułatwieniem.',
+    'talent Furia': 'Gdy twoje Zdrowie spadnie poniżej połowy maksymalnej wartości, wszystkie twoje ataki zadają dodatkowe obrażenia równe twojej Sile.',
+    'talent Kontrolowany szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.'
+  };
+  
+  return opcje.map(opcja => {
+    if (opcja.startsWith('talent ')) {
+      const nazwaTalentu = opcja;
+      const opis = opisyTalentow[nazwaTalentu] || 'Opis talentu nie jest dostępny.';
+      return `
+        <div class="talent-description">
+          <strong>${nazwaTalentu}:</strong> ${opis}
+        </div>
+      `;
+    } else if (opcja === '1 zaklęcie') {
+      return `
+        <div class="spell-description">
+          <strong>1 zaklęcie:</strong> Możesz nauczyć się jednego zaklęcia z dostępnych szkół magii.
+        </div>
+      `;
+    }
+    return '';
+  }).join('');
+}
+
+/**
+ * Dodaje event listenery dla wyboru opcji pochodzenia
+ */
+function dodajEventListeneryOpcji(pochodzenieId) {
+  const radioButtons = document.querySelectorAll(`input[name="origin-option-${pochodzenieId}"]`);
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        // Zaktualizuj obliczone atrybuty z bonusem do zdrowia
+        aktualizujAtrybutyZPoziomem4();
+      }
+    });
+  });
+}
+
+/**
+ * Aktualizuje atrybuty z uwzględnieniem bonusu z poziomu 4
+ */
+function aktualizujAtrybutyZPoziomem4() {
+  if (wybranyPoziom < 4 || !wybranePochodzenie) return;
+  
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie || !pochodzenie.poziom_4) return;
+  
+  const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
+  
+  // Pobierz aktualne atrybuty
+  const atrybuty = {
+    sila: parseInt(document.getElementById('sila-final').textContent),
+    zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
+    intelekt: parseInt(document.getElementById('intelekt-final').textContent),
+    wola: parseInt(document.getElementById('wola-final').textContent)
+  };
+  
+  // Dodaj bonus do zdrowia
+  const atrybutyZBonusem = {
+    ...atrybuty,
+    zdrowie: atrybuty.sila + healthBonus
+  };
+  
+  // Aktualizuj wyświetlane atrybuty drugorzędne
+  aktualizujAtrybutyDrugorzedne(atrybutyZBonusem, pochodzenie);
+}
 
 /**
  * Ładuje rozszerzone dane pochodzeń z nowego API
@@ -698,6 +1119,9 @@ function zbierzWynikiTabel(originId) {
  * @param {string} originId - ID pochodzenia do wyboru
  */
 function wybierzPochodzenie(originId) {
+  // Resetuj stan i UI dla poprzedniego wyboru
+  resetujStanPoZmianiePochodzenia();
+
   wybranePochodzenie = originId;
     
   // Zbierz wyniki tabel z wybranego kafelka
@@ -734,6 +1158,68 @@ function wybierzPochodzenie(originId) {
 }
 
 /**
+ * Resetuje wszystkie dane kolejnych kroków po zmianie pochodzenia
+ */
+function resetujStanPoZmianiePochodzenia() {
+  // Reset stanu aplikacji
+  biezacaPostac = null;
+  wybranyPoziom = 0;
+  wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
+  przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
+  wybraneProfesje = [];
+  wybraneKurioza = [];
+  wylosowaneSrebrniki = null;
+  liczbaKuriozow = 0;
+  wynikiTabel = {};
+
+  // Reset selektorów poziomu
+  const levelInputs = document.querySelectorAll('input[name="poziom"]');
+  levelInputs.forEach(input => { input.checked = false; });
+  const levelZero = Array.from(levelInputs).find(i => i.value === '0');
+  if (levelZero) {
+    levelZero.checked = true;
+  }
+
+  // Reset sekcji bogactwa i kuriozów
+  const curiosSpan = document.getElementById('curios-summary');
+  if (curiosSpan) curiosSpan.textContent = 'Kurioza: 0';
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan) wealthSpan.textContent = 'Srebrniki: 0 (nie wylosowano)';
+
+  // Reset sekcji ścieżek (krok 3) - nowy system kafelków
+  // Reset podsumowań ścieżek
+  const summary1 = document.getElementById('path-summary-1');
+  if (summary1) summary1.innerHTML = '';
+  const summary3 = document.getElementById('path-summary-3');
+  if (summary3) summary3.innerHTML = '';
+  const summary7 = document.getElementById('path-summary-7');
+  if (summary7) summary7.innerHTML = '';
+
+  // Reset atrybutów własnych i przełączenie na domyślne
+  const chkDomyslne = document.getElementById('domyslne-atrybuty');
+  if (chkDomyslne) chkDomyslne.checked = true;
+  const customDiv = document.getElementById('custom-attributes');
+  if (customDiv) customDiv.style.display = 'none';
+  ['sila-base','zrecznosc-base','intelekt-base','wola-base'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = 10;
+  });
+
+  // Reset korzyści z pochodzenia (krok 2)
+  const originBenefits = document.getElementById('origin-benefits-content');
+  if (originBenefits) originBenefits.innerHTML = '';
+
+  // Ukryj/pokaż sekcje zależne od poziomu na start (0)
+  aktualizujWealthSection(0);
+  aktualizujOriginBenefits(0);
+  
+  // Reset sekcji ścieżek
+  renderPathSectionsVisibility();
+
+  // Oblicz od nowa atrybuty na bazie nowego pochodzenia po ustawieniu w wybierzPochodzenie
+}
+
+/**
  * Nawigacja do następnego kroku
  */
 // eslint-disable-next-line no-unused-vars
@@ -749,6 +1235,13 @@ function nextStep(currentStep) {
   } else if (currentStep === 2) {
     pokazKrok(3);
     aktualizujPodgladPostaci();
+  } else if (currentStep === 3) {
+    pokazKrok(4);
+    renderProfessionsSection();
+    renderCuriosSection();
+  } else if (currentStep === 4) {
+    pokazKrok(5);
+    aktualizujPodgladPostaci();
   }
 }
 
@@ -761,6 +1254,12 @@ function prevStep(currentStep) {
     pokazKrok(1);
   } else if (currentStep === 3) {
     pokazKrok(2);
+  } else if (currentStep === 4) {
+    pokazKrok(3);
+  } else if (currentStep === 5) {
+    pokazKrok(4);
+  } else if (currentStep === 6) {
+    pokazKrok(5);
   }
 }
 
@@ -776,6 +1275,55 @@ function pokazKrok(stepNumber) {
   // Pokaż wybrany krok
   document.getElementById(`step-${stepNumber}`).classList.add('active');
   // aktualnyKrok = stepNumber; // Obecnie nieużywane
+  updateBreadcrumbs(stepNumber);
+}
+
+/**
+ * Przechodzi do kroku z pełnym odświeżeniem UI zależnym od niego
+ */
+function goToStep(stepNumber) {
+  // Proste reguły walidacji: nie pozwól przejść dalej bez wymagań
+  if (stepNumber === 2 && !wybranePochodzenie) return;
+  if (stepNumber === 3) {
+    if (!wybranePochodzenie) return;
+  }
+  if (stepNumber === 4) {
+    // Wymagane ścieżki zgodnie z poziomem
+    const needExpert = wybranyPoziom >= 3;
+    const needMaster = wybranyPoziom >= 7;
+    if (!wybraneSciezki.nowicjusz) return;
+    if (needExpert && !wybraneSciezki.ekspert) return;
+    if (needMaster && !wybraneSciezki.mistrz) return;
+  }
+  if (stepNumber === 5) {
+    // Wymagane profesje i kurioza
+    const { profesje, kurioza } = obliczIloscWyborow();
+    if (wybraneProfesje.length < profesje) return;
+    if (wybraneKurioza.length < kurioza) return;
+  }
+  pokazKrok(stepNumber);
+  if (stepNumber === 3) {
+    renderPathSectionsVisibility();
+    renderPathSection(1);
+    renderPathSection(3);
+    renderPathSection(7);
+    updateStep3NextButton();
+  }
+  if (stepNumber === 4) {
+    renderProfessionsSection();
+    renderCuriosSection();
+  }
+  if (stepNumber === 5) {
+    aktualizujPodgladPostaci();
+  }
+}
+
+function updateBreadcrumbs(activeStep) {
+  const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
+  crumbs.forEach(c => {
+    const step = parseInt(c.getAttribute('data-step'));
+    if (step === activeStep) c.classList.add('active'); else c.classList.remove('active');
+  });
 }
 
 /**
@@ -840,6 +1388,9 @@ function aktualizujDomyślneAtrybuty() {
   document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10);
   document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.wola - 10);
     
+  // Oblicz i wyświetl atrybuty drugorzędne
+  aktualizujAtrybutyDrugorzedne(atrybutyFinalne, pochodzenie);
+  
   // Aktywuj przycisk "Dalej" w kroku 2
   document.getElementById('btn-next-2').disabled = false;
 }
@@ -893,8 +1444,80 @@ function aktualizujObliczoneAtrybuty() {
   document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10);
   document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.wola - 10);
     
+  // Oblicz i wyświetl atrybuty drugorzędne
+  aktualizujAtrybutyDrugorzedne(atrybutyFinalne, pochodzenie);
+  
   // Aktywuj przycisk "Dalej" w kroku 2
   document.getElementById('btn-next-2').disabled = false;
+}
+
+/**
+ * Aktualizuje atrybuty drugorzędne na podstawie atrybutów głównych i pochodzenia
+ */
+function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
+  // Oblicz atrybuty drugorzędne zgodnie z Podręcznikiem Głównym
+  let zdrowie = atrybuty.sila;
+  
+  // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
+  if (wybranyPoziom >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
+    const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
+    zdrowie += healthBonus;
+  }
+  
+  const atrybutyDrugorzedne = {
+    percepcja: atrybuty.intelekt,
+    obrona: atrybuty.zrecznosc,
+    zdrowie: zdrowie,
+    szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
+  };
+  
+  // Modyfikatory obrony na podstawie rozmiaru pochodzenia
+  if (pochodzenie.rozmiar === '1/4') {
+    atrybutyDrugorzedne.obrona += 4;
+  } else if (pochodzenie.rozmiar === '1/2') {
+    atrybutyDrugorzedne.obrona += 2;
+  } else if (pochodzenie.rozmiar === '2') {
+    atrybutyDrugorzedne.obrona -= 2;
+  }
+  
+  // Wyświetl atrybuty drugorzędne w sekcji obliczonych atrybutów
+  const container = document.getElementById('calculated-attributes');
+  if (container) {
+    const secondaryAttrsDiv = document.getElementById('secondary-attributes-display');
+    if (!secondaryAttrsDiv) {
+      const secondaryDiv = document.createElement('div');
+      secondaryDiv.id = 'secondary-attributes-display';
+      secondaryDiv.className = 'secondary-attributes';
+      secondaryDiv.innerHTML = `
+        <h4>Atrybuty drugorzędne:</h4>
+        <div class="attributes-grid">
+          <div class="attribute-display">
+            <label>Percepcja:</label>
+            <span id="percepcja-final">${atrybutyDrugorzedne.percepcja}</span>
+          </div>
+          <div class="attribute-display">
+            <label>Obrona:</label>
+            <span id="obrona-final">${atrybutyDrugorzedne.obrona}</span>
+          </div>
+          <div class="attribute-display">
+            <label>Zdrowie:</label>
+            <span id="zdrowie-final">${atrybutyDrugorzedne.zdrowie}</span>
+          </div>
+          <div class="attribute-display">
+            <label>Szybkość Zdrowienia:</label>
+            <span id="szybkosc-zdrowienia-final">${atrybutyDrugorzedne.szybkosc_zdrowienia}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(secondaryDiv);
+    } else {
+      // Aktualizuj istniejące wartości
+      document.getElementById('percepcja-final').textContent = atrybutyDrugorzedne.percepcja;
+      document.getElementById('obrona-final').textContent = atrybutyDrugorzedne.obrona;
+      document.getElementById('zdrowie-final').textContent = atrybutyDrugorzedne.zdrowie;
+      document.getElementById('szybkosc-zdrowienia-final').textContent = atrybutyDrugorzedne.szybkosc_zdrowienia;
+    }
+  }
 }
 
 /**
@@ -1163,10 +1786,18 @@ function aktualizujPodgladPostaci() {
   };
     
   // Oblicz atrybuty drugorzędne
+  let zdrowie = atrybuty.sila;
+  
+  // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
+  if (wybranyPoziom >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
+    const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
+    zdrowie += healthBonus;
+  }
+  
   const atrybutyDrugorzedne = {
     percepcja: atrybuty.intelekt,
     obrona: atrybuty.zrecznosc,
-    zdrowie: atrybuty.sila,
+    zdrowie: zdrowie,
     szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
   };
     
@@ -1238,8 +1869,46 @@ function aktualizujPodgladPostaci() {
             <p><strong>Profesje:</strong> ${pochodzenie.profesje.join(', ')}</p>
         </div>
         
+        ${renderPathBenefitsSummary()}
+        
+        ${renderProfessionsAndCuriosSummary()}
+        
         ${generujSekcjeWynikowTabel(pochodzenie.id)}
+
+        ${generujSekcjeSciezekIZasobow()}
     `;
+}
+
+/**
+ * Generuje sekcję wybranych ścieżek i zasobów w podglądzie
+ */
+function generujSekcjeSciezekIZasobow() {
+  const parts = [];
+  const sc = [];
+  if (wybraneSciezki.nowicjusz) sc.push(`<li>Nowicjusz: ${formatSciezkaName(wybraneSciezki.nowicjusz)}</li>`);
+  if (wybraneSciezki.ekspert) sc.push(`<li>Ekspert: ${formatSciezkaName(wybraneSciezki.ekspert)}</li>`);
+  if (wybraneSciezki.mistrz) sc.push(`<li>Mistrz: ${formatSciezkaName(wybraneSciezki.mistrz)}</li>`);
+  if (sc.length > 0) {
+    parts.push('<div class="preview-section">');
+    parts.push('<h5>Ścieżki</h5>');
+    parts.push(`<ul>${sc.join('')}</ul>`);
+    parts.push('</div>');
+  }
+  if (wybranyPoziom > 1) {
+    const srebro = wylosowaneSrebrniki != null ? wylosowaneSrebrniki : 'nie wylosowano';
+    parts.push('<div class="preview-section">');
+    parts.push('<h5>Zasoby</h5>');
+    parts.push(`<p><strong>Srebrniki:</strong> ${srebro} | <strong>Kurioza:</strong> ${liczbaKuriozow}</p>`);
+    parts.push('</div>');
+  }
+  return parts.join('');
+}
+
+function formatSciezkaName(id) {
+  return id
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (m) => m.toUpperCase())
+    .replace('Ł', 'Ł');
 }
 
 /**
@@ -1415,17 +2084,70 @@ async function zaladujKorzysciPoziomu(poziom) {
       body: JSON.stringify({
         poziom,
         pochodzenie: wybranePochodzenie.id,
-        sciezka_nowicjusza: null, // TODO: pobierać z wyboru użytkownika
-        sciezka_ekspercka: null,
-        sciezka_mistrzowska: null
+        sciezka_nowicjusza: wybraneSciezki.nowicjusz || null,
+        sciezka_ekspercka: wybraneSciezki.ekspert || null,
+        sciezka_mistrzowska: wybraneSciezki.mistrz || null
       })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
 
     const benefits = await response.json();
     wyswietlKorzysciPoziomu(benefits);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Błąd ładowania korzyści:', error);
+    // Fallback - wyświetl podstawowe informacje
+    wyswietlKorzysciPoziomuFallback(poziom);
+  }
+}
+
+/**
+ * Fallback dla wyświetlania korzyści poziomu
+ */
+function wyswietlKorzysciPoziomuFallback(poziom) {
+  const section = document.getElementById('level-benefits-section');
+  const levelName = document.getElementById('selected-level-name');
+  
+  section.style.display = 'block';
+  
+  // Podstawowe nazwy poziomów
+  const nazwyPoziomow = {
+    1: 'Nowicjusz',
+    2: 'Nowicjusz', 
+    3: 'Ekspert',
+    4: 'Ekspert',
+    5: 'Ekspert',
+    6: 'Ekspert',
+    7: 'Mistrz',
+    8: 'Mistrz',
+    9: 'Mistrz',
+    10: 'Mistrz'
+  };
+  
+  const nazwaPoziomu = nazwyPoziomow[poziom] || 'Nieznany poziom';
+  const nazwaSciezki = poziom === 4 ? 'Pochodzenie' : 'Brak ścieżki';
+  levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
+  
+  // Resetuj wszystkie sekcje
+  document.getElementById('secondary-attributes-growth').style.display = 'none';
+  document.getElementById('primary-attributes-choice').style.display = 'none';
+  document.getElementById('talents-section').style.display = 'none';
+  document.getElementById('magic-section').style.display = 'none';
+  document.getElementById('languages-professions-section').style.display = 'none';
+  
+  // Wyświetl podstawowe informacje
+  const content = document.getElementById('level-benefits-content');
+  if (content) {
+    content.innerHTML = `
+      <div class="benefit-category">
+        <h5>Podstawowe informacje</h5>
+        <p>Poziom ${poziom} - ${nazwaPoziomu}</p>
+        <p><em>Szczegółowe korzyści będą dostępne po wyborze pochodzenia i ścieżek.</em></p>
+      </div>
+    `;
   }
 }
 
@@ -1437,7 +2159,11 @@ function wyswietlKorzysciPoziomu(benefits) {
   const levelName = document.getElementById('selected-level-name');
   
   section.style.display = 'block';
-  levelName.textContent = `${benefits.nazwa_poziomu} (${benefits.nazwa_sciezki || 'Pochodzenie'})`;
+  
+  // Bezpieczne wyświetlanie nazwy poziomu
+  const nazwaPoziomu = benefits.nazwa_poziomu || 'Nieznany poziom';
+  const nazwaSciezki = benefits.nazwa_sciezki || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
+  levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
 
   // Resetuj wszystkie sekcje
   document.getElementById('secondary-attributes-growth').style.display = 'none';
@@ -1445,6 +2171,7 @@ function wyswietlKorzysciPoziomu(benefits) {
   document.getElementById('talents-section').style.display = 'none';
   document.getElementById('magic-section').style.display = 'none';
   document.getElementById('languages-professions-section').style.display = 'none';
+  document.getElementById('options-section').style.display = 'none';
 
   // Wyświetl atrybuty drugorzędne
   if (benefits.korzyści.zdrowie || benefits.korzyści.moc || benefits.korzyści.obrona) {
@@ -1479,6 +2206,13 @@ function wyswietlKorzysciPoziomu(benefits) {
   if (benefits.korzyści.jezyki_profesje) {
     document.getElementById('languages-professions-content').textContent = benefits.korzyści.jezyki_profesje;
     document.getElementById('languages-professions-section').style.display = 'block';
+  }
+
+  // Wyświetl opcje (dla poziomu 4 - pochodzenie)
+  if (benefits.korzyści.opcje && benefits.korzyści.opcje.length > 0) {
+    const optionsList = benefits.korzyści.opcje.map(opcja => `<li>${opcja}</li>`).join('');
+    document.getElementById('options-content').innerHTML = `<ul>${optionsList}</ul>`;
+    document.getElementById('options-section').style.display = 'block';
   }
 }
 
@@ -1851,4 +2585,417 @@ async function losujZTabeliUI(originId, tableName) {
       resultDiv.innerHTML = `<div class="error">❌ Błąd: ${error.message}</div>`;
     }
   }
+}
+
+/**
+ * Renderuje podsumowanie korzyści ze ścieżek w podglądzie postaci
+ * @returns {string} HTML z podsumowaniem ścieżek
+ */
+function renderPathBenefitsSummary() {
+  const benefits = [];
+  
+  // Sprawdź wybrane ścieżki
+  if (wybraneSciezki.nowicjusz) {
+    const benefit = przyznaneKorzysciZeSciezek[1];
+    if (benefit) {
+      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Nowicjusza:</strong> ${benefit.sciezkaId} (poziom 1)</div>`);
+    }
+  }
+  
+  if (wybraneSciezki.ekspert && wybranyPoziom >= 3) {
+    const benefit = przyznaneKorzysciZeSciezek[3];
+    if (benefit) {
+      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Ekspercka:</strong> ${benefit.sciezkaId} (poziom 3)</div>`);
+    }
+  }
+  
+  if (wybraneSciezki.mistrz && wybranyPoziom >= 7) {
+    const benefit = przyznaneKorzysciZeSciezek[7];
+    if (benefit) {
+      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Mistrzowska:</strong> ${benefit.sciezkaId} (poziom 7)</div>`);
+    }
+  }
+  
+  if (benefits.length === 0) {
+    return '';
+  }
+  
+  return `
+    <div class="preview-section">
+      <h5>Wybrane Ścieżki</h5>
+      ${benefits.join('')}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje podsumowanie wybranych profesji i kuriozów w podglądzie postaci
+ * @returns {string} HTML z podsumowaniem profesji i kuriozów
+ */
+function renderProfessionsAndCuriosSummary() {
+  const professions = wybraneProfesje.map(id => {
+    const prof = dostepneProfesje.find(p => p.id === id);
+    return prof ? prof.nazwa : id;
+  });
+  
+  const curios = wybraneKurioza.map(id => {
+    const curio = dostepneKurioza.find(c => c.id === id);
+    return curio ? curio.nazwa : id;
+  });
+  
+  if (professions.length === 0 && curios.length === 0) {
+    return '';
+  }
+  
+  return `
+    <div class="preview-section">
+      <h5>Profesje i Kurioza</h5>
+      ${professions.length > 0 ? `<p><strong>Profesje:</strong> ${professions.join(', ')}</p>` : ''}
+      ${curios.length > 0 ? `<p><strong>Kurioza:</strong> ${curios.join(', ')}</p>` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Ładuje dane profesji i kuriozów
+ */
+async function zaladujProfesjeIKurioza() {
+  try {
+    const [profResp, curiosResp] = await Promise.all([
+      fetch('/api/professions'),
+      fetch('/api/curios')
+    ]);
+    
+    if (profResp.ok) {
+      const profData = await profResp.json();
+      dostepneProfesje = profData.profesje;
+    }
+    
+    if (curiosResp.ok) {
+      const curiosData = await curiosResp.json();
+      dostepneKurioza = curiosData.kurioza;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Nie udało się załadować profesji i kuriozów:', e);
+  }
+}
+
+/**
+ * Oblicza ilość wyborów profesji i kuriozów na podstawie pochodzenia, poziomu i ścieżek
+ */
+function obliczIloscWyborow() {
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const poziom = wybranyPoziom;
+  const sciezki = wybraneSciezki;
+  
+  let profesje = 0;
+  let kurioza = 0;
+  
+  // Pochodzenie - bazowe profesje i kurioza
+  if (pochodzenie) {
+    profesje += 1; // Każde pochodzenie daje 1 profesję
+    kurioza += 1; // Każde pochodzenie daje 1 kurioza
+  }
+  
+  // Poziom - zgodnie z tabelą "Rozwój" z PG
+  if (poziom >= 1) { profesje += 1; kurioza += 1; }
+  if (poziom >= 3) { profesje += 1; kurioza += 1; }
+  if (poziom >= 7) { profesje += 1; kurioza += 1; }
+  
+  // Ścieżki - bonusy z wybranych ścieżek
+  if (sciezki.nowicjusz) {
+    // Ścieżka nowicjusza może dać bonus do profesji
+    profesje += 0; // Domyślnie bez bonusu, można rozszerzyć
+  }
+  
+  return { profesje, kurioza };
+}
+
+/**
+ * Renderuje sekcję profesji
+ */
+function renderProfessionsSection() {
+  const grid = document.getElementById('professions-grid');
+  const countSpan = document.getElementById('professions-count');
+  const listDiv = document.getElementById('professions-list');
+  
+  if (!grid || !countSpan || !listDiv) return;
+  
+  const { profesje } = obliczIloscWyborow();
+  countSpan.textContent = profesje;
+  
+  // Wyczyść grid
+  grid.innerHTML = '';
+  
+  // Grupuj profesje według kategorii
+  const kategorie = {};
+  dostepneProfesje.forEach(prof => {
+    if (!kategorie[prof.kategoria]) {
+      kategorie[prof.kategoria] = [];
+    }
+    kategorie[prof.kategoria].push(prof);
+  });
+  
+  // Renderuj kafelki
+  Object.entries(kategorie).forEach(([katId, profs]) => {
+    profs.forEach(prof => {
+      const tile = renderProfessionTile(prof);
+      grid.appendChild(tile);
+    });
+  });
+  
+  // Aktualizuj listę wybranych
+  updateSelectedProfessions();
+}
+
+/**
+ * Renderuje kafel profesji
+ */
+function renderProfessionTile(profession) {
+  const isSelected = wybraneProfesje.includes(profession.id);
+  const tile = document.createElement('div');
+  tile.className = `profession-tile ${isSelected ? 'selected' : ''}`;
+  tile.dataset.professionId = profession.id;
+  
+  tile.innerHTML = `
+    <div class="tile-category">${profession.kategoria || ''}</div>
+    <div class="tile-title">${profession.nazwa || ''}</div>
+    ${profession.opis ? `<div class="tile-description">${profession.opis}</div>` : ''}
+  `;
+  
+  // Event listenery
+  tile.addEventListener('click', () => toggleProfession(profession.id));
+  
+  return tile;
+}
+
+/**
+ * Przełącza wybór profesji
+ */
+function toggleProfession(professionId) {
+  const { profesje } = obliczIloscWyborow();
+  
+  if (wybraneProfesje.includes(professionId)) {
+    // Usuń z wybranych
+    wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
+  } else {
+    // Dodaj do wybranych (jeśli nie przekracza limitu)
+    if (wybraneProfesje.length < profesje) {
+      wybraneProfesje.push(professionId);
+    }
+  }
+  
+  renderProfessionsSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Losuje profesję
+ */
+function randomizeProfession() {
+  const { profesje } = obliczIloscWyborow();
+  const available = dostepneProfesje.filter(prof => !wybraneProfesje.includes(prof.id));
+  
+  if (available.length > 0 && wybraneProfesje.length < profesje) {
+    const randomProf = available[Math.floor(Math.random() * available.length)];
+    wybraneProfesje.push(randomProf.id);
+    renderProfessionsSection();
+    updateStep4NextButton();
+  }
+}
+
+/**
+ * Aktualizuje listę wybranych profesji
+ */
+function updateSelectedProfessions() {
+  const listDiv = document.getElementById('professions-list');
+  if (!listDiv) return;
+  
+  listDiv.innerHTML = wybraneProfesje.map(id => {
+    const prof = dostepneProfesje.find(p => p.id === id);
+    return prof ? `
+      <div class="selected-item">
+        ${prof.nazwa}
+        <button class="remove-btn" onclick="removeProfession('${id}')">×</button>
+      </div>
+    ` : '';
+  }).join('');
+}
+
+/**
+ * Usuwa profesję z wybranych
+ */
+function removeProfession(professionId) {
+  wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
+  renderProfessionsSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Renderuje sekcję kuriozów
+ */
+function renderCuriosSection() {
+  const grid = document.getElementById('curios-grid');
+  const countSpan = document.getElementById('curios-count');
+  const listDiv = document.getElementById('curios-list');
+  
+  if (!grid || !countSpan || !listDiv) return;
+  
+  const { kurioza } = obliczIloscWyborow();
+  countSpan.textContent = kurioza;
+  
+  // Wyczyść grid
+  grid.innerHTML = '';
+  
+  // Grupuj kurioza według kategorii
+  const kategorie = {};
+  dostepneKurioza.forEach(curio => {
+    if (!kategorie[curio.kategoria]) {
+      kategorie[curio.kategoria] = [];
+    }
+    kategorie[curio.kategoria].push(curio);
+  });
+  
+  // Renderuj kafelki
+  Object.entries(kategorie).forEach(([katId, curios]) => {
+    curios.forEach(curio => {
+      const tile = renderCurioTile(curio);
+      grid.appendChild(tile);
+    });
+  });
+  
+  // Aktualizuj listę wybranych
+  updateSelectedCurios();
+}
+
+/**
+ * Renderuje kafel kurioza
+ */
+function renderCurioTile(curio) {
+  const isSelected = wybraneKurioza.includes(curio.id);
+  const tile = document.createElement('div');
+  tile.className = `curio-tile ${isSelected ? 'selected' : ''}`;
+  tile.dataset.curioId = curio.id;
+  
+  tile.innerHTML = `
+    <div class="tile-category">${curio.kategoria || ''}</div>
+    <div class="tile-title">${curio.nazwa || ''}</div>
+    ${curio.opis ? `<div class=\"tile-description\">${curio.opis}</div>` : ''}
+  `;
+  
+  // Event listenery
+  tile.addEventListener('click', () => toggleCurio(curio.id));
+  
+  return tile;
+}
+
+/**
+ * Przełącza wybór kurioza
+ */
+function toggleCurio(curioId) {
+  const { kurioza } = obliczIloscWyborow();
+  
+  if (wybraneKurioza.includes(curioId)) {
+    // Usuń z wybranych
+    wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
+  } else {
+    // Dodaj do wybranych (jeśli nie przekracza limitu)
+    if (wybraneKurioza.length < kurioza) {
+      wybraneKurioza.push(curioId);
+    }
+  }
+  
+  renderCuriosSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Losuje kurioza
+ */
+function randomizeCurio() {
+  const { kurioza } = obliczIloscWyborow();
+  const available = dostepneKurioza.filter(curio => !wybraneKurioza.includes(curio.id));
+  
+  if (available.length > 0 && wybraneKurioza.length < kurioza) {
+    const randomCurio = available[Math.floor(Math.random() * available.length)];
+    wybraneKurioza.push(randomCurio.id);
+    renderCuriosSection();
+    updateStep4NextButton();
+  }
+}
+
+/**
+ * Losuje profesje zgodnie z aktualnym limitem brakujących wyborów
+ */
+function losujProfesjeCentralnie() {
+  const { profesje } = obliczIloscWyborow();
+  const remaining = Math.max(0, profesje - wybraneProfesje.length);
+  if (remaining === 0) return;
+  const available = dostepneProfesje.filter(p => !wybraneProfesje.includes(p.id));
+  for (let i = 0; i < remaining && available.length > 0; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    const pick = available.splice(idx, 1)[0];
+    wybraneProfesje.push(pick.id);
+  }
+  renderProfessionsSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Losuje kurioza zgodnie z aktualnym limitem brakujących wyborów
+ */
+function losujKuriozaCentralnie() {
+  const { kurioza } = obliczIloscWyborow();
+  const remaining = Math.max(0, kurioza - wybraneKurioza.length);
+  if (remaining === 0) return;
+  const available = dostepneKurioza.filter(c => !wybraneKurioza.includes(c.id));
+  for (let i = 0; i < remaining && available.length > 0; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    const pick = available.splice(idx, 1)[0];
+    wybraneKurioza.push(pick.id);
+  }
+  renderCuriosSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Aktualizuje listę wybranych kuriozów
+ */
+function updateSelectedCurios() {
+  const listDiv = document.getElementById('curios-list');
+  if (!listDiv) return;
+  
+  listDiv.innerHTML = wybraneKurioza.map(id => {
+    const curio = dostepneKurioza.find(c => c.id === id);
+    return curio ? `
+      <div class="selected-item">
+        ${curio.nazwa}
+        <button class="remove-btn" onclick="removeCurio('${id}')">×</button>
+      </div>
+    ` : '';
+  }).join('');
+}
+
+/**
+ * Usuwa kurioza z wybranych
+ */
+function removeCurio(curioId) {
+  wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
+  renderCuriosSection();
+  updateStep4NextButton();
+}
+
+/**
+ * Aktualizuje przycisk "Dalej" w Kroku 4
+ */
+function updateStep4NextButton() {
+  const btn = document.getElementById('btn-next-4');
+  if (!btn) return;
+  
+  const { profesje, kurioza } = obliczIloscWyborow();
+  const hasRequiredProfessions = wybraneProfesje.length >= profesje;
+  const hasRequiredCurios = wybraneKurioza.length >= kurioza;
+  
+  btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);
 }

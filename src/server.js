@@ -9,6 +9,9 @@ const { EXTENDED_ORIGINS, losujZTabeli } = require('./data/origins_extended');
 const ORIGINS = require('./data/origins');
 const { rollTable, getAvailableTables, getTableDetails, hasTables, getOriginsWithTables } = require('./data/table_utils');
 const ORIGIN_TABLES = require('./data/origin_tables');
+const PATHS = require('./data/paths');
+const PROFESSIONS = require('./data/professions');
+const CURIOS = require('./data/curios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -281,51 +284,194 @@ app.get('/api/levels-full', (req, res) => {
   });
 });
 
-// Endpoint do pobierania ścieżek dla danego poziomu (1-10)
+// Endpoint do pobierania ścieżek dla danego poziomu wyboru (1, 3, 7)
 app.get('/api/paths/:level', (req, res) => {
   const poziom = parseInt(req.params.level);
   
-  if (!DANE_GRY.poziomy[poziom]) {
-    return res.status(404).json({ error: 'Nieznany poziom' });
-  }
-  
   let sciezki = [];
   
-  // Mapowanie poziomów na ścieżki
+  // Mapowanie poziomów wyboru na ścieżki zgodnie z PG
   if (poziom === 1) {
-    sciezki = Object.values(DANE_GRY.sciezki_nowicjuszy);
-  } else if (poziom === 2) {
-    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_nowicjusza');
+    // Ścieżki nowicjuszy - poziom wyboru 1
+    sciezki = Object.values(PATHS.sciezki_nowicjuszy).map(path => ({
+      id: path.id,
+      nazwa: path.nazwa,
+      zrodlo: 'PG',
+      opis: path.opis,
+      korzysci: {
+        1: {
+          talenty: (path.poziom_1?.talenty || []).map(t => ({
+            nazwa: t,
+            opis: getTalentDescription(t)
+          })),
+          zaklecia: (path.poziom_1?.magia ? [{
+            nazwa: 'Magia',
+            opis: path.poziom_1.magia
+          }] : []),
+          mod_atrybuty: {},
+          mod_drugorzedne: {
+            zdrowie: parseInt(path.poziom_1?.zdrowie?.replace('+', '') || '0')
+          },
+          bieglosci: path.poziom_1?.jezyki_profesje ? [path.poziom_1.jezyki_profesje] : [],
+          sprzet: []
+        }
+      }
+    }));
   } else if (poziom === 3) {
-    sciezki = Object.values(DANE_GRY.sciezki_ekspertow);
-  } else if (poziom === 4) {
-    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_eksperta');
-  } else if (poziom === 5) {
-    sciezki = Object.values(DANE_GRY.sciezki_mistrzow);
-  } else if (poziom === 6) {
-    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_mistrza');
+    // Ścieżki ekspertów - poziom wyboru 3
+    sciezki = Object.values(PATHS.sciezki_ekspertow).map(path => ({
+      id: path.id,
+      nazwa: path.nazwa,
+      zrodlo: 'PG',
+      opis: path.opis,
+      korzysci: {
+        3: {
+          talenty: (path.poziom_3?.talenty || []).map(t => ({
+            nazwa: t,
+            opis: getTalentDescription(t)
+          })),
+          zaklecia: (path.poziom_3?.magia ? [{
+            nazwa: 'Magia',
+            opis: path.poziom_3.magia
+          }] : []),
+          mod_atrybuty: {},
+          mod_drugorzedne: {
+            zdrowie: parseInt(path.poziom_3?.zdrowie?.replace('+', '') || '0')
+          },
+          bieglosci: path.poziom_3?.jezyki_profesje ? [path.poziom_3.jezyki_profesje] : [],
+          sprzet: []
+        }
+      }
+    }));
   } else if (poziom === 7) {
-    sciezki = Object.values(DANE_GRY.sciezki_legend);
-  } else if (poziom === 8) {
-    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_legendy');
-  } else if (poziom === 9 || poziom === 10) {
-    // Poziomy 9-10: dostęp do wszystkich ścieżek
-    sciezki = [
-      ...Object.values(DANE_GRY.sciezki_nowicjuszy),
-      ...Object.values(DANE_GRY.sciezki_ekspertow),
-      ...Object.values(DANE_GRY.sciezki_mistrzow),
-      ...Object.values(DANE_GRY.sciezki_legend)
-    ];
+    // Ścieżki mistrzów - poziom wyboru 7 (w PG to poziom 5, ale w systemie to 7)
+    sciezki = Object.values(PATHS.sciezki_mistrzow).map(path => ({
+      id: path.id,
+      nazwa: path.nazwa,
+      zrodlo: 'PG',
+      opis: path.opis,
+      korzysci: {
+        7: {
+          talenty: (path.poziom_5?.talent ? [{
+            nazwa: path.poziom_5.talent,
+            opis: getTalentDescription(path.poziom_5.talent)
+          }] : []),
+          zaklecia: (path.poziom_5?.magia ? [{
+            nazwa: 'Magia',
+            opis: path.poziom_5.magia
+          }] : []),
+          mod_atrybuty: {},
+          mod_drugorzedne: {
+            zdrowie: parseInt(path.poziom_5?.zdrowie?.replace('+', '') || '0')
+          },
+          bieglosci: path.poziom_5?.jezyki_profesje ? [path.poziom_5.jezyki_profesje] : [],
+          sprzet: []
+        }
+      }
+    }));
+  } else {
+    return res.status(404).json({ error: 'Nieprawidłowy poziom wyboru ścieżki' });
   }
   
-  res.json({ 
-    sciezki: sciezki.map(s => ({ 
-      id: s.id, 
-      nazwa: s.nazwa,
-      opis: s.opis,
-      poziom_1: s.poziom_1
-    }))
-  });
+  res.json({ sciezki });
+});
+
+/**
+ * Pobiera opis talentu z bazy danych
+ * @param {string} talentName - Nazwa talentu
+ * @returns {string} Opis talentu
+ */
+function getTalentDescription(talentName) {
+  const talentDescriptions = {
+    'Modlitwa': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia.',
+    'Wspólna odnowa': 'Gdy leczysz siebie, możesz uleczyć dodatkowe obrażenia równe twojej Szybkości Zdrowienia u sojusznika w zasięgu 1,5 metra.',
+    'Szybka odnowa': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia.',
+    'Podstęp': 'Ataki z zaskoczenia zadają dodatkowe obrażenia równe twojej Zręczności.',
+    'Wykorzystanie okazji': 'Gdy atakujesz z zaskoczenia, możesz wykonać dodatkowy atak.',
+    'Nieczyste zagrania': 'Możesz wykonać atak z zaskoczenia jako reakcja.',
+    'Furia': 'Gdy twoje Zdrowie spadnie poniżej połowy maksymalnej wartości, wszystkie twoje ataki zadają dodatkowe obrażenia równe twojej Sile.',
+    'Wysokie obroty': 'Możesz wykonać dodatkową akcję w swojej turze. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
+    'Determinacja': 'Gdy wyrzucisz 1 na kości ułatwienia, możesz rzucić ponownie i wybrać, którego wyniku użyć.',
+    'Odskok': 'Gdy stworzenie, które widzisz, chybi, atakując twoją Obronę lub Zręczność, możesz użyć reakcji, by wykonać odwrót.',
+    'Nie do zdarcia': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia, a także pozbyć się jednego z następujących stanów: wyczerpanie, osłabienie lub zatrucie.',
+    'Prymat sobowtóra': 'W trakcie swojej tury możesz użyć Kradzieży tożsamości jako reakcji. Ponadto gdy skradniesz tożsamość jakiejś istoty, to dopóki naśladujesz jej wygląd, wszelkie ataki przeciw niej wykonujesz z 1 ułatwieniem.',
+    'Kontrolowany szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.',
+    'Boskie uderzenie': 'Możesz użyć akcji, by twoje następne uderzenie zadaje dodatkowe obrażenia równe twojej Woli.',
+    'Barbarzyński szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.'
+  };
+  
+  return talentDescriptions[talentName] || 'Opis talentu nie jest dostępny.';
+}
+
+// Endpoint do pobierania profesji
+app.get('/api/professions', (req, res) => {
+  // Flatten PG profession tables into UI-friendly list
+  const kategorie = {
+    'Naukowe': { nazwa: 'Naukowe' },
+    'Pospolite': { nazwa: 'Pospolite' },
+    'Przestępcze': { nazwa: 'Przestępcze' },
+    'Wojenne': { nazwa: 'Wojenne' },
+    'Koczownicze': { nazwa: 'Koczownicze' },
+    'Religijne': { nazwa: 'Religijne' }
+  };
+
+  const profesje = [];
+  if (PROFESSIONS && PROFESSIONS.tables) {
+    const map = [
+      ['Naukowe', PROFESSIONS.tables.naukowe],
+      ['Pospolite', PROFESSIONS.tables.pospolite],
+      ['Przestępcze', PROFESSIONS.tables.przestepcze],
+      ['Wojenne', PROFESSIONS.tables.wojenne],
+      ['Koczownicze', PROFESSIONS.tables.koczownicze],
+      ['Religijne', PROFESSIONS.tables.religijne]
+    ];
+    map.forEach(([kat, arr]) => {
+      (arr || []).forEach((text, idx) => {
+        profesje.push({
+          id: `${kat.toLowerCase()}_${idx + 1}`,
+          nazwa: text,
+          kategoria: kat,
+          opis: '',
+          zrodlo: 'PG'
+        });
+      });
+    });
+  }
+
+  res.json({ kategorie, profesje });
+});
+
+// Endpoint do pobierania kuriozów
+app.get('/api/curios', (req, res) => {
+  // Flatten PG tables into UI-friendly list
+  const kategorie = {
+    'Tabela 1': { nazwa: 'Tabela 1' },
+    'Tabela 2': { nazwa: 'Tabela 2' },
+    'Tabela 3': { nazwa: 'Tabela 3' },
+    'Tabela 4': { nazwa: 'Tabela 4' },
+    'Tabela 5': { nazwa: 'Tabela 5' },
+    'Tabela 6': { nazwa: 'Tabela 6' }
+  };
+
+  const kurioza = [];
+  if (CURIOS && CURIOS.tables) {
+    Object.entries(CURIOS.tables).forEach(([tableNum, items]) => {
+      const kat = `Tabela ${tableNum}`;
+      items.forEach((text, idx) => {
+        kurioza.push({
+          id: `t${tableNum}_k${idx + 1}`,
+          nazwa: text,
+          opis: '',
+          efekt: '',
+          wartosc: '',
+          kategoria: kat,
+          zrodlo: 'PG'
+        });
+      });
+    });
+  }
+
+  res.json({ kategorie, kurioza });
 });
 
 // Endpoint do budowania kompletnej postaci
