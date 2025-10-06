@@ -14,13 +14,13 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'ui')));
 
 /**
- * Buduje kompletną postać na podstawie specyfikacji
+ * Buduje postać na podstawie specyfikacji zgodnie z zasadami z PDF
  * @param {Object} spec - Specyfikacja postaci
  * @param {string} spec.pochodzenie - ID pochodzenia
- * @param {Object} [spec.atrybuty] - Własne wartości atrybutów lub null dla losowych
- * @param {string} [spec.sciezka] - ID ścieżki nowicjusza
- * @param {number} [spec.poziom] - Poziom postaci (0-4, domyślnie 0)
- * @returns {Object} Kompletny obiekt postaci
+ * @param {string} [spec.wybor_atrybutu] - Wybór atrybutu (+1 do wybranego)
+ * @param {string} [spec.sciezka] - ID ścieżki
+ * @param {number} [spec.poziom] - Poziom postaci (0-10, domyślnie 0)
+ * @returns {Object} Obiekt postaci
  */
 function budujPostac(spec) {
   // Walidacja danych wejściowych
@@ -33,48 +33,206 @@ function budujPostac(spec) {
     throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
   }
 
-  // Poziom postaci - domyślnie 0 (Nowicjusz)
-  const poziom = spec.poziom !== undefined ? parseInt(spec.poziom) : 0;
+  // Poziom postaci - domyślnie 1 (Nowicjusz) - gra nie ma poziomu 0
+  const poziomPostaci = spec.poziom !== undefined ? parseInt(spec.poziom) : 1;
   
   // Sprawdzenie czy poziom istnieje
-  const poziomData = DANE_GRY.poziomy[poziom];
+  const poziomData = DANE_GRY.poziomy[poziomPostaci];
   if (!poziomData) {
-    throw new Error(`Nieznany poziom: ${poziom}`);
+    throw new Error(`Nieznany poziom: ${poziomPostaci}`);
   }
 
-  // Atrybuty podstawowe - zadane lub domyślne (10, 10, 10, 10)
-  const atrybuty = spec.atrybuty || { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 };
+  // Oblicz atrybuty zgodnie z zasadami z PDF
+  const atrybuty_finalne = DANE_GRY.obliczenia.oblicz_atrybuty_poczatkowe(pochodzenie, spec.wybor_atrybutu);
 
-  // Modyfikatory z pochodzenia
-  const atrybuty_finalne = {
-    sila: atrybuty.sila + (pochodzenie.atrybuty.sila - 10),
-    zrecznosc: atrybuty.zrecznosc + (pochodzenie.atrybuty.zrecznosc - 10), 
-    intelekt: atrybuty.intelekt + (pochodzenie.atrybuty.intelekt - 10),
-    wola: atrybuty.wola + (pochodzenie.atrybuty.wola - 10)
-  };
+  // Oblicz atrybuty drugorzędne z modyfikatorami rozmiaru
+  const drugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty_finalne, pochodzenie, poziomPostaci);
 
-  // Atrybuty drugorzędne
-  const drugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty_finalne, pochodzenie);
+  // Pobierz ścieżkę jeśli podana
+  let sciezkaData = null;
+  if (spec.sciezka) {
+    // Sprawdź w odpowiedniej kategorii ścieżek na podstawie poziomu
+    if (poziomPostaci >= 1 && poziomPostaci <= 2 && DANE_GRY.sciezki_nowicjuszy[spec.sciezka]) {
+      sciezkaData = DANE_GRY.sciezki_nowicjuszy[spec.sciezka];
+    } else if (poziomPostaci >= 3 && poziomPostaci <= 6 && DANE_GRY.sciezki_ekspertow[spec.sciezka]) {
+      sciezkaData = DANE_GRY.sciezki_ekspertow[spec.sciezka];
+    } else if (poziomPostaci >= 7 && DANE_GRY.sciezki_mistrzow[spec.sciezka]) {
+      sciezkaData = DANE_GRY.sciezki_mistrzow[spec.sciezka];
+    }
+  }
 
-  // Ścieżka nowicjusza (opcjonalnie)
-  let sciezka = null;
-  if (spec.sciezka && DANE_GRY.sciezki_nowicjuszy[spec.sciezka]) {
-    sciezka = DANE_GRY.sciezki_nowicjuszy[spec.sciezka];
+  // Dodaj korzyści z pochodzenia na poziomie 4
+  let korzysciPochodzenia = {};
+  if (poziomPostaci === 4) {
+    korzysciPochodzenia = DANE_GRY.obliczenia.korzysci_pochodzenia_poziom_4(pochodzenie);
   }
 
   // Składanie finalnego obiektu postaci
   return {
-    pochodzenie: pochodzenie,
+    pochodzenie,
     poziom: poziomData,
     atrybuty: atrybuty_finalne,
     atrybuty_drugorzedne: drugorzedne,
-    sciezka: sciezka,
+    sciezka: sciezkaData,
+    korzysci_pochodzenia: korzysciPochodzenia,
     profesje: pochodzenie.profesje,
     jezyki: pochodzenie.jezyki,
     cechy_specjalne: pochodzenie.cechy_specjalne,
     utworzono: new Date().toISOString()
   };
 }
+
+/**
+ * Buduje kompletną postać z progresją poziomów (1-10)
+ * @param {Object} spec - Specyfikacja postaci
+ * @returns {Object} Kompletny obiekt postaci z progresją
+ */
+/**
+ * Oblicza korzyści dla wybranego poziomu
+ * @param {number} poziom - Wybrany poziom (0-10)
+ * @param {Object} spec - Specyfikacja postaci
+ * @param {string} spec.pochodzenie - ID pochodzenia
+ * @param {string} [spec.sciezka_nowicjusza] - ID ścieżki nowicjusza
+ * @param {string} [spec.sciezka_ekspercka] - ID ścieżki eksperckiej
+ * @param {string} [spec.sciezka_mistrzowska] - ID ścieżki mistrzowskiej
+ * @returns {Object} Korzyści dla poziomu
+ */
+function obliczKorzysciPoziomu(poziom, spec) {
+  const poziomData = DANE_GRY.poziomy[poziom];
+  if (!poziomData) {
+    throw new Error(`Nieznany poziom: ${poziom}`);
+  }
+
+  const pochodzenie = DANE_GRY.pochodzenia[spec.pochodzenie];
+  if (!pochodzenie) {
+    throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
+  }
+
+  const result = {
+    poziom,
+    nazwa_poziomu: poziomData.nazwa,
+    opis_poziomu: poziomData.opis,
+    zrodlo_korzysci: poziomData.zrodlo_korzysci,
+    korzyści: {}
+  };
+
+  // Zależnie od źródła korzyści
+  switch (poziomData.zrodlo_korzysci) {
+  case 'pochodzenie':
+    // Poziom 4 - korzyści z pochodzenia
+    if (poziom === 4 && pochodzenie.poziom_4) {
+      result.korzyści = pochodzenie.poziom_4;
+    }
+    break;
+
+  case 'sciezka_nowicjusza':
+    if (spec.sciezka_nowicjusza) {
+      const sciezka = DANE_GRY.sciezki_nowicjuszy[spec.sciezka_nowicjusza];
+      if (sciezka) {
+        const klucz = `poziom_${poziom}`;
+        result.korzyści = sciezka[klucz] || {};
+        result.nazwa_sciezki = sciezka.nazwa;
+      }
+    }
+    break;
+
+  case 'sciezka_ekspercka':
+    if (spec.sciezka_ekspercka) {
+      const sciezka = DANE_GRY.sciezki_ekspertow[spec.sciezka_ekspercka];
+      if (sciezka) {
+        const klucz = `poziom_${poziom}`;
+        result.korzyści = sciezka[klucz] || {};
+        result.nazwa_sciezki = sciezka.nazwa;
+      }
+    }
+    break;
+
+  case 'sciezka_mistrzowska':
+    if (spec.sciezka_mistrzowska) {
+      const sciezka = DANE_GRY.sciezki_mistrzow[spec.sciezka_mistrzowska];
+      if (sciezka) {
+        const klucz = `poziom_${poziom}`;
+        result.korzyści = sciezka[klucz] || {};
+        result.nazwa_sciezki = sciezka.nazwa;
+      }
+    }
+    break;
+  }
+
+  return result;
+}
+
+function budujPostacKompletna(spec) {
+  // Buduj podstawową postać
+  const postacBazowa = budujPostac(spec);
+  
+  // Dodaj progresję atrybutów na podstawie poziomu
+  const bonusyPoziomu = DANE_GRY.progresja.obliczBonusyAtrybutow(postacBazowa.poziom.id);
+  
+  // Dodaj bonusy ze ścieżek
+  const sciezki = spec.sciezki || [];
+  const bonusyZdrowia = DANE_GRY.progresja.obliczBonusyZdrowia(sciezki);
+  const bonusyMocy = DANE_GRY.progresja.obliczBonusyMocy(sciezki);
+  
+  // Oblicz finalne atrybuty z progresją
+  const atrybutyFinalne = {
+    sila: postacBazowa.atrybuty.sila + (bonusyPoziomu.sila || 0),
+    zrecznosc: postacBazowa.atrybuty.zrecznosc + (bonusyPoziomu.zrecznosc || 0),
+    intelekt: postacBazowa.atrybuty.intelekt + (bonusyPoziomu.intelekt || 0),
+    wola: postacBazowa.atrybuty.wola + (bonusyPoziomu.wola || 0)
+  };
+  
+  // Aktualizuj atrybuty drugorzędne
+  const atrybutyDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybutyFinalne, postacBazowa.pochodzenie);
+  atrybutyDrugorzedne.zdrowie += bonusyZdrowia;
+  atrybutyDrugorzedne.moc += bonusyMocy;
+  
+  // Dodaj informacje o progresji
+  const progresja = {
+    poziom: postacBazowa.poziom,
+    bonusy_poziomu: bonusyPoziomu,
+    bonusy_zdrowia: bonusyZdrowia,
+    bonusy_mocy: bonusyMocy,
+    wybrane_sciezki: sciezki,
+    opis_poziomu: DANE_GRY.progresja.pobierzOpisPoziomu(postacBazowa.poziom.id)
+  };
+  
+  return {
+    ...postacBazowa,
+    atrybuty: atrybutyFinalne,
+    atrybuty_drugorzedne: atrybutyDrugorzedne,
+    progresja,
+    typ_eksportu: 'kompletna'
+  };
+}
+
+// Endpoint do obliczania korzyści poziomu
+app.post('/api/calculate-level-benefits', (req, res) => {
+  try {
+    const { poziom, pochodzenie, sciezka_nowicjusza, sciezka_ekspercka, sciezka_mistrzowska } = req.body;
+    
+    if (poziom === undefined) {
+      return res.status(400).json({ error: 'Brak poziomu' });
+    }
+    if (!pochodzenie) {
+      return res.status(400).json({ error: 'Brak pochodzenia' });
+    }
+
+    const korzyści = obliczKorzysciPoziomu(parseInt(poziom), {
+      pochodzenie,
+      sciezka_nowicjusza,
+      sciezka_ekspercka,
+      sciezka_mistrzowska
+    });
+
+    res.json(korzyści);
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Endpoint do budowania postaci
 app.post('/api/build', (req, res) => {
@@ -97,19 +255,29 @@ app.get('/api/options', (req, res) => {
   });
 });
 
-// Endpoint do pobierania dostępnych poziomów
+// Endpoint do pobierania dostępnych poziomów (1-10)
 app.get('/api/levels', (req, res) => {
   res.json({
-    poziomy: Object.values(DANE_GRY.poziomy).map((poziom, index) => ({
-      id: index,
+    poziomy: Object.entries(DANE_GRY.poziomy).map(([id, poziom]) => ({
+      id: parseInt(id),
       nazwa: poziom.nazwa,
       opis: poziom.opis,
-      kolor: poziom.kolor
+      kolor: poziom.kolor,
+      bonus_atrybuty: poziom.bonus_atrybuty,
+      nastepny_poziom: poziom.nastepny_poziom
     }))
   });
 });
 
-// Endpoint do pobierania ścieżek dla danego poziomu
+// Endpoint do pobierania pełnych danych poziomów
+app.get('/api/levels-full', (req, res) => {
+  res.json({
+    poziomy: DANE_GRY.poziomy,
+    progresja: DANE_GRY.progresja
+  });
+});
+
+// Endpoint do pobierania ścieżek dla danego poziomu (1-10)
 app.get('/api/paths/:level', (req, res) => {
   const poziom = parseInt(req.params.level);
   
@@ -117,13 +285,82 @@ app.get('/api/paths/:level', (req, res) => {
     return res.status(404).json({ error: 'Nieznany poziom' });
   }
   
-  const poziomData = DANE_GRY.poziomy[poziom];
-  const sciezki = poziomData.dostepne_sciezki.map(sciezkaId => ({
-    id: sciezkaId,
-    nazwa: sciezkaId.charAt(0).toUpperCase() + sciezkaId.slice(1)
-  }));
+  let sciezki = [];
   
-  res.json({ sciezki });
+  // Mapowanie poziomów na ścieżki
+  if (poziom === 1) {
+    sciezki = Object.values(DANE_GRY.sciezki_nowicjuszy);
+  } else if (poziom === 2) {
+    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_nowicjusza');
+  } else if (poziom === 3) {
+    sciezki = Object.values(DANE_GRY.sciezki_ekspertow);
+  } else if (poziom === 4) {
+    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_eksperta');
+  } else if (poziom === 5) {
+    sciezki = Object.values(DANE_GRY.sciezki_mistrzow);
+  } else if (poziom === 6) {
+    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_mistrza');
+  } else if (poziom === 7) {
+    sciezki = Object.values(DANE_GRY.sciezki_legend);
+  } else if (poziom === 8) {
+    sciezki = Object.values(DANE_GRY.sciezki_kontynuacji).filter(s => s.id === 'kontynuacja_legendy');
+  } else if (poziom === 9 || poziom === 10) {
+    // Poziomy 9-10: dostęp do wszystkich ścieżek
+    sciezki = [
+      ...Object.values(DANE_GRY.sciezki_nowicjuszy),
+      ...Object.values(DANE_GRY.sciezki_ekspertow),
+      ...Object.values(DANE_GRY.sciezki_mistrzow),
+      ...Object.values(DANE_GRY.sciezki_legend)
+    ];
+  }
+  
+  res.json({ 
+    sciezki: sciezki.map(s => ({ 
+      id: s.id, 
+      nazwa: s.nazwa,
+      opis: s.opis,
+      poziom_1: s.poziom_1
+    }))
+  });
+});
+
+// Endpoint do budowania kompletnej postaci
+app.post('/api/build-complete', (req, res) => {
+  try {
+    const postac = budujPostacKompletna(req.body);
+    res.json(postac);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Endpoint do eksportu postaci do JSON
+app.post('/api/export/json', (req, res) => {
+  try {
+    const postac = budujPostacKompletna(req.body);
+    const jsonData = JSON.stringify(postac, null, 2);
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="postac-${postac.pochodzenie.nazwa}-poziom${postac.poziom.id}.json"`);
+    res.send(jsonData);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Endpoint do eksportu postaci do PDF (placeholder)
+app.post('/api/export/pdf', (req, res) => {
+  try {
+    const postac = budujPostacKompletna(req.body);
+    
+    // TODO: Implementacja generowania PDF
+    res.status(501).json({ 
+      error: 'Eksport do PDF nie jest jeszcze zaimplementowany',
+      postac
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Strona główna
@@ -134,9 +371,11 @@ app.get('/', (req, res) => {
 // Start serwera
 if (require.main === module) {
   app.listen(PORT, () => {
+    // eslint-disable-next-line no-console
     console.log(`🎲 Kreator postaci działa na porcie ${PORT}`);
+    // eslint-disable-next-line no-console
     console.log(`📖 Otórz http://localhost:${PORT} aby rozpocząć`);
   });
 }
 
-module.exports = { app, budujPostac };
+module.exports = { app, budujPostac, obliczKorzysciPoziomu };

@@ -17,16 +17,15 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Człowiek');
-      expect(postac.atrybuty.sila).toBe(12); // bez modyfikatora
-      expect(postac.atrybuty_drugorzedne.zdrowie).toBe(12); // Zdrowie = Siła
-      expect(postac.atrybuty_drugorzedne.percepcja).toBe(14); // Percepcja = Intelekt
+      expect(postac.atrybuty.sila).toBe(10); // bazowe wartości
+      expect(postac.atrybuty_drugorzedne.zdrowie).toBe(10); // Zdrowie = Siła
+      expect(postac.atrybuty_drugorzedne.percepcja).toBe(10); // Percepcja = Intelekt
       expect(postac.jezyki).toContain('wspólny');
     });
 
     test('powinien utworzyć jötunna z modyfikatorami pochodzenia', () => {
       const spec = {
-        pochodzenie: 'jotunn',
-        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+        pochodzenie: 'jotunn'
       };
 
       const postac = budujPostac(spec);
@@ -46,26 +45,33 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
     });
 
     test('powinien rzucić błędem dla nieznanego poziomu', () => {
-        const spec = { pochodzenie: 'czlowiek', poziom: 99 };
-        expect(() => budujPostac(spec)).toThrow('Nieznany poziom: 99');
+      const spec = { pochodzenie: 'czlowiek', poziom: 99 };
+      expect(() => budujPostac(spec)).toThrow('Nieznany poziom: 99');
     });
 
-    test('powinien użyć domyślnego poziomu 0 gdy nie podano poziomu', () => {
-        const spec = { pochodzenie: 'czlowiek' };
-        const postac = budujPostac(spec);
-        expect(postac.poziom.nazwa).toBe('Nowicjusz');
+    test('powinien użyć domyślnego poziomu 1 gdy nie podano poziomu', () => {
+      const spec = { pochodzenie: 'czlowiek' };
+      const postac = budujPostac(spec);
+      expect(postac.poziom.nazwa).toBe('Nowicjusz');
     });
 
-    test('powinien obsłużyć poziom 1 (Ekspert)', () => {
-        const spec = { pochodzenie: 'czlowiek', poziom: 1 };
-        const postac = budujPostac(spec);
-        expect(postac.poziom.nazwa).toBe('Ekspert');
+    test('powinien obsłużyć poziom 1 (Nowicjusz)', () => {
+      const spec = { pochodzenie: 'czlowiek', poziom: 1 };
+      const postac = budujPostac(spec);
+      expect(postac.poziom.nazwa).toBe('Nowicjusz');
     });
 
-    test('powinien obsłużyć poziom 3 (Legenda)', () => {
-        const spec = { pochodzenie: 'czlowiek', poziom: 3 };
-        const postac = budujPostac(spec);
-        expect(postac.poziom.nazwa).toBe('Legenda');
+    test('powinien obsłużyć poziom 3 (Ekspert)', () => {
+      const spec = { pochodzenie: 'czlowiek', poziom: 3 };
+      const postac = budujPostac(spec);
+      expect(postac.poziom.nazwa).toBe('Ekspert');
+    });
+
+    test('powinien obsłużyć poziom 4 (Ekspert - korzyści pochodzenia)', () => {
+      const spec = { pochodzenie: 'czlowiek', poziom: 4 };
+      const postac = budujPostac(spec);
+      expect(postac.poziom.nazwa).toBe('Ekspert');
+      expect(postac.korzysci_pochodzenia).toBeDefined();
     });
 
     test('powinien rzucić błędem gdy brak pochodzenia', () => {
@@ -90,7 +96,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const spec = {
         pochodzenie: 'czlowiek',
         sciezka: 'wojownik',
-        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+        poziom: 1
       };
 
       const postac = budujPostac(spec);
@@ -109,8 +115,9 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
       expect(postac.pochodzenie.nazwa).toBe('Goblin');
       expect(postac.atrybuty.zrecznosc).toBe(12); // 10 + 2 modyfikator
-      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/2');
-      expect(postac.atrybuty_drugorzedne.obrona).toBe(14); // 12 + 2 za mały rozmiar
+      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/2'); // POPRAWIONE zgodnie z PG
+      expect(postac.atrybuty_drugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
+      expect(postac.atrybuty_drugorzedne.predkosc).toBe(10); // POPRAWIONE z 12 zgodnie z PG
       expect(postac.jezyki).toContain('gobliński');
     });
 
@@ -123,8 +130,8 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Chochlik');
-      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/4');
-      expect(postac.atrybuty_drugorzedne.obrona).toBe(16); // 12 + 4 za bardzo mały rozmiar
+      expect(postac.atrybuty_drugorzedne.rozmiar).toBe('0.5');
+      expect(postac.atrybuty_drugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
       expect(postac.atrybuty.intelekt).toBe(12); // 10 + 2 modyfikator
     });
 
@@ -176,28 +183,28 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const drugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, pochodzenie);
 
       expect(drugorzedne.percepcja).toBe(10); // = Intelekt
-      expect(drugorzedne.obrona).toBe(14); // = Zręczność  
+      expect(drugorzedne.obrona).toBe(14); // = Zręczność (bez modyfikatorów rozmiaru)  
       expect(drugorzedne.zdrowie).toBe(12); // = Siła
       expect(drugorzedne.szybkosc_zdrowienia).toBe(3); // = Siła/4
     });
 
-    test('atrybuty_drugorzedne() powinien uwzględnić modyfikatory rozmiaru', () => {
+    test('atrybuty_drugorzedne() nie powinien uwzględniać modyfikatorów rozmiaru (AC-008)', () => {
       const atrybuty = { sila: 10, zrecznosc: 12, intelekt: 10, wola: 10 };
       
-      // Test małego rozmiaru (goblin)
+      // Test małego rozmiaru (goblin) - bez modyfikatorów
       const goblin = DANE_GRY.pochodzenia.goblin;
       const goblinDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, goblin);
-      expect(goblinDrugorzedne.obrona).toBe(14); // 12 + 2 za rozmiar 1/2
+      expect(goblinDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
 
-      // Test bardzo małego rozmiaru (chochlik)
+      // Test bardzo małego rozmiaru (chochlik) - bez modyfikatorów
       const chochlik = DANE_GRY.pochodzenia.chochlik;
       const chochlikDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, chochlik);
-      expect(chochlikDrugorzedne.obrona).toBe(16); // 12 + 4 za rozmiar 1/4
+      expect(chochlikDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
 
-      // Test dużego rozmiaru (jotunn)
+      // Test dużego rozmiaru (jotunn) - bez modyfikatorów
       const jotunn = DANE_GRY.pochodzenia.jotunn;
       const jotunnDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, jotunn);
-      expect(jotunnDrugorzedne.obrona).toBe(10); // 12 - 2 za rozmiar 2
+      expect(jotunnDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
     });
   });
 
@@ -221,7 +228,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const cechy = Object.entries(cechySpecjalne);
       const kluczoweCechy = cechy.slice(0, 2).map(([nazwa, opis]) => ({
         nazwa: formatujNazweCechy(nazwa),
-        opis: opis.length > 60 ? opis.substring(0, 60) + '...' : opis
+        opis: opis.length > 60 ? `${opis.substring(0, 60)  }...` : opis
       }));
       
       return kluczoweCechy.length > 0 ? kluczoweCechy : null;
@@ -263,7 +270,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const cechy = Object.entries(cechySpecjalne);
       return cechy.map(([nazwa, opis]) => ({
         nazwa: formatujNazweCechy(nazwa),
-        opis: opis
+        opis
       }));
     };
 
@@ -315,95 +322,95 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
     // Testy dla nowych funkcji rozwijanych kafelków
     describe('Funkcje Rozwijanych Kafelków', () => {
-        test('utworzKrotkiOpisZwiniety() powinien zwracać krótki opis (1 zdanie)', () => {
-            const pochodzenie = { id: 'czlowiek' };
-            const opis = utworzKrotkiOpisZwiniety(pochodzenie);
-            expect(opis).toBe('Wszechstronni i ambitni, dominują w cywilizowanych krainach.');
-            expect(opis.split('.').length).toBeLessThanOrEqual(2); // 1 zdanie + pusty element
-        });
+      test('utworzKrotkiOpisZwiniety() powinien zwracać krótki opis (1 zdanie)', () => {
+        const pochodzenie = { id: 'czlowiek' };
+        const opis = utworzKrotkiOpisZwiniety(pochodzenie);
+        expect(opis).toBe('Wszechstronni i ambitni, dominują w cywilizowanych krainach.');
+        expect(opis.split('.').length).toBeLessThanOrEqual(2); // 1 zdanie + pusty element
+      });
 
-        test('utworzRozszerzonyOpis() powinien zwracać rozszerzony opis (3 zdania)', () => {
-            const pochodzenie = { id: 'elf' };
-            const opis = utworzRozszerzonyOpis(pochodzenie);
-            expect(opis).toContain('Długowieczne istoty o niezwykłej urodzie');
-            expect(opis.split('.').length).toBeGreaterThanOrEqual(4); // 3 zdania + pusty element
-        });
+      test('utworzRozszerzonyOpis() powinien zwracać rozszerzony opis (3 zdania)', () => {
+        const pochodzenie = { id: 'elf' };
+        const opis = utworzRozszerzonyOpis(pochodzenie);
+        expect(opis).toContain('Długowieczne istoty o niezwykłej urodzie');
+        expect(opis.split('.').length).toBeGreaterThanOrEqual(4); // 3 zdania + pusty element
+      });
 
-        test('pobierzWszystkieCechy() powinien zwracać wszystkie cechy', () => {
-            const cechy = {
-                'magia_natury': 'Może rzucać zaklęcia związane z naturą',
-                'widzenie_w_ciemnosci': 'Widzi w ciemności do 60 stóp',
-                'odpornosc_na_magie': 'Ma przewagę na testach przeciwko magii'
-            };
-            const wszystkieCechy = pobierzWszystkieCechy(cechy);
-            expect(wszystkieCechy).toHaveLength(3);
-            expect(wszystkieCechy[0].nazwa).toBe('Magia Natury');
-            expect(wszystkieCechy[0].opis).toBe('Może rzucać zaklęcia związane z naturą');
-        });
+      test('pobierzWszystkieCechy() powinien zwracać wszystkie cechy', () => {
+        const cechy = {
+          'magia_natury': 'Może rzucać zaklęcia związane z naturą',
+          'widzenie_w_ciemnosci': 'Widzi w ciemności do 60 stóp',
+          'odpornosc_na_magie': 'Ma przewagę na testach przeciwko magii'
+        };
+        const wszystkieCechy = pobierzWszystkieCechy(cechy);
+        expect(wszystkieCechy).toHaveLength(3);
+        expect(wszystkieCechy[0].nazwa).toBe('Magia Natury');
+        expect(wszystkieCechy[0].opis).toBe('Może rzucać zaklęcia związane z naturą');
+      });
 
-        test('pobierzWszystkieCechy() powinien zwracać null dla pustego obiektu', () => {
-            const cechy = pobierzWszystkieCechy({});
-            expect(cechy).toBeNull();
-        });
+      test('pobierzWszystkieCechy() powinien zwracać null dla pustego obiektu', () => {
+        const cechy = pobierzWszystkieCechy({});
+        expect(cechy).toBeNull();
+      });
 
-        test('formatujNazweCechy() powinien formatować nazwy cech poprawnie', () => {
-            expect(formatujNazweCechy('magia_natury')).toBe('Magia Natury');
-            expect(formatujNazweCechy('widzenie_w_ciemnosci')).toBe('Widzenie W Ciemnosci');
-            expect(formatujNazweCechy('odpornosc_na_magie')).toBe('Odpornosc Na Magie');
-        });
+      test('formatujNazweCechy() powinien formatować nazwy cech poprawnie', () => {
+        expect(formatujNazweCechy('magia_natury')).toBe('Magia Natury');
+        expect(formatujNazweCechy('widzenie_w_ciemnosci')).toBe('Widzenie W Ciemnosci');
+        expect(formatujNazweCechy('odpornosc_na_magie')).toBe('Odpornosc Na Magie');
+      });
     });
 
     // Testy dla przycisku "Wybierz"
     describe('Funkcje Przycisku Wyboru', () => {
-        // Symulacja funkcji pokazKomunikatWyboru
-        const pokazKomunikatWyboru = (originId) => {
-            const pochodzenia = {
-                'czlowiek': { id: 'czlowiek', nazwa: 'Człowiek' },
-                'elf': { id: 'elf', nazwa: 'Elf' }
-            };
-            const pochodzenie = pochodzenia[originId];
-            return pochodzenie ? `Wybrano pochodzenie: ${pochodzenie.nazwa}` : null;
+      // Symulacja funkcji pokazKomunikatWyboru
+      const pokazKomunikatWyboru = (originId) => {
+        const pochodzenia = {
+          'czlowiek': { id: 'czlowiek', nazwa: 'Człowiek' },
+          'elf': { id: 'elf', nazwa: 'Elf' }
         };
+        const pochodzenie = pochodzenia[originId];
+        return pochodzenie ? `Wybrano pochodzenie: ${pochodzenie.nazwa}` : null;
+      };
 
-        test('pokazKomunikatWyboru() powinien zwracać komunikat dla znanego pochodzenia', () => {
-            const komunikat = pokazKomunikatWyboru('czlowiek');
-            expect(komunikat).toBe('Wybrano pochodzenie: Człowiek');
-        });
+      test('pokazKomunikatWyboru() powinien zwracać komunikat dla znanego pochodzenia', () => {
+        const komunikat = pokazKomunikatWyboru('czlowiek');
+        expect(komunikat).toBe('Wybrano pochodzenie: Człowiek');
+      });
 
-        test('pokazKomunikatWyboru() powinien zwracać komunikat dla elfa', () => {
-            const komunikat = pokazKomunikatWyboru('elf');
-            expect(komunikat).toBe('Wybrano pochodzenie: Elf');
-        });
+      test('pokazKomunikatWyboru() powinien zwracać komunikat dla elfa', () => {
+        const komunikat = pokazKomunikatWyboru('elf');
+        expect(komunikat).toBe('Wybrano pochodzenie: Elf');
+      });
 
-        test('pokazKomunikatWyboru() powinien zwracać null dla nieznanego pochodzenia', () => {
-            const komunikat = pokazKomunikatWyboru('nieznane');
-            expect(komunikat).toBeNull();
-        });
+      test('pokazKomunikatWyboru() powinien zwracać null dla nieznanego pochodzenia', () => {
+        const komunikat = pokazKomunikatWyboru('nieznane');
+        expect(komunikat).toBeNull();
+      });
     });
 
     // Testy dla obsługi kliknięć kafelków
     describe('Obsługa Kliknięć Kafelków', () => {
-        // Symulacja funkcji toggleTileExpansion
-        const toggleTileExpansion = (originId) => {
-            return `Toggling tile expansion for: ${originId}`;
-        };
+      // Symulacja funkcji toggleTileExpansion
+      const toggleTileExpansion = (originId) => {
+        return `Toggling tile expansion for: ${originId}`;
+      };
 
-        // Symulacja funkcji wybierzPochodzenie
-        const wybierzPochodzenie = (originId) => {
-            return `Selecting origin: ${originId}`;
-        };
+      // Symulacja funkcji wybierzPochodzenie
+      const wybierzPochodzenie = (originId) => {
+        return `Selecting origin: ${originId}`;
+      };
 
-        test('toggleTileExpansion() powinien działać dla różnych pochodzeń', () => {
-            expect(toggleTileExpansion('czlowiek')).toBe('Toggling tile expansion for: czlowiek');
-            expect(toggleTileExpansion('elf')).toBe('Toggling tile expansion for: elf');
-            expect(toggleTileExpansion('goblin')).toBe('Toggling tile expansion for: goblin');
-        });
+      test('toggleTileExpansion() powinien działać dla różnych pochodzeń', () => {
+        expect(toggleTileExpansion('czlowiek')).toBe('Toggling tile expansion for: czlowiek');
+        expect(toggleTileExpansion('elf')).toBe('Toggling tile expansion for: elf');
+        expect(toggleTileExpansion('goblin')).toBe('Toggling tile expansion for: goblin');
+      });
 
-        test('wybierzPochodzenie() powinien działać dla różnych pochodzeń', () => {
-            expect(wybierzPochodzenie('czlowiek')).toBe('Selecting origin: czlowiek');
-            expect(wybierzPochodzenie('elf')).toBe('Selecting origin: elf');
-            expect(wybierzPochodzenie('goblin')).toBe('Selecting origin: goblin');
-        });
+      test('wybierzPochodzenie() powinien działać dla różnych pochodzeń', () => {
+        expect(wybierzPochodzenie('czlowiek')).toBe('Selecting origin: czlowiek');
+        expect(wybierzPochodzenie('elf')).toBe('Selecting origin: elf');
+        expect(wybierzPochodzenie('goblin')).toBe('Selecting origin: goblin');
+      });
     });
   });
 });

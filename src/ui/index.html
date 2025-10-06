@@ -15,6 +15,7 @@
         }
 
         .header {
+            position: relative;
             text-align: center;
             margin-bottom: 30px;
             border-bottom: 2px solid #8b0000;
@@ -325,11 +326,11 @@
             font-size: 18px;
         }
 
-        .level-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
+    .level-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+    }
 
         .level-option {
             cursor: pointer;
@@ -406,12 +407,98 @@
             margin-bottom: 5px;
         }
 
-        .level-info small {
-            display: block;
-            color: #f4e4bc;
-            font-size: 11px;
-            line-height: 1.3;
-        }
+    .level-info small {
+        display: block;
+        color: #f4e4bc;
+        font-size: 10px;
+        line-height: 1.2;
+    }
+
+    /* Style dla sekcji eksportu */
+    .export-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        border-left: 4px solid #d4af37;
+    }
+
+    .export-section h4 {
+        margin: 0 0 15px 0;
+        color: #d4af37;
+        font-size: 18px;
+    }
+
+    .export-options {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn-export {
+        background: linear-gradient(135deg, #d4af37, #b8941f);
+        color: #2c1810;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-export:hover:not(:disabled) {
+        background: linear-gradient(135deg, #e6c547, #d4af37);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    .btn-export:disabled {
+        background: #666;
+        color: #999;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Style dla kompletnego podsumowania */
+    .complete-character-summary {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 2px solid #d4af37;
+    }
+
+    .character-level-info {
+        background: rgba(212, 175, 55, 0.1);
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 4px solid #d4af37;
+    }
+
+    .progression-bonuses {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .bonus-item {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .bonus-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #d4af37;
+    }
 
         /* Style dla sekcji ścieżek */
         .path-section {
@@ -455,16 +542,35 @@
             color: #d4af37;
         }
 
-        .origin-tile .size-badge {
+        /* Kontener dla znaczników (rozmiar i źródło) */
+        .origin-tile .badges-container {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .origin-tile .size-badge {
             background: #8b0000;
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: bold;
+        }
+
+        /* Znacznik źródła - mniejszy i bardziej dyskretny */
+        .origin-tile .source-badge {
+            background: rgba(212, 175, 55, 0.15);
+            color: rgba(212, 175, 55, 0.6);
+            padding: 3px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: normal;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            letter-spacing: 0.5px;
         }
 
         /* Nowe style dla sekcji kafelków */
@@ -684,6 +790,113 @@
             color: #f4e4bc;
         }
 
+        /* Sekcja korzyści poziomu */
+        .level-benefits-section {
+            background: #2c1f1a;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .level-benefits-section h4 {
+            color: #d4af37;
+            margin: 0 0 20px 0;
+            font-size: 1.3em;
+        }
+
+        .benefit-category {
+            background: #3a2318;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .benefit-category h5 {
+            color: #0066cc;
+            margin: 0 0 10px 0;
+        }
+
+        /* Interaktywny wybór atrybutów */
+        .attributes-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .attribute-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #2c1810;
+            border-radius: 8px;
+            border: 2px solid #8b0000;
+            transition: all 0.2s;
+        }
+
+        .attribute-row:hover {
+            border-color: #d4af37;
+            background: #3a2318;
+        }
+
+        .attribute-row .attr-name {
+            font-weight: bold;
+            min-width: 120px;
+            color: #d4af37;
+        }
+
+        .btn-minus, .btn-plus {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #8b0000;
+            background: #2c1810;
+            color: #d4af37;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-minus:hover:not(:disabled), .btn-plus:hover:not(:disabled) {
+            background: #8b0000;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .btn-minus:disabled, .btn-plus:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .attr-value {
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        .attr-info {
+            margin: 10px 0;
+            padding: 12px;
+            background: #3a2318;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            color: #d4af37;
+        }
+
+        .attr-info strong {
+            color: #ffc107;
+        }
+
         /* Obliczone atrybuty */
         .calculated-attributes {
             background: #3a2318;
@@ -773,6 +986,381 @@
             font-weight: bold;
             color: #d4af37;
         }
+
+        /* ========== SYSTEM POMOCY (LIGHTBOX) ========== */
+
+        /* Przycisk Pomocy */
+        .btn-help {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #2c1810;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+            z-index: 100;
+        }
+
+        .btn-help:hover {
+            background: linear-gradient(135deg, #f4d03f, #d4af37);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.6);
+        }
+
+        /* Lightbox Overlay */
+        .help-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .help-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            cursor: pointer;
+        }
+
+        /* Modal Container */
+        .help-modal {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            background: #2c1810;
+            border: 3px solid #d4af37;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+            z-index: 10000;
+        }
+
+        /* Header */
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 2px solid #8b0000;
+            background: #3a2318;
+            border-top-left-radius: 9px;
+            border-top-right-radius: 9px;
+        }
+
+        .help-header h3 {
+            margin: 0;
+            color: #d4af37;
+            font-size: 22px;
+        }
+
+        .help-close {
+            background: #8b0000;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .help-close:hover {
+            background: #d4af37;
+            color: #2c1810;
+            transform: rotate(90deg);
+        }
+
+        /* Tabs Navigation */
+        .help-tabs {
+            display: flex;
+            gap: 0;
+            padding: 0;
+            background: #3a2318;
+            border-bottom: 2px solid #8b0000;
+            overflow-x: auto;
+        }
+
+        .help-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f4e4bc;
+            padding: 15px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .help-tab:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: #d4af37;
+        }
+
+        .help-tab.active {
+            color: #d4af37;
+            border-bottom-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        /* Content Area */
+        .help-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            color: #f4e4bc;
+            line-height: 1.6;
+        }
+
+        .help-content h4 {
+            color: #d4af37;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .help-content h5 {
+            color: #b8860b;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .help-content ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        .help-content li {
+            margin: 8px 0;
+        }
+
+        /* Komponenty treści pomocy */
+        .help-step {
+            background: rgba(139, 0, 0, 0.15);
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .help-step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .help-step-number {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #2c1810;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .help-step h5 {
+            margin: 0;
+            color: #d4af37;
+        }
+
+        .help-tip {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid #d4af37;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        /* Słownik */
+        .glossary-section {
+            margin: 25px 0;
+        }
+
+        .glossary-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(139, 0, 0, 0.15);
+            border-radius: 5px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .glossary-term {
+            font-size: 16px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .glossary-def {
+            color: #f4e4bc;
+        }
+
+        .glossary-def p {
+            margin: 8px 0;
+        }
+
+        .glossary-def ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        /* FAQ */
+        .faq-section {
+            margin: 25px 0;
+        }
+
+        .faq-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(139, 0, 0, 0.15);
+            border-radius: 5px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .faq-question {
+            font-size: 15px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .faq-answer {
+            color: #f4e4bc;
+            line-height: 1.6;
+        }
+
+        /* Skróty klawiszowe */
+        .shortcuts-intro {
+            margin-bottom: 20px;
+        }
+
+        .shortcuts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .shortcuts-table th {
+            background: #3a2318;
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #8b0000;
+        }
+
+        .shortcuts-table td {
+            padding: 12px;
+            border-bottom: 1px solid #8b0000;
+        }
+
+        .shortcuts-table tbody tr:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        kbd {
+            background: #3a2318;
+            border: 1px solid #d4af37;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #d4af37;
+            box-shadow: 0 2px 0 rgba(139, 0, 0, 0.3);
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .shortcuts-section {
+            margin: 25px 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            .help-modal {
+                width: 100%;
+                max-width: none;
+                max-height: 100vh;
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .btn-help {
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .help-tabs {
+                overflow-x: scroll;
+            }
+            
+            .help-tab {
+                font-size: 12px;
+                padding: 12px 15px;
+            }
+
+            .help-content {
+                padding: 20px;
+            }
+
+            .shortcuts-table {
+                font-size: 13px;
+            }
+
+            .shortcuts-table th,
+            .shortcuts-table td {
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -780,11 +1368,16 @@
         <h1>⚔️ Kreator Postaci</h1>
         <h2>Cień Władcy Demonów</h2>
         <p><em>Stwórz swojego bohatera dla świata mroku i magii</em></p>
+        
+        <!-- Przycisk Pomocy -->
+        <button id="btn-help" class="btn-help" aria-label="Otwórz pomoc" title="Pomoc (F1)">
+            ❓ POMOC
+        </button>
     </div>
 
     <!-- Krok 1: Wybór Pochodzenia -->
     <div id="step-1" class="step active">
-        <div class="section">
+    <div class="section">
             <h3>🎭 Krok 1: Wybór Pochodzenia</h3>
             <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
 
@@ -793,6 +1386,9 @@
             </div>
 
             <div class="step-navigation">
+                <button class="btn-secondary" style="visibility: hidden;">
+                    ← Wstecz
+                </button>
                 <button id="btn-next-1" class="btn-primary" onclick="nextStep(1)" disabled>
                     Dalej →
                 </button>
@@ -810,47 +1406,125 @@
                 <!-- Informacje o wybranym pochodzeniu -->
             </div>
 
-            <!-- Sekcja poziomu postaci -->
+            <!-- Sekcja poziomu postaci (1-10) -->
             <div class="level-section">
-                <h4>Poziom Postaci</h4>
+                <h4>Poziom Postaci (1-10)</h4>
                 <div class="level-selector">
+                    <!-- Poziom 1 -->
                     <label class="level-option">
-                        <input type="radio" name="poziom" value="0" checked>
+                        <input type="radio" name="poziom" value="1" checked>
                         <div class="level-card">
-                            <div class="level-number">0</div>
+                            <div class="level-number">1</div>
                             <div class="level-info">
                                 <strong>Nowicjusz</strong>
                                 <small>Wybierz ścieżkę nowicjusza</small>
                             </div>
                         </div>
                     </label>
-                    <label class="level-option">
-                        <input type="radio" name="poziom" value="1">
-                        <div class="level-card">
-                            <div class="level-number">1</div>
-                            <div class="level-info">
-                                <strong>Ekspert</strong>
-                                <small>Wybierz ścieżkę eksperta</small>
-                            </div>
-                        </div>
-                    </label>
+                    
+                    <!-- Poziom 2 -->
                     <label class="level-option">
                         <input type="radio" name="poziom" value="2">
                         <div class="level-card">
                             <div class="level-number">2</div>
                             <div class="level-info">
-                                <strong>Mistrz</strong>
-                                <small>Wybierz ścieżkę mistrza</small>
+                                <strong>Nowicjusz</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
                             </div>
                         </div>
                     </label>
+                    <!-- Poziom 3 -->
                     <label class="level-option">
                         <input type="radio" name="poziom" value="3">
                         <div class="level-card">
                             <div class="level-number">3</div>
                             <div class="level-info">
-                                <strong>Legenda</strong>
-                                <small>Wybierz ścieżkę legendy</small>
+                                <strong>Ekspert</strong>
+                                <small>Wybierz ścieżkę ekspercką</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 4 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="4">
+                        <div class="level-card">
+                            <div class="level-number">4</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści z pochodzenia</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 5 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="5">
+                        <div class="level-card">
+                            <div class="level-number">5</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 6 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="6">
+                        <div class="level-card">
+                            <div class="level-number">6</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści ścieżki eksperckiej</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 7 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="7">
+                        <div class="level-card">
+                            <div class="level-number">7</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Wybierz ścieżkę mistrzowską</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 8 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="8">
+                        <div class="level-card">
+                            <div class="level-number">8</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 9 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="9">
+                        <div class="level-card">
+                            <div class="level-number">9</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki eksperckiej</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 10 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="10">
+                        <div class="level-card">
+                            <div class="level-number">10</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki mistrzowskiej</small>
                             </div>
                         </div>
                     </label>
@@ -860,40 +1534,102 @@
             <!-- Sekcja ścieżek (dynamiczna) -->
             <div class="path-section">
                 <h4 id="path-section-title">Ścieżka Nowicjusza</h4>
-                <div class="form-group">
+        <div class="form-group">
                     <select id="sciezka-nowicjusza" name="sciezka">
                         <option value="">Wybierz ścieżkę...</option>
-                    </select>
+            </select>
                 </div>
-            </div>
+        </div>
 
-            <div class="form-group">
-                <label>
+        <div class="form-group">
+            <label>
                     <input type="checkbox" id="domyslne-atrybuty" checked>
                     Użyj domyślnych wartości atrybutów (bazujących na pochodzeniu)
-                </label>
-            </div>
+            </label>
+        </div>
 
-            <div id="custom-attributes" style="display: none;">
+        <div id="custom-attributes" style="display: none;">
                 <h4>Własne wartości atrybutów (przed modyfikatorami pochodzenia):</h4>
                 <h5>Mozesz jeden raz obniżyc wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu. </h5>
-                <div class="attributes-grid">
-                    <div>
+            <div class="attributes-grid">
+                <div>
                         <label for="sila-base">Siła:</label>
                         <input type="number" id="sila-base" min="3" max="18" value="10">
                     </div>
                     <div>
                         <label for="zrecznosc-base">Zręczność:</label>
                         <input type="number" id="zrecznosc-base" min="3" max="18" value="10">
-                    </div>
-                    <div>
+                </div>
+                <div>
                         <label for="intelekt-base">Intelekt:</label>
                         <input type="number" id="intelekt-base" min="3" max="18" value="10">
-                    </div>
-                    <div>
+                </div>
+                <div>
                         <label for="wola-base">Wola:</label>
                         <input type="number" id="wola-base" min="3" max="18" value="10">
                     </div>
+                </div>
+            </div>
+
+            <!-- Sekcja Korzyści Poziomu -->
+            <div id="level-benefits-section" class="level-benefits-section" style="display: none;">
+                <h4>📜 Korzyści Poziomu: <span id="selected-level-name"></span></h4>
+                
+                <!-- Atrybuty Drugorzędne -->
+                <div id="secondary-attributes-growth" class="benefit-category" style="display: none;">
+                    <h5>Atrybuty Drugorzędne</h5>
+                    <div id="secondary-attrs-content"></div>
+                </div>
+
+                <!-- Interaktywny Wybór Atrybutów Głównych -->
+                <div id="primary-attributes-choice" style="display: none;">
+                    <h5>Wybierz Atrybuty do Zwiększenia</h5>
+                    <p class="attr-info">Możesz zwiększyć <strong><span id="total-points">2</span></strong> atrybuty o <strong>+1</strong>. Pozostało punktów: <strong><span id="remaining-points">2</span></strong></p>
+                    
+                    <div class="attributes-selector">
+                        <div class="attribute-row" data-attribute="sila">
+                            <span class="attr-name">Siła</span>
+                            <button class="btn-minus" onclick="decrementAttribute('sila')">−</button>
+                            <span class="attr-value" id="bonus-sila">0</span>
+                            <button class="btn-plus" onclick="incrementAttribute('sila')">+</button>
+                        </div>
+                        <div class="attribute-row" data-attribute="zrecznosc">
+                            <span class="attr-name">Zręczność</span>
+                            <button class="btn-minus" onclick="decrementAttribute('zrecznosc')">−</button>
+                            <span class="attr-value" id="bonus-zrecznosc">0</span>
+                            <button class="btn-plus" onclick="incrementAttribute('zrecznosc')">+</button>
+                        </div>
+                        <div class="attribute-row" data-attribute="intelekt">
+                            <span class="attr-name">Intelekt</span>
+                            <button class="btn-minus" onclick="decrementAttribute('intelekt')">−</button>
+                            <span class="attr-value" id="bonus-intelekt">0</span>
+                            <button class="btn-plus" onclick="incrementAttribute('intelekt')">+</button>
+                        </div>
+                        <div class="attribute-row" data-attribute="wola">
+                            <span class="attr-name">Wola</span>
+                            <button class="btn-minus" onclick="decrementAttribute('wola')">−</button>
+                            <span class="attr-value" id="bonus-wola">0</span>
+                            <button class="btn-plus" onclick="incrementAttribute('wola')">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Talenty -->
+                <div id="talents-section" class="benefit-category" style="display: none;">
+                    <h5>Talenty</h5>
+                    <div id="talents-content"></div>
+                </div>
+
+                <!-- Magia -->
+                <div id="magic-section" class="benefit-category" style="display: none;">
+                    <h5>Magia</h5>
+                    <div id="magic-content"></div>
+                </div>
+
+                <!-- Języki i Profesje -->
+                <div id="languages-professions-section" class="benefit-category" style="display: none;">
+                    <h5>Języki i Profesje</h5>
+                    <div id="languages-professions-content"></div>
                 </div>
             </div>
 
@@ -958,12 +1694,41 @@
                 <button id="btn-create" class="btn-primary" onclick="utworzPostac()">
                     🎲 Utwórz Postać
                 </button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            Tworzenie postaci...
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Krok 4: Podsumowanie i Eksport -->
+    <div id="step-4" class="step">
+        <div class="section">
+            <h3>🎯 Krok 4: Podsumowanie i Eksport</h3>
+            <p>Kompletna postać z progresją poziomów i opcjami eksportu.</p>
+
+            <div id="complete-character-summary">
+                <!-- Kompletne podsumowanie postaci -->
             </div>
 
-            <div id="loading" class="loading" style="display: none;">
-                Tworzenie postaci...
+            <div class="export-section">
+                <h4>Eksport Postaci</h4>
+                <div class="export-options">
+                    <button id="btn-export-json" class="btn-export">
+                        📄 Eksportuj do JSON
+                    </button>
+                    <button id="btn-export-pdf" class="btn-export" disabled>
+                        📋 Eksportuj do PDF (Wkrótce)
+                    </button>
+                </div>
             </div>
-            <div id="error" class="error" style="display: none;"></div>
+
+            <div class="navigation-buttons">
+                <button id="btn-prev-4" class="btn-secondary">Wstecz</button>
+                <button id="btn-new-character" class="btn-primary">Nowa Postać</button>
+            </div>
         </div>
     </div>
 
@@ -973,6 +1738,49 @@
         <button onclick="exportJSON()" style="margin-top: 15px;">💾 Eksportuj JSON</button>
     </div>
 
+    <!-- Lightbox Pomocy -->
+    <div id="help-lightbox" class="help-lightbox" role="dialog" 
+         aria-labelledby="help-title" aria-modal="true" style="display: none;">
+        <div class="help-backdrop" onclick="closeHelp()"></div>
+        <div class="help-modal">
+            <div class="help-header">
+                <h3 id="help-title">📖 Pomoc - Kreator Postaci</h3>
+                <button class="help-close" onclick="closeHelp()" aria-label="Zamknij pomoc">
+                    ✕
+                </button>
+            </div>
+            
+            <div class="help-tabs" role="tablist">
+                <button class="help-tab active" role="tab" 
+                        aria-selected="true" aria-controls="tab-start"
+                        onclick="switchHelpTab('start')">
+                    🚀 Szybki Start
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-glossary"
+                        onclick="switchHelpTab('glossary')">
+                    📖 Słownik
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-faq"
+                        onclick="switchHelpTab('faq')">
+                    ❓ FAQ
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-shortcuts"
+                        onclick="switchHelpTab('shortcuts')">
+                    ⌨️ Skróty
+                </button>
+            </div>
+            
+            <div class="help-content" id="help-content" role="tabpanel">
+                <!-- Treść zakładek ładowana dynamicznie przez JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Import modułu treści pomocy -->
+    <script src="help-content.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

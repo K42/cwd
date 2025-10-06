@@ -9,6 +9,7 @@ const LEVELS = require('./data/levels');
 const PATHS = require('./data/paths');
 const ITEMS = require('./data/items');
 const SPELLS = require('./data/spells');
+const PROGRESSION = require('./data/progression');
 
 const DANE_GRY = {
   // Poziomy postaci - system progresji
@@ -19,6 +20,21 @@ const DANE_GRY = {
 
   // Ścieżki nowicjuszy - str. 51-70
   sciezki_nowicjuszy: PATHS.sciezki_nowicjuszy,
+
+  // Ścieżki ekspertów (poziom 3)
+  sciezki_ekspertow: PATHS.sciezki_ekspertow,
+
+  // Ścieżki mistrzów (poziom 5)
+  sciezki_mistrzow: PATHS.sciezki_mistrzow,
+
+  // Ścieżki legend (poziom 7)
+  sciezki_legend: PATHS.sciezki_legend,
+
+  // Ścieżki kontynuacji (poziomy 2, 4, 6, 8)
+  sciezki_kontynuacji: PATHS.sciezki_kontynuacji,
+
+  // System progresji
+  progresja: PROGRESSION,
 
   // Kalkulatory atrybutów
   obliczenia: {
@@ -36,34 +52,51 @@ const DANE_GRY = {
     },
 
     /**
-     * Oblicza atrybuty drugorzędne na podstawie podstawowych
-     * @param {Object} atrybuty - Atrybuty podstawowe
+     * Oblicza atrybuty drugorzędne zgodnie z zasadami z PDF
+     * @param {Object} atrybuty - Atrybuty główne postaci
      * @param {Object} pochodzenie - Dane pochodzenia
+     * @param {number} poziom - Poziom postaci (0-10)
      * @returns {Object} Atrybuty drugorzędne
      */
     atrybuty_drugorzedne(atrybuty, pochodzenie) {
-      let obrona = atrybuty.zrecznosc;
-
-      // --- BŁĘDNY KOD - DO USUNIĘCIA (AC-008) ---
-      const rozmiar = pochodzenie.rozmiar;
-      if (rozmiar === '1/4') {
-        obrona += 4;
-      } else if (rozmiar === '1/2') {
-        obrona += 2;
-      } else if (rozmiar === '2') {
-        obrona -= 2;
-      }
-      // --- KONIEC BŁĘDNEGO KODU ---
-
+      // AC-008: Usunięto błędne modyfikatory rozmiaru wpływające na obronę
+      // Zgodnie z PDF str. 17 - nie ma modyfikatorów rozmiaru wpływających na atrybuty
+      
       return {
         percepcja: atrybuty.intelekt,
-        obrona: Math.max(obrona, 1),
+        obrona: Math.max(atrybuty.zrecznosc, 1),
         zdrowie: atrybuty.sila,
         szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1,
         rozmiar: pochodzenie.rozmiar,
         predkosc: pochodzenie.predkosc,
         moc: 0
       };
+    },
+
+    /**
+     * Oblicza atrybuty postaci zgodnie z zasadami tworzenia
+     * @param {Object} pochodzenie - Dane pochodzenia
+     * @param {Object} wybor_atrybutu - Wybór gracza (+1 do wybranego atrybutu)
+     * @returns {Object} Finalne atrybuty postaci
+     */
+    oblicz_atrybuty_poczatkowe(pochodzenie, wybor_atrybutu) {
+      const atrybuty = { ...pochodzenie.atrybuty_bazowe };
+      
+      // Dodaj wybór gracza (+1 do wybranego atrybutu)
+      if (wybor_atrybutu && atrybuty[wybor_atrybutu]) {
+        atrybuty[wybor_atrybutu] += 1;
+      }
+      
+      return atrybuty;
+    },
+
+    /**
+     * Oblicza korzyści pochodzenia na poziomie 4
+     * @param {Object} pochodzenie - Dane pochodzenia
+     * @returns {Object} Korzyści z pochodzenia
+     */
+    korzysci_pochodzenia_poziom_4(pochodzenie) {
+      return pochodzenie.poziom_4 || {};
     },
 
     /**
@@ -102,7 +135,7 @@ const DANE_GRY = {
      * @returns {boolean} True jeśli pochodzenie istnieje
      */
     czyPochodzenieIstnieje(id) {
-      return ORIGINS.hasOwnProperty(id);
+      return Object.prototype.hasOwnProperty.call(ORIGINS, id);
     },
 
     /**
@@ -111,7 +144,7 @@ const DANE_GRY = {
      * @returns {boolean} True jeśli poziom istnieje
      */
     czyPoziomIstnieje(poziom) {
-      return LEVELS.hasOwnProperty(poziom);
+      return Object.prototype.hasOwnProperty.call(LEVELS, poziom);
     },
 
     /**
