@@ -39,11 +39,29 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function zaladujOpcje() {
   try {
+    // Pobierz podstawowe opcje z oryginalnego API
     const response = await fetch('/api/options');
     const opcje = await response.json();
 
+    // Sprawdź, które pochodzenia mają tabele z nowego API
+    let pochodzeniaZTabelami = [];
+    try {
+      const originsResponse = await fetch('/api/origins');
+      if (originsResponse.ok) {
+        const originsData = await originsResponse.json();
+        pochodzeniaZTabelami = originsData.pochodzenia || [];
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Nie udało się załadować metadanych pochodzeń:', error);
+    }
+
     // Ładowanie szczegółowych danych pochodzeń
-    dostepnePochodzenia = await zaladujSzczegolyPochodzen(opcje.pochodzenia);
+    // eslint-disable-next-line no-console
+    console.log('Ładowanie pochodzeń:', opcje.pochodzenia.length);
+    dostepnePochodzenia = await zaladujSzczegolyPochodzenRozszerzone(opcje.pochodzenia, pochodzeniaZTabelami);
+    // eslint-disable-next-line no-console
+    console.log('Załadowane pochodzenia:', dostepnePochodzenia.length);
 
     // Generowanie kafelków pochodzeń
     generujKafelkiPochodzen(dostepnePochodzenia);
@@ -219,31 +237,53 @@ function aktualizujTytulSekcjiSciezek(poziom) {
   tytul.textContent = nazwyPoziomow[poziom] || 'Ścieżka';
 }
 
+
 /**
- * Ładuje szczegółowe dane pochodzeń z serwera
+ * Ładuje rozszerzone dane pochodzeń z nowego API
+ * @param {Array} pochodzeniaIds - Lista ID pochodzeń
+ * @param {Array} pochodzeniaZTabelami - Lista metadanych pochodzeń z tabelami
+ * @returns {Array} Tablica obiektów pochodzeń z pełnymi danymi
  */
-async function zaladujSzczegolyPochodzen(pochodzeniaIds) {
+async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, pochodzeniaZTabelami = []) {
   const pochodzenia = [];
     
-  for (const id of pochodzeniaIds) {
+  for (const pochodzenieId of pochodzeniaIds) {
     try {
-      // Tworzymy tymczasową postać aby uzyskać dane pochodzenia
-      const response = await fetch('/api/build', {
+      // Pobierz podstawowe dane pochodzenia z oryginalnego API
+      const basicResponse = await fetch('/api/build', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          pochodzenie: id, 
+          pochodzenie: pochodzenieId, 
           atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
         })
       });
-            
-      if (response.ok) {
-        const postac = await response.json();
-        pochodzenia.push(postac.pochodzenie);
+      
+      if (basicResponse.ok) {
+        const postac = await basicResponse.json();
+        const podstawoweDane = postac.pochodzenie;
+        
+        // Sprawdź, czy to pochodzenie ma tabele
+        const metaData = pochodzeniaZTabelami.find(p => p.id === pochodzenieId);
+        if (metaData && metaData.ma_tabele) {
+          try {
+            const tablesResponse = await fetch(`/api/origins/${pochodzenieId}/tables`);
+            if (tablesResponse.ok) {
+              const tablesData = await tablesResponse.json();
+              // Połącz podstawowe dane z tabelami
+              podstawoweDane.tabele = tablesData.tabele;
+            }
+          } catch (tablesError) {
+            // eslint-disable-next-line no-console
+            console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
+          }
+        }
+        
+        pochodzenia.push(podstawoweDane);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn(`Nie udało się załadować danych dla pochodzenia ${id}:`, error);
+      console.warn(`Nie udało się załadować danych dla pochodzenia ${pochodzenieId}:`, error);
     }
   }
     
@@ -406,6 +446,29 @@ function generujKafelkiPochodzen(pochodzenia) {
                         </div>
                     </div>
                     ` : ''}
+                    
+                    ${pochodzenie.tabele && Object.keys(pochodzenie.tabele).length > 0 ? `
+                    <div class="tile-section tables-section">
+                        <h5>🎲 Tabele Losowania</h5>
+                        <div class="tables-grid">
+                            ${Object.entries(pochodzenie.tabele).map(([nazwaTabeli, tabela]) => `
+                                <div class="table-item">
+                                    <div class="table-header">
+                                        <span class="table-name">${tabela.nazwa}</span>
+                                        <span class="table-type">${tabela.typ}</span>
+                                    </div>
+                                    <div class="table-description">${tabela.opis}</div>
+                                    <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
+                                        🎲 Losuj
+                                    </button>
+                                    <div class="roll-result" id="roll-result-${pochodzenie.id}-${nazwaTabeli}" style="display: none;">
+                                        <!-- Wynik losowania będzie wyświetlany tutaj -->
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
                 
                 <!-- Przycisk wyboru -->
@@ -424,6 +487,16 @@ function generujKafelkiPochodzen(pochodzenia) {
                 e.target.closest('.tile-select-btn')) {
         e.stopPropagation();
         wybierzPochodzenie(pochodzenie.id);
+        return;
+      }
+      
+      // Sprawdź czy kliknięto na przycisk losowania
+      if (e.target.classList.contains('roll-table-btn') || 
+                e.target.closest('.roll-table-btn')) {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId || e.target.closest('.roll-table-btn').dataset.originId;
+        const tableName = e.target.dataset.tableName || e.target.closest('.roll-table-btn').dataset.tableName;
+        losujZTabeliUI(originId, tableName);
         return;
       }
             
@@ -1514,5 +1587,53 @@ function initializeHelpSystem() {
         closeHelp();
       }
     });
+  }
+}
+
+/**
+ * Obsługuje losowanie z tabeli w UI
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ */
+async function losujZTabeliUI(originId, tableName) {
+  try {
+    // Wyświetl loading
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (resultDiv) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<div class="loading">🎲 Losowanie...</div>';
+    }
+    
+    // Wywołaj API
+    const response = await fetch(`/api/origins/${originId}/tables/${tableName}/roll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Wyświetl wynik
+    if (resultDiv) {
+      const efekt = data.wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${data.wynik.efekt}` : '';
+      resultDiv.innerHTML = `
+        <div class="roll-result-content">
+          <div class="roll-dice">🎲 Rzut: ${data.wynik.rzut}</div>
+          <div class="roll-outcome">${data.wynik.wynik}</div>
+          ${efekt}
+        </div>
+      `;
+    }
+    
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Błąd losowania z tabeli:', error);
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (resultDiv) {
+      resultDiv.innerHTML = `<div class="error">❌ Błąd: ${error.message}</div>`;
+    }
   }
 }

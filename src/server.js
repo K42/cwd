@@ -5,6 +5,7 @@
 const express = require('express');
 const path = require('path');
 const DANE_GRY = require('./data.js');
+const { EXTENDED_ORIGINS, losujZTabeli } = require('./data/origins_extended');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -360,6 +361,139 @@ app.post('/api/export/pdf', (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * Endpoint do pobierania tabel losowania dla pochodzenia
+ * AC-012: Backend API dla tabel losowania
+ * @param {string} originId - ID pochodzenia
+ * @returns {Object} Wszystkie tabele dla danego pochodzenia
+ */
+app.get('/api/origins/:originId/tables', (req, res) => {
+  try {
+    const { originId } = req.params;
+    
+    // Sprawdź czy pochodzenie istnieje w rozszerzonych danych
+    const pochodzenie = EXTENDED_ORIGINS[originId];
+    if (!pochodzenie) {
+      return res.status(404).json({ 
+        error: `Nieznane pochodzenie: ${originId}`,
+        dostepne: Object.keys(EXTENDED_ORIGINS)
+      });
+    }
+    
+    // Sprawdź czy pochodzenie ma tabele
+    if (!pochodzenie.tabele) {
+      return res.status(404).json({ 
+        error: `Pochodzenie ${originId} nie ma tabel losowania`,
+        pochodzenie: {
+          id: pochodzenie.id,
+          nazwa: pochodzenie.nazwa,
+          status: pochodzenie.status
+        }
+      });
+    }
+    
+    res.json({
+      pochodzenie: {
+        id: pochodzenie.id,
+        nazwa: pochodzenie.nazwa,
+        zrodlo: pochodzenie.zrodlo
+      },
+      tabele: pochodzenie.tabele
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * Endpoint do losowania z tabeli
+ * AC-013: Funkcja losowania z tabel
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ * @returns {Object} Wynik losowania
+ */
+app.post('/api/origins/:originId/tables/:tableName/roll', (req, res) => {
+  try {
+    const { originId, tableName } = req.params;
+    
+    // Sprawdź czy pochodzenie istnieje
+    const pochodzenie = EXTENDED_ORIGINS[originId];
+    if (!pochodzenie) {
+      return res.status(404).json({ 
+        error: `Nieznane pochodzenie: ${originId}`,
+        dostepne: Object.keys(EXTENDED_ORIGINS)
+      });
+    }
+    
+    // Sprawdź czy tabela istnieje
+    if (!pochodzenie.tabele || !pochodzenie.tabele[tableName]) {
+      return res.status(404).json({ 
+        error: `Tabela ${tableName} nie istnieje dla pochodzenia ${originId}`,
+        dostepne_tabele: pochodzenie.tabele ? Object.keys(pochodzenie.tabele) : []
+      });
+    }
+    
+    const tabela = pochodzenie.tabele[tableName];
+    
+    // Wykonaj losowanie
+    const wynik = losujZTabeli(tabela.typ, tabela);
+    
+    res.json({
+      pochodzenie: {
+        id: pochodzenie.id,
+        nazwa: pochodzenie.nazwa
+      },
+      tabela: {
+        nazwa: tabela.nazwa,
+        typ: tabela.typ,
+        opis: tabela.opis
+      },
+      wynik,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * Endpoint do pobierania listy dostępnych pochodzeń z tabelami
+ * @returns {Object} Lista pochodzeń z informacją o tabelach
+ */
+app.get('/api/origins', (req, res) => {
+  try {
+    const pochodzenia = Object.values(EXTENDED_ORIGINS).map(pochodzenie => ({
+      id: pochodzenie.id,
+      nazwa: pochodzenie.nazwa,
+      zrodlo: pochodzenie.zrodlo,
+      ma_tabele: !!pochodzenie.tabele,
+      liczba_tabel: pochodzenie.tabele ? Object.keys(pochodzenie.tabele).length : 0,
+      status: pochodzenie.status,
+      strona_zrodlowa: pochodzenie.strona_zrodlowa
+    }));
+    
+    res.json({
+      pochodzenia,
+      liczba_pochodzen: pochodzenia.length,
+      pochodzenia_z_tabelami: pochodzenia.filter(p => p.ma_tabele).length
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
