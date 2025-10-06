@@ -2243,7 +2243,12 @@ function wyswietlKorzysciPoziomu(benefits) {
       element.style.display = 'none';
     }
   });
-  document.getElementById('options-section').style.display = 'none';
+  
+  // Sprawdź czy options-section istnieje
+  const optionsSection = document.getElementById('options-section');
+  if (optionsSection) {
+    optionsSection.style.display = 'none';
+  }
 
   // Wyświetl atrybuty drugorzędne
   if (benefits.korzyści.zdrowie || benefits.korzyści.moc || benefits.korzyści.obrona) {
@@ -2270,28 +2275,51 @@ function wyswietlKorzysciPoziomu(benefits) {
 
   // Wyświetl talenty
   if (benefits.korzyści.talenty && benefits.korzyści.talenty.length > 0) {
-    document.getElementById('talents-content').innerHTML = 
-      `<ul>${  benefits.korzyści.talenty.map(t => `<li>${t}</li>`).join('')  }</ul>`;
-    document.getElementById('talents-section').style.display = 'block';
+    const talentsContent = document.getElementById('talents-content');
+    const talentsSection = document.getElementById('talents-section');
+    if (talentsContent) {
+      talentsContent.innerHTML = `<ul>${benefits.korzyści.talenty.map(t => `<li>${t}</li>`).join('')}</ul>`;
+    }
+    if (talentsSection) {
+      talentsSection.style.display = 'block';
+    }
   }
 
   // Wyświetl magię
   if (benefits.korzyści.magia) {
-    document.getElementById('magic-content').textContent = benefits.korzyści.magia;
-    document.getElementById('magic-section').style.display = 'block';
+    const magicContent = document.getElementById('magic-content');
+    const magicSection = document.getElementById('magic-section');
+    if (magicContent) {
+      magicContent.textContent = benefits.korzyści.magia;
+    }
+    if (magicSection) {
+      magicSection.style.display = 'block';
+    }
   }
 
   // Wyświetl języki i profesje
   if (benefits.korzyści.jezyki_profesje) {
-    document.getElementById('languages-professions-content').textContent = benefits.korzyści.jezyki_profesje;
-    document.getElementById('languages-professions-section').style.display = 'block';
+    const languagesContent = document.getElementById('languages-professions-content');
+    const languagesSection = document.getElementById('languages-professions-section');
+    if (languagesContent) {
+      languagesContent.textContent = benefits.korzyści.jezyki_profesje;
+    }
+    if (languagesSection) {
+      languagesSection.style.display = 'block';
+    }
   }
 
   // Wyświetl opcje (dla poziomu 4 - pochodzenie)
   if (benefits.korzyści.opcje && benefits.korzyści.opcje.length > 0) {
-    const optionsList = benefits.korzyści.opcje.map(opcja => `<li>${opcja}</li>`).join('');
-    document.getElementById('options-content').innerHTML = `<ul>${optionsList}</ul>`;
-    document.getElementById('options-section').style.display = 'block';
+    const optionsContent = document.getElementById('options-content');
+    const optionsSection = document.getElementById('options-section');
+    if (optionsContent) {
+      const optionsList = benefits.korzyści.opcje.map(opcja => `<li>${opcja}</li>`).join('');
+      optionsContent.innerHTML = `<ul>${optionsList}</ul>`;
+    }
+    if (optionsSection) {
+      optionsSection.style.display = 'block';
+    }
   }
 }
 
