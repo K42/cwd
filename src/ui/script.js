@@ -329,6 +329,9 @@ function renderPathBenefitsList(path, poziomWyboru) {
 }
 
 function applyPathBenefits({ poziomWyboru, sciezka }) {
+  // eslint-disable-next-line no-console
+  console.log('applyPathBenefits:', { poziomWyboru, sciezka: sciezka.id, wybranyPoziom });
+  
   // Usuń poprzednie benefity z tego progu
   if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
     odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
@@ -357,6 +360,8 @@ function updateStep3NextButton() {
   // Dla poziomu 0 nie wymagaj żadnych ścieżek
   if (wybranyPoziom === 0) {
     btn.disabled = false;
+    // eslint-disable-next-line no-console
+    console.log('Poziom 0 - przycisk włączony');
     return;
   }
   
@@ -367,6 +372,20 @@ function updateStep3NextButton() {
   const hasMaster = !!wybraneSciezki.mistrz;
   const canProceed = hasNovice && (!needExpert || hasExpert) && (!needMaster || hasMaster);
   btn.disabled = !canProceed;
+  
+  // Debug - sprawdź stan
+  // eslint-disable-next-line no-console
+  console.log('updateStep3NextButton debug:', {
+    wybranyPoziom,
+    wybraneSciezki,
+    hasNovice,
+    needExpert,
+    needMaster,
+    hasExpert,
+    hasMaster,
+    canProceed,
+    disabled: btn.disabled
+  });
 }
 
 function renderPathSummary(poziomWyboru, sciezka) {
@@ -2103,7 +2122,10 @@ function renderujSciezke(sciezka) {
  */
 async function zaladujKorzysciPoziomu(poziom) {
   if (!wybranePochodzenie) {
-    document.getElementById('level-benefits-section').style.display = 'none';
+    const section = document.getElementById('level-benefits-section');
+    if (section) {
+      section.style.display = 'none';
+    }
     return;
   }
 
@@ -2113,7 +2135,7 @@ async function zaladujKorzysciPoziomu(poziom) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         poziom,
-        pochodzenie: wybranePochodzenie.id,
+        pochodzenie: wybranePochodzenie,
         sciezka_nowicjusza: wybraneSciezki.nowicjusz || null,
         sciezka_ekspercka: wybraneSciezki.ekspert || null,
         sciezka_mistrzowska: wybraneSciezki.mistrz || null
