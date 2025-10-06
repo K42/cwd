@@ -2828,7 +2828,7 @@ function updateSelectedProfessions() {
  * Usuwa profesję z wybranych
  */
 /* eslint-disable-next-line no-unused-vars */
-function _removeProfession(professionId) {
+function removeProfession(professionId) {
   wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
   renderProfessionsSection();
   updateStep4NextButton();
@@ -2984,7 +2984,7 @@ function updateSelectedCurios() {
  * Usuwa kurioza z wybranych
  */
 /* eslint-disable-next-line no-unused-vars */
-function _removeCurio(curioId) {
+function removeCurio(curioId) {
   wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
   renderCuriosSection();
   updateStep4NextButton();
