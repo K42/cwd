@@ -2818,7 +2818,7 @@ function updateSelectedProfessions() {
     return prof ? `
       <div class="selected-item">
         ${prof.nazwa}
-        <button class="remove-btn" onclick="removeProfession('${id}')">×</button>
+        <button class="remove-btn" onclick="removeProfession('${id}')">❌</button>
       </div>
     ` : '';
   }).join('');
@@ -2974,7 +2974,7 @@ function updateSelectedCurios() {
     return curio ? `
       <div class="selected-item">
         ${curio.nazwa}
-        <button class="remove-btn" onclick="removeCurio('${id}')">×</button>
+        <button class="remove-btn" onclick="removeCurio('${id}')">❌</button>
       </div>
     ` : '';
   }).join('');
