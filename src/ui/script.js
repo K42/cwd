@@ -271,7 +271,7 @@ async function renderPathSection(poziomWyboru) {
     const tile = renderPathTile(p, poziomWyboru);
     grid.appendChild(tile);
   }
-  updateStep3NextButton();
+  // updateStep3NextButton() jest wywoływane w applyPathBenefits
 }
 
 function renderPathTile(path, poziomWyboru) {
@@ -337,9 +337,21 @@ function applyPathBenefits({ poziomWyboru, sciezka }) {
     odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
   }
   // Zapisz wybór ścieżki w stanie uproszczonym
-  if (poziomWyboru === 1) wybraneSciezki.nowicjusz = sciezka.id;
-  if (poziomWyboru === 3) wybraneSciezki.ekspert = sciezka.id;
-  if (poziomWyboru === 7) wybraneSciezki.mistrz = sciezka.id;
+  if (poziomWyboru === 1) {
+    wybraneSciezki.nowicjusz = sciezka.id;
+    // eslint-disable-next-line no-console
+    console.log('Ustawiono ścieżkę nowicjusza:', sciezka.id);
+  }
+  if (poziomWyboru === 3) {
+    wybraneSciezki.ekspert = sciezka.id;
+    // eslint-disable-next-line no-console
+    console.log('Ustawiono ścieżkę eksperta:', sciezka.id);
+  }
+  if (poziomWyboru === 7) {
+    wybraneSciezki.mistrz = sciezka.id;
+    // eslint-disable-next-line no-console
+    console.log('Ustawiono ścieżkę mistrza:', sciezka.id);
+  }
 
   // Zastosuj nowy pakiet korzyści
   const pkt = (sciezka.korzysci && sciezka.korzysci[poziomWyboru]) || {};
