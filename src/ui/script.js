@@ -6,6 +6,7 @@ let biezacaPostac = null;
 let wybranePochodzenie = null;
 let wybranyPoziom = 1; // Gra zaczyna się od poziomu 1, nie ma poziomu 0
 let dostepnePochodzenia = [];
+let wynikiTabel = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -464,9 +465,28 @@ function generujKafelkiPochodzen(pochodzenia) {
                                         <span class="table-type">${tabela.typ}</span>
                                     </div>
                                     <div class="table-description">${tabela.opis}</div>
-                                    <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
-                                        🎲 Losuj
-                                    </button>
+                                    
+                                    <div class="table-controls">
+                                        <div class="table-options">
+                                            <label for="table-select-${pochodzenie.id}-${nazwaTabeli}">Wybierz opcję:</label>
+                                            <select id="table-select-${pochodzenie.id}-${nazwaTabeli}" class="table-dropdown" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
+                                                <option value="">-- Wybierz opcję --</option>
+                                                ${tabela.opcje ? tabela.opcje.map(opcja => `
+                                                    <option value="${opcja.rzut}" data-wynik="${opcja.wynik}">${opcja.rzut}: ${opcja.wynik}</option>
+                                                `).join('') : ''}
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="table-buttons">
+                                            <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
+                                                🎲 Losuj
+                                            </button>
+                                            <button class="apply-selection-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}" style="display: none;">
+                                                ✅ Zastosuj wybór
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="roll-result" id="roll-result-${pochodzenie.id}-${nazwaTabeli}" style="display: none;">
                                         <!-- Wynik losowania będzie wyświetlany tutaj -->
                                     </div>
@@ -486,6 +506,24 @@ function generujKafelkiPochodzen(pochodzenia) {
             </div>
         `;
 
+    // Dodaj obsługę dropdownów
+    const dropdowns = tile.querySelectorAll('.table-dropdown');
+    dropdowns.forEach(dropdown => {
+      dropdown.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId;
+        const tableName = e.target.dataset.tableName;
+        const selectedValue = e.target.value;
+        const applyBtn = tile.querySelector(`.apply-selection-btn[data-origin-id="${originId}"][data-table-name="${tableName}"]`);
+        
+        if (selectedValue && applyBtn) {
+          applyBtn.style.display = 'inline-block';
+        } else if (applyBtn) {
+          applyBtn.style.display = 'none';
+        }
+      });
+    });
+
     // Dodaj obsługę kliknięcia dla rozwijania/zwijania (cały kafelek)
     tile.addEventListener('click', (e) => {
       // Sprawdź czy kliknięto na przycisk "Wybierz"
@@ -503,6 +541,16 @@ function generujKafelkiPochodzen(pochodzenia) {
         const originId = e.target.dataset.originId || e.target.closest('.roll-table-btn').dataset.originId;
         const tableName = e.target.dataset.tableName || e.target.closest('.roll-table-btn').dataset.tableName;
         losujZTabeliUI(originId, tableName);
+        return;
+      }
+      
+      // Sprawdź czy kliknięto na przycisk "Zastosuj wybór"
+      if (e.target.classList.contains('apply-selection-btn') || 
+                e.target.closest('.apply-selection-btn')) {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId || e.target.closest('.apply-selection-btn').dataset.originId;
+        const tableName = e.target.dataset.tableName || e.target.closest('.apply-selection-btn').dataset.tableName;
+        zastosujWybranaOpcje(originId, tableName);
         return;
       }
             
@@ -602,11 +650,58 @@ function utworzKrotkiOpis(pochodzenie) {
 }
 
 /**
+ * Zbiera wyniki tabel z kafelka pochodzenia
+ * @param {string} originId - ID pochodzenia
+ */
+function zbierzWynikiTabel(originId) {
+  // Znajdź kafelek pochodzenia
+  const tile = document.querySelector(`[data-origin-id="${originId}"]`);
+  if (!tile) return;
+  
+  // Znajdź wszystkie wyniki tabel w kafelku
+  const resultDivs = tile.querySelectorAll('.roll-result');
+  resultDivs.forEach(resultDiv => {
+    const id = resultDiv.id;
+    const match = id.match(/roll-result-(\w+)-(\w+)/);
+    if (match) {
+      const [, tableOriginId, tableName] = match;
+      if (tableOriginId === originId) {
+        const content = resultDiv.querySelector('.roll-result-content');
+        if (content && content.style.display !== 'none') {
+          const rollDice = content.querySelector('.roll-dice');
+          const rollOutcome = content.querySelector('.roll-outcome');
+          
+          if (rollDice && rollOutcome) {
+            const rzutMatch = rollDice.textContent.match(/(\d+)/);
+            const rzut = rzutMatch ? rzutMatch[1] : '?';
+            const wynik = rollOutcome.textContent;
+            const typ = rollDice.textContent.includes('🎯') ? 'wybór' : 'losowanie';
+            
+            // Zapisz wynik
+            if (!wynikiTabel[originId]) {
+              wynikiTabel[originId] = {};
+            }
+            wynikiTabel[originId][tableName] = {
+              rzut: rzut,
+              wynik: wynik,
+              typ: typ
+            };
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
  * Wybiera pochodzenie
  * @param {string} originId - ID pochodzenia do wyboru
  */
 function wybierzPochodzenie(originId) {
   wybranePochodzenie = originId;
+    
+  // Zbierz wyniki tabel z wybranego kafelka
+  zbierzWynikiTabel(originId);
     
   // Usuń selekcję z wszystkich kafelków
   document.querySelectorAll('.origin-tile').forEach(tile => {
@@ -994,6 +1089,61 @@ function pokazKomunikatWyboru(originId) {
 }
 
 /**
+ * Generuje sekcję z wynikami tabel losowych
+ * @param {string} originId - ID pochodzenia
+ * @returns {string} HTML sekcji z wynikami tabel
+ */
+function generujSekcjeWynikowTabel(originId) {
+  if (!wynikiTabel[originId] || Object.keys(wynikiTabel[originId]).length === 0) {
+    return '';
+  }
+  
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === originId);
+  if (!pochodzenie || !pochodzenie.tabele) {
+    return '';
+  }
+  
+  // Mapowanie nazw tabel na polskie nazwy
+  const nazwyTabel = {
+    'przeszlosc': 'Przeszłość',
+    'osobowosc': 'Osobowość', 
+    'religia': 'Religia',
+    'wiek': 'Wiek',
+    'budowa_ciala': 'Budowa Ciała',
+    'wyglad': 'Wygląd',
+    'funkcja': 'Funkcja',
+    'forma': 'Forma',
+    'przeszlosc': 'Przeszłość'
+  };
+  
+  let html = '<div class="preview-section">';
+  html += '<h5>🎲 Wyniki Tabel Losowych</h5>';
+  
+  Object.entries(wynikiTabel[originId]).forEach(([tableName, result]) => {
+    const nazwaTabeli = nazwyTabel[tableName] || tableName;
+    const ikona = result.typ === 'wybór' ? '🎯' : '🎲';
+    const typTekst = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
+    
+    html += '<div class="table-result-item">';
+    html += `<div class="table-result-header">`;
+    html += `<span class="table-result-name">${nazwaTabeli}</span>`;
+    html += `<span class="table-result-type">${ikona} ${typTekst}</span>`;
+    html += '</div>';
+    html += `<div class="table-result-content">`;
+    html += `<div class="table-result-roll">Rzut: ${result.rzut}</div>`;
+    html += `<div class="table-result-outcome">${result.wynik}</div>`;
+    if (result.efekt) {
+      html += `<div class="table-result-effect"><strong>Efekt mechaniczny:</strong> ${result.efekt}</div>`;
+    }
+    html += '</div>';
+    html += '</div>';
+  });
+  
+  html += '</div>';
+  return html;
+}
+
+/**
  * Aktualizuje podgląd postaci w kroku 3
  */
 function aktualizujPodgladPostaci() {
@@ -1087,6 +1237,8 @@ function aktualizujPodgladPostaci() {
             <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
             <p><strong>Profesje:</strong> ${pochodzenie.profesje.join(', ')}</p>
         </div>
+        
+        ${generujSekcjeWynikowTabel(pochodzenie.id)}
     `;
 }
 
@@ -1597,6 +1749,52 @@ function initializeHelpSystem() {
 }
 
 /**
+ * Obsługuje zastosowanie wybranej opcji z dropdowna
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ */
+function zastosujWybranaOpcje(originId, tableName) {
+  const dropdown = document.getElementById(`table-select-${originId}-${tableName}`);
+  const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+  const applyBtn = document.querySelector(`.apply-selection-btn[data-origin-id="${originId}"][data-table-name="${tableName}"]`);
+  
+  if (!dropdown || !resultDiv) return;
+  
+  const selectedOption = dropdown.options[dropdown.selectedIndex];
+  if (!selectedOption || !selectedOption.value) return;
+  
+  const rzut = selectedOption.value;
+  const wynik = selectedOption.dataset.wynik;
+  
+  // Zapisz wynik w globalnej zmiennej
+  if (!wynikiTabel[originId]) {
+    wynikiTabel[originId] = {};
+  }
+  wynikiTabel[originId][tableName] = {
+    rzut: rzut,
+    wynik: wynik,
+    typ: 'wybór'
+  };
+  
+  // Wyświetl wynik
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `
+    <div class="roll-result-content">
+      <div class="roll-dice">🎯 Wybór: ${rzut}</div>
+      <div class="roll-outcome">${wynik}</div>
+    </div>
+  `;
+  
+  // Ukryj przycisk "Zastosuj wybór"
+  if (applyBtn) {
+    applyBtn.style.display = 'none';
+  }
+  
+  // Zresetuj dropdown
+  dropdown.selectedIndex = 0;
+}
+
+/**
  * Obsługuje losowanie z tabeli w UI
  * @param {string} originId - ID pochodzenia
  * @param {string} tableName - Nazwa tabeli
@@ -1621,6 +1819,17 @@ async function losujZTabeliUI(originId, tableName) {
     }
     
     const data = await response.json();
+    
+    // Zapisz wynik w globalnej zmiennej
+    if (!wynikiTabel[originId]) {
+      wynikiTabel[originId] = {};
+    }
+    wynikiTabel[originId][tableName] = {
+      rzut: data.wynik.rzut,
+      wynik: data.wynik.wynik,
+      efekt: data.wynik.efekt,
+      typ: 'losowanie'
+    };
     
     // Wyświetl wynik
     if (resultDiv) {
