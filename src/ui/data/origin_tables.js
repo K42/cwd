@@ -1220,6 +1220,152 @@ const ORIGIN_TABLES = {
         18: { wynik: 'Wierzysz, że twój lud dokonał w imię Imperium wielkiego zła. Starasz się naprawić te krzywdy.', efekt: 'Brak efektu mechanicznego' }
       }
     }
+  },
+
+  // ========== KAMBION ==========
+  kambion: {
+    wiek: {
+      nazwa: 'Wiek',
+      typ: '3k6',
+      opis: 'Tabela określająca wiek kambiona',
+      wyniki: {
+        3: { wynik: 'Dziecko, 11 lat lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Zyskujesz 1 punkt Splugawienia.' },
+        14: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Zyskujesz 1 punkt Splugawienia.' },
+        15: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Zyskujesz 1 punkt Splugawienia.' },
+        16: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Zyskujesz 2 punkty Splugawienia.' },
+        17: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Zyskujesz 2 punkty Splugawienia.' },
+        18: { wynik: 'Sędziwy dorosły, 76 lat lub więcej.', efekt: 'Zyskujesz 3 punkty Splugawienia.' }
+      }
+    },
+    budowa_ciala: {
+      nazwa: 'Budowa ciała',
+      typ: '3k6',
+      opis: 'Tabela określająca budowę ciała kambiona',
+      wyniki: {
+        3: { wynik: 'Jesteś niski i szczupły.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś niższego wzrostu niż przeciętny.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś niższego wzrostu niż przeciętny.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jesteś smukły, szczupły lub żylasty.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jesteś smukły, szczupły lub żylasty.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jesteś smukły, szczupły lub żylasty.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Jesteś średniego wzrostu i wagi jak na kambiona.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Jesteś średniego wzrostu i wagi jak na kambiona.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Jesteś średniego wzrostu i wagi jak na kambiona.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Jesteś średniego wzrostu i wagi jak na kambiona.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Twoje ciało składa się ze zwałów mięśni lub tłuszczu.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Twoje ciało składa się ze zwałów mięśni lub tłuszczu.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Twoje ciało składa się ze zwałów mięśni lub tłuszczu.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Jesteś o głowę wyższy niż inne kambiony.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Jesteś o głowę wyższy niż inne kambiony.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Jesteś górującym monstrem, tęgo zbudowanym i niesamowicie wysokim.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    wyglad: {
+      nazwa: 'Wygląd',
+      typ: '3k6',
+      opis: 'Tabela określająca wygląd kambiona',
+      wyniki: {
+        3: { wynik: 'Masz szorstką skórę, duże rogi, kły i długi ogon wyrastający z końca kręgosłupa.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Masz jasne, lśniące oczy, usta wypełnione sztyletowatymi zębami i nietypowy odcień skóry.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Masz jasne, lśniące oczy, usta wypełnione sztyletowatymi zębami i nietypowy odcień skóry.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jakaś wyolbrzymiona cecha twarzy lub ciała sprawia, że jesteś brzydki.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jakaś wyolbrzymiona cecha twarzy lub ciała sprawia, że jesteś brzydki.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jakaś wyolbrzymiona cecha twarzy lub ciała sprawia, że jesteś brzydki.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Wyglądasz na człowieka, chociaż masz lekko spiczaste uszy.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Wyglądasz na człowieka, chociaż masz lekko spiczaste uszy.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Wyglądasz na człowieka, chociaż masz lekko spiczaste uszy.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Wyglądasz na człowieka, chociaż masz lekko spiczaste uszy.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Wyglądasz w pełni jak człowiek. Twoje rysy twarzy przyciągają uwagę i roztaczasz wokół aurę grozy, cień zaś, który rzucasz, zawsze zdaje się potworny.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Wyglądasz w pełni jak człowiek. Twoje rysy twarzy przyciągają uwagę i roztaczasz wokół aurę grozy, cień zaś, który rzucasz, zawsze zdaje się potworny.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Wyglądasz w pełni jak człowiek. Twoje rysy twarzy przyciągają uwagę i roztaczasz wokół aurę grozy, cień zaś, który rzucasz, zawsze zdaje się potworny.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Wyglądasz jak atrakcyjny człowiek.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Wyglądasz jak atrakcyjny człowiek.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Twoje piękno jest tak wielkie, że przykuwasz spojrzenia, gdzie tylko się udasz.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    wychowanie: {
+      nazwa: 'Wychowanie',
+      typ: '3k6',
+      opis: 'Tabela określająca wychowanie kambiona',
+      wyniki: {
+        3: { wynik: 'Zostałeś wychowany w Piekle, dorastając pośród diabłów, dopóki nie zbiegłeś, aby odnaleźć własną drogę w życiu.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Zostałeś porzucony jako dziecko i wychowany w świątyni lub sierocińcu. To doświadczenie było prawdopodobnie traumatyzujące.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Zostałeś porzucony jako dziecko i wychowany w świątyni lub sierocińcu. To doświadczenie było prawdopodobnie traumatyzujące.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Twoi rodzice wyczuli lub zobaczyli zło w tobie i próbowali cię zabić. Ty przeżyłeś – oni nie.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Twoi rodzice wyczuli lub zobaczyli zło w tobie i próbowali cię zabić. Ty przeżyłeś – oni nie.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Twoi rodzice wyczuli lub zobaczyli zło w tobie i próbowali cię zabić. Ty przeżyłeś – oni nie.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Zostałeś wychowany przez ludzką rodzinę. Podejrzewali, że jest z tobą coś nie tak, ale wychowali cię pomimo uprzedzeń.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Zostałeś wychowany przez ludzką rodzinę. Podejrzewali, że jest z tobą coś nie tak, ale wychowali cię pomimo uprzedzeń.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Zostałeś wychowany przez ludzką rodzinę. Podejrzewali, że jest z tobą coś nie tak, ale wychowali cię pomimo uprzedzeń.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Zostałeś wychowany przez ludzką rodzinę. Podejrzewali, że jest z tobą coś nie tak, ale wychowali cię pomimo uprzedzeń.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Twoją matkę uwiódł diabeł, a ty jesteś owocem tego związku. Została wygnana ze swojej społeczności i wychowała cię w dziczy.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Twoją matkę uwiódł diabeł, a ty jesteś owocem tego związku. Została wygnana ze swojej społeczności i wychowała cię w dziczy.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Twoją matkę uwiódł diabeł, a ty jesteś owocem tego związku. Została wygnana ze swojej społeczności i wychowała cię w dziczy.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Twój ojciec został uwiedziony przez diablicę, która cię mu oddała na takie wychowanie, jakie uzna za słuszne.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Twój ojciec został uwiedziony przez diablicę, która cię mu oddała na takie wychowanie, jakie uzna za słuszne.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Wychowywano cię w sekrecie, ukrytego w tajnym pokoju, byle nie wyjawić nikomu prawdy o twojej naturze.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    osobowosc: {
+      nazwa: 'Osobowość',
+      typ: '3k6',
+      opis: 'Tabela określająca osobowość kambiona',
+      wyniki: {
+        3: { wynik: 'W kontaktach z innymi osobami jesteś chłodny i pozbawiony emocji. Ponieważ brakuje ci empatii, nie przejmujesz się zadawaniem innym bólu ani powodowaniem nieszczęść.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Starasz się okazać godnym piekielnego rodowodu. Ciężko pracujesz, aby sprowadzić na innych splugawienie i zgubę. Nie istnieje dla ciebie zło zbyt wielkie, aby cofnąć się przed jego popełnieniem.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Starasz się okazać godnym piekielnego rodowodu. Ciężko pracujesz, aby sprowadzić na innych splugawienie i zgubę. Nie istnieje dla ciebie zło zbyt wielkie, aby cofnąć się przed jego popełnieniem.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Troszczysz się przede wszystkim o siebie. Rzadko działasz, jeśli nie przynosi ci to korzyści.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Troszczysz się przede wszystkim o siebie. Rzadko działasz, jeśli nie przynosi ci to korzyści.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Troszczysz się przede wszystkim o siebie. Rzadko działasz, jeśli nie przynosi ci to korzyści.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Masz paskudny charakter i odczuwasz przyjemność, kiedy inni wokół ciebie cierpią.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Masz paskudny charakter i odczuwasz przyjemność, kiedy inni wokół ciebie cierpią.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Masz paskudny charakter i odczuwasz przyjemność, kiedy inni wokół ciebie cierpią.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Masz paskudny charakter i odczuwasz przyjemność, kiedy inni wokół ciebie cierpią.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś ostrożny w towarzystwie innych, niechętny wobec nawiązywania relacji.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Jesteś ostrożny w towarzystwie innych, niechętny wobec nawiązywania relacji.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś ostrożny w towarzystwie innych, niechętny wobec nawiązywania relacji.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Nienawidzisz swojej natury i walczysz przeciwko mrocznym impulsom. Nie jesteś pewien, czy kiedykolwiek uwolnisz się od swojego dziedzictwa, ale starasz się.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Nienawidzisz swojej natury i walczysz przeciwko mrocznym impulsom. Nie jesteś pewien, czy kiedykolwiek uwolnisz się od swojego dziedzictwa, ale starasz się.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Pogardzasz diabłami i być może także faerie. Przysiągłeś z nimi walczyć i używać ich darów przeciwko nim.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    przeszlosc: {
+      nazwa: 'Przeszłość',
+      typ: 'k20',
+      opis: 'Tabela określająca przeszłość kambiona',
+      wyniki: {
+        1: { wynik: 'Dołączyłeś do kultu Nowego Boga, mając nadzieję oczyścić swoją duszę lub zniszczyć go od środka.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Odkryłeś plugawą inkantację, która wymagała ofiary z człowieka. Przeprowadziłeś ją.', efekt: 'Zaczynasz z 1 dodatkowym punktem Splugawienia.' },
+        3: { wynik: 'Zamordowałeś kogoś z zimną krwią. Zbiegłeś z miejsca zdarzenia i od tego czasu cały czas obawiasz się, że z pewnością dosięgnie cię zemsta.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Kiedy pozostajesz zbyt długo w jednym miejscu, zaczynają się dziać złe rzeczy. Masz problem, żeby gdzieś osiąść.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Dorastałeś w wygodzie i bogactwie, spędzając swoje dni na pustych rozrywkach.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Kiedyś złapał cię łowca czarownic i próbował spalić na stosie. Przetrwałeś płomienie.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Spędziłeś lata w celi, żywiąc się szczurami, które podgryzały twoje palce u rąk i stóp. Uciekłeś, kiedy ktoś pozostawił otwarte drzwi.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Byłeś zauroczony śmiertelnikiem, lecz kiedy odrzucił twoje awanse, znienawidziłeś go.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Przez kilka lat żyłeś w odległej społeczności na pograniczu, utrzymując swoją naturę w sekrecie przed lokalnymi mieszkańcami.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Dorastałeś, wierząc, że jesteś człowiekiem, i dopiero niedawno poznałeś prawdę.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'W trakcie swojej podróży zaprzyjaźniłeś się z jędzą i przez jakiś czas jej pomagałeś.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Przez kilka miesięcy cieszyłeś się towarzystwem paru kultystów, którzy wierzyli, że pokażesz im drogę do zbawienia.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Perwersyjny mag porwał cię i trzymał jako zdobycz.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Głupie dziecko przywołało cię inkantacją. Nie skończyło się to dla niego dobrze.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Odebrałeś formalną edukację.', efekt: 'Potrafisz czytać i pisać w jednym języku, którym umiesz mówić.' },
+        16: { wynik: 'Kłamstwo, które kiedyś powiedziałeś, ostatecznie przyczyniło się do śmierci kogoś ci bliskiego.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Przez kilka lat nie odstawiałeś kieliszka (bądź narkotyku) i dopiero niedawno wytrzeźwiałeś.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Wierzysz, że Diabeł przyszedł do ciebie we śnie i przysiągłeś poświęcić życie jego służbie.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Uwiodłeś młodego elfa; wasza relacja była iście płomienna, lecz dobiegła końca, kiedy jedno z was się nią znudziło.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Skradłeś mieszek monet.', efekt: 'Zaczynasz grę z dodatkowymi 2k6 miedziaków.' }
+      }
+    }
   }
 };
 

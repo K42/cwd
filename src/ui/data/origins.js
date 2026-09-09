@@ -414,24 +414,33 @@ const ORIGINS = {
   kambion: {
     id: 'kambion',
     nazwa: 'Kambion',
-    zrodlo: 'RA', // Rozkoszna Agonia (błędnie oznaczone jako SP - poprawione)
-    opis: 'Hybrydy ludzi i demonów, noszące w sobie mroczną moc.',
+    zrodlo: 'RA', // Rozkoszna Agonia, "Tworzenie postaci: kambion" (str. 55 wg stopki PDF)
+    opis: 'Potomkowie diabłów i śmiertelników, naznaczeni piekielnym dziedzictwem.',
     atrybuty_bazowe: {
-      sila: 11,
+      sila: 10,
       zrecznosc: 10,
-      intelekt: 10,
-      wola: 10
+      intelekt: 11,
+      wola: 9
     },
-    rozmiar: '1',
+    rozmiar: '1/2 lub 1',
     predkosc: 10,
-    jezyki: ['wspólny', 'demoniczny'],
+    jezyki: ['wspólny'],
     profesje: ['dowolna'],
     cechy_specjalne: {
-      odpornosc_na_ogien: 'Odporność na obrażenia od ognia.',
-      potworny_wyglad: 'Twój wygląd może wywołać strach u wrogów.'
+      niewrazliwosc: 'Niewrażliwość na obrażenia od choroby i trucizny, a także na chorobę i zatrucie.',
+      widzenie_w_ciemnosci: 'W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.',
+      dziecie_piekla: 'Zyskujesz Odporność na ogień.',
+      pietno_ciemnosci: 'Zaczynasz grę z jednym piętnem ciemności.',
+      radosc_z_ciemnosci: 'Przez 1 minutę po tym, jak zyskasz Splugawienie, rzuty na atak i testy wykonujesz z 1 ułatwieniem.',
+      wrazliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
+      splugawienie_poczatkowe: 'Zaczynasz grę z 2 punktami Splugawienia.'
     },
-    strona_zrodlowa: 30,
-    status: 'niezweryfikowane' // w źródle "Kambion" to statystyki potwora/NPC, nie sekcja tworzenia postaci gracza - brak oficjalnych tabel losowania, wymaga decyzji
+    poziom_4: {
+      zdrowie: '+5',
+      opcje: ['1 zaklęcie', 'talent Obdarzenie splugawieniem']
+    },
+    strona_zrodlowa: 55,
+    status: 'kompletne'
   },
 
   // Dodatkowe pochodzenie z innych źródeł

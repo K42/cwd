@@ -197,7 +197,23 @@ Ostatnie z trzech pochodzeń Straszliwego Piękna. Przepisano `przeszlosc` i `wi
 
 ---
 
-## Podsumowanie stanu po Fazach 0-7
+### Korekta: Kambion JEDNAK ma oficjalną sekcję tworzenia postaci
+
+Użytkownik poprawił wcześniejsze ustalenie - w *Rozkosznej Agonii* pod nagłówkiem „Kambion" (str. 44 wg stopki) po opisie fabularnym rzeczywiście następuje pełna sekcja „Tworzenie postaci: kambion" (str. 55) z 6 tabelami (wiek, budowa ciała, wygląd, wychowanie, osobowość, przeszłość). Wcześniejsze przeszukanie dokumentu zatrzymało się zbyt wcześnie, na fragmencie opisującym Kambiona jako potwora/NPC we wcześniejszej części książki, nie docierając do właściwej sekcji dla gracza dalej w tekście.
+
+### Faza 8: Kambion - pełne przepisanie od podstaw (Rozkoszna Agonia)
+
+Ustalono realne dane z `sources/Rozkoszna_Agonia/rozkoszna-agonia-digital-09012022.md` (linia 2084+): atrybuty bazowe (Siła 10, Zręczność 10, Intelekt 11, Wola 9 - poprzednio wymyślone 11/10/10/10), Rozmiar „1/2 lub 1", cechy specjalne (niewrażliwość na chorobę/truciznę, widzenie w ciemności, dziecię piekła/odporność na ogień, piętno ciemności, radość z ciemności, wrażliwość na żelazo, początkowe 2 punkty Splugawienia - wcześniej wymyślone „odporność na ogień" i „potworny wygląd" jako jedyne cechy), poziom 4 (talent „Obdarzenie splugawieniem"), oraz wszystkie 6 tabel losowania.
+
+Status zmieniony na `kompletne`, strona źródłowa poprawiona 30→55.
+
+**Weryfikacja:** pełne zbudowanie postaci Kambiona (`budujPostac`) i wyświetlenie kafelka w przeglądarce - 6 tabel, wszystkie rzucone, zero błędów.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
+## Podsumowanie stanu po Fazach 0-8
 
 | Pochodzenie | Źródło | Tabele | Status |
 |---|---|---|---|
@@ -210,7 +226,8 @@ Ostatnie z trzech pochodzeń Straszliwego Piękna. Przepisano `przeszlosc` i `wi
 | Chochlik | Straszliwe Piękno | 6/6 | ✅ przepisane (Faza 7a) |
 | Elf | Straszliwe Piękno | 5/5 | ✅ przepisane (Faza 7b) |
 | Hobgoblin | Straszliwe Piękno | 4/4 | ✅ przepisane (Faza 7c) |
-| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja, Kambion, Jotun | Suplement / Głód w Pustce / Rozkoszna Agonia / Chwalebna Śmierć | 0/0 | ⏸️ **wstrzymane - czeka na decyzję użytkownika** (patrz sekcja "⚠️ Ważne odkrycie" wyżej) |
+| Kambion | Rozkoszna Agonia | 6/6 | ✅ przepisane od zera (Faza 8) |
+| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja, Jotun | Suplement / Głód w Pustce / Chwalebna Śmierć | 0/0 | 🔄 w trakcie - pełna przebudowa (zaakceptowana przez użytkownika), pozostało 7 pochodzeń |
 
 Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
 
