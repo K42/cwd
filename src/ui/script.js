@@ -244,11 +244,16 @@ function renderPathSectionsVisibility() {
     // Pokaż sekcję nowicjusza dla poziomów > 0
     if (g1) g1.style.display = 'block';
     if (s1) s1.style.display = 'block';
-    
-    // Sekcje eksperta i mistrza
+
+    // Sekcje eksperta i mistrza - muszą też wrócić do display:block (były
+    // ukryte przez gałąź poziomu 0 powyżej), dostępność sygnalizuje opacity
+    if (g3) g3.style.display = 'block';
     if (g3) g3.style.opacity = can3 ? '1' : '0.5';
+    if (s3) s3.style.display = 'block';
     if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
+    if (g7) g7.style.display = 'block';
     if (g7) g7.style.opacity = can7 ? '1' : '0.5';
+    if (s7) s7.style.display = 'block';
     if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
   }
   
