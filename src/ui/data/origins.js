@@ -271,47 +271,57 @@ const ORIGINS = {
   faun: {
     id: 'faun',
     nazwa: 'Faun',
-    zrodlo: 'SUP', // Suplement Władcy Demonów (błędnie oznaczone jako SP - poprawione)
-    opis: 'Istoty o kozim wyglądzie, znane z zamiłowania do muzyki i natury.',
+    zrodlo: 'SUP', // Suplement Władcy Demonów, "Tworzenie postaci: faun" (str. 5 wg spisu treści)
+    opis: 'Potomkowie faerie i śmiertelników o kozich cechach fizycznych, nieprzynależący do żadnego z tych ludów.',
     atrybuty_bazowe: {
-      sila: 9,
+      sila: 10,
       zrecznosc: 11,
-      intelekt: 10,
+      intelekt: 11,
       wola: 9
     },
-    rozmiar: '1',
+    rozmiar: '1/2 lub 1',
     predkosc: 12,
-    jezyki: ['wspólny', 'zwierzęcy'],
+    jezyki: ['wspólny', 'elficki'],
     profesje: ['dowolna'],
     cechy_specjalne: {
-      skakanie: 'Możesz skakać dalej i wyżej niż normalnie.',
-      magia_natury: 'Dostęp do podstawowych zaklęć natury.'
+      percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 1.',
+      pedziwiatr: 'Kiedy podejmujesz akcję, możesz poruszyć się przed nią lub po niej o 1 metr, pod warunkiem, że twoja Prędkość wynosi więcej niż 0.',
+      widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze, jak w oświetlonych.',
+      plochliwy: 'Wykonujesz testy Woli z 1 utrudnieniem.'
     },
-    strona_zrodlowa: 5,
-    status: 'niezweryfikowane' // brak tabel losowania; wymaga weryfikacji cech mechanicznych ze źródła
+    poziom_4: {
+      zdrowie: '+5',
+      opcje: ['1 zaklęcie', 'talent Walka lub ucieczka']
+    },
+    strona_zrodlowa: 6,
+    status: 'kompletne'
   },
 
   niziol: {
     id: 'niziol',
     nazwa: 'Niziołek',
-    zrodlo: 'SUP', // Suplement Władcy Demonów (błędnie oznaczone jako SP - poprawione)
-    opis: 'Małe, spokojne istoty ceniące sobie komfort i dobre jedzenie.',
+    zrodlo: 'SUP', // Suplement Władcy Demonów, "Tworzenie postaci: niziołek" (str. 8 wg spisu treści)
+    opis: 'Niewielcy, nieustraszeni osadnicy o niezwykłym szczęściu, cenią sobie komfort i dobre jedzenie.',
     atrybuty_bazowe: {
-      sila: 8,
+      sila: 9,
       zrecznosc: 11,
       intelekt: 10,
-      wola: 10
+      wola: 11
     },
-    rozmiar: '1',
-    predkosc: 12,
+    rozmiar: '1/2',
+    predkosc: 8,
     jezyki: ['wspólny'],
     profesje: ['dowolna'],
     cechy_specjalne: {
-      szczescie: 'Raz dziennie możesz ponownie rzucić nieudany test.',
-      zwinność: 'Możesz poruszać się przez przestrzeń przeciwnika.'
+      usmiech_losu: 'Gdy stworzenie w twoim bliskim zasięgu wyrzuci 1 na jakiejkolwiek kości, możesz wykorzystać reakcję, by pozwolić na zignorowanie tego wyniku i powtórzenie rzutu.',
+      niezwykla_odwaga: 'Gdy zostaniesz przestraszony, możesz wykorzystać reakcję, by wykonać test Woli. Sukces oznacza, że pozbywasz się tego stanu.'
     },
-    strona_zrodlowa: 8,
-    status: 'niezweryfikowane' // brak tabel losowania; wymaga weryfikacji cech mechanicznych ze źródła
+    poziom_4: {
+      zdrowie: '+4',
+      opcje: ['1 zaklęcie', 'talent Przypływ szczęścia']
+    },
+    strona_zrodlowa: 9,
+    status: 'kompletne'
   },
 
 

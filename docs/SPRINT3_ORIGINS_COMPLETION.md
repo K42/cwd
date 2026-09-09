@@ -71,7 +71,7 @@ Podczas weryfikacji prawdziwych źródeł dla Fomora, Warga, Niedźwiedzidła i 
 
 **To zmienia charakter prac dla tych 8 pochodzeń** z „dopisz brakujące tabele" na „zweryfikuj i prawdopodobnie przepisz całe pochodzenie od podstaw", a dla Kambiona pojawia się dodatkowo pytanie, czy w ogóle ma być traktowany jako pochodzenie z oficjalnymi tabelami (nie istnieją), czy pozostać domowym rozszerzeniem.
 
-**Decyzja:** Prace nad tymi 8 pochodzeniami (fazy 8-15 w oryginalnym planie) są **wstrzymane do decyzji użytkownika** - patrz sekcja "Otwarte pytania" na końcu dokumentu. W tej sesji ukończono w pełni bezpieczne, dobrze zweryfikowane fazy 0-7 (bugfix, metadane, Automaton, 4 pochodzenia z Podręcznika Głównego, 3 uzupełnienia z Straszliwego Piękna).
+**Decyzja użytkownika:** pełna, wierna przebudowa wszystkich 8 pochodzeń (patrz Fazy 8-13 poniżej) - w tym rozszerzenie silnika o losowe atrybuty bazowe. Kambion okazał się mieć pełną sekcję tworzenia postaci gracza (błąd w moim wcześniejszym przeszukaniu źródła - patrz korekta niżej).
 
 ---
 
@@ -261,27 +261,49 @@ Ponieważ silnik zawsze liczy Zdrowie = Siła (uproszczenie sprzed tego sprintu,
 
 ---
 
-## Podsumowanie stanu po Fazach 0-12
+### Faza 13: Faun i Niziołek - pełne przepisanie od podstaw (Suplement Władcy Demonów)
 
-| Pochodzenie | Źródło | Tabele | Status |
-|---|---|---|---|
-| Człowiek | PG | 6/6 | ✅ zweryfikowane (było poprawne od początku) |
-| Automaton | PG | 6/6 | ✅ naprawione (Faza 2) |
-| Goblin | PG | 6/6 | ✅ przepisane (Faza 3) |
-| Krasnolud | PG | 6/6 | ✅ przepisane (Faza 4) |
-| Odmieniec | PG | 6/6 | ✅ przepisane (Faza 5) |
-| Ork | PG | 5/5 | ✅ przepisane (Faza 6) |
-| Chochlik | Straszliwe Piękno | 6/6 | ✅ przepisane (Faza 7a) |
-| Elf | Straszliwe Piękno | 5/5 | ✅ przepisane (Faza 7b) |
-| Hobgoblin | Straszliwe Piękno | 4/4 | ✅ przepisane (Faza 7c) |
-| Kambion | Rozkoszna Agonia | 6/6 | ✅ przepisane od zera (Faza 8) |
-| Jotun | Chwalebna Śmierć | 6/6 | ✅ przepisane od zera (Faza 9) |
-| Fomor, Warg, Niedźwiedzidło | Głód w Pustce | brak w źródle | ✅ core przepisany od zera, brak tabel to zgodny ze źródłem stan (Faza 11) |
-| Inkarnacja | Głód w Pustce | 2/2 | ✅ przepisane od zera, mechanika "wcielenia" opisana jako tekst (Faza 12) |
-| Faun, Niziołek | Suplement Władcy Demonów | 0/? | 🔄 w trakcie - ostatnie 2 pochodzenia |
+Ostatnie dwa pochodzenia. Tekst wyekstrahowano bezpośrednio z `dodatki/Suplement_digital_1.4.pdf` przez `pdftotext -layout` (transkrypcja w `sources/Suplement/*.md` jest nieużywalna - uszkodzone mapowanie czcionki przy ekstrakcji, np. „Niziołek" wychodziło jako „0iziQjGM"). Warstwa `pdftotext -layout` miała drobne, ale nieszkodliwe usterki (gubione wielkie litery na początku niektórych słów w opisach fabularnych, np. „auny" zamiast „Fauny") - nie wpływały na dane mechaniczne (atrybuty, zakresy tabel), które pozostały czytelne i kompletne.
 
-Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
+- **Faun**: atrybuty (Siła 10/Zręczność 11/Intelekt 11/Wola 9), Percepcja=Intelekt+1, Rozmiar „1/2 lub 1", cechy (Pędziwiatr, Widzenie w cieniu, Płochliwy), poziom 4 (talent „Walka lub ucieczka"), 5 tabel: wiek, budowa_ciala, wyglad, przeszlosc, osobowosc.
+- **Niziołek**: atrybuty (Siła 9/Zręczność 11/Intelekt 10/Wola 11), Rozmiar 1/2, Prędkość 8, cechy (Uśmiech losu, Niezwykła odwaga), poziom 4 (talent „Przypływ szczęścia"), 6 tabel: wiek, budowa_ciala, wyglad, przeszlosc, **religia** (jak Człowiek), osobowosc.
+
+**Weryfikacja:** oba pochodzenia zbudowane przez `budujPostac()`, wszystkie tabele (5 dla Fauna, 6 dla Niziołka) wyświetlone i rzucone w przeglądarce, zero błędów.
+
+**Status:** ✅ Gotowe. Testy: 99/99, lint czysty.
 
 ---
 
-*(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
+## 🎉 Podsumowanie końcowe: wszystkie 17 pochodzeń ukończone
+
+Finalna weryfikacja w przeglądarce - wszystkie 17 kafelków pochodzeń rozwinięte, wszystkie dostępne tabele rzucone (łącznie 51 tabel na 12 pochodzeniach z tabelami + 5 pochodzeń bez tabel, zgodnie ze źródłem) - **zero błędów konsoli w całej aplikacji**.
+
+| Pochodzenie | Źródło | Liczba tabel | Uwagi |
+|---|---|---|---|
+| Człowiek | PG | 6 | było poprawne od początku |
+| Automaton | PG | 6 | Faza 2 |
+| Goblin | PG | 6 | Faza 3 |
+| Krasnolud | PG | 6 | Faza 4 |
+| Odmieniec | PG | 6 | Faza 5 |
+| Ork | PG | 5 | Faza 6 |
+| Chochlik | Straszliwe Piękno | 6 | Faza 7a |
+| Elf | Straszliwe Piękno | 5 | Faza 7b |
+| Hobgoblin | Straszliwe Piękno | 4 | Faza 7c |
+| Kambion | Rozkoszna Agonia | 6 | Faza 8 |
+| Jotun | Chwalebna Śmierć | 6 | Faza 9 |
+| Fomor | Głód w Pustce | 0 (zgodnie ze źródłem) | Faza 11 |
+| Warg | Głód w Pustce | 0 (zgodnie ze źródłem) | Faza 11 |
+| Niedźwiedzidło | Głód w Pustce | 0 (zgodnie ze źródłem) | Faza 11 |
+| Inkarnacja | Głód w Pustce | 2 | Faza 12, mechanika "wcielenia" opisana jako tekst |
+| Faun | Suplement Władcy Demonów | 5 | Faza 13 |
+| Niziołek | Suplement Władcy Demonów | 6 | Faza 13 |
+
+### Znane, świadome uproszczenia (nie regresje - istniały przed tym sprintem, dotyczą wszystkich pochodzeń jednolicie)
+
+1. **Silnik zawsze liczy Percepcja=Intelekt i Zdrowie=Siła**, ignorując modyfikatory specyficzne dla pochodzenia (np. Percepcja+1 dla Człowieka/Goblina/Fauna, Percepcja+2 dla zwierzoludzi, Zdrowie+4 dla Krasnoluda, Zdrowie+2 dla Warga, Zdrowie+10 dla Niedźwiedzidła, Zdrowie=Wola dla Inkarnacji). Odnotowane jako tekst w `cechy_specjalne` każdego dotkniętego pochodzenia. Naprawa wymagałaby osobnego zadania obejmującego wzory atrybutów drugorzędnych dla wszystkich 17 pochodzeń.
+2. **Mechanika „wcielonej formy" Inkarnacji** (opętywanie innych postaci, przejmowanie ich atrybutów) nie jest symulowana - opisana jako tekst, wymaga ręcznego prowadzenia przez gracza/MG.
+3. **„Potężne pochodzenie"** (Jotun, Inkarnacja) - mechanika zastępująca wybór ścieżki nowicjusza korzyściami z pochodzenia - opisana jako tekst, nie wymuszana przez UI kreatora (użytkownik może wciąż wybrać ścieżkę nowicjusza normalnie).
+
+Żadne z powyższych nie jest błędem wprowadzonym w tym sprincie - to ograniczenia architektury silnika sprzed jego rozpoczęcia, odnotowane teraz po raz pierwszy dzięki pełnej weryfikacji źródłowej wszystkich pochodzeń.
+
+Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany na wielu pochodzeniach (Człowiek, Ork) - dotyczy WSZYSTKICH 17 pochodzeń jednakowo, ponieważ to kod UI, a nie dane pochodzenia.

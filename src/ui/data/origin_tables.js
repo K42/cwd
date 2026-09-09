@@ -1560,6 +1560,275 @@ const ORIGIN_TABLES = {
         6: { wynik: 'W przeciwieństwie do większości inkarnacji przejmujesz się zamieszkującymi świat stworzeniami i starasz się chronić je przed złem.', efekt: 'Brak efektu mechanicznego' }
       }
     }
+  },
+
+  // ========== FAUN ==========
+  faun: {
+    wiek: {
+      nazwa: 'Wiek',
+      typ: '3k6',
+      opis: 'Tabela określająca wiek fauna',
+      wyniki: {
+        3: { wynik: 'Dziecko, 11 lat lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Sędziwy dorosły, 76 lat lub więcej.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    budowa_ciala: {
+      nazwa: 'Budowa ciała',
+      typ: '3k6',
+      opis: 'Tabela określająca budowę ciała fauna',
+      wyniki: {
+        3: { wynik: 'Jesteś niski i szczupły, zapewne ze względu na trudne warunki dorastania.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś niski i krępy, w oczywisty sposób dobrze wykarmiony.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś niski jak na swój rodzaj, nie wyższy niż metr.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jesteś niski jak na swój rodzaj, nie wyższy niż metr.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jesteś smukły i żylasty.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jesteś smukły i żylasty.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Masz wzrost i wagę typowe dla fauna.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Masz wzrost i wagę typowe dla fauna.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Masz wzrost i wagę typowe dla fauna.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Masz wzrost i wagę typowe dla fauna.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś otyły, wyjątkowo zaokrąglony lub pulchny.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Jesteś otyły, wyjątkowo zaokrąglony lub pulchny.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś mniej więcej o głowę wyższy od innych faunów.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Jesteś mniej więcej o głowę wyższy od innych faunów.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Jesteś wysoki i wychudzony.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Górujesz nad innymi faunami. Masz pokaźne, baranie rogi i muskularne ciało.', efekt: 'Podnieś swoją Siłę o 2 i zmniejsz Zręczność o 2.' }
+      }
+    },
+    wyglad: {
+      nazwa: 'Wygląd',
+      typ: '3k6',
+      opis: 'Tabela określająca wygląd fauna',
+      wyniki: {
+        3: { wynik: 'Niewiele z ludzkiego dziedzictwa przejawia się w twoich osobliwych, ostrych rysach. Owłosienie na twej grubej, twardej skórze skręca się w nietypowy sposób. Inni mogą czuć się niepewnie, gdy cię widzą.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś bestialski, bardziej jak dzikie zwierzę niż osoba. Masz oczy kozy, przygarbioną posturę, kołyszący się krok.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Nie ma w tobie nic atrakcyjnego. Tu i tam widać ewidentne ludzkie cechy, ale przyćmiewają je te zwierzęce.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Nie ma w tobie nic atrakcyjnego. Tu i tam widać ewidentne ludzkie cechy, ale przyćmiewają je te zwierzęce.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Twoje zwierzęce cechy nie rzucają się aż tak w oczy – na czole masz zaledwie zawiązki rogów, a futro pokrywające nogi jest rzadkie.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Twoje zwierzęce cechy nie rzucają się aż tak w oczy – na czole masz zaledwie zawiązki rogów, a futro pokrywające nogi jest rzadkie.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Wyglądasz jak większość innych faunów, z małymi rogami na czole i nogami pokrytymi futrem aż do parzystych kopyt.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Wyglądasz jak większość innych faunów, z małymi rogami na czole i nogami pokrytymi futrem aż do parzystych kopyt.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Wyglądasz jak większość innych faunów, z małymi rogami na czole i nogami pokrytymi futrem aż do parzystych kopyt.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Wyglądasz jak większość innych faunów, z małymi rogami na czole i nogami pokrytymi futrem aż do parzystych kopyt.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Masz pociągający wygląd, na przykład kształtne ciało, jasne oczy czy ciepły uśmiech. Dzięki temu innym łatwiej się przy tobie odprężyć.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Masz pociągający wygląd, na przykład kształtne ciało, jasne oczy czy ciepły uśmiech. Dzięki temu innym łatwiej się przy tobie odprężyć.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś całkiem atrakcyjny.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Jesteś całkiem atrakcyjny.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Jesteś na tyle pociągający, że inni często chcą przebywać w twoim towarzystwie.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Odziedziczyłeś najlepsze cechy po swoich śmiertelnych i nieśmiertelnych rodzicach. Masz perfekcyjną budowę ciała, egzotyczne rysy twarzy i powab, który przyciąga uwagę każdego, kogo spotkasz.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    przeszlosc: {
+      nazwa: 'Przeszłość',
+      typ: 'k20',
+      opis: 'Tabela określająca przeszłość fauna',
+      wyniki: {
+        1: { wynik: 'Pochwycili cię myśliwi i znęcali się nad tobą w okropny sposób. Uciekłeś, zamordowawszy jednego lub więcej ze swoich porywaczy.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Byłeś błaznem na dworze elfiego szlachcica i przez całe życie nie zaznałeś niczego ponad obelgi i pogardę.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Spędziłeś parę lat jako jeniec czarodzieja, który wierzył, że twoja krew kryje magiczną moc.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Zadurzyłeś się w człowieku i miałeś z tą osobą romans, który trwał kilka miesięcy, zanim nie nakryto was na schadzce, a ciebie nie wygnano.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Zeloci Nowego Boga najechali na twoją wieś i zamordowali wszystkich oprócz ciebie. Byli przekonani, że zamieszkiwali tam sami zwierzoludzie.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Przez wiele lat byłeś zabawką nimfy.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Spędziłeś wiele lat, żyjąc samotnie w dziczy.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Miałeś niewielką rodzinę w odosobnionym zakątku Imperium, lecz straciłeś ją w wyniku choroby lub ataku bestii.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Złe traktowanie z rąk faerie lub ludzi pozostawiło ci blizny – w sensie fizycznym, psychicznym lub w obu.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Żyłeś w ludzkiej osadzie przez wiele lat i tam nauczyłeś się swojego fachu.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Pewien druid wychował cię od dziecka, dzięki czemu nauczyłeś się wiele o Starej Wierze.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Dorastałeś w domu swojego ludzkiego rodzica, otoczony miłością.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Wywodzisz się z drugiego lub trzeciego pokolenia faunów. Dorastałeś w odosobnionej części świata, jak głęboki las czy kotlina wysoko w górach.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Trupa artystów przygarnęła cię jako małe dziecko i wychowała. Dorastałeś, występując przed gapiącymi się na ciebie ludźmi, którzy płacili po kilka okrawków, żeby cię zobaczyć.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Czarodziej lub wiedźma znaleźli cię i dbali o ciebie, dopóki nie dorosłeś.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Pracowałeś jako szpieg dla inkwizytora, który zmarł niedawno.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Wychował cię czarodziej i zagwarantował ci formalną edukację.', efekt: 'Umiesz czytać w języku wspólnym.' },
+        18: { wynik: 'Ostrzegłeś ludzką wioskę przed straszliwym zagrożeniem. Od tamtej pory zawsze przyjmują cię w niej z otwartymi ramionami.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Dawno temu zaprzyjaźniłeś się z leszym, ale nie widziałeś go od lat.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Znalazłeś lub ukradłeś sakiewkę.', efekt: 'Dodaj 2k6 miedziaków do twojego początkowego ekwipunku.' }
+      }
+    },
+    osobowosc: {
+      nazwa: 'Osobowość',
+      typ: '3k6',
+      opis: 'Tabela określająca osobowość fauna',
+      wyniki: {
+        3: { wynik: 'Przez całe życie nie zaznałeś niczego oprócz smutku. Nadszedł czas odpłaty tym, którzy cię źle traktowali.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Świat to okrutne i bezwzględne miejsce. Zrobisz wszystko, co musisz, żeby przetrwać, nawet jeśli oznacza to kradzież, oszustwa czy zabójstwa.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Świat to okrutne i bezwzględne miejsce. Zrobisz wszystko, co musisz, żeby przetrwać, nawet jeśli oznacza to kradzież, oszustwa czy zabójstwa.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Robisz i mówisz, na co masz ochotę. Starasz się nie krzywdzić innych, ale jeśli do tego dojdzie, niewiele możesz na to poradzić.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Robisz i mówisz, na co masz ochotę. Starasz się nie krzywdzić innych, ale jeśli do tego dojdzie, niewiele możesz na to poradzić.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Robisz i mówisz, na co masz ochotę. Starasz się nie krzywdzić innych, ale jeśli do tego dojdzie, niewiele możesz na to poradzić.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Starasz się przetrwać i troszczyć się o siebie. Trudno przychodzi ci zaufanie innym czy zawierzenie im na słowo.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Starasz się przetrwać i troszczyć się o siebie. Trudno przychodzi ci zaufanie innym czy zawierzenie im na słowo.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Starasz się przetrwać i troszczyć się o siebie. Trudno przychodzi ci zaufanie innym czy zawierzenie im na słowo.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Starasz się przetrwać i troszczyć się o siebie. Trudno przychodzi ci zaufanie innym czy zawierzenie im na słowo.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Ufasz swojemu osądowi co do tego, które działania są słuszne, nawet jeśli inni nie zgadzają się z twoimi metodami.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Ufasz swojemu osądowi co do tego, które działania są słuszne, nawet jeśli inni nie zgadzają się z twoimi metodami.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Zawsze starasz się być najlepszą wersją siebie. Jeśli zdołasz udowodnić, że masz dobre serce, może inni dadzą ci szansę.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Zawsze starasz się być najlepszą wersją siebie. Jeśli zdołasz udowodnić, że masz dobre serce, może inni dadzą ci szansę.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Zawsze starasz się być najlepszą wersją siebie. Jeśli zdołasz udowodnić, że masz dobre serce, może inni dadzą ci szansę.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Urodziłeś się nie bez powodu; może żeby wykonać ważne zadanie albo wypełnić istotny cel. Masz nadzieję odnaleźć swoje przeznaczenie i wykonać to, do czego zostałeś powołany.', efekt: 'Brak efektu mechanicznego' }
+      }
+    }
+  },
+
+  // ========== NIZIOŁEK ==========
+  niziol: {
+    wiek: {
+      nazwa: 'Wiek',
+      typ: '3k6',
+      opis: 'Tabela określająca wiek niziołka',
+      wyniki: {
+        3: { wynik: 'Dziecko, 11 lat lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Młody dorosły, 18–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Sędziwy dorosły, 76 lat lub więcej.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    budowa_ciala: {
+      nazwa: 'Budowa ciała',
+      typ: '3k6',
+      opis: 'Tabela określająca budowę ciała niziołka',
+      wyniki: {
+        3: { wynik: 'Jesteś dość niewielki jak na niziołka: mierzysz tylko 60 centymetrów wzrostu i ważysz niecałe 20 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Urosłeś wszerz zamiast wzwyż. Masz zaokrąglony tułów i krótkie, krępe kończyny.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś niski jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jesteś niski jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jesteś szczupły, nieważne, ile zjesz.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jesteś szczupły, nieważne, ile zjesz.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Jesteś przeciętnego wzrostu i wagi jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Jesteś przeciętnego wzrostu i wagi jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Jesteś przeciętnego wzrostu i wagi jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Jesteś przeciętnego wzrostu i wagi jak na niziołka.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Dobre życie sprawiło, że jesteś słusznej tuszy.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Dobre życie sprawiło, że jesteś słusznej tuszy.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś wysoki jak na niziołcze standardy i można uznać cię za niskiego człowieka.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Jesteś wysoki jak na niziołcze standardy i można uznać cię za niskiego człowieka.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Jesteś wysoki i smukły, o gibkim ciele. Twoja rodzina utrzymuje, że masz w sobie krew faerie.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Jesteś ogromny jak na niziołka. Mierzysz 1,5 metra i ważysz blisko 90 kilogramów.', efekt: 'Zwiększ swój Rozmiar do 1.' }
+      }
+    },
+    wyglad: {
+      nazwa: 'Wygląd',
+      typ: '3k6',
+      opis: 'Tabela określająca wygląd niziołka',
+      wyniki: {
+        3: { wynik: 'Fart ocalił ci życie, ale nie umknąłeś śmierci nienaruszony. Nosisz straszliwe blizny, które sprawiają, że twój wygląd wywołuje wstręt u każdego, kto na ciebie spojrzy.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś po prostu brzydki. Twoje rysy wyglądają, jakby przespacerowały się po twojej głowie i osiadły tam, gdzie było im najwygodniej.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Masz nieatrakcyjną cechę, rujnującą twój wygląd, który poza tym się nie wyróżnia.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Masz nieatrakcyjną cechę, rujnującą twój wygląd, który poza tym się nie wyróżnia.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Nie masz charakterystycznych cech fizycznych. Inni czasem zapominają o twojej obecności.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Nie masz charakterystycznych cech fizycznych. Inni czasem zapominają o twojej obecności.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Jesteś zupełnie zwykły i niepozorny.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Jesteś zupełnie zwykły i niepozorny.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Jesteś zupełnie zwykły i niepozorny.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Jesteś zupełnie zwykły i niepozorny.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Inne niziołki uznają cię za atrakcyjnego, zapewne ze względu na twoją czarującą osobowość.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Inne niziołki uznają cię za atrakcyjnego, zapewne ze względu na twoją czarującą osobowość.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś atrakcyjny.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Jesteś atrakcyjny.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Jesteś pociągający – przykuwasz wzrok zarówno niziołków, jak i ludzi.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Jesteś wspaniałą pięknością, osobą perfekcyjną na miarę wszelkich standardów. Kiedy wchodzisz do pomieszczenia, inni natychmiast cię zauważają.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    przeszlosc: {
+      nazwa: 'Przeszłość',
+      typ: 'k20',
+      opis: 'Tabela określająca przeszłość niziołka',
+      wyniki: {
+        1: { wynik: 'Twoja ciekawość zawiodła cię w bardzo mroczne miejsce, gdzie doświadczyłeś czegoś, co wytrąciło cię z równowagi.', efekt: 'Zaczynasz grę z 1k3 + 1 punktów Szaleństwa.' },
+        2: { wynik: 'Odkryłeś przerażający sekret. Żeby zapewnić swojej rodzinie bezpieczeństwo, postanowiłeś zniknąć.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Ciężkie czasy zmusiły cię do popełniania przestępstw, żeby związać koniec z końcem.', efekt: 'Zyskujesz jedną profesję przestępczą.' },
+        4: { wynik: 'Skradłeś coś o ogromnej wadze. Ktoś inny został o to obwiniony i stracony za zbrodnię.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Paskudna zaraza przetrzebiła twoją społeczność. Jako jedyny ocalałeś.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Porwał cię ork i trzymał w niewoli przez 1k6 lat. Wierzył, że jesteś przynoszącym szczęście talizmanem.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Udałeś się na zwiedzanie jaskiń i zgubiłeś się. W końcu uratowała cię grupa gnomów.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Masz okropne zamiłowanie do włóczęgi. Nie możesz usiedzieć w miejscu przez więcej niż parę tygodni.', efekt: 'Dodaj jeden język do listy tych, którymi umiesz mówić.' },
+        9: { wynik: 'Podjąłeś się kilku odrażających prac w wielkim mieście.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Zarobiłeś na życie, pracując w swojej profesji.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Zakochał się w tobie człowiek, ale odrzuciłeś te awanse.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Masz dużą bliską rodzinę.', efekt: 'Liczy 2k6 + 3 członków.' },
+        13: { wynik: 'Zaprzyjaźniłeś się z potężną wiedźmą lub czarodziejem, gdy ta osoba odwiedzała twoją społeczność.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Odebrałeś staranne wykształcenie.', efekt: 'Umiesz czytać w języku wspólnym.' },
+        15: { wynik: 'Kiedy twoje miasto zostało zaatakowane, poprowadziłeś swoich ludzi w bezpieczne miejsce.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Pewnego razu ogr połknął cię w całości. Jakimś sposobem udało ci się przetrwać i wydostałeś się z drugiej strony, paskudnie brudny, ale cały i zdrowy.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Zostałeś porwany przez faerie, ale zdołałeś uciec.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Udałeś się w daleką podróż z kompanią krasnoludów. Planujesz pewnego dnia opisać swoje doświadczenia.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Znalazłeś w jaskini dziwny skarb.', efekt: 'Zaczynasz grę z jednym zaklętym przedmiotem wybranym przez MG.' },
+        20: { wynik: 'Urodziłeś się w bogactwie.', efekt: 'Zaczynasz grę z 3k6 miedziaków.' }
+      }
+    },
+    religia: {
+      nazwa: 'Religia',
+      typ: '3k6',
+      opis: 'Tabela określająca religię niziołka',
+      wyniki: {
+        3: { wynik: 'Należysz do Kościoła Nowego Boga.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Należysz do Kościoła Nowego Boga.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Zgłębiłeś nieco wiedźmiarstwa.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Zgłębiłeś nieco wiedźmiarstwa.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Przestrzegasz zasad Starej Wiary.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Przestrzegasz zasad Starej Wiary.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Nie interesujesz się zbytnio bóstwami ani religią.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Nie interesujesz się zbytnio bóstwami ani religią.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Nie interesujesz się zbytnio bóstwami ani religią.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Nie interesujesz się zbytnio bóstwami ani religią.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Nie wierzysz w istnienie bogów.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    osobowosc: {
+      nazwa: 'Osobowość',
+      typ: '3k6',
+      opis: 'Tabela określająca osobowość niziołka',
+      wyniki: {
+        3: { wynik: 'Coś jest z tobą nie tak. Śnisz o krzywdzeniu innych, cięciu ich i sprawianiu, by krzyczeli. Obawiasz się, że pewnego dnia możesz spełnić te fantazje.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Trudno ci skupić uwagę. Łatwo cię rozproszyć i zwykłeś porzucać, cokolwiek właśnie robisz, na rzecz podjęcia innej czynności.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Starasz się nie wychylać ani nie mieszać w kłopoty.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Starasz się nie wychylać ani nie mieszać w kłopoty.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Robisz, co chcesz i kiedy chcesz. Nie pozwolisz, żeby ktokolwiek wszedł ci w drogę. Nigdy się nie wybijesz, jeśli będziesz się trzymał z motłochem.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Robisz, co chcesz i kiedy chcesz. Nie pozwolisz, żeby ktokolwiek wszedł ci w drogę. Nigdy się nie wybijesz, jeśli będziesz się trzymał z motłochem.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Starasz się być dobry dla swoich przyjaciół, o ile nie okaże się to dla ciebie zbyt wielkim utrapieniem.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Starasz się być dobry dla swoich przyjaciół, o ile nie okaże się to dla ciebie zbyt wielkim utrapieniem.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Starasz się być dobry dla swoich przyjaciół, o ile nie okaże się to dla ciebie zbyt wielkim utrapieniem.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Starasz się być dobry dla swoich przyjaciół, o ile nie okaże się to dla ciebie zbyt wielkim utrapieniem.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś dobrą osobą, która chętnie pomaga innym.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Jesteś dobrą osobą, która chętnie pomaga innym.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Kryjesz plecy swoim, czy są to inne niziołki, czy ci, których nazywasz przyjaciółmi. Zrobiłbyś dla nich wszystko.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Kryjesz plecy swoim, czy są to inne niziołki, czy ci, których nazywasz przyjaciółmi. Zrobiłbyś dla nich wszystko.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Zawsze robisz to, co uważasz za słuszne, nawet jeśli pakujesz się w ten sposób w kłopoty.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Przejmujesz się zdaniem innych i zmieniasz swoje zachowanie tak, żeby cię polubili.', efekt: 'Brak efektu mechanicznego' }
+      }
+    }
   }
 };
 
