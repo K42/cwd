@@ -187,4 +187,33 @@ Ten sam problem: istniejące `przeszlosc`/`wiek` to dosłownie tabele Człowieka
 
 ---
 
+### Faza 7c: Hobgoblin - pełne przepisanie tabel (Straszliwe Piękno)
+
+Ostatnie z trzech pochodzeń Straszliwego Piękna. Przepisano `przeszlosc` i `wiek` (obie miały błędną, nie-hobgoblinią treść), dodano brakującą `efekt_uboczny_szalu` (k20, aktywuje się przy cesze specjalnej „Szał") oraz `osobowosc`.
+
+**Weryfikacja końcowa Fazy 7 (przeglądarka):** Chochlik (6 tabel), Elf (5 tabel), Hobgoblin (4 tabele) - każde pochodzenie wyświetla właściwy, kompletny zestaw tabel; wykonano rzut na każdą z nich (łącznie z nowo obsługiwaną kością k3) - zero błędów konsoli.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty. **To zamyka pełną weryfikację i naprawę wszystkich pochodzeń z Straszliwego Piękna (Chochlik, Elf, Hobgoblin) oraz Podręcznika Głównego - 9 z 17 pochodzeń ma teraz w pełni zweryfikowane, kompletne tabele losowania.**
+
+---
+
+## Podsumowanie stanu po Fazach 0-7
+
+| Pochodzenie | Źródło | Tabele | Status |
+|---|---|---|---|
+| Człowiek | PG | 6/6 | ✅ zweryfikowane (było poprawne od początku) |
+| Automaton | PG | 6/6 | ✅ naprawione (Faza 2) |
+| Goblin | PG | 6/6 | ✅ przepisane (Faza 3) |
+| Krasnolud | PG | 6/6 | ✅ przepisane (Faza 4) |
+| Odmieniec | PG | 6/6 | ✅ przepisane (Faza 5) |
+| Ork | PG | 5/5 | ✅ przepisane (Faza 6) |
+| Chochlik | Straszliwe Piękno | 6/6 | ✅ przepisane (Faza 7a) |
+| Elf | Straszliwe Piękno | 5/5 | ✅ przepisane (Faza 7b) |
+| Hobgoblin | Straszliwe Piękno | 4/4 | ✅ przepisane (Faza 7c) |
+| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja, Kambion, Jotun | Suplement / Głód w Pustce / Rozkoszna Agonia / Chwalebna Śmierć | 0/0 | ⏸️ **wstrzymane - czeka na decyzję użytkownika** (patrz sekcja "⚠️ Ważne odkrycie" wyżej) |
+
+Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
