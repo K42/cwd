@@ -121,4 +121,24 @@ Rdzeń pochodzenia (`origins.js`: atrybuty bazowe, cechy specjalne, poziom 4) zw
 
 ---
 
+### ⚠️ Drugie ważne odkrycie: "istniejące" tabele Goblina/Krasnoluda/Odmieńca/Orka też są uszkodzone
+
+Przed dodaniem brakujących tabel sprawdzono, czy istniejące 3 tabele (`wiek`, `przeszłość`, `osobowość`) dla tych 4 pochodzeń faktycznie pochodzą ze źródła. **Nie pochodzą.** Tabele `wiek` i `osobowość` dla WSZYSTKICH CZTERECH pochodzeń (Goblin, Krasnolud, Odmieniec, Ork) to dosłownie ten sam, wspólny, ogólny tekst - identyczny z (błędnym) tekstem, który wcześniej naprawiono w Automatonie (np. wpis 3 tabeli osobowości brzmi identycznie „Jesteś okrutny, niegodziwy i samolubny..." we wszystkich czterech). Tabela `przeszłość` Goblina okazała się być ogólnym, „ludzkim" tekstem (małżeństwo, wykształcenie formalne, mapa skarbu) zupełnie niepasującym do klimatu Goblina ze źródła (zamiana w ropuchę przez Króla Goblinów, zjedzenie stu chorych szczurów, itp.).
+
+**Wniosek:** dla tych 4 pochodzeń **wszystkie 6 tabel** (nie tylko 3 brakujące) wymaga transkrypcji od zera wprost z `PodrecznikGlowny.md`. Fazy 3-6 poniżej to więc pełne przepisanie tabel każdego pochodzenia, analogicznie do Fazy 2 (Automaton), a nie tylko dopisanie brakujących kluczy.
+
+---
+
+### Faza 3: Goblin - pełne przepisanie tabel (PG)
+
+Wszystkie 6 tabel przepisane od zera z `PodrecznikGlowny.md` (str. 16-17 wg stopki PDF): `wiek`, `budowa_ciala` (nowa), `cecha_szczegolna` (nowa), `dziwny_nawyk` (nowa), `przeszlosc`, `osobowosc`. Poprzednie `wiek`/`przeszlosc`/`osobowosc` usunięte w całości - były to placeholder-y współdzielone z innymi pochodzeniami, nie treść goblinia.
+
+**Uwaga metodologiczna:** tabela „Budowa ciała" w markdownowej transkrypcji PG straciła kolumnę z zakresami rzutu (widać było tylko 9 opisów bez liczb). Zamiast zgadywać zakresy, odczytano je bezpośrednio z obrazu strony PDF (`dodatki/Cień Władcy Demonów podręcznik główny.pdf`, str. 16 wg stopki) - **pierwotnie przyjęty zakres (przez analogię do Orka) okazałby się błędny**, co potwierdza, że przy brakujących zakresach trzeba zawsze weryfikować wizualnie, nie ekstrapolować.
+
+**Weryfikacja:** `getAvailableTables('goblin')` zwraca 6 tabel z poprawnymi typami kości (wiek/budowa_ciala/osobowosc: 3k6, cecha_szczegolna/dziwny_nawyk/przeszlosc: k20).
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
