@@ -169,4 +169,14 @@ Wszystkie 5 tabel Orka przepisane/dodane z `PodrecznikGlowny.md` (str. 22-23 wg 
 
 ---
 
+### Faza 7a: Chochlik - pełne przepisanie tabel (Straszliwe Piękno)
+
+Weryfikacja przed rozpoczęciem uzupełniania (dodania jednej brakującej tabeli „skrzydła") wykazała, że **Chochlik ma ten sam problem co pochodzenia z PG** - istniejące `wiek`/`przeszlosc`/`osobowosc` to ten sam ogólny placeholder, nie treść chochlikowa. Pełne przepisanie 6 tabel z `sources/Straszliwe_Piekno/Straszliwe-piekno-digital-05122022.md` (str. 7-9): `wyglad` (poprawiony typ z 3k6 na k20 - źródło używa „1k20"), `wiek` (poprawiony typ na `k3` - patrz niżej), `przeszlosc`, `budowa_ciala`, `osobowosc`, `skrzydla` (nowa).
+
+**Zmiana silnika:** tabela „Chochlik: wiek" (i „Elf: wiek" w następnej fazie) używa w źródle kości `k3`, której `rollTable()` w `table_utils.js` wcześniej nie obsługiwał (rzuciłby błędem „Nieznany typ tabeli"). Dodano brakującą gałąź obsługi `k3` (rzut 1-3) - mała, bezpieczna zmiana silnika wspierająca realną treść źródłową.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*

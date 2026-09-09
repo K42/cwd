@@ -55,6 +55,9 @@ function rollTable(originId, tableName) {
   } else if (table.typ === 'k6') {
     roll = Math.floor(Math.random() * 6) + 1;
     result = table.wyniki[roll];
+  } else if (table.typ === 'k3') {
+    roll = Math.floor(Math.random() * 3) + 1;
+    result = table.wyniki[roll];
   } else {
     throw new Error(`Nieznany typ tabeli: ${table.typ}`);
   }
