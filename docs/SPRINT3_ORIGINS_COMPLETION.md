@@ -159,4 +159,14 @@ Sprawdzono, że zmiana klucza `wiek` → `prawdziwy_wiek` nie jest nigdzie w kod
 
 ---
 
+### Faza 6: Ork - pełne przepisanie tabel (PG)
+
+Wszystkie 5 tabel Orka przepisane/dodane z `PodrecznikGlowny.md` (str. 22-23 wg stopki PDF): `wiek` (zakresy potwierdzone wizualnie na stronie PDF - markdown stracił kolumnę liczb), `budowa_ciala` (nowa), `wyglad` (nowa), `przeszlosc` (przepisana), `osobowosc` (przepisana). Ork zgodnie ze źródłem ma 5 tabel, nie 6 - PG nie definiuje dla Orka osobnej tabeli religii ani cechy szczególnej.
+
+**Weryfikacja końcowa fazy 3-6 (przeglądarka, wszystkie 4 pochodzenia w jednej sesji):** każdy kafelek (Goblin, Krasnolud, Odmieniec, Ork) pokazuje właściwy, kompletny i unikalny zestaw tabel (potwierdzone przez `data-origin-id` - dokładniejsze niż dopasowanie po tekście, które w pierwszym podejściu dawało fałszywie mylące wyniki przez nieistniejący selektor CSS). Dodatkowo pełny przebieg dla Orka: wybór pochodzenia → poziom 4 (Ekspert) → wybór ścieżki nowicjusza i eksperckiej → przycisk „Dalej" na kroku 3 odblokowuje się poprawnie, potwierdzając, że naprawa z Fazy 0 działa dla dowolnego pochodzenia, nie tylko Człowieka. Zero błędów konsoli w całym przebiegu.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty. **To zamyka pełną weryfikację i naprawę wszystkich 6 pochodzeń z Podręcznika Głównego (Człowiek, Automaton, Goblin, Krasnolud, Odmieniec, Ork) - wszystkie mają teraz kompletne, zweryfikowane źródłowo tabele losowania.**
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
