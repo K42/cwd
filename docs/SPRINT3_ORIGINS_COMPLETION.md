@@ -100,4 +100,25 @@ Podczas weryfikacji prawdziwych źródeł dla Fomora, Warga, Niedźwiedzidła i 
 
 ---
 
+### Faza 2: Automaton - pełna weryfikacja i naprawa tabel (`origin_tables.js`)
+
+Poproszono o pełną weryfikację Automatona względem PG. Wynik weryfikacji okazał się gorszy niż zakładano - problem nie ograniczał się do brakującej tabeli „Wygląd":
+
+- **`wiek`**: miał inny (zmyślony) tekst niż źródło - poprawiono na oryginalne kategorie PG (Nowy/Doświadczony/Stary/Bardzo stary/Wiekowy, 5/10/50/150 lat).
+- **`funkcja`**: był **całkowicie niesprawny** - wszystkie 16 wyników (błędnie jako 3k6, zakres 3-18) zwracały identyczny tekst „Jesteś strażnikiem." bez żadnego efektu mechanicznego. Naprawiono: właściwy typ `k20` (zakres 1-20 zgodnie ze źródłem), 5 różnych wyników z realnymi bonusami do atrybutów.
+- **`forma`**: treść była poprawna, ale ucięta (brakowało zdań o wzroście/wadze) i miała nadmiarowo rozbite zakresy (np. 6/7/8/9 zamiast jednego wpisu 6–9). Ujednolicono z pełnym tekstem źródła.
+- **`wyglad`**: **całkowicie brakowało** - dodano w pełni, zgodnie z PG (czysto fabularna tabela bez efektów mechanicznych, potwierdzona jako odrębna od „Forma").
+- **`przeszłość`**: był **całkowicie niesprawny** - wszystkie 20 wyników (k20) zwracały identyczny tekst (błąd kopiuj-wklej). Naprawiono: 20 unikalnych wyników zgodnie ze źródłem, z właściwymi efektami mechanicznymi tam, gdzie źródło je przewiduje (np. Splugawienie, Szaleństwo, dodatkowy język, 2k6 miedziaków).
+- **`osobowość`**: treść była parafrazowana z innymi zakresami niż źródło - ujednolicono z dokładnymi zakresami i sformułowaniami PG.
+
+Rdzeń pochodzenia (`origins.js`: atrybuty bazowe, cechy specjalne, poziom 4) zweryfikowany i **poprawny** - bez zmian.
+
+**Weryfikacja:** `table_utils.getAvailableTables('automaton')` zwraca 6 tabel z poprawnymi typami kości; test w przeglądarce potwierdza wszystkie 6 nazw tabel widocznych na rozwiniętym kafelku Automatona (Wiek, Funkcja, Forma, Wygląd, Przeszłość, Osobowość), zero błędów konsoli.
+
+**Wniosek do dalszych faz:** skoro nawet pochodzenie oznaczone jako `status: 'kompletne'` i pochodzące wprost z Podręcznika Głównego miało dwie kompletnie niesprawne tabele, tabele pozostałych pochodzeń PG (Goblin, Krasnolud, Odmieniec, Ork) również zostaną w pełni zweryfikowane wiersz po wierszu względem źródła, a nie tylko uzupełnione o brakujące klucze.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
