@@ -141,4 +141,12 @@ Wszystkie 6 tabel przepisane od zera z `PodrecznikGlowny.md` (str. 16-17 wg stop
 
 ---
 
+### Faza 4: Krasnolud - pełne przepisanie tabel (PG)
+
+Wszystkie 6 tabel przepisane od zera z `PodrecznikGlowny.md`: `wiek`, `budowa_ciala` (nowa), `wyglad` (nowa), `znienawidzone_stworzenia` (nowa - używana przez cechę specjalną „Znienawidzony wróg"), `przeszlosc`, `osobowosc`. Poprzednie `wiek`/`przeszlosc`/`osobowosc` to ten sam generyczny placeholder co w Automatonie/Goblinie - usunięte w całości.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
