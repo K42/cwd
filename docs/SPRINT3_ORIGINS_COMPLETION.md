@@ -179,4 +179,12 @@ Weryfikacja przed rozpoczęciem uzupełniania (dodania jednej brakującej tabeli
 
 ---
 
+### Faza 7b: Elf - pełne przepisanie tabel (Straszliwe Piękno)
+
+Ten sam problem: istniejące `przeszlosc`/`wiek` to dosłownie tabele Człowieka (identyczne liczby lat: „Dziecko, 11 lat lub mniej" itd.), nie elfie. Przepisano `przeszlosc` (k20) i `wiek` (typ poprawiony na k3, tak jak Chochlik) z realnej treści, oraz dodano dwie całkowicie brakujące tabele: `cecha_szczegolna` (3k6 - Elf może mieć do trzech takich cech, wielokrotny rzut) i `dziwny_nawyk` (k20). Dodano też brakującą `osobowosc` (3k6).
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
