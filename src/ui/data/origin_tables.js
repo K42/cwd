@@ -1366,6 +1366,156 @@ const ORIGIN_TABLES = {
         20: { wynik: 'Skradłeś mieszek monet.', efekt: 'Zaczynasz grę z dodatkowymi 2k6 miedziaków.' }
       }
     }
+  },
+
+  // ========== JOTUN ==========
+  jotunn: {
+    wiek: {
+      nazwa: 'Wiek',
+      typ: '3k6',
+      opis: 'Tabela określająca wiek jotuna',
+      wyniki: {
+        3: { wynik: 'Dziecko, 11 lat lub mniej.', efekt: 'Zmniejsz wzrost i wagę o 50 procent.' },
+        4: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Zmniejsz wzrost i wagę o 25 procent.' },
+        5: { wynik: 'Młodociany, 12–17 lat.', efekt: 'Zmniejsz wzrost i wagę o 25 procent.' },
+        6: { wynik: 'Młody dorosły, 18–25 lat.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Młody dorosły, 18–25 lat.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Młody dorosły, 18–25 lat.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Dorosły, 26–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Dorosły, 26–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Dorosły, 26–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Dorosły, 26–35 lat.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Dorosły w średnim wieku, 36–55 lat.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Starszy dorosły, 56–75 lat.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Sędziwy dorosły, 76 lat lub więcej.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    budowa_ciala: {
+      nazwa: 'Budowa ciała',
+      typ: '3k6',
+      opis: 'Tabela określająca budowę ciała jotuna',
+      wyniki: {
+        3: { wynik: 'Jesteś dość chudy; mierzysz poniżej 2,5 metra wysokości i ważysz około 180 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś niski, mierzysz około 2,5 metra wysokości.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś niski, mierzysz około 2,5 metra wysokości.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jesteś smukły, ważysz 225 kilogramów lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jesteś smukły, ważysz 225 kilogramów lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jesteś smukły, ważysz 225 kilogramów lub mniej.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Jesteś typowym jotunem, wysokim na prawie 3 metry i ważącym 320 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Jesteś typowym jotunem, wysokim na prawie 3 metry i ważącym 320 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Jesteś typowym jotunem, wysokim na prawie 3 metry i ważącym 320 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Jesteś typowym jotunem, wysokim na prawie 3 metry i ważącym 320 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś przysadzisty i mocno zbudowany. Ważysz 380 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Jesteś przysadzisty i mocno zbudowany. Ważysz 380 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś przysadzisty i mocno zbudowany. Ważysz 380 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Masz 3 metry wzrostu i ważysz 360 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Masz 3 metry wzrostu i ważysz 360 kilogramów.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Jesteś gigantyczny; mierzysz ponad 3 metry wzrostu i ważysz ponad 450 kilogramów.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    wyglad: {
+      nazwa: 'Wygląd',
+      typ: '3k6',
+      opis: 'Tabela określająca wygląd jotuna',
+      wyniki: {
+        3: { wynik: 'Wyglądasz jak potwór. Twoje ciało znaczą prymitywne szwy oraz brzydkie blizny i masz więcej skaz niż gładkiej skóry.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Wyglądasz chorobliwie. Masz żółtawą skórę poznaczoną dziwnymi plamami i zaczerwienione oczy.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Wyglądasz chorobliwie. Masz żółtawą skórę poznaczoną dziwnymi plamami i zaczerwienione oczy.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Przypominasz większość innych jotunów, ale wyróżniają cię okropne blizny na całym ciele.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Przypominasz większość innych jotunów, ale wyróżniają cię okropne blizny na całym ciele.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Przypominasz większość innych jotunów, ale wyróżniają cię okropne blizny na całym ciele.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Masz kredowobiałą skórę, karmazynowe oczy i grubo ciosane, prymitywne rysy twarzy.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Masz kredowobiałą skórę, karmazynowe oczy i grubo ciosane, prymitywne rysy twarzy.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Masz kredowobiałą skórę, karmazynowe oczy i grubo ciosane, prymitywne rysy twarzy.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Masz kredowobiałą skórę, karmazynowe oczy i grubo ciosane, prymitywne rysy twarzy.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś dobrze wyglądającym jotunem, o białej skórze i czerwonych oczach.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Jesteś dobrze wyglądającym jotunem, o białej skórze i czerwonych oczach.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Jesteś dobrze wyglądającym jotunem, o białej skórze i czerwonych oczach.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Masz jasnoniebieską skórę, ciemniejszą pod oczami i na zagięciach. Twoje źrenice są białe z drobinami czerwieni.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Masz jasnoniebieską skórę, ciemniejszą pod oczami i na zagięciach. Twoje źrenice są białe z drobinami czerwieni.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Masz ciemnoniebieską skórę i przeszywająco białe oczy. Twoi ludzie wierzą, że zostałeś naznaczony przez Bogów Krwi i Żelaza.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    przeszlosc: {
+      nazwa: 'Przeszłość',
+      typ: 'k20',
+      opis: 'Tabela określająca przeszłość jotuna',
+      wyniki: {
+        1: { wynik: 'Twój klan wygnał cię za tchórzostwo. Możesz starać się albo odzyskać honor, albo pogodzić się ze swoją naturą.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Podróżując przez Wichrowe Ziemie, napotkałeś bandę zmrożeńców i niemal zginąłeś w walce.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Wyzwałeś innego jotuna na pojedynek, a ten okrutnie cię pobił. Wciąż masz po tym blizny.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Trowy, kuzyni krasnoludów, wzięli cię do niewoli. Traktowali cię dobrze, ale musiałeś zamordować kilku z nich, żeby uciec.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Dorastałeś, słuchając opowieści o złym Imperium na północy. Masz nadzieję zyskać chwałę i honor, mordując ludzi, którzy tam żyją.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Zgubiłeś się na Mroźnym Bezdrożu i doświadczyłeś niepokojących wizji.', efekt: 'Zaczynasz grę z 1k3 punktami Szaleństwa.' },
+        7: { wynik: 'W twoim klanie powszechnie bano się ciebie i szanowano cię. Zasłużyłeś na swoją reputację ze względu na zajadłość w boju i okaleczanie ofiar.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Masz małżonka i 1k3 dzieci. Możesz nie utrzymywać z nimi kontaktu lub pracować, aby zapewnić im dobrobyt.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Widziałeś raz, jak kraken zniszczył statek. To doświadczenie tobą wstrząsnęło; jesteś nerwowy na otwartych wodach.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Utrzymujesz się z pracy w swojej profesji.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Zakochałeś się w człowieku, lecz ten w końcu cię odrzucił. Wciąż jednak podobają ci się ludzie.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Kruk Grimnira, jednookiego boga twojego ludu, przybył do ciebie i objawił ci twój wyrd. Porzuciłeś swoją ojczyznę w pogoni za losem.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Porzuciłeś ojczyznę, aby zobaczyć świat.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Sztorm zniszczył twój statek. Jako jedyny wylądowałeś na ziemiach zamieszkanych przez ludzi.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Odziedziczyłeś miecz lub topór bojowy. Broń jest w dobrej jakości i pokryta runami, chociaż nie wydaje się magiczna.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Zaprzyjaźniłeś się ze skaldem i poznałeś wiele starych pieśni i historii.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Członek twojej rodziny parał się czarną magią, przez co splamił honor klanu.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Dokonałeś wielkiego czynu i twoi ludzie uznają cię za bohatera.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Pewnego dnia zostaniesz jarlem klanu, jeśli dowiedziesz swej wartości.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Znalazłeś wielki skarb.', efekt: 'Zaczynasz grę z jednym zaklętym przedmiotem stworzonym przez MG.' }
+      }
+    },
+    osobowosc: {
+      nazwa: 'Osobowość',
+      typ: '3k6',
+      opis: 'Tabela określająca osobowość jotuna',
+      wyniki: {
+        3: { wynik: 'Jesteś okrutnym i zajadłym prostakiem. Czerpiesz radość z używania swojej siły, aby ranić innych.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Jesteś dręczycielem. Udajesz ważniaka, ale desperacko boisz się, że inni odkryją, jak bardzo tak naprawdę się boisz.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś dręczycielem. Udajesz ważniaka, ale desperacko boisz się, że inni odkryją, jak bardzo tak naprawdę się boisz.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Jesteś głośny i gwałtowny. Prowokujesz bójki, chociaż pewnie nie powinieneś.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Jesteś głośny i gwałtowny. Prowokujesz bójki, chociaż pewnie nie powinieneś.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Jesteś głośny i gwałtowny. Prowokujesz bójki, chociaż pewnie nie powinieneś.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Robisz i bierzesz to, co chcesz, ponieważ jesteś silny. Chętnie się przechwalasz i nigdy nie cofasz się przed wyzwaniem.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Robisz i bierzesz to, co chcesz, ponieważ jesteś silny. Chętnie się przechwalasz i nigdy nie cofasz się przed wyzwaniem.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Robisz i bierzesz to, co chcesz, ponieważ jesteś silny. Chętnie się przechwalasz i nigdy nie cofasz się przed wyzwaniem.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Robisz i bierzesz to, co chcesz, ponieważ jesteś silny. Chętnie się przechwalasz i nigdy nie cofasz się przed wyzwaniem.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Nie musisz nic udowadniać. Znasz swoją wartość i nie pozwolisz wciągnąć się w walkę, której można uniknąć.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Nie musisz nic udowadniać. Znasz swoją wartość i nie pozwolisz wciągnąć się w walkę, której można uniknąć.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Wierzysz, że z mocą przychodzi odpowiedzialność. Chcesz inspirować i podnosić innych na duchu, a nie przytłaczać i niszczyć.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Wierzysz, że z mocą przychodzi odpowiedzialność. Chcesz inspirować i podnosić innych na duchu, a nie przytłaczać i niszczyć.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Wierzysz, że z mocą przychodzi odpowiedzialność. Chcesz inspirować i podnosić innych na duchu, a nie przytłaczać i niszczyć.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Żałujesz tendencji swojego ludu do agresji i starasz się znaleźć pokojowe rozwiązania problemów, sięgając po przemoc jedynie, kiedy musisz.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    profesje: {
+      nazwa: 'Profesje',
+      typ: 'k20',
+      opis: 'Losowa profesja startowa jotuna',
+      wyniki: {
+        1: { wynik: 'Uczony geograf, nawigator lub wojskowy', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Niewolnik', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Kupiec lub handlarz niewolnikami', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Żeglarz', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Rolnik lub drwal', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Wyrobnik lub szkutnik', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Artysta rozrywkowy (mówca, śpiewak lub bajarz)', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Pirat', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Sługus', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Najeźdźca', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Żołnierz', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Strażnik klanowy', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Najemnik', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Rybak lub wielorybnik', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Uzdrowiciel', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Barbarzyńca', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Myśliwy lub wielorybnik', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Badacz podań ludowych lub historii', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Czciciel Mrocznych Bogów', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Uczony astrolog, magik lub okultysta', efekt: 'Brak efektu mechanicznego' }
+      }
+    }
   }
 };
 

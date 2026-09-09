@@ -23,7 +23,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(postac.jezyki).toContain('wspólny');
     });
 
-    test('powinien utworzyć jötunna z modyfikatorami pochodzenia', () => {
+    test('powinien utworzyć jotuna z atrybutami ze źródła (Chwalebna Śmierć)', () => {
       const spec = {
         pochodzenie: 'jotunn'
       };
@@ -31,11 +31,13 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Jotun');
-      expect(postac.atrybuty.sila).toBe(12); // 10 + 2 modyfikator
-      expect(postac.atrybuty.zrecznosc).toBe(9); // 10 - 1 modyfikator
+      expect(postac.atrybuty.sila).toBe(13);
+      expect(postac.atrybuty.zrecznosc).toBe(9);
+      expect(postac.atrybuty.intelekt).toBe(8);
+      expect(postac.atrybuty.wola).toBe(10);
       expect(postac.atrybuty_drugorzedne.rozmiar).toBe('2');
-      expect(postac.atrybuty_drugorzedne.predkosc).toBe(12);
-      expect(postac.jezyki).toContain('gigancki');
+      expect(postac.atrybuty_drugorzedne.predkosc).toBe(10);
+      expect(postac.jezyki).toContain('trolli');
     });
 
     test('powinien rzucić błędem dla nieznanego pochodzenia', () => {

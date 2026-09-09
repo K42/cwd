@@ -447,25 +447,29 @@ const ORIGINS = {
   jotunn: {
     id: 'jotunn',
     nazwa: 'Jotun', // poprawiona pisownia zgodna ze źródłem (było: "Jötunn")
-    zrodlo: 'CS', // Chwalebna Śmierć, sekcja "Serce zimy" (błędnie oznaczone jako SP - poprawione)
-    opis: 'Potężni giganci z północnych krain, znani z siły i honoru bojowego.',
+    zrodlo: 'CS', // Chwalebna Śmierć, sekcja "Serce zimy", "Tworzenie postaci: jotun" (str. 6-9 wg stopki PDF)
+    opis: 'Potężni giganci z Mroźnego Bezdroża, dla których tchórzostwo jest największą hańbą.',
     atrybuty_bazowe: {
-      sila: 12,
+      sila: 13,
       zrecznosc: 9,
-      intelekt: 9,
+      intelekt: 8,
       wola: 10
     },
     rozmiar: '2',
-    predkosc: 12,
-    jezyki: ['wspólny', 'gigancki'],
-    profesje: ['wojownik', 'myśliwy', 'kowal'],
+    predkosc: 10,
+    jezyki: ['wspólny', 'trolli'],
+    profesje: ['dowolna'],
     cechy_specjalne: {
-      wielki_rozmiar: 'Rozmiar 2. Zajmujesz przestrzeń 2x2 metrów.',
-      naturalny_pancerz: 'Obrona +1 dzięki grubej skórze.',
-      odpornosc_na_zimno: 'Odporność na obrażenia od zimna.'
+      przywykly_do_zimna: 'Otrzymujesz połowę obrażeń od zimna i nigdy nie cierpisz z powodu wystawienia na działanie żywiołów w chłodnym środowisku.',
+      potezne_pochodzenie: 'Kiedy twoja drużyna osiąga 1 poziom, nie wybierasz ścieżki nowicjusza. Zamiast tego za każdym razem, kiedy tabela w podręczniku głównym mówi, że zyskałbyś korzyści ze ścieżki nowicjusza, otrzymujesz korzyści ze swojego pochodzenia dla danego poziomu.',
+      losowa_profesja: 'Zaczynasz grę z jedną profesją wylosowaną z tabeli Jotun: profesje.'
     },
-    strona_zrodlowa: 6,
-    status: 'niezweryfikowane' // brak tabel losowania; atrybuty bazowe wymagają korekty do wartości ze źródła (Siła 13/Zręczność 9/Intelekt 8/Wola 10)
+    poziom_4: {
+      zdrowie: '+6',
+      opcje: ['1 zaklęcie', 'talent Krew olbrzymów']
+    },
+    strona_zrodlowa: 7,
+    status: 'kompletne'
   }
 };
 

@@ -213,7 +213,19 @@ Status zmieniony na `kompletne`, strona źródłowa poprawiona 30→55.
 
 ---
 
-## Podsumowanie stanu po Fazach 0-8
+### Faza 9: Jotun - pełne przepisanie od podstaw (Chwalebna Śmierć)
+
+Ustalono realne dane z `dodatki/Chwalebna_smierc_digital_1_1.pdf` (sekcja „Serce zimy", `Tworzenie postaci: jotun`, wyekstrahowane przez `pdftotext -layout` - brak transkrypcji w `sources/`): atrybuty bazowe (Siła 13/Zręczność 9/Intelekt 8/Wola 10 - poprzednio wymyślone 12/9/9/10), Rozmiar 2, Prędkość 10 (poprzednio błędnie 12), cechy specjalne („Przywykły do zimna", unikalna mechanika „Potężne pochodzenie" zastępująca wybór ścieżki nowicjusza korzyściami z pochodzenia - opisana we `cechy_specjalne` jako tekst, nie symulowana mechanicznie, podobnie jak inne złożone mechaniki pochodzeń typu „Forma obiektu" Automatona), poziom 4 (talent „Krew olbrzymów"), oraz 6 tabel: `wiek`, `budowa_ciala`, `wyglad`, `przeszlosc`, `osobowosc` i nowa `profesje` (losowa startowa profesja specyficzna dla jotunów, zamiast ogólnej listy).
+
+Zaktualizowano test `tests/postac.test.js`, który miał zaszyte na sztywno stare (błędne) wartości atrybutów Jotuna.
+
+**Weryfikacja:** pełne zbudowanie postaci (`budujPostac`) i wyświetlenie/rzuty wszystkich 6 tabel w przeglądarce, zero błędów.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
+## Podsumowanie stanu po Fazach 0-9
 
 | Pochodzenie | Źródło | Tabele | Status |
 |---|---|---|---|
@@ -227,7 +239,8 @@ Status zmieniony na `kompletne`, strona źródłowa poprawiona 30→55.
 | Elf | Straszliwe Piękno | 5/5 | ✅ przepisane (Faza 7b) |
 | Hobgoblin | Straszliwe Piękno | 4/4 | ✅ przepisane (Faza 7c) |
 | Kambion | Rozkoszna Agonia | 6/6 | ✅ przepisane od zera (Faza 8) |
-| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja, Jotun | Suplement / Głód w Pustce / Chwalebna Śmierć | 0/0 | 🔄 w trakcie - pełna przebudowa (zaakceptowana przez użytkownika), pozostało 7 pochodzeń |
+| Jotun | Chwalebna Śmierć | 6/6 | ✅ przepisane od zera (Faza 9) |
+| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja | Suplement / Głód w Pustce | 0/0 | 🔄 w trakcie - pełna przebudowa (zaakceptowana przez użytkownika), pozostało 6 pochodzeń. Fomor/Warg/Niedźwiedzidło wymagają dodatkowo rozszerzenia silnika o losowe atrybuty bazowe (1k3+X) |
 
 Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
 
