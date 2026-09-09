@@ -860,37 +860,10 @@ const ORIGIN_TABLES = {
 
   // ========== ODMINIEC ==========
   odmieniec: {
-    przeszlosc: {
-      nazwa: 'Przeszłość',
-      typ: 'k20',
-      opis: 'Tabela określająca przeszłość odmienca',
-      wyniki: {
-        1: { wynik: 'Umarłeś i powróciłeś do żywych. Zaczynasz grę z 1k6 punktów Szaleństwa.', efekt: 'Szaleństwo +1k6' },
-        2: { wynik: 'Przez krótki czas byłeś opętany przez demona. Zaczynasz grę z 1 punktem Splugawienia.', efekt: 'Splugawienie +1' },
-        3: { wynik: 'Spędziłeś 1k6 lat w więzieniu.', efekt: 'Brak efektu mechanicznego' },
-        4: { wynik: 'Zabiłeś kogoś z zimną krwią. Zaczynasz grę z 1 punktem Splugawienia.', efekt: 'Splugawienie +1' },
-        5: { wynik: 'Przeszedłeś ciężką chorobę.', efekt: 'Brak efektu mechanicznego' },
-        6: { wynik: 'Należałeś do kultu i byłeś świadkiem wielu dziwnych rzeczy. Zaczynasz grę z 1 punktem Szaleństwa.', efekt: 'Szaleństwo +1' },
-        7: { wynik: 'Przez 1k20 lat byłeś więźniem faerie.', efekt: 'Brak efektu mechanicznego' },
-        8: { wynik: 'Nigdy nie otrząsnąłeś się z żalu po utracie bliskiej osoby.', efekt: 'Brak efektu mechanicznego' },
-        9: { wynik: 'Straciłeś palec, kilka zębów albo ucho lub nosisz bliznę.', efekt: 'Brak efektu mechanicznego' },
-        10: { wynik: 'Utrzymujesz się z pracy w swojej profesji.', efekt: 'Brak efektu mechanicznego' },
-        11: { wynik: 'Zakochałeś się; związek ten nadal trwa lub zakończył się dobrze.', efekt: 'Brak efektu mechanicznego' },
-        12: { wynik: 'Masz żonę lub męża i 1k6 − 2 dzieci (minimum 0).', efekt: 'Brak efektu mechanicznego' },
-        13: { wynik: 'Odbyłeś wiele podróży w różne strony świata. Umiesz mówić w jednym dodatkowym języku.', efekt: 'Dodatkowy język' },
-        14: { wynik: 'Posiadasz formalne wykształcenie. Umiesz czytać i pisać w języku wspólnym.', efekt: 'Brak efektu mechanicznego' },
-        15: { wynik: 'Obroniłeś rodzinne miasto przed okropnymi potworami.', efekt: 'Brak efektu mechanicznego' },
-        16: { wynik: 'Powstrzymałeś spisek na życie ważnej persony lub schwytałeś zabójcę.', efekt: 'Brak efektu mechanicznego' },
-        17: { wynik: 'Dokonałeś wielkich czynów i w swoich rodzinnych stronach jesteś bohaterem.', efekt: 'Brak efektu mechanicznego' },
-        18: { wynik: 'Znalazłeś starą mapę wiodącą do skarbu.', efekt: 'Brak efektu mechanicznego' },
-        19: { wynik: 'Ktoś ważny i wpływowy jest ci winien przysługę.', efekt: 'Brak efektu mechanicznego' },
-        20: { wynik: 'Odziedziczyłeś w spadku pieniądze; zaczynasz grę z 2k6 miedziaków.', efekt: 'Pieniądze +2k6 miedziaków' }
-      }
-    },
-    wiek: {
-      nazwa: 'Wiek',
+    prawdziwy_wiek: {
+      nazwa: 'Prawdziwy wiek',
       typ: '3k6',
-      opis: 'Tabela określająca wiek odmienca',
+      opis: 'Tabela określająca prawdziwy wiek odmieńca (pod przybraną postacią)',
       wyniki: {
         3: { wynik: 'Dziecko, 8 lat lub mniej.', efekt: 'Brak efektu mechanicznego' },
         4: { wynik: 'Młodociany, 9–14 lat.', efekt: 'Brak efektu mechanicznego' },
@@ -910,27 +883,117 @@ const ORIGIN_TABLES = {
         18: { wynik: 'Sędziwy dorosły, 61 lat lub więcej.', efekt: 'Brak efektu mechanicznego' }
       }
     },
+    pozorna_plec: {
+      nazwa: 'Pozorna płeć',
+      typ: 'k6',
+      opis: 'Tabela określająca początkową przybraną formę odmieńca',
+      wyniki: {
+        1: { wynik: 'Masz postać mężczyzny.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Masz postać mężczyzny.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Masz postać mężczyzny.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Masz postać kobiety.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Masz postać kobiety.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Masz postać kobiety.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    pozorne_pochodzenie: {
+      nazwa: 'Pozorne pochodzenie',
+      typ: '3k6',
+      opis: 'Tabela określająca początkową przybraną formę odmieńca',
+      wyniki: {
+        3: { wynik: 'Masz postać goblina. Przejdź do opisu goblińskiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Masz postać goblina. Przejdź do opisu goblińskiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Masz postać krasnoluda. Przejdź do opisu krasnoludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Masz postać krasnoluda. Przejdź do opisu krasnoludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Masz postać krasnoluda. Przejdź do opisu krasnoludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Masz postać człowieka. Przejdź do opisu ludzkiego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Masz postać orka. Przejdź do opisu orczego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Masz postać orka. Przejdź do opisu orczego pochodzenia, by ustalić swój wiek, budowę ciała i wygląd.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Twój wiek, budowę ciała i wygląd ustala MG.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    przeszlosc: {
+      nazwa: 'Przeszłość',
+      typ: 'k20',
+      opis: 'Tabela określająca przeszłość odmieńca',
+      wyniki: {
+        1: { wynik: 'Dopiero niedawno odkryłeś swoją prawdziwą naturę i masz trudności z zaakceptowaniem nowego stanu rzeczy.', efekt: 'Zaczynasz grę z 1 punktem Szaleństwa.' },
+        2: { wynik: 'Pozostajesz nieświadomy tego, że jesteś odmieńcem. Uważasz swoje przybrane pochodzenie za prawdziwe. Dopóki nie zostaniesz obezwładniony lub nie dotkniesz po raz pierwszy żelaza, nie możesz korzystać z Kradzieży tożsamości.', efekt: 'Zyskujesz dodatkową losową profesję.' },
+        3: { wynik: 'Byłeś niewolnikiem jędzy, która zmuszała cię do czynienia niewysłowionego zła.', efekt: 'Zaczynasz grę z 1 punktem Splugawienia.' },
+        4: { wynik: 'Zabiłeś osobę, której tożsamość skradłeś, aby żyć jej życiem.', efekt: 'Zaczynasz grę z 1 punktem Splugawienia.' },
+        5: { wynik: 'Gdy twoi „rodzice" zdali sobie sprawę z tego, czym jesteś, wygnali cię z domu. Od tamtej pory musiałeś radzić sobie sam.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Uciekłeś z domu, gdy dowiedziałeś się, czym jesteś, i przez długie lata żyłeś wśród faerie.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Ściga cię łowca czarownic. Jeśli wasze drogi kiedyś się zejdą, będzie próbował cię zabić.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Zostałeś wygnany z rodzinnego miasteczka przez przerażonych twoją prawdziwą naturą mieszkańców. Znienawidziłeś ich za to i szukasz sposobu, by się zemścić.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Gdy po raz pierwszy skradłeś czyjąś tożsamość, poznałeś także kilka wspomnień tej osoby.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Utrzymujesz się z pracy w swojej profesji.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Zakochałeś się, ale obiekt twoich uczuć nie wie, kim naprawdę jesteś.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Wygnano cię z domu, ale zostałeś przygarnięty przez druida lub wiedźmę. Zawsze masz dokąd wrócić.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Pracowałeś dla inkwizycji jako informator.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Posiadasz formalne wykształcenie.', efekt: 'Umiesz czytać i pisać w języku wspólnym.' },
+        15: { wynik: 'Podszywając się pod kogoś, poznałeś straszliwy sekret. Ustal jego naturę wspólnie z mistrzem gry.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Rodzice wychowali cię mimo tego, że znali twoją prawdziwą naturę. Ich miłość i wsparcie pomogły ci ukształtować własną, dojrzałą osobowość.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Zostałeś niedawno odnaleziony przez swojego elfiego stwórcę. Zaprzyjaźniliście się; możesz raz poprosić o przysługę, mówiąc do muszli, którą otrzymałeś od niego w darze. Wielkość tej przysługi zależy od MG.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Przyjąłeś postać kogoś znanego, ważnego i wpływowego.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Zostałeś zwerbowany przez organizację przestępczą z uwagi na swój magiczny dar.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Odziedziczyłeś w spadku pieniądze.', efekt: 'Zaczynasz grę z 2k6 miedziaków.' }
+      }
+    },
+    dziwactwo: {
+      nazwa: 'Dziwactwo',
+      typ: 'k20',
+      opis: 'Tabela określająca dziwactwo odmieńca',
+      wyniki: {
+        1: { wynik: 'Zawsze mówisz o sobie w trzeciej osobie.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'W ciemności twoje oczy świecą na zielono.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Zwierzęta są podenerwowane, gdy jesteś w pobliżu.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Możesz przybierać tylko męskie lub tylko żeńskie formy.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Jesteś nieokrzesany i impulsywny.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Zawsze powracasz do pierwszej postaci, jaką przybrałeś.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Zapach żelaza przyprawia cię o mdłości.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Nękają cię okropne koszmary.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Czasem wydaje ci się, że słyszysz głosy.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Często gubisz drobne, nieważne przedmioty.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Co roku na jedną noc tracisz swój talent Kradzież tożsamości.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Możesz przybierać postać wyłącznie martwych osób.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Zawsze mówisz szeptem.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Roztaczasz wokół siebie osobliwy, ziemisty zapach.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Twoje ubrania są wiecznie brudne.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Nie jesteś w stanie się upić.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Zawsze mówisz prawdę (lub to, co uważasz za prawdę).', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Brzydzisz się mięsa.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Śmiejesz się w najmniej odpowiednich momentach.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Formy, które przybierasz, nie mają włosów i paznokci.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
     osobowosc: {
       nazwa: 'Osobowość',
       typ: '3k6',
-      opis: 'Tabela określająca osobowość odmienca',
+      opis: 'Tabela określająca osobowość odmieńca',
       wyniki: {
-        3: { wynik: 'Jesteś okrutny, niegodziwy i samolubny. Lubisz sprawiać innym ból.', efekt: 'Brak efektu mechanicznego' },
-        4: { wynik: 'Jesteś kapryśny i nieprzewidywalny. Rzadko dotrzymujesz słowa i dajesz się ponosić impulsom.', efekt: 'Brak efektu mechanicznego' },
-        5: { wynik: 'Kierujesz się prawem silniejszego. Posłuszeństwo wobec władzy jest najwyższym ideałem.', efekt: 'Brak efektu mechanicznego' },
-        6: { wynik: 'Kierujesz się prawem silniejszego. Posłuszeństwo wobec władzy jest najwyższym ideałem.', efekt: 'Brak efektu mechanicznego' },
-        7: { wynik: 'Dbasz przede wszystkim o siebie. Jesteś w stanie zdradzić nawet przyjaciół.', efekt: 'Brak efektu mechanicznego' },
-        8: { wynik: 'Dbasz przede wszystkim o siebie. Jesteś w stanie zdradzić nawet przyjaciół.', efekt: 'Brak efektu mechanicznego' },
-        9: { wynik: 'Ponad wszystkim innym stawiasz dobro swoje i swoich bliskich.', efekt: 'Brak efektu mechanicznego' },
-        10: { wynik: 'Ponad wszystkim innym stawiasz dobro swoje i swoich bliskich.', efekt: 'Brak efektu mechanicznego' },
-        11: { wynik: 'Ponad wszystkim innym stawiasz dobro swoje i swoich bliskich.', efekt: 'Brak efektu mechanicznego' },
-        12: { wynik: 'Ponad wszystkim innym stawiasz dobro swoje i swoich bliskich.', efekt: 'Brak efektu mechanicznego' },
-        13: { wynik: 'Pomagasz innym, bo tak należy.', efekt: 'Brak efektu mechanicznego' },
-        14: { wynik: 'Pomagasz innym, bo tak należy.', efekt: 'Brak efektu mechanicznego' },
-        15: { wynik: 'Starasz się postępować słusznie, nawet jeśli jest to wbrew prawu czy normom społecznym.', efekt: 'Brak efektu mechanicznego' },
-        16: { wynik: 'Starasz się postępować słusznie, nawet jeśli jest to wbrew prawu czy normom społecznym.', efekt: 'Brak efektu mechanicznego' },
-        17: { wynik: 'We wszystkim kierujesz się honorem i lojalnością.', efekt: 'Brak efektu mechanicznego' },
-        18: { wynik: 'Jesteś oddany dobrym i szlachetnym celom i nie zdradzisz swoich przekonań nawet za cenę życia.', efekt: 'Brak efektu mechanicznego' }
+        3: { wynik: 'Kradniesz cudzą tożsamość, by móc robić, co chcesz, i nie zważać na konsekwencje. Nie obchodzi cię, jak odbija się to na innych.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Lubisz przybierać formy, które pozwalają ci psocić.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Lubisz przybierać formy, które pozwalają ci psocić.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Przybierasz formy, które dają ci władzę nad innymi. Władza zapewnia ci bezpieczeństwo.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Zmieniasz postać dla zysku, zwykle, by dostać się w miejsca, które inaczej byłyby dla ciebie niedostępne.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Zmieniasz postać dla zysku, zwykle, by dostać się w miejsca, które inaczej byłyby dla ciebie niedostępne.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Zmieniasz postać dla zysku, zwykle, by dostać się w miejsca, które inaczej byłyby dla ciebie niedostępne.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Zmieniasz postać dla zysku, zwykle, by dostać się w miejsca, które inaczej byłyby dla ciebie niedostępne.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Jesteś bardzo ostrożny w kwestii zmiany postaci. Starasz się trzymać z dala od kłopotów i chronić swoje sekrety.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Jesteś bardzo ostrożny w kwestii zmiany postaci. Starasz się trzymać z dala od kłopotów i chronić swoje sekrety.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Jesteś bardzo ostrożny w kwestii zmiany postaci. Starasz się trzymać z dala od kłopotów i chronić swoje sekrety.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Chcesz czynić dobro, a swoje zdolności wykorzystywać, by pomagać innym i chronić się przed wrogami.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Swoją naturę widzisz jako dar, który wykorzystujesz, by czynić to, co uważasz za słuszne, nawet jeśli ma ci to przysporzyć wrogów.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Swoją naturę widzisz jako dar, który wykorzystujesz, by czynić to, co uważasz za słuszne, nawet jeśli ma ci to przysporzyć wrogów.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Starasz się trzymać jednej i tej samej postaci tak długo, jak to możliwe. Pragniesz stabilizacji i zrobiłbyś wszystko, by być „normalny".', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Swoje talenty wykorzystujesz, by pomagać innym, naprawiać krzywdy i czynić świat lepszym.', efekt: 'Brak efektu mechanicznego' }
       }
     }
   },

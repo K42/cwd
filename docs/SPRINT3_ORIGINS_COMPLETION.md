@@ -149,4 +149,14 @@ Wszystkie 6 tabel przepisane od zera z `PodrecznikGlowny.md`: `wiek`, `budowa_ci
 
 ---
 
+### Faza 5: Odmieniec - pełne przepisanie tabel (PG)
+
+Przepisano/dodano 6 tabel z `PodrecznikGlowny.md`: `wiek` → **zmieniono klucz na `prawdziwy_wiek`** (treść była poprawna - to jedyna z „istniejących" tabel w tych 4 pochodzeniach, która faktycznie pochodziła ze źródła, tylko pod złym kluczem), `pozorna_plec` (nowa, k6), `pozorne_pochodzenie` (nowa, 3k6), `przeszlosc` (przepisana - poprzednia była tym samym generycznym placeholderem), `dziwactwo` (nowa, k20), `osobowosc` (przepisana).
+
+Sprawdzono, że zmiana klucza `wiek` → `prawdziwy_wiek` nie jest nigdzie w kodzie/testach twardo zakodowana (UI iteruje po kluczach generycznie) - bezpieczna zmiana.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
+
+---
+
 *(kolejne fazy będą dopisywane poniżej w miarę postępu prac)*
