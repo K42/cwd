@@ -3,7 +3,7 @@
  * Testy struktury danych, walidacji i funkcji losowania
  */
 
-const { EXTENDED_ORIGINS, CZLOWIEK_EXTENDED, walidujPochodzenie, losujZTabeli } = require('../src/data/origins_extended');
+import { EXTENDED_ORIGINS, CZLOWIEK_EXTENDED, walidujPochodzenie, losujZTabeli } from '../src/ui/data/origins_extended.js';
 
 describe('Rozszerzone Pochodzenia - Sprint 2', () => {
   

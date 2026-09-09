@@ -2,7 +2,7 @@
  * Testy jednostkowe dla zaktualizowanych danych pochodzeń
  */
 
-const ORIGINS = require('../src/data/origins');
+import ORIGINS from '../src/ui/data/origins.js';
 
 describe('Zaktualizowane dane pochodzeń', () => {
   

@@ -217,4 +217,4 @@ const SPELLS = {
   }
 };
 
-module.exports = SPELLS;
+export default SPELLS;

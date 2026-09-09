@@ -383,7 +383,7 @@ function losujZTabeli(typRzutu, tabela) {
   };
 }
 
-module.exports = {
+export {
   EXTENDED_ORIGINS,
   CZLOWIEK_EXTENDED,
   walidujPochodzenie,

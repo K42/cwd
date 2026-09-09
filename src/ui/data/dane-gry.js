@@ -4,12 +4,12 @@
  */
 
 // Import wszystkich modułów danych
-const ORIGINS = require('./data/origins');
-const LEVELS = require('./data/levels');
-const PATHS = require('./data/paths');
-const ITEMS = require('./data/items');
-const SPELLS = require('./data/spells');
-const PROGRESSION = require('./data/progression');
+import ORIGINS from './origins.js';
+import LEVELS from './levels.js';
+import PATHS from './paths.js';
+import ITEMS from './items.js';
+import SPELLS from './spells.js';
+import PROGRESSION from './progression.js';
 
 const DANE_GRY = {
   // Poziomy postaci - system progresji
@@ -165,4 +165,4 @@ const DANE_GRY = {
   }
 };
 
-module.exports = DANE_GRY;
+export default DANE_GRY;

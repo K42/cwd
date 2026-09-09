@@ -187,4 +187,4 @@ const ITEMS = {
   }
 };
 
-module.exports = ITEMS;
+export default ITEMS;

@@ -836,4 +836,4 @@ const ORIGIN_TABLES = {
   }
 };
 
-module.exports = ORIGIN_TABLES;
+export default ORIGIN_TABLES;

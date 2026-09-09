@@ -447,4 +447,4 @@ const PATHS = {
   }
 };
 
-module.exports = PATHS;
+export default PATHS;

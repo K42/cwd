@@ -2,7 +2,7 @@
  * Narzędzia do obsługi tabel losowania dla pochodzeń
  */
 
-const ORIGIN_TABLES = require('./origin_tables');
+import ORIGIN_TABLES from './origin_tables.js';
 
 /**
  * Losuje wynik z tabeli dla danego pochodzenia
@@ -158,7 +158,7 @@ function getOriginsWithTables() {
   }));
 }
 
-module.exports = {
+export {
   rollTable,
   getAvailableTables,
   getTableDetails,

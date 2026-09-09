@@ -1,30 +1,28 @@
 # Architektura Kreatora Postaci - Cień Władcy Demonów
 
 ## Przegląd
-Aplikacja jest izomorficzną stroną internetową do tworzenia postaci dla gry RPG "Cień Władcy Demonów". Wykorzystuje proste technologie web bez bazy danych.
+Aplikacja jest w pełni statyczną stroną internetową do tworzenia postaci dla gry RPG "Cień Władcy Demonów". Wykorzystuje proste technologie web bez bazy danych i **bez serwera aplikacyjnego** - cała logika działa w przeglądarce.
+
+> **Uwaga (refaktor na statyczny hosting):** do wersji z Node.js/Express (`src/server.js`) logika budowania postaci była wystawiana przez endpointy HTTP, a UI komunikował się z nią przez `fetch()`. Serwer został usunięty - ta sama logika (`budujPostac`, `obliczKorzysciPoziomu`, tabele losowania itd.) jest teraz wywoływana bezpośrednio z `script.js` jako moduły ES. Aplikację można wdrożyć na dowolnym hostingu plików statycznych (GitHub Pages, Netlify, S3, zwykły Apache/Nginx) - nie jest wymagane środowisko Node.js po stronie serwera. Node pozostaje wyłącznie narzędziem deweloperskim (testy Jest, ESLint).
 
 ## Struktura techniczna
 
-### Frontend (statyczny)
-- **HTML + vanilla JS** - renderuje pojedynczy `index.html` serwowany przez Node.js
-- **Brak frameworków** - czyste rozwiązania JavaScript dla maksymalnej prostoty
-- **Caching w pamięci** - reguły gry ładowane raz i cache'owane po stronie klienta
-
-### Backend (Node.js)
-- **Express server** - minimalistyczny serwer HTTP
-- **Jeden endpoint** - `/api/build` przyjmuje specyfikację postaci, zwraca kompletny obiekt
-- **Czyste funkcje** - `budujPostac(spec)` bez efektów ubocznych, umożliwia snapshot testy
+### Frontend (statyczny, ES moduły)
+- **HTML + vanilla JS** - `src/ui/index.html` ładuje `script.js` jako `<script type="module">`
+- **Brak frameworków i bez kroku budowania** - przeglądarka sama rozwiązuje graf importów ES modułów
+- **Logika gry w przeglądarce** - `src/ui/logic/*.js` zawiera czyste funkcje (`budujPostac`, `obliczKorzysciPoziomu`, `getPathsForLevel`, `getOriginTablesUI` itd.) przeniesione z dawnego `server.js`
+- **Dane gry** - `src/ui/data/*.js` (pochodzenia, ścieżki, zaklęcia, tabele losowania) jako moduły ES, importowane bezpośrednio przez logikę i UI
 
 ### Dane
-- **`data.js`** - wszystkie tabele lookup (pochodzenia, ścieżki, zaklęcia) w jednym pliku
+- **`data/dane-gry.js`** (dawniej `data.js`) - agreguje wszystkie tabele lookup (pochodzenia, ścieżki, zaklęcia) w jednym obiekcie
 - **Hash mapa** - klucze typu `"pochodzenie:jotunn"` dla wyszukiwania O(1)
 - **Walidacja** - sprawdzanie zgodności z regułami gry na etapie budowania
 
 ## Przepływ danych
 1. UI zbiera wybory użytkownika (pochodzenie, atrybuty)
-2. POST do `/api/build` z obiektem specyfikacji
-3. Serwer buduje kompletną postać używając `data.js`
-4. Zwrot JSON z wszystkimi obliczonymi wartościami
+2. `script.js` wywołuje `budujPostac(spec)` z `logic/postac.js` bezpośrednio (bez sieci)
+3. Funkcja buduje kompletną postać używając `data/dane-gry.js`
+4. Zwrot obiektu JS ze wszystkimi obliczonymi wartościami
 5. UI wyświetla kartę postaci
 
 ## Zasady implementacji

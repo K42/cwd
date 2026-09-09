@@ -2,8 +2,8 @@
  * Testy jednostkowe dla kreatora postaci
  */
 
-const { budujPostac } = require('../src/server');
-const DANE_GRY = require('../src/data');
+import { budujPostac } from '../src/ui/logic/postac.js';
+import DANE_GRY from '../src/ui/data/dane-gry.js';
 
 describe('Kreator postaci - Cień Władcy Demonów', () => {
 

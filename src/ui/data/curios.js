@@ -141,5 +141,5 @@ const CURIOS = {
   }
 };
 
-module.exports = CURIOS;
+export default CURIOS;
 

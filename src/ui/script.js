@@ -2,6 +2,13 @@
  * Frontend JavaScript dla kreatora postaci
  */
 
+import { budujPostac, obliczKorzysciPoziomu } from './logic/postac.js';
+import { getPathsForLevel } from './logic/sciezki.js';
+import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
+import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
+import { rollTable } from './data/table_utils.js';
+import DANE_GRY from './data/dane-gry.js';
+
 let biezacaPostac = null;
 let wybranePochodzenie = null;
 let wybranyPoziom = 0; // Gra zaczyna się od poziomu 0
@@ -102,18 +109,17 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function zaladujOpcje() {
   try {
-    // Pobierz podstawowe opcje z oryginalnego API
-    const response = await fetch('/api/options');
-    const opcje = await response.json();
+    // Pobierz podstawowe opcje
+    const opcje = {
+      pochodzenia: Object.keys(DANE_GRY.pochodzenia),
+      sciezki: Object.keys(DANE_GRY.sciezki_nowicjuszy)
+    };
 
-    // Sprawdź, które pochodzenia mają tabele z nowego API
+    // Sprawdź, które pochodzenia mają tabele
     let pochodzeniaZTabelami = [];
     try {
-      const originsResponse = await fetch('/api/origins');
-      if (originsResponse.ok) {
-        const originsData = await originsResponse.json();
-        pochodzeniaZTabelami = originsData.pochodzenia || [];
-      }
+      const originsData = getOriginsListUI();
+      pochodzeniaZTabelami = originsData.pochodzenia || [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Nie udało się załadować metadanych pochodzeń:', error);
@@ -151,17 +157,8 @@ async function zaladujOpcje() {
  * Ładuje dostępne poziomy z serwera
  */
 async function zaladujPoziomy() {
-  try {
-    const response = await fetch('/api/levels');
-    await response.json(); // Poziomy pobierane, ale obecnie nieużywane
-        
-    // Poziomy są pobierane, ale obecnie nie są używane w UI
-    // dostepnePoziomy = data.poziomy || [];
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Błąd ładowania poziomów:', error);
-    // Fallback do lokalnych danych (obecnie nieużywane - poziomy są w HTML)
-  }
+  // Poziomy są dostępne w DANE_GRY.poziomy, ale obecnie nie są używane w UI
+  // (poziomy są zdefiniowane bezpośrednio w HTML)
 }
 
 /**
@@ -263,10 +260,14 @@ async function renderPathSection(poziomWyboru) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
   grid.innerHTML = '';
-  const resp = await fetch(`/api/paths/${poziomWyboru}`);
-  if (!resp.ok) return;
-  const data = await resp.json();
-  const paths = data.sciezki || [];
+  let paths = [];
+  try {
+    paths = getPathsForLevel(poziomWyboru);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Nie udało się załadować ścieżek:', error);
+    return;
+  }
   for (const p of paths) {
     const tile = renderPathTile(p, poziomWyboru);
     grid.appendChild(tile);
@@ -733,41 +734,31 @@ async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, _pochodzenia
   
   for (const pochodzenieId of pochodzeniaIds) {
     try {
-      // Pobierz podstawowe dane pochodzenia z oryginalnego API
-      const basicResponse = await fetch('/api/build', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          pochodzenie: pochodzenieId, 
-          atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
-        })
+      // Pobierz podstawowe dane pochodzenia
+      const postac = budujPostac({
+        pochodzenie: pochodzenieId,
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
       });
-      
-      if (basicResponse.ok) {
-        const postac = await basicResponse.json();
-        const podstawoweDane = postac.pochodzenie;
-        
-        // Filtrowanie pochodzeń tylko do tych z dokumentów SOURCES
-        if (!podstawoweDane || !podstawoweDane.zrodlo || !dozwoloneZrodla.has(podstawoweDane.zrodlo)) {
-          continue;
-        }
-        
-        // Spróbuj zawsze pobrać tabele (niezależnie od metadanych), jeśli endpoint istnieje
-        try {
-          const tablesResponse = await fetch(`/api/origins/${pochodzenieId}/tables`);
-          if (tablesResponse.ok) {
-            const tablesData = await tablesResponse.json();
-            if (tablesData && tablesData.tabele) {
-              podstawoweDane.tabele = tablesData.tabele;
-            }
-          }
-        } catch (tablesError) {
-          // eslint-disable-next-line no-console
-          console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
-        }
-        
-        pochodzenia.push(podstawoweDane);
+      // Kopia płytka, żeby nie mutować współdzielonego obiektu z DANE_GRY
+      const podstawoweDane = { ...postac.pochodzenie };
+
+      // Filtrowanie pochodzeń tylko do tych z dokumentów SOURCES
+      if (!podstawoweDane || !podstawoweDane.zrodlo || !dozwoloneZrodla.has(podstawoweDane.zrodlo)) {
+        continue;
       }
+
+      // Spróbuj zawsze pobrać tabele (niezależnie od metadanych), jeśli istnieją
+      try {
+        const tabele = getOriginTablesUI(pochodzenieId);
+        if (tabele) {
+          podstawoweDane.tabele = tabele;
+        }
+      } catch (tablesError) {
+        // eslint-disable-next-line no-console
+        console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
+      }
+
+      pochodzenia.push(podstawoweDane);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(`Nie udało się załadować danych dla pochodzenia ${pochodzenieId}:`, error);
@@ -1983,9 +1974,10 @@ async function utworzPostac() {
   }
 
   // Przygotowanie specyfikacji
+  const sciezkaSelect = document.getElementById('sciezka');
   const spec = {
     pochodzenie: wybranePochodzenie,
-    sciezka: document.getElementById('sciezka').value || undefined
+    sciezka: (sciezkaSelect && sciezkaSelect.value) || undefined
   };
 
   // Własne atrybuty jeśli nie domyślne
@@ -2004,20 +1996,7 @@ async function utworzPostac() {
   document.getElementById('btn-create').disabled = true;
 
   try {
-    const response = await fetch('/api/build', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(spec)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error);
-    }
-
-    const postac = await response.json();
+    const postac = budujPostac(spec);
     biezacaPostac = postac;
 
     wyswietlPostac(postac);
@@ -2142,23 +2121,12 @@ async function zaladujKorzysciPoziomu(poziom) {
   }
 
   try {
-    const response = await fetch('/api/calculate-level-benefits', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        poziom,
-        pochodzenie: wybranePochodzenie,
-        sciezka_nowicjusza: wybraneSciezki.nowicjusz || null,
-        sciezka_ekspercka: wybraneSciezki.ekspert || null,
-        sciezka_mistrzowska: wybraneSciezki.mistrz || null
-      })
+    const benefits = obliczKorzysciPoziomu(poziom, {
+      pochodzenie: wybranePochodzenie,
+      sciezka_nowicjusza: wybraneSciezki.nowicjusz || null,
+      sciezka_ekspercka: wybraneSciezki.ekspert || null,
+      sciezka_mistrzowska: wybraneSciezki.mistrz || null
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const benefits = await response.json();
     wyswietlKorzysciPoziomu(benefits);
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -2661,36 +2629,27 @@ async function losujZTabeliUI(originId, tableName) {
       resultDiv.innerHTML = '<div class="loading">🎲 Losowanie...</div>';
     }
     
-    // Wywołaj API
-    const response = await fetch(`/api/origins/${originId}/tables/${tableName}/roll`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    
+    // Wykonaj losowanie
+    const wynik = rollTable(originId, tableName);
+
     // Zapisz wynik w globalnej zmiennej
     if (!wynikiTabel[originId]) {
       wynikiTabel[originId] = {};
     }
     wynikiTabel[originId][tableName] = {
-      rzut: data.wynik.rzut,
-      wynik: data.wynik.wynik,
-      efekt: data.wynik.efekt,
+      rzut: wynik.rzut,
+      wynik: wynik.wynik,
+      efekt: wynik.efekt,
       typ: 'losowanie'
     };
-    
+
     // Wyświetl wynik
     if (resultDiv) {
-      const efekt = data.wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${data.wynik.efekt}` : '';
+      const efekt = wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${wynik.efekt}` : '';
       resultDiv.innerHTML = `
         <div class="roll-result-content">
-          <div class="roll-dice">🎲 Rzut: ${data.wynik.rzut}</div>
-          <div class="roll-outcome">${data.wynik.wynik}</div>
+          <div class="roll-dice">🎲 Rzut: ${wynik.rzut}</div>
+          <div class="roll-outcome">${wynik.wynik}</div>
           ${efekt}
         </div>
       `;
@@ -2780,20 +2739,11 @@ function renderProfessionsAndCuriosSummary() {
  */
 async function zaladujProfesjeIKurioza() {
   try {
-    const [profResp, curiosResp] = await Promise.all([
-      fetch('/api/professions'),
-      fetch('/api/curios')
-    ]);
-    
-    if (profResp.ok) {
-      const profData = await profResp.json();
-      dostepneProfesje = profData.profesje;
-    }
-    
-    if (curiosResp.ok) {
-      const curiosData = await curiosResp.json();
-      dostepneKurioza = curiosData.kurioza;
-    }
+    const profData = getProfesjeUI();
+    dostepneProfesje = profData.profesje;
+
+    const curiosData = getKuriozaUI();
+    dostepneKurioza = curiosData.kurioza;
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('Nie udało się załadować profesji i kuriozów:', e);
@@ -3119,6 +3069,16 @@ function updateStep4NextButton() {
   const { profesje, kurioza } = obliczIloscWyborow();
   const hasRequiredProfessions = wybraneProfesje.length >= profesje;
   const hasRequiredCurios = wybraneKurioza.length >= kurioza;
-  
+
   btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);
 }
+
+// Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje
+// nie trafiają automatycznie do zasięgu globalnego. index.html odwołuje się
+// do poniższych funkcji przez atrybuty onclick, więc trzeba je udostępnić na window.
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.utworzPostac = utworzPostac;
+window.exportJSON = exportJSON;
+window.closeHelp = closeHelp;
+window.switchHelpTab = switchHelpTab;

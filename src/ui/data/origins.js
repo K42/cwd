@@ -460,4 +460,4 @@ const ORIGINS = {
   }
 };
 
-module.exports = ORIGINS;
+export default ORIGINS;

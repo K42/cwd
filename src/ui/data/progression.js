@@ -190,4 +190,4 @@ const PROGRESSION = {
   }
 };
 
-module.exports = PROGRESSION;
+export default PROGRESSION;

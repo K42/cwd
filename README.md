@@ -5,8 +5,8 @@ Aplikacja webowa do tworzenia postaci w grze RPG "Cień Władcy Demonów" (Shado
 ## 🎯 Cel projektu
 
 Stworzenie prostego ale skutecznego kreatora postaci wykorzystującego:
-- **HTML + Vanilla JavaScript** (frontend)
-- **Node.js + Express** (backend) 
+- **HTML + Vanilla JavaScript (ES moduły)** - cała logika działa w przeglądarce
+- **Bez serwera aplikacyjnego** - statyczny hosting (dowolny serwer plików, GitHub Pages, Netlify, S3...); Node.js jest potrzebny tylko deweloperom do testów i lintowania
 - **Brak bazy danych** (wszystko w pamięci)
 - **Pełna implementacja zasad gry** z oficjalnego podręcznika
 - **Architekturę multiagentową** (4 specjalistyczne agenty)
@@ -64,11 +64,14 @@ projekt/
 │   ├── composer.json      # Konfiguracja agentów
 │   └── rules/             # Zasady dla każdego agenta
 ├── src/
-│   ├── data.js           # Dane z zasad gry
-│   ├── server.js         # Serwer Express
-│   └── ui/               # Frontend (HTML + JS)
-├── tests/                # Testy Jest
-└── docs/                 # Auto-generowana dokumentacja
+│   └── ui/                # Cała aplikacja - statyczne pliki do wdrożenia
+│       ├── index.html
+│       ├── script.js      # UI, ładowany jako <script type="module">
+│       ├── styles.css
+│       ├── data/          # Dane z zasad gry (moduły ES)
+│       └── logic/         # Logika budowania postaci (dawniej w server.js)
+├── tests/                 # Testy Jest
+└── docs/                  # Auto-generowana dokumentacja
 ```
 
 ## 🎲 Funkcjonalności
@@ -89,10 +92,11 @@ projekt/
 ## 🔧 Komendy
 
 ```bash
-# Instalacja zależności
+# Instalacja zależności (potrzebne tylko do testów/lintowania)
 npm install
 
-# Uruchomienie serwera deweloperskiego
+# Uruchomienie lokalnego serwera statycznego (tylko wygoda deweloperska -
+# w produkcji wystarczy dowolny hosting plików, np. GitHub Pages)
 npm run dev
 
 # Testy jednostkowe
@@ -198,7 +202,7 @@ O: Import będzie dostępny w przyszłych wersjach.
 ### Wsparcie techniczne
 
 W przypadku problemów:
-1. Sprawdź czy serwer działa (konsola powinna pokazać "Kreator postaci działa na porcie 3000")
+1. Sprawdź, czy strona jest serwowana przez HTTP(S) (np. `npm run dev`), a nie otwarta bezpośrednio z dysku (`file://`) - moduły ES tego wymagają
 2. Odśwież przeglądarkę (F5)
 3. Sprawdź konsolę przeglądarki (F12) pod kątem błędów
 4. Zgłoś problem przez GitHub Issues
