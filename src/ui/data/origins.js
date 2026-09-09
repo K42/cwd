@@ -319,72 +319,120 @@ const ORIGINS = {
   fomor: {
     id: 'fomor',
     nazwa: 'Fomor',
-    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
-    opis: 'Potworne istoty z głębin, zmienione przez ciemne moce.',
+    zrodlo: 'GWP', // Głód w Pustce, "Tworzenie fomora" (str. 45-46 wg stopki PDF)
+    opis: 'Zwierzoludzie o cechach kozła, tchórzliwi w osamotnieniu, groźni w stadzie.',
+    // Realne atrybuty bazowe to losowy rzut (Siła 1k3+8, Zręczność 1k3+10,
+    // Intelekt 1k3+6, Wola 1k3+5) - patrz atrybuty_bazowe_losowe. Wartości
+    // poniżej to średnia z rzutu (1k3 śr. 2), używana tylko do podglądu
+    // kafelka pochodzenia przed właściwym tworzeniem postaci.
     atrybuty_bazowe: {
-      sila: 12,
-      zrecznosc: 8,
-      intelekt: 9,
-      wola: 11
+      sila: 10,
+      zrecznosc: 12,
+      intelekt: 8,
+      wola: 7
+    },
+    atrybuty_bazowe_losowe: {
+      sila: { kostka: 'k3', modyfikator: 8 },
+      zrecznosc: { kostka: 'k3', modyfikator: 10 },
+      intelekt: { kostka: 'k3', modyfikator: 6 },
+      wola: { kostka: 'k3', modyfikator: 5 }
     },
     rozmiar: '1',
     predkosc: 10,
-    jezyki: ['wspólny', 'głębinowy'],
-    profesje: ['wojownik', 'szaman', 'mag'],
+    jezyki: ['mroczna_mowa'],
+    profesje: ['dowolna'],
     cechy_specjalne: {
-      potworny_wyglad: 'Twój wygląd wywołuje strach u wrogów.',
-      odpornosc_na_wode: 'Możesz oddychać pod wodą.',
-      mroczne_moce: 'Dostęp do mrocznych zaklęć.'
+      percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
+      poczatkowe_stany: 'Zaczynasz grę z 1k3 punktami Szaleństwa i 1k3 punktami Splugawienia.',
+      tchorzliwy: 'Jesteś przestraszony, jeśli znajdujesz się w bezpośrednim zasięgu co najmniej dwóch wrogich wobec ciebie stworzeń.',
+      walka_w_stadzie: 'Gdy atakujesz cel znajdujący się w bezpośrednim zasięgu innego przyjaznego sobie stworzenia z talentem Walka w stadzie, rzut na atak wykonujesz z 1 ułatwieniem. W przeciwnym wypadku wykonujesz go z 1 utrudnieniem.'
     },
-    strona_zrodlowa: 47,
-    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
+    poziom_4: {
+      zdrowie: '+5',
+      opcje: ['1 zaklęcie', 'talent Potęga zagnana w kozi róg']
+    },
+    strona_zrodlowa: 46,
+    status: 'kompletne' // brak oficjalnych tabel losowania (wiek/wygląd/przeszłość/osobowość) - Głód w Pustce ich dla tego pochodzenia nie definiuje
   },
 
   niedzwiedziadlo: {
     id: 'niedzwiedziadlo',
     nazwa: 'Niedźwiedzidło', // poprawiona pisownia zgodna ze źródłem (było: "Niedźwiedziadło")
-    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
-    opis: 'Istoty o niedźwiedzim wyglądzie, znane z siły i dzikości.',
+    zrodlo: 'GWP', // Głód w Pustce, "Niedźwiedzidło, poziom 4" (str. 48-49 wg stopki PDF)
+    opis: 'Ogromni, brutalni zwierzoludzie o niedźwiedziej naturze, zwani też straszydłami.',
+    // Realne atrybuty bazowe to losowy rzut (Siła 1k3+12, Zręczność 1k3+11,
+    // Intelekt 1k3+8, Wola 1k3+8) - patrz atrybuty_bazowe_losowe. Wartości
+    // poniżej to średnia z rzutu (1k3 śr. 2), używana tylko do podglądu
+    // kafelka pochodzenia przed właściwym tworzeniem postaci.
     atrybuty_bazowe: {
-      sila: 13,
-      zrecznosc: 8,
-      intelekt: 8,
-      wola: 11
+      sila: 14,
+      zrecznosc: 13,
+      intelekt: 10,
+      wola: 10
+    },
+    atrybuty_bazowe_losowe: {
+      sila: { kostka: 'k3', modyfikator: 12 },
+      zrecznosc: { kostka: 'k3', modyfikator: 11 },
+      intelekt: { kostka: 'k3', modyfikator: 8 },
+      wola: { kostka: 'k3', modyfikator: 8 }
     },
     rozmiar: '1',
     predkosc: 10,
-    jezyki: ['wspólny', 'zwierzęcy'],
-    profesje: ['wojownik', 'myśliwy', 'szaman'],
+    jezyki: ['mroczna_mowa'],
+    profesje: ['dowolna'],
     cechy_specjalne: {
-      niedzwiedzia_sila: 'Bonus do testów siły i ataków wręcz.',
-      naturalne_pazury: 'Ataki wręcz zadają dodatkowe obrażenia.',
-      hibernacja: 'Możesz hibernować w trudnych warunkach.'
+      percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
+      zdrowie_wyzsze: 'Zdrowie równe jest wartości Siły + 10 (aplikacja liczy je jak dla większości pochodzeń, jako sama Siła).',
+      poczatkowe_stany: 'Zaczynasz grę z 1k3 punktami Szaleństwa i 1k3 punktami Splugawienia.',
+      szybki_chwyt: 'Kiedy całkowity wynik rzutu na atak z użyciem broni wyniesie 20 lub więcej i przebije poziom trudności o co najmniej 5, możesz spróbować pochwycić cel bez poświęcania akcji, jeśli masz wolną rękę.',
+      przebieglosc: 'Testy Zręczności na ukrywanie się lub skradanie wykonujesz z 1 ułatwieniem.'
     },
-    strona_zrodlowa: 49,
-    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
+    poziom_4: {
+      zdrowie: '+7',
+      opcje: ['1 zaklęcie', 'talent Niedźwiedzi uścisk']
+    },
+    strona_zrodlowa: 48,
+    status: 'kompletne' // brak oficjalnych tabel losowania (wiek/wygląd/przeszłość/osobowość) - Głód w Pustce ich dla tego pochodzenia nie definiuje
   },
 
   warg: {
     id: 'warg',
     nazwa: 'Warg',
-    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
-    opis: 'Wilcze istoty o niezwykłej zwinności i zdolnościach tropienia.',
+    zrodlo: 'GWP', // Głód w Pustce, "Tworzenie warga" (str. 49 wg stopki PDF)
+    opis: 'Zaciekli zwierzoludzie o wilczej naturze, siła napędowa hord zwierzoludzi.',
+    // Realne atrybuty bazowe to losowy rzut (Siła 1k3+11, Zręczność 1k3+10,
+    // Intelekt 1k3+7, Wola 1k3+8) - patrz atrybuty_bazowe_losowe. Wartości
+    // poniżej to średnia z rzutu (1k3 śr. 2), używana tylko do podglądu
+    // kafelka pochodzenia przed właściwym tworzeniem postaci.
     atrybuty_bazowe: {
-      sila: 10,
-      zrecznosc: 13,
+      sila: 13,
+      zrecznosc: 12,
       intelekt: 9,
-      wola: 8
+      wola: 10
+    },
+    atrybuty_bazowe_losowe: {
+      sila: { kostka: 'k3', modyfikator: 11 },
+      zrecznosc: { kostka: 'k3', modyfikator: 10 },
+      intelekt: { kostka: 'k3', modyfikator: 7 },
+      wola: { kostka: 'k3', modyfikator: 8 }
     },
     rozmiar: '1',
-    predkosc: 14,
-    jezyki: ['wspólny', 'wilczy'],
-    profesje: ['myśliwy', 'wojownik', 'szaman'],
+    predkosc: 12,
+    jezyki: [],
+    profesje: ['dowolna'],
     cechy_specjalne: {
-      szybkosc: 'Możesz biegać szybciej niż normalnie.',
-      tropienie: 'Możesz śledzić ślady na duże odległości.'
+      percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
+      zdrowie_wyzsze: 'Zdrowie równe jest wartości Siły + 2 (aplikacja liczy je jak dla większości pochodzeń, jako sama Siła).',
+      rozumie_ale_nie_mowi: 'Rozumiesz mroczną mowę, ale nie potrafisz w niej mówić.',
+      poczatkowe_stany: 'Zaczynasz grę z 1k3 punktami Szaleństwa i 1k3 punktami Splugawienia.',
+      zajadlosc: 'Gdy otrzymasz obrażenia od stworzenia w swoim bezpośrednim zasięgu, możesz wykorzystać reakcję, by je ugryźć. Wykonujesz oparty na Sile rzut na atak z 1 ułatwieniem przeciwko Obronie celu i zadajesz 1k6 obrażeń w razie trafienia.'
     },
-    strona_zrodlowa: 50,
-    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
+    poziom_4: {
+      zdrowie: '+6',
+      opcje: ['1 zaklęcie', 'talent Okrutna zajadłość']
+    },
+    strona_zrodlowa: 49,
+    status: 'kompletne' // brak oficjalnych tabel losowania (wiek/wygląd/przeszłość/osobowość) - Głód w Pustce ich dla tego pochodzenia nie definiuje
   },
 
   inkarnacja: {

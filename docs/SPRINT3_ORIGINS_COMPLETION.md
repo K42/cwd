@@ -225,7 +225,29 @@ Zaktualizowano test `tests/postac.test.js`, który miał zaszyte na sztywno star
 
 ---
 
-## Podsumowanie stanu po Fazach 0-9
+### Faza 10: Silnik - obsługa losowych atrybutów bazowych (1kX + modyfikator)
+
+Fomor, Warg i Niedźwiedzidło (zwierzoludzie z Głodu w Pustce) w źródle mają losowe, nie stałe, atrybuty bazowe (np. Fomor: Siła 1k3+8, Zręczność 1k3+10...). Rozszerzono silnik w `src/ui/data/dane-gry.js`:
+
+- Nowy opcjonalny klucz `atrybuty_bazowe_losowe: { <atrybut>: { kostka, modyfikator } }` na pochodzeniu.
+- `oblicz_atrybuty_poczatkowe()` sprawdza ten klucz - jeśli obecny, faktycznie rzuca kośćmi przy każdym budowaniu postaci; w przeciwnym razie zachowuje dotychczasowe zachowanie (stałe `atrybuty_bazowe`), więc pozostałe 14 pochodzeń działa dokładnie tak jak wcześniej.
+- `atrybuty_bazowe` (stałe liczby) pozostają wypełnione **wartością średnią** rzutu (np. 1k3 śr. = 2) i są używane wyłącznie do podglądu kafelka pochodzenia w UI przed właściwym utworzeniem postaci - cały istniejący kod wyświetlania w `script.js` (kilkanaście miejsc liczących `atrybuty_bazowe.X - 10`) działa bez zmian, bo zawsze dostaje liczbę.
+
+**Świadomie NIE zaimplementowano:** per-origin wzorów atrybutów drugorzędnych (np. Warg „Zdrowie = Siła+2", Niedźwiedzidło „Zdrowie = Siła+10", wiele pochodzeń „Percepcja = Intelekt+2"). To już wcześniej istniejąca w całej aplikacji uproszczona zasada silnika (Percepcja zawsze = Intelekt, Zdrowie zawsze = Siła, niezależnie od pochodzenia) - dotyczy też np. Krasnoluda („Zdrowie = Siła+4" z PG), więc nie jest to regresja wprowadzona w tym sprincie. Odnotowane jako tekst w `cechy_specjalne` każdego pochodzenia, którego dotyczy, żeby użytkownik gry wiedział o różnicy. Naprawienie tego wymagałoby osobnego zadania obejmującego wzory atrybutów drugorzędnych dla wszystkich 17 pochodzeń, nie tylko tabel.
+
+### Faza 11: Fomor, Warg, Niedźwiedzidło - pełne przepisanie core (Głód w Pustce)
+
+Zweryfikowano źródło: **żadne z tych trzech pochodzeń nie ma oficjalnych tabel losowania** (wiek/wygląd/przeszłość/osobowość) w Głodzie w Pustce - to zwierzoludzie opisani wyłącznie statystykami tworzenia postaci, bez sekcji fabularnych z tabelami, w przeciwieństwie do pochodzeń z PG/Straszliwego Piękna/Rozkosznej Agonii/Chwalebnej Śmierci. `status: 'kompletne'` mimo braku tabel jest więc poprawny - nie ma czego dodawać.
+
+Dla wszystkich trzech przepisano: prawdziwe atrybuty bazowe (jako `atrybuty_bazowe_losowe` + reprezentatywna średnia), cechy specjalne (Fomor: Tchórzliwy, Walka w stadzie; Warg: Zajadłość, „rozumie ale nie mówi" w mrocznej mowie; Niedźwiedzidło: Szybki chwyt, Przebiegłość), początkowe stany (Szaleństwo i Splugawienie 1k3 dla każdego), poziom 4 (odpowiednio: Potęga zagnana w kozi róg / Okrutna zajadłość / Niedźwiedzi uścisk).
+
+**Weryfikacja:** test jednostkowy sprawdzający 20 losowań na pochodzenie mieszczą się w oczekiwanym zakresie kości; pełny przebieg tworzenia postaci Fomora w przeglądarce (wybór → poziom → profesje/kurioza → utworzenie) kończy się kartą postaci z realnie wylosowanymi atrybutami, zero błędów konsoli.
+
+**Status:** ✅ Gotowe. Testy: 99/99 (dodano nowy test losowania), lint czysty.
+
+---
+
+## Podsumowanie stanu po Fazach 0-11
 
 | Pochodzenie | Źródło | Tabele | Status |
 |---|---|---|---|
@@ -240,7 +262,8 @@ Zaktualizowano test `tests/postac.test.js`, który miał zaszyte na sztywno star
 | Hobgoblin | Straszliwe Piękno | 4/4 | ✅ przepisane (Faza 7c) |
 | Kambion | Rozkoszna Agonia | 6/6 | ✅ przepisane od zera (Faza 8) |
 | Jotun | Chwalebna Śmierć | 6/6 | ✅ przepisane od zera (Faza 9) |
-| Faun, Niziołek, Fomor, Niedźwiedzidło, Warg, Inkarnacja | Suplement / Głód w Pustce | 0/0 | 🔄 w trakcie - pełna przebudowa (zaakceptowana przez użytkownika), pozostało 6 pochodzeń. Fomor/Warg/Niedźwiedzidło wymagają dodatkowo rozszerzenia silnika o losowe atrybuty bazowe (1k3+X) |
+| Fomor, Warg, Niedźwiedzidło | Głód w Pustce | brak w źródle | ✅ core przepisany od zera, brak tabel to zgodny ze źródłem stan (Faza 11) |
+| Faun, Niziołek, Inkarnacja | Suplement / Głód w Pustce | 0/? | 🔄 w trakcie - pozostały 3 pochodzenia |
 
 Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
 

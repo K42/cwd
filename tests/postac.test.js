@@ -137,18 +137,37 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(postac.atrybuty.intelekt).toBe(10); // Bazowa wartość
     });
 
-    test('powinien utworzyć niedźwiedziadło z wysoką siłą', () => {
-      const spec = {
-        pochodzenie: 'niedzwiedziadlo',
-        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
-      };
+    test('powinien utworzyć niedźwiedzidło z losowymi atrybutami bazowymi (1k3+X)', () => {
+      const spec = { pochodzenie: 'niedzwiedziadlo' };
 
       const postac = budujPostac(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Niedźwiedzidło');
-      expect(postac.atrybuty.sila).toBe(13); // 10 + 3 modyfikator
-      expect(postac.atrybuty_drugorzedne.zdrowie).toBe(13);
-      expect(postac.profesje).toContain('wojownik');
+      // Siła 1k3+12 => zakres 13-15
+      expect(postac.atrybuty.sila).toBeGreaterThanOrEqual(13);
+      expect(postac.atrybuty.sila).toBeLessThanOrEqual(15);
+      expect(postac.atrybuty_drugorzedne.zdrowie).toBe(postac.atrybuty.sila);
+      expect(postac.profesje).toContain('dowolna');
+    });
+
+    test('powinien wylosować różne atrybuty bazowe dla pochodzeń z atrybuty_bazowe_losowe', () => {
+      // Rzuty są losowe, ale zawsze w zakresie 1k3+modyfikator - sprawdzamy
+      // to na 20 próbach dla każdego z trzech "zwierzoludzi" z Głodu w Pustce
+      const zakresy = {
+        fomor: { sila: [9, 11], zrecznosc: [11, 13], intelekt: [7, 9], wola: [6, 8] },
+        warg: { sila: [12, 14], zrecznosc: [11, 13], intelekt: [8, 10], wola: [9, 11] },
+        niedzwiedziadlo: { sila: [13, 15], zrecznosc: [12, 14], intelekt: [9, 11], wola: [9, 11] }
+      };
+
+      for (const [pochodzenie, zakres] of Object.entries(zakresy)) {
+        for (let i = 0; i < 20; i++) {
+          const postac = budujPostac({ pochodzenie });
+          for (const atrybut of ['sila', 'zrecznosc', 'intelekt', 'wola']) {
+            expect(postac.atrybuty[atrybut]).toBeGreaterThanOrEqual(zakres[atrybut][0]);
+            expect(postac.atrybuty[atrybut]).toBeLessThanOrEqual(zakres[atrybut][1]);
+          }
+        }
+      }
     });
 
     test('powinien utworzyć elf z wysoką zręcznością', () => {

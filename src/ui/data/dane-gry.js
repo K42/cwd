@@ -74,19 +74,47 @@ const DANE_GRY = {
     },
 
     /**
+     * Rzuca wskazaną kością pomocniczą używaną przez losowe atrybuty bazowe
+     * @param {string} kostka - Typ kości ('k3' lub 'k6')
+     * @returns {number} Wynik rzutu
+     */
+    rzucKostkaAtrybutu(kostka) {
+      if (kostka === 'k3') return Math.floor(Math.random() * 3) + 1;
+      if (kostka === 'k6') return Math.floor(Math.random() * 6) + 1;
+      throw new Error(`Nieznana kostka atrybutu bazowego: ${kostka}`);
+    },
+
+    /**
      * Oblicza atrybuty postaci zgodnie z zasadami tworzenia
+     *
+     * Niektóre pochodzenia (np. zwierzoludzie z Głodu w Pustce) mają w źródle
+     * losowe atrybuty bazowe w postaci "1kX + modyfikator" zamiast stałych
+     * liczb. Taka konfiguracja jest opisana w `pochodzenie.atrybuty_bazowe_losowe`
+     * (obiekt {kostka, modyfikator} per atrybut) i ma pierwszeństwo przed
+     * stałymi wartościami w `atrybuty_bazowe` - te ostatnie w takim przypadku
+     * pozostają jako reprezentatywna wartość średnia, używana wyłącznie do
+     * podglądu kafelka pochodzenia przed rzeczywistym utworzeniem postaci.
      * @param {Object} pochodzenie - Dane pochodzenia
      * @param {Object} wybor_atrybutu - Wybór gracza (+1 do wybranego atrybutu)
      * @returns {Object} Finalne atrybuty postaci
      */
     oblicz_atrybuty_poczatkowe(pochodzenie, wybor_atrybutu) {
-      const atrybuty = { ...pochodzenie.atrybuty_bazowe };
-      
+      let atrybuty;
+
+      if (pochodzenie.atrybuty_bazowe_losowe) {
+        atrybuty = {};
+        for (const [klucz, formula] of Object.entries(pochodzenie.atrybuty_bazowe_losowe)) {
+          atrybuty[klucz] = this.rzucKostkaAtrybutu(formula.kostka) + formula.modyfikator;
+        }
+      } else {
+        atrybuty = { ...pochodzenie.atrybuty_bazowe };
+      }
+
       // Dodaj wybór gracza (+1 do wybranego atrybutu)
       if (wybor_atrybutu && atrybuty[wybor_atrybutu]) {
         atrybuty[wybor_atrybutu] += 1;
       }
-      
+
       return atrybuty;
     },
 
