@@ -171,7 +171,7 @@ function getGlossaryContent() {
         <div class="glossary-def">
           <p><strong>Źródło:</strong> Pochodzenie (zwykle 10)</p>
           <p><strong>Co to znaczy:</strong> Ile metrów możesz przejść w jednej rundzie (6 sekund)</p>
-          <p><strong>Przykład:</strong> Człowiek: 10 m/rundę, Jötunn: 12 m/rundę</p>
+          <p><strong>Przykład:</strong> Człowiek: 10 m/rundę, Jotun: 12 m/rundę</p>
         </div>
       </div>
 
@@ -262,7 +262,7 @@ function getFAQContent() {
         <div class="faq-answer">
           Nie ma "najlepszego" - każde ma swoje mocne strony:<br>
           • <strong>Dla początkujących:</strong> Człowiek (wszechstronny)<br>
-          • <strong>Dla wojowników:</strong> Krasnolud, Ork, Jötunn<br>
+          • <strong>Dla wojowników:</strong> Krasnolud, Ork, Jotun<br>
           • <strong>Dla magów:</strong> Elf, Odmieniec<br>
           • <strong>Dla skrytych:</strong> Goblin, Nizioł, Chochlik
         </div>
@@ -271,7 +271,7 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Co znaczy "Rozmiar 2"?</div>
         <div class="faq-answer">
-          Postać jest większa od normalnej (np. Jötunn to gigant). Większy rozmiar może dawać bonusy do siły, ale utrudnia ukrywanie się.
+          Postać jest większa od normalnej (np. Jotun to gigant). Większy rozmiar może dawać bonusy do siły, ale utrudnia ukrywanie się.
         </div>
       </div>
 

@@ -61,6 +61,20 @@ Zweryfikowano w `sources/Podrecznik_Glowny/PodrecznikGlowny.md` (linie ~944-985)
 
 ## Dziennik faz
 
+### ⚠️ Ważne odkrycie w trakcie prac: 8 pochodzeń ma prawdopodobnie zmyślone/przybliżone dane mechaniczne, nie tylko brakujące tabele
+
+Podczas weryfikacji prawdziwych źródeł dla Fomora, Warga, Niedźwiedzidła i Jotuna okazało się, że **nie tylko tabele losowania są nieobecne — całe sekcje `atrybuty_bazowe` i `cechy_specjalne` w `origins.js` odbiegają od materiału źródłowego**, prawdopodobnie zostały wymyślone/przybliżone przy pierwotnym wprowadzaniu tych pochodzeń:
+
+- **Fomor, Warg, Niedźwiedzidło** (Głód w Pustce) używają w oryginale **losowych wartości atrybutów bazowych** (np. Fomor: Siła 1k3+8, Zręczność 1k3+10, Intelekt 1k3+6, Wola 1k3+5), a nie stałych liczb jak reszta pochodzeń w aplikacji. Silnik gry (`src/ui/logic/postac.js` / `dane-gry.js`) obsługuje dziś wyłącznie stałe wartości bazowe - obsłużenie tej mechaniki to realna zmiana w logice budowania postaci, nie tylko wpis danych.
+- **Kambion**: to, co znalazłem w *Rozkosznej Agonii* pod hasłem "Kambion", to **statystyki potwora/NPC** ("KAMBION TRUDNOŚĆ 5"), a nie sekcja tworzenia postaci gracza. Ta książka najwyraźniej **nie zawiera Kambiona jako oficjalnie grywalnego pochodzenia z tabelami losowania** - obecny wpis w aplikacji wygląda na domowe (homebrew) przeniesienie statystyk potwora na pochodzenie gracza.
+- **Jotun**: prawdziwa sekcja tworzenia postaci istnieje (`Chwalebna Śmierć`, „Tworzenie postaci: jotun") i używa stałych wartości (zgodnie z resztą aplikacji), ale różni się od obecnych danych w `origins.js` (realne: Siła 13/Zręczność 9/Intelekt 8/Wola 10 vs. obecne 12/9/9/10).
+
+**To zmienia charakter prac dla tych 8 pochodzeń** z „dopisz brakujące tabele" na „zweryfikuj i prawdopodobnie przepisz całe pochodzenie od podstaw", a dla Kambiona pojawia się dodatkowo pytanie, czy w ogóle ma być traktowany jako pochodzenie z oficjalnymi tabelami (nie istnieją), czy pozostać domowym rozszerzeniem.
+
+**Decyzja:** Prace nad tymi 8 pochodzeniami (fazy 8-15 w oryginalnym planie) są **wstrzymane do decyzji użytkownika** - patrz sekcja "Otwarte pytania" na końcu dokumentu. W tej sesji ukończono w pełni bezpieczne, dobrze zweryfikowane fazy 0-7 (bugfix, metadane, Automaton, 4 pochodzenia z Podręcznika Głównego, 3 uzupełnienia z Straszliwego Piękna).
+
+---
+
 ### Faza 0: Bugfix widoczności ścieżek eksperckich/mistrzowskich
 
 **Zmiana:** `src/ui/script.js`, `renderPathSectionsVisibility()` - dodano `g3.style.display='block'` i `g7.style.display='block'` (analogicznie dla `s3`/`s7`) w gałęzi `else`, obok istniejącej zmiany `opacity`.
@@ -68,6 +82,21 @@ Zweryfikowano w `sources/Podrecznik_Glowny/PodrecznikGlowny.md` (linie ~944-985)
 **Weryfikacja:** Playwright, pełny przebieg: wybór Człowieka → poziom 3 (Ekspert) → krok 3 pokazuje 8 kafelków ścieżki eksperckiej, wszystkie widoczne i klikalne → po wybraniu ścieżki nowicjusza i eksperckiej przycisk "Dalej" się odblokowuje. Zero błędów konsoli.
 
 **Status:** ✅ Gotowe.
+
+---
+
+### Faza 1: Korekta metadanych źródeł (`origins.js`)
+
+**Zmiany:**
+- `zrodlo` poprawione dla 8 pochodzeń: Faun, Niziołek → `'SUP'` (Suplement Władcy Demonów); Fomor, Warg, Niedźwiedzidło, Inkarnacja → `'GWP'` (Głód w Pustce); Kambion → `'RA'` (Rozkoszna Agonia); Jotun → nowy kod `'CS'` (Chwalebna Śmierć).
+- `dozwoloneZrodla` w `src/ui/script.js` rozszerzone o `'CS'` (pozostałe kody były już obecne).
+- `nazwa`: „Jötunn" → „Jotun", „Niedźwiedziadło" → „Niedźwiedzidło" (pisownia zgodna ze źródłem). Poprawiono też wszystkie odwołania w `tests/postac.test.js`, `src/ui/script.js` (opis rozszerzony pochodzenia) i `src/ui/help-content.js` (3 wystąpienia w glosariuszu/FAQ).
+- `strona_zrodlowa`: Niziołek 9→8 (zgodnie ze spisem treści), Kambion 45→30, Jotun 45→6 (sekcja „Serce zimy" ma własną numerację stron w ramach łączonego PDF-u).
+- `status`: wszystkie 8 pochodzeń bez tabel zmienione z mylącego `'kompletne'` na `'niezweryfikowane'`, z komentarzem wyjaśniającym co dokładnie wymaga weryfikacji (brak tabel i/lub podejrzane dane mechaniczne - patrz sekcja powyżej).
+
+**Świadomie NIE ruszone w tej fazie:** `atrybuty_bazowe` i `cechy_specjalne` dla Fomora/Warga/Niedźwiedzidła/Inkarnacji/Kambiona/Jotuna - to część większej decyzji opisanej wyżej, żeby nie mieszać "pewnych" poprawek metadanych z niepewnymi poprawkami mechaniki w jednym commicie.
+
+**Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
 
 ---
 

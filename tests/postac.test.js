@@ -30,7 +30,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
       const postac = budujPostac(spec);
 
-      expect(postac.pochodzenie.nazwa).toBe('Jötunn');
+      expect(postac.pochodzenie.nazwa).toBe('Jotun');
       expect(postac.atrybuty.sila).toBe(12); // 10 + 2 modyfikator
       expect(postac.atrybuty.zrecznosc).toBe(9); // 10 - 1 modyfikator
       expect(postac.atrybuty_drugorzedne.rozmiar).toBe('2');
@@ -143,7 +143,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
       const postac = budujPostac(spec);
 
-      expect(postac.pochodzenie.nazwa).toBe('Niedźwiedziadło');
+      expect(postac.pochodzenie.nazwa).toBe('Niedźwiedzidło');
       expect(postac.atrybuty.sila).toBe(13); // 10 + 3 modyfikator
       expect(postac.atrybuty_drugorzedne.zdrowie).toBe(13);
       expect(postac.profesje).toContain('wojownik');

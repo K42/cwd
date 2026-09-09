@@ -271,7 +271,7 @@ const ORIGINS = {
   faun: {
     id: 'faun',
     nazwa: 'Faun',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'SUP', // Suplement Władcy Demonów (błędnie oznaczone jako SP - poprawione)
     opis: 'Istoty o kozim wyglądzie, znane z zamiłowania do muzyki i natury.',
     atrybuty_bazowe: {
       sila: 9,
@@ -288,13 +288,13 @@ const ORIGINS = {
       magia_natury: 'Dostęp do podstawowych zaklęć natury.'
     },
     strona_zrodlowa: 5,
-    status: 'kompletne'
+    status: 'niezweryfikowane' // brak tabel losowania; wymaga weryfikacji cech mechanicznych ze źródła
   },
 
   niziol: {
     id: 'niziol',
     nazwa: 'Niziołek',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'SUP', // Suplement Władcy Demonów (błędnie oznaczone jako SP - poprawione)
     opis: 'Małe, spokojne istoty ceniące sobie komfort i dobre jedzenie.',
     atrybuty_bazowe: {
       sila: 8,
@@ -310,8 +310,8 @@ const ORIGINS = {
       szczescie: 'Raz dziennie możesz ponownie rzucić nieudany test.',
       zwinność: 'Możesz poruszać się przez przestrzeń przeciwnika.'
     },
-    strona_zrodlowa: 9,
-    status: 'kompletne'
+    strona_zrodlowa: 8,
+    status: 'niezweryfikowane' // brak tabel losowania; wymaga weryfikacji cech mechanicznych ze źródła
   },
 
 
@@ -319,7 +319,7 @@ const ORIGINS = {
   fomor: {
     id: 'fomor',
     nazwa: 'Fomor',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
     opis: 'Potworne istoty z głębin, zmienione przez ciemne moce.',
     atrybuty_bazowe: {
       sila: 12,
@@ -337,13 +337,13 @@ const ORIGINS = {
       mroczne_moce: 'Dostęp do mrocznych zaklęć.'
     },
     strona_zrodlowa: 47,
-    status: 'kompletne'
+    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
   },
 
   niedzwiedziadlo: {
     id: 'niedzwiedziadlo',
-    nazwa: 'Niedźwiedziadło',
-    zrodlo: 'SP', // Straszliwe Piękno
+    nazwa: 'Niedźwiedzidło', // poprawiona pisownia zgodna ze źródłem (było: "Niedźwiedziadło")
+    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
     opis: 'Istoty o niedźwiedzim wyglądzie, znane z siły i dzikości.',
     atrybuty_bazowe: {
       sila: 13,
@@ -361,13 +361,13 @@ const ORIGINS = {
       hibernacja: 'Możesz hibernować w trudnych warunkach.'
     },
     strona_zrodlowa: 49,
-    status: 'kompletne'
+    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
   },
 
   warg: {
     id: 'warg',
     nazwa: 'Warg',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
     opis: 'Wilcze istoty o niezwykłej zwinności i zdolnościach tropienia.',
     atrybuty_bazowe: {
       sila: 10,
@@ -384,13 +384,13 @@ const ORIGINS = {
       tropienie: 'Możesz śledzić ślady na duże odległości.'
     },
     strona_zrodlowa: 50,
-    status: 'kompletne'
+    status: 'niezweryfikowane' // brak tabel losowania; realne atrybuty bazowe to 1k3+X (losowe), nie stałe - patrz dokumentacja
   },
 
   inkarnacja: {
     id: 'inkarnacja',
     nazwa: 'Inkarnacja',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
     opis: 'Istoty z innych wymiarów, przybyłe na ten świat.',
     atrybuty_bazowe: {
       sila: 10,
@@ -407,14 +407,14 @@ const ORIGINS = {
       nietypowy_wyglad: 'Twój wygląd wskazuje na inneplanarne pochodzenie.'
     },
     strona_zrodlowa: 75,
-    status: 'kompletne'
+    status: 'niezweryfikowane' // brak tabel losowania; sekcja "Wcielona forma" w źródle to osobna mechanika wymagająca weryfikacji
   },
 
   // Rozkoszna Agonia
   kambion: {
     id: 'kambion',
     nazwa: 'Kambion',
-    zrodlo: 'SP', // Straszliwe Piękno
+    zrodlo: 'RA', // Rozkoszna Agonia (błędnie oznaczone jako SP - poprawione)
     opis: 'Hybrydy ludzi i demonów, noszące w sobie mroczną moc.',
     atrybuty_bazowe: {
       sila: 11,
@@ -430,15 +430,15 @@ const ORIGINS = {
       odpornosc_na_ogien: 'Odporność na obrażenia od ognia.',
       potworny_wyglad: 'Twój wygląd może wywołać strach u wrogów.'
     },
-    strona_zrodlowa: 45,
-    status: 'kompletne'
+    strona_zrodlowa: 30,
+    status: 'niezweryfikowane' // w źródle "Kambion" to statystyki potwora/NPC, nie sekcja tworzenia postaci gracza - brak oficjalnych tabel losowania, wymaga decyzji
   },
 
   // Dodatkowe pochodzenie z innych źródeł
   jotunn: {
     id: 'jotunn',
-    nazwa: 'Jötunn',
-    zrodlo: 'SP', // Straszliwe Piękno
+    nazwa: 'Jotun', // poprawiona pisownia zgodna ze źródłem (było: "Jötunn")
+    zrodlo: 'CS', // Chwalebna Śmierć, sekcja "Serce zimy" (błędnie oznaczone jako SP - poprawione)
     opis: 'Potężni giganci z północnych krain, znani z siły i honoru bojowego.',
     atrybuty_bazowe: {
       sila: 12,
@@ -455,8 +455,8 @@ const ORIGINS = {
       naturalny_pancerz: 'Obrona +1 dzięki grubej skórze.',
       odpornosc_na_zimno: 'Odporność na obrażenia od zimna.'
     },
-    strona_zrodlowa: 45,
-    status: 'kompletne'
+    strona_zrodlowa: 6,
+    status: 'niezweryfikowane' // brak tabel losowania; atrybuty bazowe wymagają korekty do wartości ze źródła (Siła 13/Zręczność 9/Intelekt 8/Wola 10)
   }
 };
 
