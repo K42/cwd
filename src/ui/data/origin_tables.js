@@ -1516,6 +1516,50 @@ const ORIGIN_TABLES = {
         20: { wynik: 'Uczony astrolog, magik lub okultysta', efekt: 'Brak efektu mechanicznego' }
       }
     }
+  },
+
+  // ========== INKARNACJA ==========
+  inkarnacja: {
+    manifestacje: {
+      nazwa: 'Manifestacje',
+      typ: 'k20',
+      opis: 'Fizyczne zmiany zachodzące, kiedy inkarnacja wciela się w ciało innego stworzenia',
+      wyniki: {
+        1: { wynik: 'Twoje oczy są całkowicie białe lub czarne, ale widzisz normalnie.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Na całym twoim ciele widać niewyraźne napisy w nieznanym alfabecie.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Kiedy się złościsz, nad twoją głową pojawia się język ognia, rzucając światło w promieniu 1 metra.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Kiedy mówisz, twoim słowom towarzyszy ciche echo.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Na środku twojego czoła pojawia się niebieski, złoty lub srebrny geometryczny kształt. Rzuć k6, aby określić liczbę boków figury, gdzie 1 oznacza koło, a 2 oznacza kształt kociego oka.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'Kiedy jesteś w bliskim zasięgu demona, który aktualnie nie opętał żadnego stworzenia, twoja skóra emituje białe światło.', efekt: 'Brak efektu mechanicznego' },
+        7: { wynik: 'Nie rzucasz cienia.', efekt: 'Brak efektu mechanicznego' },
+        8: { wynik: 'Pachniesz ozonem.', efekt: 'Brak efektu mechanicznego' },
+        9: { wynik: 'Płomienie w bliskim zasięgu wyginają się w twoją stronę.', efekt: 'Brak efektu mechanicznego' },
+        10: { wynik: 'Kiedy atakujesz, po twoim ciele przez moment pełzają elektryczne iskry.', efekt: 'Brak efektu mechanicznego' },
+        11: { wynik: 'Na twoim ciele pojawiają się dziwne wzory przypominające łuski.', efekt: 'Brak efektu mechanicznego' },
+        12: { wynik: 'Nigdy się nie pocisz.', efekt: 'Brak efektu mechanicznego' },
+        13: { wynik: 'Nie odbijasz się w lustrze.', efekt: 'Brak efektu mechanicznego' },
+        14: { wynik: 'Nie masz włosów.', efekt: 'Brak efektu mechanicznego' },
+        15: { wynik: 'Twoja skóra zdaje się być z wypolerowanego marmuru.', efekt: 'Brak efektu mechanicznego' },
+        16: { wynik: 'Twoje ciało pokrywają dziwne, kryształowe wyrostki.', efekt: 'Brak efektu mechanicznego' },
+        17: { wynik: 'Twoja skóra zdaje się popękana i pobrużdżona, a z pęknięć prześwituje lekkie światło.', efekt: 'Brak efektu mechanicznego' },
+        18: { wynik: 'Wokół twojej głowy pojawiają się i obracają powoli niewielkie symbole.', efekt: 'Brak efektu mechanicznego' },
+        19: { wynik: 'Zdajesz się zimny w dotyku, jakbyś był martwy.', efekt: 'Brak efektu mechanicznego' },
+        20: { wynik: 'Szepczesz i jęczysz we śnie – są to dźwięki, które wydobywają się z głębi duszy prawdziwego właściciela ciała.', efekt: 'Brak efektu mechanicznego' }
+      }
+    },
+    osobowosc: {
+      nazwa: 'Osobowość',
+      typ: 'k6',
+      opis: 'Zastępuje tabelę osobowości pochodzenia zamieszkiwanego ciała, dopóki inkarnacja sprawuje nad nim kontrolę',
+      wyniki: {
+        1: { wynik: 'Wierzysz, że ludzie ponoszą odpowiedzialność za problemy trapiące rzeczywistość. Jesteś wyniosły i arogancki.', efekt: 'Brak efektu mechanicznego' },
+        2: { wynik: 'Jesteś zimny i wycofany.', efekt: 'Brak efektu mechanicznego' },
+        3: { wynik: 'Rzadko pokazujesz emocje, zachowując się bardziej jak maszyna niż osoba.', efekt: 'Brak efektu mechanicznego' },
+        4: { wynik: 'Trudno jest ci nawiązać relacje z innymi; często mówisz rzeczy nieodpowiednie albo wręcz najgorsze w danych okolicznościach.', efekt: 'Brak efektu mechanicznego' },
+        5: { wynik: 'Skupiasz się na swojej misji i nigdy nie pozwalasz, aby cokolwiek weszło ci w drogę.', efekt: 'Brak efektu mechanicznego' },
+        6: { wynik: 'W przeciwieństwie do większości inkarnacji przejmujesz się zamieszkującymi świat stworzeniami i starasz się chronić je przed złem.', efekt: 'Brak efektu mechanicznego' }
+      }
+    }
   }
 };
 

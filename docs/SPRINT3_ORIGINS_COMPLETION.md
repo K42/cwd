@@ -247,7 +247,21 @@ Dla wszystkich trzech przepisano: prawdziwe atrybuty bazowe (jako `atrybuty_bazo
 
 ---
 
-## Podsumowanie stanu po Fazach 0-11
+### Faza 12: Inkarnacja - pełne przepisanie, mechanika „wcielenia" jako opis (Głód w Pustce)
+
+Inkarnacja to najbardziej nietypowe pochodzenie ze wszystkich - w naturalnej formie **nie ma Siły** (w źródle dosłownie „–"), jest bezcielesna/niewidzialna, a jej właściwa rozgrywka polega na **opętywaniu innych postaci** i przejmowaniu ich Siły/Zręczności/Obrony/Zdrowia/Prędkości przy zachowaniu własnego Intelektu/Woli - to osobna, w pełni odrębna „wcielona forma" wymagająca prowadzenia dwóch kart postaci jednocześnie.
+
+Zaimplementowano naturalną formę wiernie (atrybuty, Rozmiar 1/4, Prędkość 2, cechy: Niewidzialność, Zawieszenie, Eteryczny, Czysty duch, Nietrwały, Kontakt, Potężne pochodzenie) oraz obie tabele (`manifestacje` k20, `osobowosc` k6 - zastępuje tabelę osobowości „gospodarza" na czas opętania). **Mechanika „wcielonej formy" celowo NIE jest symulowana** - jest opisana pełnym tekstem w cesze specjalnej „wcielenie", z wyraźną adnotacją, że wymaga ręcznego prowadzenia przez gracza/MG. To świadoma decyzja o zakresie: pełna symulacja wymagałaby budowania dwóch powiązanych kart postaci jednocześnie, co jest nową funkcjonalnością wykraczającą poza zakres tego sprintu (uzupełnienie i naprawa istniejących danych), a nie naprawą tabel/atrybutów.
+
+Ponieważ silnik zawsze liczy Zdrowie = Siła (uproszczenie sprzed tego sprintu, dotyczące wszystkich pochodzeń), a realna zasada dla Inkarnacji to Zdrowie = Wola, ustawiono `atrybuty_bazowe.sila = wola` (obie po 10), żeby wynik był poprawny mimo uproszczenia - odnotowane w komentarzu i w cesze specjalnej.
+
+**Weryfikacja:** `budujPostac()` zwraca poprawne Zdrowie=10 (=Wola); obie tabele widoczne i rzucalne w przeglądarce, zero błędów.
+
+**Status:** ✅ Gotowe. Testy: 99/99, lint czysty.
+
+---
+
+## Podsumowanie stanu po Fazach 0-12
 
 | Pochodzenie | Źródło | Tabele | Status |
 |---|---|---|---|
@@ -263,7 +277,8 @@ Dla wszystkich trzech przepisano: prawdziwe atrybuty bazowe (jako `atrybuty_bazo
 | Kambion | Rozkoszna Agonia | 6/6 | ✅ przepisane od zera (Faza 8) |
 | Jotun | Chwalebna Śmierć | 6/6 | ✅ przepisane od zera (Faza 9) |
 | Fomor, Warg, Niedźwiedzidło | Głód w Pustce | brak w źródle | ✅ core przepisany od zera, brak tabel to zgodny ze źródłem stan (Faza 11) |
-| Faun, Niziołek, Inkarnacja | Suplement / Głód w Pustce | 0/? | 🔄 w trakcie - pozostały 3 pochodzenia |
+| Inkarnacja | Głód w Pustce | 2/2 | ✅ przepisane od zera, mechanika "wcielenia" opisana jako tekst (Faza 12) |
+| Faun, Niziołek | Suplement Władcy Demonów | 0/? | 🔄 w trakcie - ostatnie 2 pochodzenia |
 
 Bug ścieżek eksperckich/mistrzowskich (Faza 0) naprawiony i zweryfikowany dla wielu pochodzeń - dotyczy WSZYSTKICH 17 pochodzeń jednakowo (to kod UI, nie dane), więc jest w pełni rozwiązany niezależnie od stanu tabel.
 

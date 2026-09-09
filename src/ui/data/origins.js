@@ -438,24 +438,41 @@ const ORIGINS = {
   inkarnacja: {
     id: 'inkarnacja',
     nazwa: 'Inkarnacja',
-    zrodlo: 'GWP', // Głód w Pustce (błędnie oznaczone jako SP - poprawione)
-    opis: 'Istoty z innych wymiarów, przybyłe na ten świat.',
+    zrodlo: 'GWP', // Głód w Pustce, "Tworzenie postaci: inkarnacja" (str. 75-77 wg stopki PDF)
+    opis: 'Nieziemskie istoty bez fizycznej formy, które pożyczają ciała śmiertelników.',
+    // W źródle Siła to "–" (inkarnacja w naturalnej formie jej nie posiada).
+    // Zdrowie liczy się w rzeczywistości z Woli, nie z Siły. Ponieważ silnik
+    // aplikacji zawsze liczy Zdrowie = Siła (tak samo jak dla wszystkich
+    // innych pochodzeń - to ograniczenie sprzed tego sprintu), ustawiono
+    // sila = wola, dzięki czemu wynik jest poprawny mimo uproszczenia.
     atrybuty_bazowe: {
       sila: 10,
-      zrecznosc: 9,
-      intelekt: 12,
-      wola: 8
+      zrecznosc: 10,
+      intelekt: 10,
+      wola: 10
     },
-    rozmiar: '1',
-    predkosc: 10,
-    jezyki: ['wspólny', 'wymiarowy'],
-    profesje: ['mag', 'szaman'],
+    rozmiar: '1/4',
+    predkosc: 2,
+    jezyki: [],
+    profesje: [],
     cechy_specjalne: {
-      odpornosc_na_magie: 'Częściowa odporność na efekty magiczne.',
-      nietypowy_wyglad: 'Twój wygląd wskazuje na inneplanarne pochodzenie.'
+      zdrowie_z_woli: 'W naturalnej formie Zdrowie równe jest wartości Woli, nie Siły (aplikacja liczy je jak dla większości pochodzeń, ustawiając Siłę równą Woli).',
+      widzenie_w_ciemnosci: 'W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.',
+      niewidzialnosc: 'W swojej naturalnej formie jesteś niewidzialny dla wszystkich stworzeń innych niż demony.',
+      zawieszenie: 'Poruszasz się lotem i nigdy nie otrzymujesz obrażeń od upadku.',
+      eteryczny: 'W naturalnej formie nie możesz dotknąć żadnych stworzeń ani obiektów. Nie jesteś w stanie mówić. Nie otrzymujesz obrażeń od broni ani z fizycznych źródeł, ale magia wywiera na ciebie wpływ. Potrafisz przenikać przez materialne obiekty i inne stworzenia oraz ignorujesz efekty trudnego terenu.',
+      czysty_duch: 'Otrzymujesz karę do Zdrowia równą dwukrotności twojej wartości Splugawienia.',
+      nietrwaly: 'Jeśli zostaniesz obezwładniony, twoja esencja wypływa z powrotem na granicę rzeczywistości, gdzie pozostaje, dopóki wszechświat nie ulegnie zniszczeniu.',
+      kontakt: 'Możesz wykorzystać akcję, aby dotknąć umysłów dowolnej liczby stworzeń w bliskim zasięgu i komunikować się z nimi bez mówienia, dopóki się koncentrujesz i pozostajecie w bliskim zasięgu.',
+      wcielenie: 'Możesz podjąć próbę wejścia do ciała żywego, śmiertelnego stworzenia z duszą w bliskim zasięgu (rzut na atak oparty na Woli przeciwko jego Woli). Sukces oznacza przejęcie jego ciała ("wcielona forma") do chwili, aż je opuścisz lub ono umrze; cel traci wspomnienia z tego okresu i zyskuje Szaleństwo równe twojej Woli. UWAGA: pełna mechanika wcielonej formy (używanie Siły/Zręczności/Obrony/Zdrowia/Prędkości "gospodarza" przy zachowaniu własnego Intelektu/Woli/Mocy) nie jest symulowana przez ten kreator - wymaga ręcznego prowadzenia dwóch kart postaci przez gracza/MG.',
+      potezne_pochodzenie: 'Kiedy twoja drużyna osiąga 1 poziom, nie wybierasz ścieżki nowicjusza. Zamiast tego za każdym razem, kiedy tabela w podręczniku głównym mówi, że zyskałbyś korzyści ze ścieżki nowicjusza, otrzymujesz korzyści ze swojego pochodzenia dla danego poziomu.'
     },
-    strona_zrodlowa: 75,
-    status: 'niezweryfikowane' // brak tabel losowania; sekcja "Wcielona forma" w źródle to osobna mechanika wymagająca weryfikacji
+    poziom_4: {
+      zdrowie: '+1', // w źródle: naturalna forma +1, wcielona +4 (druga wartość niesymulowana - patrz cecha "wcielenie")
+      opcje: ['1 zaklęcie', 'talent Zdeterminowany na wieki']
+    },
+    strona_zrodlowa: 76,
+    status: 'kompletne' // mechanika "wcielonej formy" celowo opisana jako tekst (nie symulowana) - patrz cecha "wcielenie"
   },
 
   // Rozkoszna Agonia
