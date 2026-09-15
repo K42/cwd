@@ -1610,7 +1610,9 @@ kbd {
 }
 
 .selected-item {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background: var(--bg-1);
     border: 1px solid var(--gold);
     color: var(--ink);
@@ -1628,13 +1630,13 @@ kbd {
     width: 16px;
     height: 16px;
     cursor: pointer;
-    margin-right: 8px;
     font-size: 14px;
     font-weight: bold;
     padding: 0;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .selected-item .remove-btn:hover {

@@ -2925,17 +2925,19 @@ function updateSelectedProfessions() {
     const prof = dostepneProfesje.find(p => p.id === id);
     return prof ? `
       <div class="selected-item">
-        <button class="remove-btn" onclick="removeProfession('${id}')">×</button>
-        ${prof.nazwa}
+        <button class="remove-btn" data-remove-profession-id="${id}">×</button>
+        <span>${prof.nazwa}</span>
       </div>
     ` : '';
   }).join('');
+  listDiv.querySelectorAll('[data-remove-profession-id]').forEach(btn => {
+    btn.addEventListener('click', () => removeProfession(btn.dataset.removeProfessionId));
+  });
 }
 
 /**
  * Usuwa profesję z wybranych
  */
-/* eslint-disable-next-line no-unused-vars */
 function removeProfession(professionId) {
   wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
   renderProfessionsSection();
@@ -3081,17 +3083,19 @@ function updateSelectedCurios() {
     const curio = dostepneKurioza.find(c => c.id === id);
     return curio ? `
       <div class="selected-item">
-        <button class="remove-btn" onclick="removeCurio('${id}')">×</button>
-        ${curio.nazwa}
+        <button class="remove-btn" data-remove-curio-id="${id}">×</button>
+        <span>${curio.nazwa}</span>
       </div>
     ` : '';
   }).join('');
+  listDiv.querySelectorAll('[data-remove-curio-id]').forEach(btn => {
+    btn.addEventListener('click', () => removeCurio(btn.dataset.removeCurioId));
+  });
 }
 
 /**
  * Usuwa kurioza z wybranych
  */
-/* eslint-disable-next-line no-unused-vars */
 function removeCurio(curioId) {
   wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
   renderCuriosSection();
