@@ -20,7 +20,10 @@ const ORIGINS = {
     rozmiar: '1/2 lub 1', // Poprawione zgodnie z PG str. 750
     predkosc: 10,
     jezyki: ['wspólny'],
+    // PG str. 15: "potrafisz mówić w jeszcze jednym języku LUB zyskujesz
+    // losową profesję" - to wybór, nie gwarantowana profesja.
     profesje: ['dowolna'],
+    bonus_jezyk_lub_profesja: true,
     cechy_specjalne: {
       determinacja: 'Gdy wykonujesz test atrybutu, możesz wydać punkt Determinacji aby rzucić dodatkową k20 i wybrać lepszy wynik.'
     },
@@ -47,7 +50,9 @@ const ORIGINS = {
     rozmiar: '1', // PG str. 884
     predkosc: 8, // POPRAWIONE z PG str. 884
     jezyki: ['wspólny'],
-    profesje: ['dowolna'],
+    // PG str. 13: "Umiesz mówić w języku wspólnym." - brak dodatkowej
+    // profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na uśpienie i wyczerpanie, a także na choroby i trucizny, i pochodzące od nich obrażenia.',
       klucz: 'Gdzieś na twoim ciele, w miejscu, do którego sam nie zdołasz sięgnąć, znajduje się klucz. Gdy zostanie nakręcony i obraca się, na potrzeby mechaniki gry jesteś uznawany za stworzenie. Gdy się zatrzyma, liczysz się jako obiekt.',
@@ -75,7 +80,9 @@ const ORIGINS = {
     rozmiar: '1/2', // PG str. 1047
     predkosc: 10, // PG str. 1047
     jezyki: ['wspólny', 'elficki'], // POPRAWIONE z PG str. 1051
-    profesje: ['dowolna'],
+    // PG str. 15: "Umiesz mówić w języku wspólnym i elfickim." - brak
+    // dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
       wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
@@ -104,7 +111,11 @@ const ORIGINS = {
     rozmiar: '1/2', // PG str. 1210
     predkosc: 8, // PG str. 1210
     jezyki: ['wspólny', 'krasnoludzki'], // PG str. 1214
-    profesje: ['dowolna'],
+    // PG str. 18: "Umiesz mówić w języku wspólnym, a także mówić, pisać
+    // i czytać w języku krasnoludzkim." - brak dodatkowej profesji/języka,
+    // ale automatyczne pismo w krasnoludzkim (nie trzeba go zdobywać).
+    profesje: [],
+    jezyki_pismo_automatyczne: ['krasnoludzki'],
     cechy_specjalne: {
       widzenie_w_ciemności: 'W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.',
       znienawidzony_wrog: 'Wybierz rodzaj stworzenia z tabeli Znienawidzone stworzenia. Wszystkie rzuty na atak przeciwko stworzeniom tego typu wykonujesz z 1 ułatwieniem.',
@@ -132,7 +143,10 @@ const ORIGINS = {
     rozmiar: '1', // PG str. 1349
     predkosc: 10, // PG str. 1349
     jezyki: ['wspólny'], // PG str. 1353
-    profesje: ['dowolna'],
+    // PG str. 20: "Umiesz mówić w języku wspólnym." - brak gwarantowanej
+    // profesji/języka (tabela "przeszłość" może dać losową profesję, ale
+    // to efekt losowania, nie stały bonus origin).
+    profesje: [],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
       wrażliwosc_na_zelazo: 'Jesteś osłabiony, gdy dotykasz żelaza.',
@@ -161,7 +175,9 @@ const ORIGINS = {
     rozmiar: '1', // PG str. 1492
     predkosc: 12, // POPRAWIONE z PG str. 1492
     jezyki: ['wspólny', 'mroczna_mowa'], // POPRAWIONE z PG str. 1496
-    profesje: ['dowolna'],
+    // PG str. 22: "Umiesz mówić w języku wspólnym i mrocznej mowie." - brak
+    // dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze jak w oświetlonych.',
       splugawienie: 'Zaczynasz grę z 1 punktem Splugawienia.'
@@ -189,7 +205,9 @@ const ORIGINS = {
     rozmiar: '1/8',
     predkosc: 10,
     jezyki: ['elficki'],
-    profesje: ['dowolna'],
+    // Straszliwe Piękno str. 7: "Umiesz mówić w języku elfickim." - brak
+    // dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
       trzepot: 'Możesz poruszać się lotem, ale jeśli wzniesiesz się na więcej niż 5 metrów nad ziemię, spadasz.',
@@ -222,7 +240,12 @@ const ORIGINS = {
     rozmiar: '1',
     predkosc: 12,
     jezyki: ['wspólny', 'wysoki_archaik', 'elficki'],
-    profesje: ['dowolna'],
+    // Straszliwe Piękno str. 9: "Potrafisz także mówić po elficku oraz
+    // czytać i pisać w tym języku." - automatyczne pismo w elfickim.
+    // "Możesz zyskać dodatkowe profesje lub języki w zależności od swojego
+    // wieku" to efekt losowania tabeli wieku, nie stały bonus origin.
+    profesje: [],
+    jezyki_pismo_automatyczne: ['elficki'],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
       widzenie_w_cieniu: 'Widzisz w zacienionych obszarach tak samo dobrze, jak w oświetlonych.',
@@ -252,6 +275,9 @@ const ORIGINS = {
     rozmiar: '1',
     predkosc: 10,
     jezyki: ['elficki'],
+    // Straszliwe Piękno str. 12: "Umiesz mówić w języku elfickim i
+    // posiadasz profesję wojenną." - gwarantowana profesja, bez opcji
+    // zamiany na język.
     profesje: ['wojenna'],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na zauroczenie, a także na choroby i pochodzące od nich obrażenia.',
@@ -282,7 +308,9 @@ const ORIGINS = {
     rozmiar: '1/2 lub 1',
     predkosc: 12,
     jezyki: ['wspólny', 'elficki'],
-    profesje: ['dowolna'],
+    // Suplement Władcy Demonów str. 5: "Umiesz mówić w języku wspólnym
+    // i elfickim." - brak dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 1.',
       pedziwiatr: 'Kiedy podejmujesz akcję, możesz poruszyć się przed nią lub po niej o 1 metr, pod warunkiem, że twoja Prędkość wynosi więcej niż 0.',
@@ -311,7 +339,9 @@ const ORIGINS = {
     rozmiar: '1/2',
     predkosc: 8,
     jezyki: ['wspólny'],
-    profesje: ['dowolna'],
+    // Suplement Władcy Demonów str. 8: "Umiesz mówić w języku wspólnym."
+    // - brak dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       usmiech_losu: 'Gdy stworzenie w twoim bliskim zasięgu wyrzuci 1 na jakiejkolwiek kości, możesz wykorzystać reakcję, by pozwolić na zignorowanie tego wyniku i powtórzenie rzutu.',
       niezwykla_odwaga: 'Gdy zostaniesz przestraszony, możesz wykorzystać reakcję, by wykonać test Woli. Sukces oznacza, że pozbywasz się tego stanu.'
@@ -350,7 +380,9 @@ const ORIGINS = {
     rozmiar: '1',
     predkosc: 10,
     jezyki: ['mroczna_mowa'],
-    profesje: ['dowolna'],
+    // Głód w Pustce str. 46: "Fomor umie mówić w mrocznej mowie." - brak
+    // dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
       poczatkowe_stany: 'Zaczynasz grę z 1k3 punktami Szaleństwa i 1k3 punktami Splugawienia.',
@@ -389,7 +421,9 @@ const ORIGINS = {
     rozmiar: '1',
     predkosc: 10,
     jezyki: ['mroczna_mowa'],
-    profesje: ['dowolna'],
+    // Głód w Pustce str. 48: "Niedźwiedzidło umie mówić w mrocznej mowie."
+    // - brak dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
       zdrowie_wyzsze: 'Zdrowie równe jest wartości Siły + 10 (aplikacja liczy je jak dla większości pochodzeń, jako sama Siła).',
@@ -429,7 +463,9 @@ const ORIGINS = {
     rozmiar: '1',
     predkosc: 12,
     jezyki: [],
-    profesje: ['dowolna'],
+    // Głód w Pustce str. 49: "Wargowie rozumieją mroczną mowę, ale nie
+    // umieją mówić." - brak dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       percepcja_wyzsza: 'Percepcja równa jest wartości Intelektu + 2 (aplikacja liczy ją jak dla większości pochodzeń, jako Intelekt bez modyfikatora).',
       zdrowie_wyzsze: 'Zdrowie równe jest wartości Siły + 2 (aplikacja liczy je jak dla większości pochodzeń, jako sama Siła).',
@@ -500,7 +536,9 @@ const ORIGINS = {
     rozmiar: '1/2 lub 1',
     predkosc: 10,
     jezyki: ['wspólny'],
-    profesje: ['dowolna'],
+    // Rozkoszna Agonia str. 55: "Umiesz mówić w języku wspólnym." - brak
+    // dodatkowej profesji lub języka.
+    profesje: [],
     cechy_specjalne: {
       niewrazliwosc: 'Niewrażliwość na obrażenia od choroby i trucizny, a także na chorobę i zatrucie.',
       widzenie_w_ciemnosci: 'W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.',
@@ -533,6 +571,12 @@ const ORIGINS = {
     rozmiar: '2',
     predkosc: 10,
     jezyki: ['wspólny', 'trolli'],
+    // NIEZWERYFIKOWANE: źródło (Chwalebna Śmierć) nie jest dostępne w
+    // sources/, więc nie potwierdzono dokładnego tekstu "Języki i profesje"
+    // dla Jotuna. Wszystkie pozostałe pochodzenia sprawdzone względem
+    // źródeł nie mają gwarantowanej profesji (najczęściej "profesje: []"),
+    // więc `['dowolna']` może być błędne - wymaga weryfikacji przy okazji
+    // dostępu do tego podręcznika.
     profesje: ['dowolna'],
     cechy_specjalne: {
       przywykly_do_zimna: 'Otrzymujesz połowę obrażeń od zimna i nigdy nie cierpisz z powodu wystawienia na działanie żywiołów w chłodnym środowisku.',

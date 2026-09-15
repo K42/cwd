@@ -1585,9 +1585,16 @@ kbd {
     border-radius: var(--radius);
     padding: 8px 12px;
     display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.language-chip-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .language-name {
@@ -1601,6 +1608,20 @@ kbd {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+/* Znacznik źródła wyboru (profesja/język) - czerwony, odróżniony od
+   złotych akcentów resztowego UI */
+.source-tag {
+    display: inline-block;
+    background: rgba(139, 30, 30, 0.18);
+    color: var(--blood-bright);
+    border: 1px solid var(--blood);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: normal;
+    padding: 1px 7px;
+    white-space: nowrap;
 }
 
 .profession-tile, .curio-tile {

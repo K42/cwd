@@ -67,19 +67,22 @@ function znajdzSciezke(grupaKey, id) {
 function obliczSlotyProfesjiIJezykow({ pochodzenie, sciezkaNowicjuszaId, sciezkaEksperckaId, sciezkaMistrzowskaId }) {
   const sloty = [];
   let autoPismoWszystkieZnane = false;
+  let autoPismoWszystkieZnaneSource = null;
 
   // Profesje początkowe - każda postać zaczyna z dwiema, każdą można zamienić
   // na język (mówiony lub pismo w znanym).
   sloty.push({ id: 'start-1', source: 'Profesje początkowe', kategorie: ['dowolna'], opcje: ['profesja', 'jezyk_nowy', 'jezyk_pismo'] });
   sloty.push({ id: 'start-2', source: 'Profesje początkowe', kategorie: ['dowolna'], opcje: ['profesja', 'jezyk_nowy', 'jezyk_pismo'] });
 
-  // Pochodzenie - dodatkowa, obowiązkowa profesja (czasem ograniczona kategorią)
+  // Pochodzenie - dodatkowa profesja (czasem ograniczona kategorią; u
+  // niektórych pochodzeń, np. Człowieka, to wybór język-albo-profesja,
+  // patrz `bonus_jezyk_lub_profesja` w origins.js).
   if (pochodzenie && Array.isArray(pochodzenie.profesje) && pochodzenie.profesje.length > 0) {
     sloty.push({
       id: 'pochodzenie',
       source: `Pochodzenie: ${pochodzenie.nazwa}`,
       kategorie: normalizujKategorie(pochodzenie.profesje),
-      opcje: ['profesja']
+      opcje: pochodzenie.bonus_jezyk_lub_profesja ? ['profesja', 'jezyk_nowy'] : ['profesja']
     });
   }
 
@@ -99,6 +102,7 @@ function obliczSlotyProfesjiIJezykow({ pochodzenie, sciezkaNowicjuszaId, sciezka
       sloty.push({ id: `${sciezkaId}-jp-profesja`, source, kategorie, opcje: ['profesja'], opis: grant.opis });
     } else if (grant.typ === 'automatyczne_naukowa') {
       autoPismoWszystkieZnane = true;
+      autoPismoWszystkieZnaneSource = source;
       sloty.push({ id: `${sciezkaId}-jp-profesja`, source, kategorie, opcje: ['profesja'], opis: grant.opis });
     }
   };
@@ -107,7 +111,18 @@ function obliczSlotyProfesjiIJezykow({ pochodzenie, sciezkaNowicjuszaId, sciezka
   dodajSciezke('sciezki_ekspertow', sciezkaEksperckaId, 'poziom 3');
   dodajSciezke('sciezki_mistrzow', sciezkaMistrzowskaId, 'poziom 7');
 
-  return { sloty, autoPismoWszystkieZnane };
+  // Automatyczne pismo z pochodzenia (np. Krasnolud - krasnoludzki,
+  // Elf - elficki) - niezależnie od Magika i nie zajmuje slotu.
+  const autoPismoZPochodzenia = (pochodzenie && pochodzenie.jezyki_pismo_automatyczne) || [];
+  const autoPismoZPochodzeniaSource = pochodzenie ? `Pochodzenie: ${pochodzenie.nazwa}` : null;
+
+  return {
+    sloty,
+    autoPismoWszystkieZnane,
+    autoPismoWszystkieZnaneSource,
+    autoPismoZPochodzenia,
+    autoPismoZPochodzeniaSource
+  };
 }
 
 export { JEZYKI, obliczSlotyProfesjiIJezykow, normalizujKategorie };

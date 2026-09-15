@@ -932,7 +932,7 @@ function generujKafelkiPochodzen(pochodzenia) {
                             </div>
                             <div class="cultural-item">
                                 <span class="cultural-label">Profesje:</span>
-                                <span class="cultural-value">${pochodzenie.profesje.join(', ')}</span>
+                                <span class="cultural-value">${formatujBonusProfesjiPochodzenia(pochodzenie)}</span>
                             </div>
                         </div>
                     </div>
@@ -1658,6 +1658,22 @@ function pobierzKluczoweCechy(cechySpecjalne) {
 }
 
 /**
+ * Formatuje opis bonusu profesyjnego/językowego pochodzenia (do wyświetlenia
+ * poza Krokiem 4, np. na rozwiniętym kafelku pochodzenia lub w podglądzie).
+ * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
+ * @returns {string} Opis bonusu
+ */
+function formatujBonusProfesjiPochodzenia(pochodzenie) {
+  if (!pochodzenie.profesje || pochodzenie.profesje.length === 0) {
+    return 'brak dodatkowej profesji lub języka';
+  }
+  const kategorie = pochodzenie.profesje.join(', ');
+  return pochodzenie.bonus_jezyk_lub_profesja
+    ? `${kategorie} (albo nowy język - wybór w Kroku 4)`
+    : `${kategorie} (gwarantowana)`;
+}
+
+/**
  * Formatuje nazwę cechy specjalnej
  * @param {string} nazwa - Nazwa cechy w formacie snake_case
  * @returns {string} Sformatowana nazwa cechy
@@ -1951,9 +1967,9 @@ function aktualizujPodgladPostaci() {
             <h5>Szczegóły</h5>
             <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
             <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
-            <p><strong>Profesje:</strong> ${pochodzenie.profesje.join(', ')}</p>
+            <p><strong>Profesje:</strong> ${formatujBonusProfesjiPochodzenia(pochodzenie)}</p>
         </div>
-        
+
         ${renderPathBenefitsSummary()}
         
         ${renderProfessionsAndCuriosSummary()}
@@ -2754,8 +2770,7 @@ function renderProfessionsAndCuriosSummary() {
     return curio ? curio.nazwa : id;
   });
 
-  const { autoPismoWszystkieZnane } = obliczSlotyPostaci();
-  const pismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+  const pismo = new Set(pobierzJezykiZPismem());
   const jezyki = pobierzMowioneJezyki().map(k => {
     const nazwa = JEZYKI[k] || k;
     return pismo.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
@@ -2846,28 +2861,64 @@ function profesjeDlaSlotu(slot) {
   });
 }
 
-/** Znane języki (mówione): bazowe z pochodzenia + wyuczone w slotach jezyk_nowy. */
-function pobierzMowioneJezyki() {
+/**
+ * Znane języki (mówione) wraz ze źródłem każdego z nich: bazowe z
+ * pochodzenia + wyuczone w slotach jezyk_nowy.
+ * @returns {Array<{jezyk: string, source: string}>}
+ */
+function pobierzJezykiZeSzczegolami() {
   const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
-  const bazowe = pochodzenie ? [...pochodzenie.jezyki] : [];
-  const nowe = Object.values(odpowiedziSlotow)
-    .filter(odp => odp && odp.mode === 'jezyk_nowy' && odp.jezyk)
-    .map(odp => odp.jezyk);
-  return [...new Set([...bazowe, ...nowe])];
+  const wynik = [];
+  if (pochodzenie) {
+    pochodzenie.jezyki.forEach(j => wynik.push({ jezyk: j, source: `Pochodzenie: ${pochodzenie.nazwa}` }));
+  }
+  const { sloty } = obliczSlotyPostaci();
+  sloty.forEach(slot => {
+    const odp = odpowiedziSlotow[slot.id];
+    if (odp && odp.mode === 'jezyk_nowy' && odp.jezyk && !wynik.some(w => w.jezyk === odp.jezyk)) {
+      wynik.push({ jezyk: odp.jezyk, source: slot.source });
+    }
+  });
+  return wynik;
 }
 
-/** Języki, w których postać umie czytać/pisać (automatyczne u Magika lub wybrane wprost). */
-function pobierzJezykiZPismem(autoPismoWszystkieZnane) {
-  if (autoPismoWszystkieZnane) return pobierzMowioneJezyki();
-  return Object.values(odpowiedziSlotow)
-    .filter(odp => odp && odp.mode === 'jezyk_pismo' && odp.jezyk)
-    .map(odp => odp.jezyk);
+/** Znane języki (mówione), bez informacji o źródle - patrz pobierzJezykiZeSzczegolami(). */
+function pobierzMowioneJezyki() {
+  return pobierzJezykiZeSzczegolami().map(w => w.jezyk);
+}
+
+/**
+ * Języki, w których postać umie czytać/pisać, wraz ze źródłem: automatyczne
+ * (Magik - wszystkie znane; niektóre pochodzenia - konkretny język, patrz
+ * origins.js) lub wybrane wprost w slocie typu jezyk_pismo.
+ * @returns {Array<{jezyk: string, source: string}>}
+ */
+function pobierzPismoZeSzczegolami() {
+  const { autoPismoWszystkieZnane, autoPismoWszystkieZnaneSource, autoPismoZPochodzenia, autoPismoZPochodzeniaSource, sloty } = obliczSlotyPostaci();
+
+  if (autoPismoWszystkieZnane) {
+    return pobierzJezykiZeSzczegolami().map(w => ({ jezyk: w.jezyk, source: autoPismoWszystkieZnaneSource }));
+  }
+
+  const wynik = autoPismoZPochodzenia.map(j => ({ jezyk: j, source: autoPismoZPochodzeniaSource }));
+  sloty.forEach(slot => {
+    const odp = odpowiedziSlotow[slot.id];
+    if (odp && odp.mode === 'jezyk_pismo' && odp.jezyk && !wynik.some(w => w.jezyk === odp.jezyk)) {
+      wynik.push({ jezyk: odp.jezyk, source: slot.source });
+    }
+  });
+  return wynik;
+}
+
+/** Języki z pismem, bez informacji o źródle - patrz pobierzPismoZeSzczegolami(). */
+function pobierzJezykiZPismem() {
+  return pobierzPismoZeSzczegolami().map(w => w.jezyk);
 }
 
 /**
  * Renderuje kartę jednego slotu profesyjno-językowego (wybór trybu + odpowiedni picker).
  */
-function renderSlotCard(slot, autoPismoWszystkieZnane) {
+function renderSlotCard(slot) {
   const odp = odpowiedziSlotow[slot.id] || {};
   const mode = odp.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
 
@@ -2909,7 +2960,7 @@ function renderSlotCard(slot, autoPismoWszystkieZnane) {
     `;
   } else if (mode === 'jezyk_pismo') {
     const mowione = pobierzMowioneJezyki();
-    const juzPismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+    const juzPismo = new Set(pobierzJezykiZPismem());
     const opcjeJ = mowione.filter(k => !juzPismo.has(k) || k === odp.jezyk);
     pickerHtml = `
       <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
@@ -2936,9 +2987,9 @@ function renderProfessionsSection() {
   const container = document.getElementById('professions-slots');
   if (!container) return;
 
-  const { sloty, autoPismoWszystkieZnane } = obliczSlotyPostaci();
+  const { sloty } = obliczSlotyPostaci();
 
-  container.innerHTML = sloty.map(slot => renderSlotCard(slot, autoPismoWszystkieZnane)).join('');
+  container.innerHTML = sloty.map(slot => renderSlotCard(slot)).join('');
 
   container.querySelectorAll('input[type="radio"][name^="mode-"]').forEach(input => {
     input.addEventListener('change', (e) => {
@@ -2955,7 +3006,7 @@ function renderProfessionsSection() {
 
   synchronizujWybraneProfesje();
   updateSelectedProfessions();
-  renderLanguagesSummary(autoPismoWszystkieZnane);
+  renderLanguagesSummary();
   updateStep4NextButton();
 }
 
@@ -2980,22 +3031,42 @@ function synchronizujWybraneProfesje() {
 /**
  * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 4.
  */
-function renderLanguagesSummary(autoPismoWszystkieZnane) {
+/**
+ * Renderuje małą, czerwoną etykietę ze źródłem danego wyboru (np.
+ * "Pochodzenie: Człowiek" albo "Ścieżka: Łotr (poziom 1)").
+ */
+function renderujZnacznikZrodla(source) {
+  return source ? `<span class="source-tag">(${source})</span>` : '';
+}
+
+function renderLanguagesSummary() {
   const summary = document.getElementById('languages-known-summary');
   const list = document.getElementById('language-slots');
   if (!summary || !list) return;
 
-  const mowione = pobierzMowioneJezyki();
-  const pismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+  const { autoPismoWszystkieZnane, autoPismoWszystkieZnaneSource } = obliczSlotyPostaci();
+  const mowioneSzczegoly = pobierzJezykiZeSzczegolami();
+  const pismoWedlugJezyka = new Map(pobierzPismoZeSzczegolami().map(w => [w.jezyk, w.source]));
 
-  summary.innerHTML = mowione.length ? `Znane języki: <strong>${mowione.map(k => JEZYKI[k] || k).join(', ')}</strong>` : 'Brak wybranego pochodzenia.';
+  summary.innerHTML = mowioneSzczegoly.length
+    ? `Znane języki: <strong>${mowioneSzczegoly.map(w => JEZYKI[w.jezyk] || w.jezyk).join(', ')}</strong>`
+    : 'Brak wybranego pochodzenia.';
 
-  list.innerHTML = mowione.map(k => `
-    <div class="language-chip">
-      <span class="language-name">${JEZYKI[k] || k}</span>
-      <span class="language-flags">mówiony${pismo.has(k) ? ' • pismo' : ''}</span>
-    </div>
-  `).join('') + (autoPismoWszystkieZnane ? '<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach.</p>' : '');
+  list.innerHTML = mowioneSzczegoly.map(({ jezyk, source }) => {
+    const pismoSource = pismoWedlugJezyka.get(jezyk);
+    return `
+      <div class="language-chip">
+        <div class="language-chip-row">
+          <span class="language-name">${JEZYKI[jezyk] || jezyk}</span>
+          ${renderujZnacznikZrodla(source)}
+        </div>
+        <div class="language-chip-row">
+          <span class="language-flags">mówiony${pismoSource ? ' • pismo' : ''}</span>
+          ${pismoSource ? renderujZnacznikZrodla(pismoSource) : ''}
+        </div>
+      </div>
+    `;
+  }).join('') + (autoPismoWszystkieZnane ? `<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach ${renderujZnacznikZrodla(autoPismoWszystkieZnaneSource)}.</p>` : '');
 }
 
 /**
@@ -3013,14 +3084,20 @@ function updateSelectedProfessions() {
   const listDiv = document.getElementById('professions-list');
   if (!listDiv) return;
 
-  listDiv.innerHTML = wybraneProfesje.map(id => {
-    const prof = dostepneProfesje.find(p => p.id === id);
-    return prof ? `
+  const { sloty } = obliczSlotyPostaci();
+
+  listDiv.innerHTML = sloty.map(slot => {
+    const odp = odpowiedziSlotow[slot.id];
+    if (!odp || odp.mode !== 'profesja' || !odp.profesjaId) return '';
+    const prof = dostepneProfesje.find(p => p.id === odp.profesjaId);
+    if (!prof) return '';
+    return `
       <div class="selected-item">
-        <button class="remove-btn" data-remove-profession-id="${id}">×</button>
+        <button class="remove-btn" data-remove-profession-id="${prof.id}">×</button>
         <span>${prof.nazwa}</span>
+        ${renderujZnacznikZrodla(slot.source)}
       </div>
-    ` : '';
+    `;
   }).join('');
   listDiv.querySelectorAll('[data-remove-profession-id]').forEach(btn => {
     btn.addEventListener('click', () => removeProfession(btn.dataset.removeProfessionId));
@@ -3145,9 +3222,10 @@ function slotOdpowiedzKompletna(slot) {
 }
 
 /**
- * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze slotów.
+ * Zwraca dostępne wartości dla danego trybu ('profesja'/'jezyk_nowy'/
+ * 'jezyk_pismo') w kontekście danego slotu.
  */
-function opcjeWartosciDlaTrybu(slot, mode, autoPismoWszystkieZnane) {
+function opcjeWartosciDlaTrybu(slot, mode) {
   if (mode === 'profesja') {
     return profesjeDlaSlotu(slot).map(p => p.id);
   }
@@ -3156,14 +3234,17 @@ function opcjeWartosciDlaTrybu(slot, mode, autoPismoWszystkieZnane) {
     return Object.keys(JEZYKI).filter(k => !znane.has(k));
   }
   if (mode === 'jezyk_pismo') {
-    const juzPismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+    const juzPismo = new Set(pobierzJezykiZPismem());
     return pobierzMowioneJezyki().filter(k => !juzPismo.has(k));
   }
   return [];
 }
 
+/**
+ * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze slotów.
+ */
 function losujProfesjeCentralnie() {
-  const { sloty, autoPismoWszystkieZnane } = obliczSlotyPostaci();
+  const { sloty } = obliczSlotyPostaci();
 
   for (const slot of sloty) {
     if (slotOdpowiedzKompletna(slot)) continue;
@@ -3172,7 +3253,7 @@ function losujProfesjeCentralnie() {
     // spróbuj kolejnego, zamiast pomijać slot.
     const tryby = [...slot.opcje].sort(() => Math.random() - 0.5);
     for (const mode of tryby) {
-      const opcje = opcjeWartosciDlaTrybu(slot, mode, autoPismoWszystkieZnane);
+      const opcje = opcjeWartosciDlaTrybu(slot, mode);
       if (opcje.length === 0) continue;
       const pick = opcje[Math.floor(Math.random() * opcje.length)];
       odpowiedziSlotow[slot.id] = mode === 'profesja' ? { mode, profesjaId: pick } : { mode, jezyk: pick };
