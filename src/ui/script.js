@@ -6,6 +6,7 @@ import { budujPostac, obliczKorzysciPoziomu } from './logic/postac.js';
 import { getPathsForLevel } from './logic/sciezki.js';
 import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
 import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
+import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
 import { rollTable } from './data/table_utils.js';
 import DANE_GRY from './data/dane-gry.js';
 
@@ -16,7 +17,8 @@ let dostepnePochodzenia = [];
 let wynikiTabel = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
 let wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
 let przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
-let wybraneProfesje = [];
+let wybraneProfesje = []; // Pochodna odpowiedziSlotow - profesje przypisane do slotów w trybie 'profesja'
+let odpowiedziSlotow = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
 let wybraneKurioza = [];
 let dostepneProfesje = [];
 let dostepneKurioza = [];
@@ -34,17 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Inicjalizuj system pomocy
   initializeHelpSystem();
 
-  // Handlery zwijania/rozwijania list
-  const btnToggleProf = document.getElementById('btn-toggle-professions');
-  const profGrid = document.getElementById('professions-grid');
-  if (btnToggleProf && profGrid) {
-    btnToggleProf.addEventListener('click', () => {
-      const expanded = btnToggleProf.getAttribute('data-expanded') === 'true';
-      btnToggleProf.setAttribute('data-expanded', expanded ? 'false' : 'true');
-      btnToggleProf.textContent = expanded ? 'Rozwiń' : 'Zwiń';
-      profGrid.style.display = expanded ? 'none' : 'grid';
-    });
-  }
+  // Handler zwijania/rozwijania listy kuriozów
   const btnToggleCur = document.getElementById('btn-toggle-curios');
   const curGrid = document.getElementById('curios-grid');
   if (btnToggleCur && curGrid) {
@@ -347,7 +339,7 @@ function renderPathBenefitsList(path, poziomWyboru) {
   const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? `(${  z.tradycja  })` : ''}</li>`).join('');
   const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
-  const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Biegłość:</strong> ${b}</li>`).join('');
+  const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Języki i profesje:</strong> ${b}</li>`).join('');
   const sprz = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
   return `
     <div class="benefit-category"><h5>Korzyści poziomu ${poziomWyboru}</h5>
@@ -1256,6 +1248,7 @@ function resetujStanPoZmianiePochodzenia() {
   wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
   przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
   wybraneProfesje = [];
+  odpowiedziSlotow = {};
   wybraneKurioza = [];
   wylosowaneSrebrniki = null;
   liczbaKuriozow = 0;
@@ -1388,9 +1381,10 @@ function goToStep(stepNumber) {
     if (needMaster && !wybraneSciezki.mistrz) return;
   }
   if (stepNumber === 5) {
-    // Wymagane profesje i kurioza
-    const { profesje, kurioza } = obliczIloscWyborow();
-    if (wybraneProfesje.length < profesje) return;
+    // Wymagane profesje/języki i kurioza
+    const { kurioza } = obliczIloscWyborow();
+    const { sloty } = obliczSlotyPostaci();
+    if (!sloty.every(slot => slotOdpowiedzKompletna(slot))) return;
     if (wybraneKurioza.length < kurioza) return;
   }
   pokazKrok(stepNumber);
@@ -2754,20 +2748,28 @@ function renderProfessionsAndCuriosSummary() {
     const prof = dostepneProfesje.find(p => p.id === id);
     return prof ? prof.nazwa : id;
   });
-  
+
   const curios = wybraneKurioza.map(id => {
     const curio = dostepneKurioza.find(c => c.id === id);
     return curio ? curio.nazwa : id;
   });
-  
-  if (professions.length === 0 && curios.length === 0) {
+
+  const { autoPismoWszystkieZnane } = obliczSlotyPostaci();
+  const pismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+  const jezyki = pobierzMowioneJezyki().map(k => {
+    const nazwa = JEZYKI[k] || k;
+    return pismo.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  });
+
+  if (professions.length === 0 && curios.length === 0 && jezyki.length === 0) {
     return '';
   }
-  
+
   return `
     <div class="preview-section">
-      <h5>Profesje i Kurioza</h5>
+      <h5>Profesje, Języki i Kurioza</h5>
       ${professions.length > 0 ? `<p><strong>Profesje:</strong> ${professions.join(', ')}</p>` : ''}
+      ${jezyki.length > 0 ? `<p><strong>Języki:</strong> ${jezyki.join(', ')}</p>` : ''}
       ${curios.length > 0 ? `<p><strong>Kurioza:</strong> ${curios.join(', ')}</p>` : ''}
     </div>
   `;
@@ -2790,137 +2792,227 @@ async function zaladujProfesjeIKurioza() {
 }
 
 /**
- * Oblicza ilość wyborów profesji i kuriozów na podstawie pochodzenia, poziomu i ścieżek
+ * Oblicza ilość kuriozów do wyboru na podstawie poziomu (progi 1/3/7).
+ * Profesje i języki liczone są przez system slotów - patrz obliczSlotyPostaci().
  */
 function obliczIloscWyborow() {
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
   const poziom = wybranyPoziom;
-  const sciezki = wybraneSciezki;
-  
-  let profesje = 0;
   let kurioza = 0;
-  
-  // Pochodzenie - bazowe profesje i kurioza
-  if (pochodzenie) {
-    profesje += 1; // Każde pochodzenie daje 1 profesję
-    kurioza += 1; // Każde pochodzenie daje 1 kurioza
-  }
-  
-  // Poziom - zgodnie z tabelą "Rozwój" z PG
-  if (poziom >= 1) { profesje += 1; kurioza += 1; }
-  if (poziom >= 3) { profesje += 1; kurioza += 1; }
-  if (poziom >= 7) { profesje += 1; kurioza += 1; }
-  
-  // Ścieżki - bonusy z wybranych ścieżek
-  if (sciezki.nowicjusz) {
-    // Ścieżka nowicjusza może dać bonus do profesji
-    profesje += 0; // Domyślnie bez bonusu, można rozszerzyć
-  }
-  
-  return { profesje, kurioza };
+
+  if (wybranePochodzenie) kurioza += 1; // Każde pochodzenie daje 1 kurioza
+  if (poziom >= 1) kurioza += 1;
+  if (poziom >= 3) kurioza += 1;
+  if (poziom >= 7) kurioza += 1;
+
+  return { kurioza };
 }
 
 /**
- * Renderuje sekcję profesji
+ * Oblicza wszystkie sloty językowo-profesyjne przyznane postaci na podstawie
+ * wybranego pochodzenia i ścieżek (patrz logic/jezyki-profesje.js).
+ */
+function obliczSlotyPostaci() {
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie) || null;
+  return obliczSlotyProfesjiIJezykow({
+    pochodzenie,
+    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
+    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
+    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+  });
+}
+
+/** Etykiety kategorii profesji używane w PROFESSIONS.tables/dostepneProfesje. */
+const ETYKIETY_KATEGORII = {
+  naukowe: 'Naukowe', pospolite: 'Pospolite', przestepcze: 'Przestępcze',
+  wojenne: 'Wojenne', koczownicze: 'Koczownicze', religijne: 'Religijne'
+};
+
+/**
+ * Zwraca profesje z dostepneProfesje dopuszczone przez kategorie slotu,
+ * z wyłączeniem profesji już przypisanych do innych slotów.
+ */
+function profesjeDlaSlotu(slot) {
+  const wszystkie = slot.kategorie.includes('dowolna');
+  const zajete = new Set(
+    Object.entries(odpowiedziSlotow)
+      .filter(([id, odp]) => id !== slot.id && odp && odp.mode === 'profesja' && odp.profesjaId)
+      .map(([, odp]) => odp.profesjaId)
+  );
+  return dostepneProfesje.filter(p => {
+    if (zajete.has(p.id)) return false;
+    if (wszystkie) return true;
+    const kat = Object.keys(ETYKIETY_KATEGORII).find(k => ETYKIETY_KATEGORII[k] === p.kategoria);
+    return slot.kategorie.includes(kat);
+  });
+}
+
+/** Znane języki (mówione): bazowe z pochodzenia + wyuczone w slotach jezyk_nowy. */
+function pobierzMowioneJezyki() {
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const bazowe = pochodzenie ? [...pochodzenie.jezyki] : [];
+  const nowe = Object.values(odpowiedziSlotow)
+    .filter(odp => odp && odp.mode === 'jezyk_nowy' && odp.jezyk)
+    .map(odp => odp.jezyk);
+  return [...new Set([...bazowe, ...nowe])];
+}
+
+/** Języki, w których postać umie czytać/pisać (automatyczne u Magika lub wybrane wprost). */
+function pobierzJezykiZPismem(autoPismoWszystkieZnane) {
+  if (autoPismoWszystkieZnane) return pobierzMowioneJezyki();
+  return Object.values(odpowiedziSlotow)
+    .filter(odp => odp && odp.mode === 'jezyk_pismo' && odp.jezyk)
+    .map(odp => odp.jezyk);
+}
+
+/**
+ * Renderuje kartę jednego slotu profesyjno-językowego (wybór trybu + odpowiedni picker).
+ */
+function renderSlotCard(slot, autoPismoWszystkieZnane) {
+  const odp = odpowiedziSlotow[slot.id] || {};
+  const mode = odp.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+
+  const etykietyTrybow = { profesja: 'Profesja', jezyk_nowy: 'Nowy język', jezyk_pismo: 'Pismo w znanym języku' };
+  const trybyHtml = slot.opcje.length > 1 ? `
+    <div class="slot-mode-toggle" role="radiogroup">
+      ${slot.opcje.map(o => `
+        <label class="slot-mode-option">
+          <input type="radio" name="mode-${slot.id}" value="${o}" ${mode === o ? 'checked' : ''}>
+          ${etykietyTrybow[o]}
+        </label>
+      `).join('')}
+    </div>
+  ` : '';
+
+  let pickerHtml = '';
+  if (mode === 'profesja') {
+    const opcjeProf = profesjeDlaSlotu(slot);
+    const grupy = {};
+    opcjeProf.forEach(p => { (grupy[p.kategoria] = grupy[p.kategoria] || []).push(p); });
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="profesjaId">
+        <option value="">-- wybierz profesję --</option>
+        ${Object.entries(grupy).map(([kat, profs]) => `
+          <optgroup label="${kat}">
+            ${profs.map(p => `<option value="${p.id}" ${odp.profesjaId === p.id ? 'selected' : ''}>${p.nazwa}</option>`).join('')}
+          </optgroup>
+        `).join('')}
+      </select>
+    `;
+  } else if (mode === 'jezyk_nowy') {
+    const znane = new Set(pobierzMowioneJezyki());
+    const opcjeJ = Object.entries(JEZYKI).filter(([klucz]) => !znane.has(klucz) || klucz === odp.jezyk);
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
+        <option value="">-- wybierz język --</option>
+        ${opcjeJ.map(([klucz, nazwa]) => `<option value="${klucz}" ${odp.jezyk === klucz ? 'selected' : ''}>${nazwa}</option>`).join('')}
+      </select>
+    `;
+  } else if (mode === 'jezyk_pismo') {
+    const mowione = pobierzMowioneJezyki();
+    const juzPismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+    const opcjeJ = mowione.filter(k => !juzPismo.has(k) || k === odp.jezyk);
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
+        <option value="">-- wybierz język --</option>
+        ${opcjeJ.map(klucz => `<option value="${klucz}" ${odp.jezyk === klucz ? 'selected' : ''}>${JEZYKI[klucz] || klucz}</option>`).join('')}
+      </select>
+    `;
+  }
+
+  return `
+    <div class="slot-card" data-slot-id="${slot.id}">
+      <div class="slot-source">${slot.source}</div>
+      ${slot.opis ? `<div class="slot-opis">${slot.opis}</div>` : ''}
+      ${trybyHtml}
+      ${pickerHtml}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję profesji (sloty) i sekcję znanych języków w Kroku 4.
  */
 function renderProfessionsSection() {
-  const grid = document.getElementById('professions-grid');
-  const countSpan = document.getElementById('professions-count');
-  const listDiv = document.getElementById('professions-list');
-  
-  if (!grid || !countSpan || !listDiv) return;
-  
-  const { profesje } = obliczIloscWyborow();
-  countSpan.textContent = profesje;
-  
-  // Wyczyść grid
-  grid.innerHTML = '';
-  
-  // Grupuj profesje według kategorii
-  const kategorie = {};
-  dostepneProfesje.forEach(prof => {
-    if (!kategorie[prof.kategoria]) {
-      kategorie[prof.kategoria] = [];
-    }
-    kategorie[prof.kategoria].push(prof);
-  });
-  
-  // Renderuj kafelki
-  Object.entries(kategorie).forEach(([_katId, profs]) => {
-    profs.forEach(prof => {
-      const tile = renderProfessionTile(prof);
-      grid.appendChild(tile);
+  const container = document.getElementById('professions-slots');
+  if (!container) return;
+
+  const { sloty, autoPismoWszystkieZnane } = obliczSlotyPostaci();
+
+  container.innerHTML = sloty.map(slot => renderSlotCard(slot, autoPismoWszystkieZnane)).join('');
+
+  container.querySelectorAll('input[type="radio"][name^="mode-"]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const slotId = e.target.closest('.slot-card').dataset.slotId;
+      ustawSlotOdpowiedz(slotId, { mode: e.target.value, profesjaId: null, jezyk: null });
     });
   });
-  
-  // Aktualizuj listę wybranych
+  container.querySelectorAll('.slot-value-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const { slotId, slotField } = e.target.dataset;
+      ustawSlotOdpowiedz(slotId, { [slotField]: e.target.value || null });
+    });
+  });
+
+  synchronizujWybraneProfesje();
   updateSelectedProfessions();
-}
-
-/**
- * Renderuje kafel profesji
- */
-function renderProfessionTile(profession) {
-  const isSelected = wybraneProfesje.includes(profession.id);
-  const tile = document.createElement('div');
-  tile.className = `profession-tile ${isSelected ? 'selected' : ''}`;
-  tile.dataset.professionId = profession.id;
-  
-  tile.innerHTML = `
-    <div class="tile-category">${profession.kategoria || ''}</div>
-    <div class="tile-title">${profession.nazwa || ''}</div>
-    ${profession.opis ? `<div class="tile-description">${profession.opis}</div>` : ''}
-  `;
-  
-  // Event listenery
-  tile.addEventListener('click', () => toggleProfession(profession.id));
-  
-  return tile;
-}
-
-/**
- * Przełącza wybór profesji
- */
-function toggleProfession(professionId) {
-  const { profesje } = obliczIloscWyborow();
-  
-  if (wybraneProfesje.includes(professionId)) {
-    // Usuń z wybranych
-    wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
-  } else {
-    // Dodaj do wybranych (jeśli nie przekracza limitu)
-    if (wybraneProfesje.length < profesje) {
-      wybraneProfesje.push(professionId);
-    }
-  }
-  
-  renderProfessionsSection();
+  renderLanguagesSummary(autoPismoWszystkieZnane);
   updateStep4NextButton();
 }
 
 /**
- * Losuje profesję
+ * Scala częściową odpowiedź w slot i przerenderowuje sekcję.
  */
-/* eslint-disable-next-line no-unused-vars */
-function _randomizeProfession() {
-  const { profesje } = obliczIloscWyborow();
-  const available = dostepneProfesje.filter(prof => !wybraneProfesje.includes(prof.id));
-  
-  if (available.length > 0 && wybraneProfesje.length < profesje) {
-    const randomProf = available[Math.floor(Math.random() * available.length)];
-    wybraneProfesje.push(randomProf.id);
-    renderProfessionsSection();
-    updateStep4NextButton();
-  }
+function ustawSlotOdpowiedz(slotId, patch) {
+  odpowiedziSlotow[slotId] = { ...odpowiedziSlotow[slotId], ...patch };
+  renderProfessionsSection();
 }
 
 /**
- * Aktualizuje listę wybranych profesji
+ * Odtwarza płaską listę wybranych profesji (do podglądu/eksportu postaci)
+ * na podstawie aktualnych odpowiedzi slotów.
+ */
+function synchronizujWybraneProfesje() {
+  wybraneProfesje = Object.values(odpowiedziSlotow)
+    .filter(odp => odp && odp.mode === 'profesja' && odp.profesjaId)
+    .map(odp => odp.profesjaId);
+}
+
+/**
+ * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 4.
+ */
+function renderLanguagesSummary(autoPismoWszystkieZnane) {
+  const summary = document.getElementById('languages-known-summary');
+  const list = document.getElementById('language-slots');
+  if (!summary || !list) return;
+
+  const mowione = pobierzMowioneJezyki();
+  const pismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+
+  summary.innerHTML = mowione.length ? `Znane języki: <strong>${mowione.map(k => JEZYKI[k] || k).join(', ')}</strong>` : 'Brak wybranego pochodzenia.';
+
+  list.innerHTML = mowione.map(k => `
+    <div class="language-chip">
+      <span class="language-name">${JEZYKI[k] || k}</span>
+      <span class="language-flags">mówiony${pismo.has(k) ? ' • pismo' : ''}</span>
+    </div>
+  `).join('') + (autoPismoWszystkieZnane ? '<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach.</p>' : '');
+}
+
+/**
+ * Losuje odpowiedzi dla wszystkich nierozdanych jeszcze slotów.
+ */
+/* eslint-disable-next-line no-unused-vars */
+function _randomizeProfession() {
+  losujProfesjeCentralnie();
+}
+
+/**
+ * Aktualizuje listę wybranych profesji (pigułki pod slotami)
  */
 function updateSelectedProfessions() {
   const listDiv = document.getElementById('professions-list');
   if (!listDiv) return;
-  
+
   listDiv.innerHTML = wybraneProfesje.map(id => {
     const prof = dostepneProfesje.find(p => p.id === id);
     return prof ? `
@@ -2936,12 +3028,17 @@ function updateSelectedProfessions() {
 }
 
 /**
- * Usuwa profesję z wybranych
+ * Usuwa profesję z wybranych, czyszcząc odpowiedź slotu, do którego była przypisana.
  */
 function removeProfession(professionId) {
-  wybraneProfesje = wybraneProfesje.filter(id => id !== professionId);
+  const slotId = Object.keys(odpowiedziSlotow).find(id => {
+    const odp = odpowiedziSlotow[id];
+    return odp && odp.mode === 'profesja' && odp.profesjaId === professionId;
+  });
+  if (slotId) {
+    odpowiedziSlotow[slotId] = { ...odpowiedziSlotow[slotId], profesjaId: null };
+  }
   renderProfessionsSection();
-  updateStep4NextButton();
 }
 
 /**
@@ -3039,20 +3136,51 @@ function _randomizeCurio() {
 }
 
 /**
- * Losuje profesje zgodnie z aktualnym limitem brakujących wyborów
+ * Sprawdza, czy dany slot profesyjno-językowy ma kompletną odpowiedź.
  */
-function losujProfesjeCentralnie() {
-  const { profesje } = obliczIloscWyborow();
-  const remaining = Math.max(0, profesje - wybraneProfesje.length);
-  if (remaining === 0) return;
-  const available = dostepneProfesje.filter(p => !wybraneProfesje.includes(p.id));
-  for (let i = 0; i < remaining && available.length > 0; i++) {
-    const idx = Math.floor(Math.random() * available.length);
-    const pick = available.splice(idx, 1)[0];
-    wybraneProfesje.push(pick.id);
+function slotOdpowiedzKompletna(slot) {
+  const odp = odpowiedziSlotow[slot.id];
+  if (!odp || !odp.mode) return false;
+  return odp.mode === 'profesja' ? !!odp.profesjaId : !!odp.jezyk;
+}
+
+/**
+ * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze slotów.
+ */
+function opcjeWartosciDlaTrybu(slot, mode, autoPismoWszystkieZnane) {
+  if (mode === 'profesja') {
+    return profesjeDlaSlotu(slot).map(p => p.id);
   }
+  if (mode === 'jezyk_nowy') {
+    const znane = new Set(pobierzMowioneJezyki());
+    return Object.keys(JEZYKI).filter(k => !znane.has(k));
+  }
+  if (mode === 'jezyk_pismo') {
+    const juzPismo = new Set(pobierzJezykiZPismem(autoPismoWszystkieZnane));
+    return pobierzMowioneJezyki().filter(k => !juzPismo.has(k));
+  }
+  return [];
+}
+
+function losujProfesjeCentralnie() {
+  const { sloty, autoPismoWszystkieZnane } = obliczSlotyPostaci();
+
+  for (const slot of sloty) {
+    if (slotOdpowiedzKompletna(slot)) continue;
+    // Wypróbuj tryby w losowej kolejności - jeśli jeden nie ma już dostępnych
+    // wartości (np. pismo, gdy wszystkie znane języki są już opanowane),
+    // spróbuj kolejnego, zamiast pomijać slot.
+    const tryby = [...slot.opcje].sort(() => Math.random() - 0.5);
+    for (const mode of tryby) {
+      const opcje = opcjeWartosciDlaTrybu(slot, mode, autoPismoWszystkieZnane);
+      if (opcje.length === 0) continue;
+      const pick = opcje[Math.floor(Math.random() * opcje.length)];
+      odpowiedziSlotow[slot.id] = mode === 'profesja' ? { mode, profesjaId: pick } : { mode, jezyk: pick };
+      break;
+    }
+  }
+
   renderProfessionsSection();
-  updateStep4NextButton();
 }
 
 /**
@@ -3108,9 +3236,10 @@ function removeCurio(curioId) {
 function updateStep4NextButton() {
   const btn = document.getElementById('btn-next-4');
   if (!btn) return;
-  
-  const { profesje, kurioza } = obliczIloscWyborow();
-  const hasRequiredProfessions = wybraneProfesje.length >= profesje;
+
+  const { kurioza } = obliczIloscWyborow();
+  const { sloty } = obliczSlotyPostaci();
+  const hasRequiredProfessions = sloty.every(slot => slotOdpowiedzKompletna(slot));
   const hasRequiredCurios = wybraneKurioza.length >= kurioza;
 
   btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);

@@ -380,18 +380,27 @@
             <!-- Sekcja Profesji -->
             <div class="professions-section">
                 <div class="flex-row-between">
-                    <h4>💼 Profesje (<span id="professions-count">0</span> do wyboru)</h4>
+                    <h4>💼 Profesje</h4>
                     <div class="list-controls">
-                        <button id="btn-randomize-professions" class="btn-primary small">🎲 Losuj</button>
-                        <button id="btn-toggle-professions" class="btn-secondary small" data-expanded="false">Rozwiń</button>
+                        <button id="btn-randomize-professions" class="btn-primary small">🎲 Losuj pozostałe</button>
                     </div>
                 </div>
-                <div class="professions-grid" id="professions-grid" style="display: none;">
-                    <!-- Kafelki profesji będą generowane przez JavaScript -->
+                <p class="hint">Dostępne profesje i języki zależą od Twojego pochodzenia i wybranych ścieżek. Rozdaj poniższe sloty zgodnie z opisanymi opcjami.</p>
+                <div id="professions-slots" class="slots-container">
+                    <!-- Sloty profesji będą generowane przez JavaScript -->
                 </div>
                 <div class="selected-professions" id="selected-professions">
                     <h5>Wybrane Profesje:</h5>
                     <div id="professions-list"></div>
+                </div>
+            </div>
+
+            <!-- Sekcja Języków -->
+            <div class="languages-section">
+                <h4>🗣️ Języki</h4>
+                <div id="languages-known-summary" class="inline-summary"></div>
+                <div id="language-slots" class="slots-container">
+                    <!-- Sloty językowe będą generowane przez JavaScript -->
                 </div>
             </div>
 
