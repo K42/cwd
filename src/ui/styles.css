@@ -1548,6 +1548,11 @@ kbd {
 }
 
 .slot-source {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
     font-weight: bold;
     color: var(--gold-bright);
     font-size: 13px;
@@ -1582,18 +1587,58 @@ kbd {
     flex-wrap: wrap;
 }
 
-.attribute-choice-option {
+.attribute-stepper {
     display: flex;
     align-items: center;
-    gap: 4px;
-    color: var(--ink);
-    font-weight: normal;
-    cursor: pointer;
+    gap: 6px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
 }
 
-.attribute-choice-option:has(input:disabled) {
+.attribute-stepper-label {
+    color: var(--ink);
+    font-size: 13px;
+    min-width: 60px;
+}
+
+.attribute-stepper-btn {
+    width: 22px;
+    height: 22px;
+    min-height: 0;
+    padding: 0;
+    line-height: 1;
+    font-size: 14px;
+    border-radius: var(--radius);
+}
+
+.attribute-stepper-count {
+    color: var(--gold-bright);
+    font-weight: bold;
+    min-width: 14px;
+    text-align: center;
+}
+
+/* Mały, lokalny przycisk czyszczący wybór jednej sekcji/slotu - używany na
+   wszystkich krokach kreatora (profesje, języki, ścieżki, atrybuty, kurioza). */
+.section-reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
     color: var(--ink-mute);
-    cursor: not-allowed;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 2px 8px;
+    min-height: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.section-reset-btn:hover {
+    color: var(--blood-bright);
+    border-color: var(--blood);
+    background: rgba(139, 30, 30, 0.12);
 }
 
 .slot-value-select {

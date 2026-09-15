@@ -1584,7 +1584,7 @@ const ETYKIETY_ATRYBUTOW = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt:
  */
 function slotAtrybutowKompletny(slot) {
   const wybrane = wybraneAtrybutySlotow[slot.id] || [];
-  return new Set(wybrane).size === slot.ilosc;
+  return wybrane.length === slot.ilosc;
 }
 
 /**
@@ -1623,29 +1623,48 @@ function renderAtrybutySlotySection() {
       const wybrane = wybraneAtrybutySlotow[slot.id] || [];
       const limitOsiagniety = wybrane.length >= slot.ilosc;
       const opcje = slot.dostepne.map(atr => {
-        const zaznaczony = wybrane.includes(atr);
+        const iloscPrzypisana = wybrane.filter(w => w === atr).length;
         return `
-          <label class="attribute-choice-option">
-            <input type="checkbox" data-slot-id="${slot.id}" data-attr="${atr}" ${zaznaczony ? 'checked' : ''} ${(!zaznaczony && limitOsiagniety) ? 'disabled' : ''}>
-            ${ETYKIETY_ATRYBUTOW[atr] || atr}
-          </label>
+          <div class="attribute-stepper" data-slot-id="${slot.id}" data-attr="${atr}">
+            <span class="attribute-stepper-label">${ETYKIETY_ATRYBUTOW[atr] || atr}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="-1" ${iloscPrzypisana === 0 ? 'disabled' : ''}>−</button>
+            <span class="attribute-stepper-count">${iloscPrzypisana}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="1" ${limitOsiagniety ? 'disabled' : ''}>+</button>
+          </div>
         `;
       }).join('');
       return `
         <div class="slot-card" data-slot-id="${slot.id}">
-          <div class="slot-source">${slot.source}</div>
-          <div class="slot-opis">Wybierz ${slot.ilosc} atrybuty(ów) do zwiększenia o ${slot.wartosc} (wybrano ${wybrane.length}/${slot.ilosc})</div>
+          <div class="slot-source">
+            ${slot.source}
+            <button type="button" class="section-reset-btn" data-reset-attribute-slot="${slot.id}" title="Wyczyść wybór dla tej ścieżki">Wyczyść</button>
+          </div>
+          <div class="slot-opis">Rozdaj ${slot.ilosc} punkty(ów) zwiększenia o ${slot.wartosc} - można je łączyć na jednym atrybucie (przypisano ${wybrane.length}/${slot.ilosc})</div>
           <div class="attribute-choice-list">${opcje}</div>
         </div>
       `;
     }).join('');
 
-    container.querySelectorAll('input[type="checkbox"]').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const { slotId, attr } = e.target.dataset;
-        const wybrane = new Set(wybraneAtrybutySlotow[slotId] || []);
-        if (e.target.checked) wybrane.add(attr); else wybrane.delete(attr);
-        wybraneAtrybutySlotow[slotId] = [...wybrane];
+    container.querySelectorAll('.attribute-stepper-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const stepper = e.target.closest('.attribute-stepper');
+        const { slotId, attr } = stepper.dataset;
+        const delta = parseInt(e.target.dataset.delta);
+        const wybrane = [...(wybraneAtrybutySlotow[slotId] || [])];
+        const slot = sloty.find(s => s.id === slotId);
+        if (delta > 0 && wybrane.length < slot.ilosc) {
+          wybrane.push(attr);
+        } else if (delta < 0) {
+          const idx = wybrane.lastIndexOf(attr);
+          if (idx !== -1) wybrane.splice(idx, 1);
+        }
+        wybraneAtrybutySlotow[slotId] = wybrane;
+        renderAtrybutySlotySection();
+      });
+    });
+    container.querySelectorAll('[data-reset-attribute-slot]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        delete wybraneAtrybutySlotow[btn.dataset.resetAttributeSlot];
         renderAtrybutySlotySection();
       });
     });
