@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
   document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
   document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
+  document.getElementById('btn-reset-professions')?.addEventListener('click', resetujWszystkieProfesjeIJezyki);
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
@@ -1593,6 +1594,16 @@ function resetujKurioza() {
   wybraneKurioza = [];
   renderCuriosSection();
   updateStep4NextButton();
+}
+
+/**
+ * Czyści wszystkie sloty profesji i języków (Krok 4), by umożliwić
+ * ponowny wybór od zera - w przeciwieństwie do lokalnego "Wyczyść" na
+ * pojedynczej karcie, ten przycisk resetuje całą sekcję Profesje/Języki.
+ */
+function resetujWszystkieProfesjeIJezyki() {
+  odpowiedziSlotow = {};
+  renderProfessionsSection();
 }
 
 /**
