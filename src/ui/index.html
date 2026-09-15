@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kreator Postaci - Cień Władcy Demonów</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -316,21 +318,30 @@
             <h3>🛤️ Krok 3: Wybór Ścieżek</h3>
             <p>Wybierz ścieżki rozwoju swojej postaci zgodnie z wybranym poziomem. Wszystkie szczegóły widać w kafelkach poniżej.</p>
 
-            <!-- Sekcja ścieżek - kafelki bez popupów/ukrywania -->
-            <div class="path-section">
-                <h4>Ścieżka Nowicjusza (poziom 1)</h4>
+            <!-- Sekcja ścieżek - kafelki w zwijanych sekcjach (akordeon) -->
+            <div class="path-section" id="path-section-1" data-path-level="1">
+                <div class="path-section-header">
+                    <h4>Ścieżka Nowicjusza (poziom 1)</h4>
+                    <span class="path-section-toggle-icon">▾</span>
+                </div>
                 <div id="path-grid-1" class="tiles-container"></div>
                 <div id="path-summary-1" class="inline-summary"></div>
             </div>
 
-            <div class="path-section">
-                <h4>Ścieżka Ekspercka (poziom 3)</h4>
+            <div class="path-section" id="path-section-3" data-path-level="3">
+                <div class="path-section-header">
+                    <h4>Ścieżka Ekspercka (poziom 3)</h4>
+                    <span class="path-section-toggle-icon">▾</span>
+                </div>
                 <div id="path-grid-3" class="tiles-container"></div>
                 <div id="path-summary-3" class="inline-summary"></div>
             </div>
 
-            <div class="path-section">
-                <h4>Ścieżka Mistrzowska (poziom 7)</h4>
+            <div class="path-section" id="path-section-7" data-path-level="7">
+                <div class="path-section-header">
+                    <h4>Ścieżka Mistrzowska (poziom 7)</h4>
+                    <span class="path-section-toggle-icon">▾</span>
+                </div>
                 <div id="path-grid-7" class="tiles-container"></div>
                 <div id="path-summary-7" class="inline-summary"></div>
             </div>

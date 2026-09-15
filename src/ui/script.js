@@ -211,6 +211,7 @@ function inicjalizujPoziomy() {
  */
 async function zaladujSciezkiDoKafelkow() {
   try {
+    inicjalizujAkordeonSciezek();
     renderPathSectionsVisibility();
     await renderPathSection(1);
     await renderPathSection(3);
@@ -222,42 +223,69 @@ async function zaladujSciezkiDoKafelkow() {
   }
 }
 
+/**
+ * Umożliwia ręczne zwijanie/rozwijanie sekcji ścieżek po kliknięciu nagłówka
+ * (np. by wrócić do wcześniej wybranej ścieżki i zmienić decyzję).
+ */
+function inicjalizujAkordeonSciezek() {
+  document.querySelectorAll('.path-section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const sekcja = header.closest('.path-section');
+      if (sekcja) sekcja.classList.toggle('collapsed');
+    });
+  });
+}
+
 function renderPathSectionsVisibility() {
   const can3 = wybranyPoziom >= 3;
   const can7 = wybranyPoziom >= 7;
-  const g1 = document.getElementById('path-grid-1');
-  const s1 = document.getElementById('path-summary-1');
+  const sec1 = document.getElementById('path-section-1');
+  const sec3 = document.getElementById('path-section-3');
+  const sec7 = document.getElementById('path-section-7');
   const g3 = document.getElementById('path-grid-3');
   const s3 = document.getElementById('path-summary-3');
   const g7 = document.getElementById('path-grid-7');
   const s7 = document.getElementById('path-summary-7');
-  
-  // Dla poziomu 0 ukryj wszystkie sekcje ścieżek
-  if (wybranyPoziom === 0) {
-    if (g1) g1.style.display = 'none';
-    if (s1) s1.style.display = 'none';
-    if (g3) g3.style.display = 'none';
-    if (s3) s3.style.display = 'none';
-    if (g7) g7.style.display = 'none';
-    if (s7) s7.style.display = 'none';
-  } else {
-    // Pokaż sekcję nowicjusza dla poziomów > 0
-    if (g1) g1.style.display = 'block';
-    if (s1) s1.style.display = 'block';
 
-    // Sekcje eksperta i mistrza - muszą też wrócić do display:block (były
-    // ukryte przez gałąź poziomu 0 powyżej), dostępność sygnalizuje opacity
-    if (g3) g3.style.display = 'block';
+  // Dla poziomu 0 ukryj wszystkie sekcje ścieżek
+  const poziomZero = wybranyPoziom === 0;
+  if (sec1) sec1.style.display = poziomZero ? 'none' : '';
+  if (sec3) sec3.style.display = poziomZero ? 'none' : '';
+  if (sec7) sec7.style.display = poziomZero ? 'none' : '';
+
+  if (!poziomZero) {
+    // Dostępność sekcji eksperta i mistrza sygnalizuje opacja kafelków
     if (g3) g3.style.opacity = can3 ? '1' : '0.5';
-    if (s3) s3.style.display = 'block';
     if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
-    if (g7) g7.style.display = 'block';
     if (g7) g7.style.opacity = can7 ? '1' : '0.5';
-    if (s7) s7.style.display = 'block';
     if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
   }
-  
+
+  updatePathAccordion();
   updateStep3NextButton();
+}
+
+/**
+ * Rozwija sekcję pierwszej niewybranej dostępnej ścieżki, a zwija pozostałe
+ * dostępne sekcje. Sekcje niedostępne (zablokowane wyższym poziomem) są
+ * domyślnie zwinięte - widoczny zostaje tylko komunikat o odblokowaniu.
+ */
+function updatePathAccordion() {
+  const poziomy = [1, 3, 7];
+  const wybraneMapa = { 1: wybraneSciezki.nowicjusz, 3: wybraneSciezki.ekspert, 7: wybraneSciezki.mistrz };
+  const dostepnePoziomy = poziomy.filter(p => wybranyPoziom >= p);
+  const aktywnyPoziom = dostepnePoziomy.find(p => !wybraneMapa[p]);
+
+  poziomy.forEach(p => {
+    const sekcja = document.getElementById(`path-section-${p}`);
+    if (!sekcja) return;
+    if (!dostepnePoziomy.includes(p)) {
+      // Sekcja niedostępna - poza akordeonem, domyślnie zwinięta
+      sekcja.classList.add('collapsed');
+      return;
+    }
+    sekcja.classList.toggle('collapsed', p !== aktywnyPoziom);
+  });
 }
 
 async function renderPathSection(poziomWyboru) {
@@ -365,6 +393,7 @@ function applyPathBenefits({ poziomWyboru, sciezka }) {
   dodajBenefity(pkt);
   aktualizujPodgladPostaci();
   renderPathSummary(poziomWyboru, sciezka);
+  updatePathAccordion();
   updateStep3NextButton();
 }
 
@@ -1207,9 +1236,14 @@ function wybierzPochodzenie(originId) {
   if (nextButton) {
     nextButton.disabled = false;
   }
-    
+
   // Pokaż komunikat o wyborze
   pokazKomunikatWyboru(originId);
+
+  // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
+  requestAnimationFrame(() => {
+    nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  });
 }
 
 /**
