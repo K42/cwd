@@ -81,6 +81,17 @@ h5 { font-size: 0.9rem; color: var(--gold); }
     margin: 15px 0;
 }
 
+.attribute-swap-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.attribute-swap-row .form-group {
+    margin: 5px 0;
+    min-width: 160px;
+}
+
 label {
     display: block;
     font-weight: bold;
@@ -1563,6 +1574,26 @@ kbd {
     color: var(--gold);
     font-weight: normal;
     cursor: pointer;
+}
+
+.attribute-choice-list {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.attribute-choice-option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink);
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.attribute-choice-option:has(input:disabled) {
+    color: var(--ink-mute);
+    cursor: not-allowed;
 }
 
 .slot-value-select {

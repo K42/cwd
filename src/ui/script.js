@@ -3,7 +3,7 @@
  */
 
 import { budujPostac, obliczKorzysciPoziomu } from './logic/postac.js';
-import { getPathsForLevel } from './logic/sciezki.js';
+import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/sciezki.js';
 import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
 import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
 import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
@@ -19,6 +19,7 @@ let wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
 let przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
 let wybraneProfesje = []; // Pochodna odpowiedziSlotow - profesje przypisane do slotów w trybie 'profesja'
 let odpowiedziSlotow = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
+let wybraneAtrybutySlotow = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
 let wybraneKurioza = [];
 let dostepneProfesje = [];
 let dostepneKurioza = [];
@@ -83,16 +84,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const customDiv = document.getElementById('custom-attributes');
     customDiv.style.display = e.target.checked ? 'none' : 'block';
     if (e.target.checked) {
-      // Użyj domyślnych wartości bazujących na pochodzeniu
+      // Wyczyść zamianę i użyj domyślnych wartości bazujących na pochodzeniu
+      document.getElementById('atrybut-zmniejszony').value = '';
+      document.getElementById('atrybut-zwiekszony').value = '';
       aktualizujDomyślneAtrybuty();
     } else {
       aktualizujObliczoneAtrybuty();
     }
   });
 
-  // Event listeners dla atrybutów
-  ['sila-base', 'zrecznosc-base', 'intelekt-base', 'wola-base'].forEach(id => {
-    document.getElementById(id).addEventListener('input', aktualizujObliczoneAtrybuty);
+  // Jednorazowa zamiana wartości atrybutów (-1/+1)
+  ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
+    document.getElementById(id).addEventListener('change', aktualizujObliczoneAtrybuty);
   });
 });
 
@@ -192,7 +195,7 @@ function inicjalizujPoziomy() {
   const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
   crumbs.forEach(c => {
     c.addEventListener('click', () => {
-      const step = parseInt(c.getAttribute('data-step'));
+      const step = parseFloat(c.getAttribute('data-step'));
       goToStep(step);
     });
   });
@@ -339,11 +342,15 @@ function renderPathBenefitsList(path, poziomWyboru) {
   const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? `(${  z.tradycja  })` : ''}</li>`).join('');
   const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const atrybutyGlowne = pkt.atrybuty_glowne
+    ? `<li><strong>Atrybuty:</strong> Zwiększ ${pkt.atrybuty_glowne.ilosc} dowolne o ${pkt.atrybuty_glowne.wartosc} (Krok 3.5)</li>`
+    : '';
   const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Języki i profesje:</strong> ${b}</li>`).join('');
   const sprz = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
   return `
     <div class="benefit-category"><h5>Korzyści poziomu ${poziomWyboru}</h5>
       <ul class="path-benefits">
+        ${atrybutyGlowne}
         ${talenty}
         ${zaklecia}
         ${modAttr?`<li><strong>Modyfikatory atrybutów:</strong> ${modAttr}</li>`:''}
@@ -1249,6 +1256,7 @@ function resetujStanPoZmianiePochodzenia() {
   przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
   wybraneProfesje = [];
   odpowiedziSlotow = {};
+  wybraneAtrybutySlotow = {};
   wybraneKurioza = [];
   wylosowaneSrebrniki = null;
   liczbaKuriozow = 0;
@@ -1282,6 +1290,10 @@ function resetujStanPoZmianiePochodzenia() {
   if (chkDomyslne) chkDomyslne.checked = true;
   const customDiv = document.getElementById('custom-attributes');
   if (customDiv) customDiv.style.display = 'none';
+  ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
   ['sila-base','zrecznosc-base','intelekt-base','wola-base'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = 10;
@@ -1318,6 +1330,9 @@ function nextStep(currentStep) {
     pokazKrok(3);
     aktualizujPodgladPostaci();
   } else if (currentStep === 3) {
+    pokazKrok(3.5);
+    renderAtrybutySlotySection();
+  } else if (currentStep === 3.5) {
     pokazKrok(4);
     renderProfessionsSection();
     renderCuriosSection();
@@ -1336,8 +1351,10 @@ function prevStep(currentStep) {
     pokazKrok(1);
   } else if (currentStep === 3) {
     pokazKrok(2);
-  } else if (currentStep === 4) {
+  } else if (currentStep === 3.5) {
     pokazKrok(3);
+  } else if (currentStep === 4) {
+    pokazKrok(3.5);
   } else if (currentStep === 5) {
     pokazKrok(4);
   } else if (currentStep === 6) {
@@ -1369,16 +1386,25 @@ function goToStep(stepNumber) {
   if (stepNumber === 3) {
     if (!wybranePochodzenie) return;
   }
-  if (stepNumber === 4) {
+  if (stepNumber === 3.5) {
     // Dla poziomu 0 nie wymagaj żadnych ścieżek
     if (wybranyPoziom === 0) return;
-    
+
     // Wymagane ścieżki zgodnie z poziomem
     const needExpert = wybranyPoziom >= 3;
     const needMaster = wybranyPoziom >= 7;
     if (!wybraneSciezki.nowicjusz) return;
     if (needExpert && !wybraneSciezki.ekspert) return;
     if (needMaster && !wybraneSciezki.mistrz) return;
+  }
+  if (stepNumber === 4) {
+    // Wymagane rozdanie punktów zwiększenia atrybutów (Krok 3.5)
+    const slotyAtr = obliczSlotyAtrybutow({
+      sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
+      sciezkaEksperckaId: wybraneSciezki.ekspert || null,
+      sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+    });
+    if (!slotyAtr.every(slotAtrybutowKompletny)) return;
   }
   if (stepNumber === 5) {
     // Wymagane profesje/języki i kurioza
@@ -1395,6 +1421,9 @@ function goToStep(stepNumber) {
     renderPathSection(7);
     updateStep3NextButton();
   }
+  if (stepNumber === 3.5) {
+    renderAtrybutySlotySection();
+  }
   if (stepNumber === 4) {
     renderProfessionsSection();
     renderCuriosSection();
@@ -1407,7 +1436,7 @@ function goToStep(stepNumber) {
 function updateBreadcrumbs(activeStep) {
   const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
   crumbs.forEach(c => {
-    const step = parseInt(c.getAttribute('data-step'));
+    const step = parseFloat(c.getAttribute('data-step'));
     if (step === activeStep) c.classList.add('active'); else c.classList.remove('active');
   });
 }
@@ -1437,104 +1466,206 @@ function aktualizujPodsumowaniePochodzenia() {
 }
 
 /**
- * Aktualizuje domyślne atrybuty bazujące na pochodzeniu
+ * Oblicza finalne atrybuty główne pochodzenia z uwzględnieniem opcjonalnej
+ * jednorazowej zmiany wartości (PG: "Możesz podnieść jedną z wartości o 1,
+ * jeśli zmniejszysz inną o 1. Wolno ci dokonać takiej zmiany tylko raz.").
+ * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
+ * @param {string} [zmniejszony] - Atrybut obniżony o 1 (sila/zrecznosc/intelekt/wola)
+ * @param {string} [zwiekszony] - Atrybut podniesiony o 1 (musi różnić się od zmniejszony)
+ * @returns {Object} Finalne wartości czterech atrybutów głównych
+ */
+function obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony) {
+  const atrybuty = { ...pochodzenie.atrybuty_bazowe };
+  if (zmniejszony && zwiekszony && zmniejszony !== zwiekszony) {
+    atrybuty[zmniejszony] -= 1;
+    atrybuty[zwiekszony] += 1;
+  }
+  return atrybuty;
+}
+
+/**
+ * Aktualizuje wybory dostępne w selektach zamiany atrybutów, by nie można
+ * było wybrać tego samego atrybutu do obniżenia i podniesienia, oraz
+ * odświeża informację o puli atrybutów.
+ */
+function odswiezSelektySwapuAtrybutow(pochodzenie) {
+  const selZmniejszony = document.getElementById('atrybut-zmniejszony');
+  const selZwiekszony = document.getElementById('atrybut-zwiekszony');
+  const info = document.getElementById('pula-atrybutow-info');
+  if (!selZmniejszony || !selZwiekszony) return;
+
+  const wartoscZmniejszony = selZmniejszony.value;
+  const wartoscZwiekszony = selZwiekszony.value;
+
+  Array.from(selZmniejszony.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === wartoscZwiekszony;
+  });
+  Array.from(selZwiekszony.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === wartoscZmniejszony;
+  });
+
+  if (info && pochodzenie) {
+    const pula = Object.values(pochodzenie.atrybuty_bazowe).reduce((a, b) => a + b, 0);
+    info.textContent = `Pula atrybutów pochodzenia: ${pula} (suma się nie zmienia po zamianie).`;
+  }
+}
+
+/**
+ * Aktualizuje domyślne atrybuty bazujące na pochodzeniu (bez zmiany wartości)
  */
 function aktualizujDomyślneAtrybuty() {
   if (!wybranePochodzenie) return;
-    
+
   const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
   if (!pochodzenie) return;
-    
-  // Domyślne wartości atrybutów bazujące na pochodzeniu
-  // Używamy wartości 10 jako bazę, a następnie stosujemy modyfikatory pochodzenia
-  const atrybutyBazowe = {
-    sila: 10,
-    zrecznosc: 10,
-    intelekt: 10,
-    wola: 10
-  };
-    
-  // Oblicz atrybuty z modyfikatorami pochodzenia
-  const atrybutyFinalne = {
-    sila: atrybutyBazowe.sila + (pochodzenie.atrybuty_bazowe.sila - 10),
-    zrecznosc: atrybutyBazowe.zrecznosc + (pochodzenie.atrybuty_bazowe.zrecznosc - 10),
-    intelekt: atrybutyBazowe.intelekt + (pochodzenie.atrybuty_bazowe.intelekt - 10),
-    wola: atrybutyBazowe.wola + (pochodzenie.atrybuty_bazowe.wola - 10)
-  };
-    
-  // Aktualizuj wyświetlane wartości
+
+  const atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie);
+  wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie);
+}
+
+/**
+ * Aktualizuje obliczone atrybuty na podstawie pochodzenia i (opcjonalnie)
+ * jednorazowej zamiany wartości wybranej w selektach.
+ */
+function aktualizujObliczoneAtrybuty() {
+  if (!wybranePochodzenie) return;
+
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie) return;
+
+  odswiezSelektySwapuAtrybutow(pochodzenie);
+
+  let atrybutyFinalne;
+  if (document.getElementById('domyslne-atrybuty').checked) {
+    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie);
+  } else {
+    const zmniejszony = document.getElementById('atrybut-zmniejszony').value;
+    const zwiekszony = document.getElementById('atrybut-zwiekszony').value;
+    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony);
+  }
+
+  // Zsynchronizuj ukryte pola (odczytywane przez starszy, niezależny
+  // przepływ "Utwórz Postać" w Kroku 5)
+  ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {
+    const input = document.getElementById(`${atr}-base`);
+    if (input) input.value = atrybutyFinalne[atr];
+  });
+
+  wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie);
+}
+
+/**
+ * Wyświetla finalne atrybuty główne i przelicza atrybuty drugorzędne.
+ */
+function wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie) {
   document.getElementById('sila-final').textContent = atrybutyFinalne.sila;
   document.getElementById('zrecznosc-final').textContent = atrybutyFinalne.zrecznosc;
   document.getElementById('intelekt-final').textContent = atrybutyFinalne.intelekt;
   document.getElementById('wola-final').textContent = atrybutyFinalne.wola;
-    
-  // Aktualizuj modyfikatory
-  document.getElementById('sila-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.sila - 10);
-  document.getElementById('zrecznosc-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10);
-  document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10);
-  document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.wola - 10);
-    
-  // Oblicz i wyświetl atrybuty drugorzędne
+
+  // Modyfikator = wartość - 10 (przeciętna wartość atrybutu w PG)
+  document.getElementById('sila-mod').textContent = formatModifier(atrybutyFinalne.sila - 10);
+  document.getElementById('zrecznosc-mod').textContent = formatModifier(atrybutyFinalne.zrecznosc - 10);
+  document.getElementById('intelekt-mod').textContent = formatModifier(atrybutyFinalne.intelekt - 10);
+  document.getElementById('wola-mod').textContent = formatModifier(atrybutyFinalne.wola - 10);
+
   aktualizujAtrybutyDrugorzedne(atrybutyFinalne, pochodzenie);
-  
+
   // Aktywuj przycisk "Dalej" w kroku 2
   document.getElementById('btn-next-2').disabled = false;
 }
 
+/** Etykiety atrybutów głównych używane w Kroku 3.5. */
+const ETYKIETY_ATRYBUTOW = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
+
 /**
- * Aktualizuje obliczone atrybuty na podstawie pochodzenia
+ * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 3.5) ma kompletną
+ * odpowiedź: dokładnie `ilosc` różnych atrybutów wybranych.
  */
-function aktualizujObliczoneAtrybuty() {
-  if (!wybranePochodzenie) return;
-    
+function slotAtrybutowKompletny(slot) {
+  const wybrane = wybraneAtrybutySlotow[slot.id] || [];
+  return new Set(wybrane).size === slot.ilosc;
+}
+
+/**
+ * Oblicza atrybuty główne postaci PRZED uwzględnieniem slotów Kroku 3.5:
+ * pochodzenie + jednorazowa zamiana wartości z Kroku 2.
+ */
+function obliczBazoweAtrybutyPrzedSciezkami() {
   const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
-  if (!pochodzenie) return;
-    
-  let atrybutyBazowe;
-    
-  if (document.getElementById('domyslne-atrybuty').checked) {
-    // Użyj domyślnych wartości (bazujących na pochodzeniu)
-    atrybutyBazowe = {
-      sila: 10,
-      zrecznosc: 10,
-      intelekt: 10,
-      wola: 10
-    };
+  if (!pochodzenie) return null;
+  const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
+  const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
+  return obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony);
+}
+
+/**
+ * Renderuje Krok 3.5: sloty zwiększenia atrybutów przyznane przez wybrane
+ * ścieżki (PG: "Zwiększ dwa/trzy dowolne o 1" przy wyborze ścieżki).
+ * Przelicza i zapisuje finalne atrybuty główne (bazowe + bonusy ze
+ * wszystkich slotów) do #sila-final itd., by kolejne kroki widziały
+ * poprawne wartości.
+ */
+function renderAtrybutySlotySection() {
+  const container = document.getElementById('attribute-slots');
+  if (!container) return;
+
+  const sloty = obliczSlotyAtrybutow({
+    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
+    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
+    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+  });
+
+  if (sloty.length === 0) {
+    container.innerHTML = '<p class="hint">Żadna z wybranych ścieżek nie daje na tym poziomie możliwości zwiększenia atrybutów.</p>';
   } else {
-    // Użyj wartości z formularza
-    atrybutyBazowe = {
-      sila: parseInt(document.getElementById('sila-base').value) || 10,
-      zrecznosc: parseInt(document.getElementById('zrecznosc-base').value) || 10,
-      intelekt: parseInt(document.getElementById('intelekt-base').value) || 10,
-      wola: parseInt(document.getElementById('wola-base').value) || 10
-    };
+    container.innerHTML = sloty.map(slot => {
+      const wybrane = wybraneAtrybutySlotow[slot.id] || [];
+      const limitOsiagniety = wybrane.length >= slot.ilosc;
+      const opcje = slot.dostepne.map(atr => {
+        const zaznaczony = wybrane.includes(atr);
+        return `
+          <label class="attribute-choice-option">
+            <input type="checkbox" data-slot-id="${slot.id}" data-attr="${atr}" ${zaznaczony ? 'checked' : ''} ${(!zaznaczony && limitOsiagniety) ? 'disabled' : ''}>
+            ${ETYKIETY_ATRYBUTOW[atr] || atr}
+          </label>
+        `;
+      }).join('');
+      return `
+        <div class="slot-card" data-slot-id="${slot.id}">
+          <div class="slot-source">${slot.source}</div>
+          <div class="slot-opis">Wybierz ${slot.ilosc} atrybuty(ów) do zwiększenia o ${slot.wartosc} (wybrano ${wybrane.length}/${slot.ilosc})</div>
+          <div class="attribute-choice-list">${opcje}</div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('input[type="checkbox"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const { slotId, attr } = e.target.dataset;
+        const wybrane = new Set(wybraneAtrybutySlotow[slotId] || []);
+        if (e.target.checked) wybrane.add(attr); else wybrane.delete(attr);
+        wybraneAtrybutySlotow[slotId] = [...wybrane];
+        renderAtrybutySlotySection();
+      });
+    });
   }
-    
-  // Oblicz atrybuty z modyfikatorami pochodzenia
-  const atrybutyFinalne = {
-    sila: atrybutyBazowe.sila + (pochodzenie.atrybuty_bazowe.sila - 10),
-    zrecznosc: atrybutyBazowe.zrecznosc + (pochodzenie.atrybuty_bazowe.zrecznosc - 10),
-    intelekt: atrybutyBazowe.intelekt + (pochodzenie.atrybuty_bazowe.intelekt - 10),
-    wola: atrybutyBazowe.wola + (pochodzenie.atrybuty_bazowe.wola - 10)
-  };
-    
-  // Aktualizuj wyświetlane wartości
-  document.getElementById('sila-final').textContent = atrybutyFinalne.sila;
-  document.getElementById('zrecznosc-final').textContent = atrybutyFinalne.zrecznosc;
-  document.getElementById('intelekt-final').textContent = atrybutyFinalne.intelekt;
-  document.getElementById('wola-final').textContent = atrybutyFinalne.wola;
-    
-  // Aktualizuj modyfikatory
-  document.getElementById('sila-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.sila - 10);
-  document.getElementById('zrecznosc-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10);
-  document.getElementById('intelekt-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10);
-  document.getElementById('wola-mod').textContent = formatModifier(pochodzenie.atrybuty_bazowe.wola - 10);
-    
-  // Oblicz i wyświetl atrybuty drugorzędne
-  aktualizujAtrybutyDrugorzedne(atrybutyFinalne, pochodzenie);
-  
-  // Aktywuj przycisk "Dalej" w kroku 2
-  document.getElementById('btn-next-2').disabled = false;
+
+  // Przelicz i zapisz finalne atrybuty główne (bazowe + wszystkie sloty)
+  const bazowe = obliczBazoweAtrybutyPrzedSciezkami();
+  if (bazowe) {
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+    const finalne = { ...bazowe };
+    sloty.forEach(slot => {
+      (wybraneAtrybutySlotow[slot.id] || []).forEach(atr => {
+        finalne[atr] += slot.wartosc;
+      });
+    });
+    wyswietlAtrybutyGlowne(finalne, pochodzenie);
+  }
+
+  const btn = document.getElementById('btn-next-3-5');
+  if (btn) btn.disabled = !sloty.every(slotAtrybutowKompletny);
 }
 
 /**

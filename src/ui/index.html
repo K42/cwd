@@ -25,6 +25,7 @@
         <div class="breadcrumb-item active" data-step="1">1. Pochodzenie</div>
         <div class="breadcrumb-item" data-step="2">2. Poziom i Atrybuty</div>
         <div class="breadcrumb-item" data-step="3">3. Ścieżki</div>
+        <div class="breadcrumb-item" data-step="3.5">3.5 Atrybuty</div>
         <div class="breadcrumb-item" data-step="4">4. Profesje i Kurioza</div>
         <div class="breadcrumb-item" data-step="5">5. Podgląd</div>
         <div class="breadcrumb-item" data-step="6">6. Podsumowanie i Eksport</div>
@@ -228,26 +229,35 @@
         </div>
 
         <div id="custom-attributes" style="display: none;">
-            <h4>Własne wartości atrybutów (przed modyfikatorami pochodzenia):</h4>
-            <h5>Mozesz jeden raz obniżyc wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu. </h5>
-            <div class="attributes-grid">
-                <div>
-                    <label for="sila-base">Siła:</label>
-                    <input type="number" id="sila-base" min="3" max="18" value="10">
+            <h4>Zmiana wartości atrybutów pochodzenia:</h4>
+            <p class="hint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
+            <div class="attribute-swap-row">
+                <div class="form-group">
+                    <label for="atrybut-zmniejszony">Obniż o 1:</label>
+                    <select id="atrybut-zmniejszony">
+                        <option value="">-- brak zmiany --</option>
+                        <option value="sila">Siła</option>
+                        <option value="zrecznosc">Zręczność</option>
+                        <option value="intelekt">Intelekt</option>
+                        <option value="wola">Wola</option>
+                    </select>
                 </div>
-                <div>
-                    <label for="zrecznosc-base">Zręczność:</label>
-                    <input type="number" id="zrecznosc-base" min="3" max="18" value="10">
-                </div>
-                <div>
-                    <label for="intelekt-base">Intelekt:</label>
-                    <input type="number" id="intelekt-base" min="3" max="18" value="10">
-                </div>
-                <div>
-                    <label for="wola-base">Wola:</label>
-                    <input type="number" id="wola-base" min="3" max="18" value="10">
+                <div class="form-group">
+                    <label for="atrybut-zwiekszony">Podnieś o 1:</label>
+                    <select id="atrybut-zwiekszony">
+                        <option value="">-- brak zmiany --</option>
+                        <option value="sila">Siła</option>
+                        <option value="zrecznosc">Zręczność</option>
+                        <option value="intelekt">Intelekt</option>
+                        <option value="wola">Wola</option>
+                    </select>
                 </div>
             </div>
+            <p id="pula-atrybutow-info" class="hint"></p>
+            <input type="hidden" id="sila-base" value="10">
+            <input type="hidden" id="zrecznosc-base" value="10">
+            <input type="hidden" id="intelekt-base" value="10">
+            <input type="hidden" id="wola-base" value="10">
         </div>
 
         <!-- Sekcja zasobów (złoto i kurioza) -->
@@ -365,6 +375,27 @@
                     ← Wstecz
                 </button>
                 <button id="btn-next-3" class="btn-primary" onclick="nextStep(3)" disabled>
+                    Dalej →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 3.5: Rozwój Atrybutów -->
+    <div id="step-3.5" class="step">
+        <div class="section">
+            <h3>💪 Krok 3.5: Rozwój Atrybutów</h3>
+            <p>Niektóre ścieżki przy wyborze pozwalają zwiększyć wartości atrybutów. Rozdaj poniższe punkty zgodnie z opisanymi opcjami.</p>
+
+            <div id="attribute-slots" class="slots-container">
+                <!-- Sloty zwiększenia atrybutów będą generowane przez JavaScript -->
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(3.5)">
+                    ← Wstecz
+                </button>
+                <button id="btn-next-3-5" class="btn-primary" onclick="nextStep(3.5)" disabled>
                     Dalej →
                 </button>
             </div>

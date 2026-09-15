@@ -160,6 +160,7 @@ const PATHS = {
       nazwa: 'Berserker',
       opis: 'Wojownik ogarnięty gniewem, wpadający w berserk podczas walki.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         talenty: ['Berserk', 'Żelazna skóra']
       },
@@ -171,6 +172,7 @@ const PATHS = {
       nazwa: 'Czarnoksiężnik',
       opis: 'Złodziej magii, potrafiący wydzierać zaklęcia z cudzych umysłów.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         moc: '+1',
         jezyki_profesje: {
@@ -189,6 +191,7 @@ const PATHS = {
       nazwa: 'Czarodziej',
       opis: 'Naukowiec wśród magików, gromadzący wiedzę w grymuarach.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         moc: '+1',
         jezyki_profesje: {
@@ -207,6 +210,7 @@ const PATHS = {
       nazwa: 'Czarownik',
       opis: 'Włada niesamowitymi pokładami magicznej energii kosztem ryzyka.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         moc: '+1',
         magia: '1 tradycja lub 1 zaklęcie',
@@ -220,6 +224,7 @@ const PATHS = {
       nazwa: 'Druid',
       opis: 'Zaprzysiężony sługa natury, władający jej pradawnymi tajemnicami.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         moc: '+1',
         jezyki_profesje: {
@@ -238,6 +243,7 @@ const PATHS = {
       nazwa: 'Kapłan',
       opis: 'Religijny lider zapewniający duchowe przewodnictwo.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         moc: '+1',
         jezyki_profesje: {
@@ -256,6 +262,7 @@ const PATHS = {
       nazwa: 'Łowca',
       opis: 'Tropiciel i myśliwy, niezrównany w wyśledzeniu zdobyczy.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+8',
         percepcja: '+1',
         jezyki_profesje: {
@@ -273,6 +280,7 @@ const PATHS = {
       nazwa: 'Paladyn',
       opis: 'Wojownik łączący siłę fizyczną z mocą bożą.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         moc: '+1',
         magia: 'Tradycja religijna lub zaklęcie',
@@ -286,6 +294,7 @@ const PATHS = {
       nazwa: 'Skrytobójca',
       opis: 'Do perfekcji opanował sztukę zabijania z zaskoczenia.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         talenty: ['Wprawna charakteryzacja', 'Dobry refleks']
       },
@@ -316,6 +325,7 @@ const PATHS = {
       nazwa: 'Wynalazca',
       opis: 'Łączy naukę i magię, konstruując mechaniczne osobliwości.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         moc: '+1',
         jezyki_profesje: {
@@ -334,6 +344,7 @@ const PATHS = {
       nazwa: 'Wyrocznia',
       opis: 'Nawiedzona przez nadprzyrodzoną istotę, przemawiającą przez jej ciało.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         moc: '+1',
         jezyki_profesje: {
@@ -351,6 +362,7 @@ const PATHS = {
       nazwa: 'Zaklinacz',
       opis: 'Nasyca oręż magiczną mocą przy użyciu zaklętej broni.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         moc: '+1',
         magia: '1 tradycja lub 1 zaklęcie + zaklęta broń',
@@ -364,6 +376,7 @@ const PATHS = {
       nazwa: 'Zbrojny',
       opis: 'Wszechstronny wojownik, dla którego wszystko jest bronią.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: {
           typ: 'wybor',
@@ -380,6 +393,7 @@ const PATHS = {
       nazwa: 'Złodziej',
       opis: 'Zręczny kieszonkowiec, specjalista od zamków i pułapek.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1',
         zdrowie: '+3',
         jezyki_profesje: {
@@ -397,6 +411,7 @@ const PATHS = {
       nazwa: 'Zwiadowca',
       opis: 'Zbiera informacje dla sojuszników, wyśmienicie tropiąc dziczy.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1',
         zdrowie: '+3',
         predkosc: '+2',
@@ -418,6 +433,7 @@ const PATHS = {
       nazwa: 'Aeromanta',
       opis: 'Wzmacnia więź z dżinnami powietrza, by władać jego mocą.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Powietrza lub zaklęcie',
@@ -430,6 +446,7 @@ const PATHS = {
       nazwa: 'Akrobata',
       opis: 'Rozwija mobilność i szybkość, by wymanewrowywać przeciwników.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', predkosc: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Akrobatyka', 'Mobilność']
@@ -441,6 +458,7 @@ const PATHS = {
       nazwa: 'Astromanta',
       opis: 'Studiuje magię krain niebiańskich, czerpiąc moc ze światła.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Magii Niebiańskiej lub zaklęcie',
@@ -453,6 +471,7 @@ const PATHS = {
       nazwa: 'Bard',
       opis: 'Zdolny artysta, wplatający w muzykę magię Pieśni.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', moc: '+1',
         jezyki_profesje: {
           typ: 'oba',
@@ -469,6 +488,7 @@ const PATHS = {
       nazwa: 'Chronomanta',
       opis: 'Zgłębia arkana magii Czasu, manipulując jego przepływem.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Czasu lub zaklęcie',
@@ -481,6 +501,7 @@ const PATHS = {
       nazwa: 'Cudotwórca',
       opis: 'Wierzy tak silnie, że czynione przez niego cuda przekraczają zwykłe czary.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         talenty: ['Stygmaty', 'Dar języków']
       },
@@ -491,6 +512,7 @@ const PATHS = {
       nazwa: 'Czempion',
       opis: 'Doskonali techniki bitewne, by walczyć w obronie ważnych spraw.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Postawa bojowa', 'Wytrwałość czempiona']
@@ -502,6 +524,7 @@ const PATHS = {
       nazwa: 'Derwisz',
       opis: 'Tańczy po polu bitwy, władając bronią w obu rękach.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Oburęczność', 'Oburęczna obrona']
@@ -513,6 +536,7 @@ const PATHS = {
       nazwa: 'Dyplomata',
       opis: 'Mistrz negocjacji, rozwiązujący konflikty pokojowo.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Mistrz dyplomacji', 'Litość']
@@ -524,6 +548,7 @@ const PATHS = {
       nazwa: 'Egzekutor',
       opis: 'Traktuje zabijanie jak sztukę, znając czułe punkty ofiar.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Egzekucja', 'Wyćwiczony atak']
@@ -535,6 +560,7 @@ const PATHS = {
       nazwa: 'Egzorcysta',
       opis: 'Specjalizuje się w wypędzaniu i niszczeniu demonów oraz duchów.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         magia: 'Zaklęcie egzorcyzm',
@@ -547,6 +573,7 @@ const PATHS = {
       nazwa: 'Fechtmistrz',
       opis: 'Specjalizuje się w pojedynkach jeden na jednego.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Wyzwanie', 'Riposta']
@@ -558,6 +585,7 @@ const PATHS = {
       nazwa: 'Geomanta',
       opis: 'Zacieśnia więź z dżinnami ziemi, zyskując kontrolę nad skałami.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4', moc: '+1',
         magia: 'Tradycja Ziemi lub zaklęcie',
         talenty: ['Kamienna ochrona', 'Przejście przez ziemię']
@@ -569,6 +597,7 @@ const PATHS = {
       nazwa: 'Gladiator',
       opis: 'Mistrz aren, gotowy na wszystko, by przetrwać kolejne starcie.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Nieczysta walka', 'Za wszelką cenę']
@@ -580,6 +609,7 @@ const PATHS = {
       nazwa: 'Goliat',
       opis: 'Poświęca niezliczone godziny budowaniu siły i witalności.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+8',
         talenty: ['Krzepa', 'Potężne muskuły']
       },
@@ -590,6 +620,7 @@ const PATHS = {
       nazwa: 'Hydromanta',
       opis: 'Pogłębia więź z dżinnami wody, wzmacniając zaklęcia Wody.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', moc: '+1',
         magia: 'Tradycja Wody lub zaklęcie',
         talenty: ['Płynność', 'Wprawny pływak']
@@ -601,6 +632,7 @@ const PATHS = {
       nazwa: 'Iluzjonista',
       opis: 'Zaciera granice między prawdą a urojeniem magią Iluzji.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Iluzji lub zaklęcie',
@@ -613,6 +645,7 @@ const PATHS = {
       nazwa: 'Infiltrator',
       opis: 'Dostaje się w najlepiej strzeżone miejsca dzięki charakteryzacji.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['przestepcze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję przestępczą.' },
         talenty: ['Bez twarzy', 'Zdradziecki cios']
@@ -624,6 +657,7 @@ const PATHS = {
       nazwa: 'Inkwizytor',
       opis: 'Tropi splugawienie i wypleniania niegodziwców w imię wiary.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Straszliwa groźba', 'Lustracja']
@@ -635,6 +669,7 @@ const PATHS = {
       nazwa: 'Inżynier',
       opis: 'Zyskuje renomę, konstruując cudowne urządzenia i eidolony.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
         talenty: ['Eidolon', 'Kokpit']
@@ -646,6 +681,7 @@ const PATHS = {
       nazwa: 'Jasnowidz',
       opis: 'Odkrywa przyszłość, widząc i słysząc odległe miejsca.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         obrona: '+1', zdrowie: '+1', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Jasnowidzenia lub zaklęcie',
@@ -658,6 +694,7 @@ const PATHS = {
       nazwa: 'Kapelan',
       opis: 'Zapewnia sojusznikom duchowe przewodnictwo w bitwie.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne', 'religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną lub religijną.' },
         talenty: ['Hymn bitewny', 'Sukurs']
@@ -669,6 +706,7 @@ const PATHS = {
       nazwa: 'Kawalerzysta',
       opis: 'Wykorzystuje przewagę walki z grzbietu wierzchowca.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['pospolite', 'wojenne', 'koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję pospolitą, wojenną lub koczowniczą.' },
         talenty: ['Jeździectwo bojowe', 'Niszczycielska szarża']
@@ -680,6 +718,7 @@ const PATHS = {
       nazwa: 'Klątwiarz',
       opis: 'Napawa się mocą magii Klątw, pozbawiając wrogów sił życiowych.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Klątw lub zaklęcie',
@@ -692,6 +731,7 @@ const PATHS = {
       nazwa: 'Kowal run',
       opis: 'Zdobi broń i zbroję runami nasyconymi magiczną mocą.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Magii Runicznej lub zaklęcie',
@@ -704,6 +744,7 @@ const PATHS = {
       nazwa: 'Leśny duch',
       opis: 'Zaprzysiężony obrońca dziczy, coraz bardziej przypominający rośliny.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.' },
         magia: 'Tradycja Natury lub zaklęcie',
@@ -716,6 +757,7 @@ const PATHS = {
       nazwa: 'Łupieżca',
       opis: 'Rzuca się w bój z szaleńczym ferworem, nie zważając na niebezpieczeństwo.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5', predkosc: '+2',
         talenty: ['Potężna szarża', 'Żądza krwi', 'Siła z bólu']
       },
@@ -726,6 +768,7 @@ const PATHS = {
       nazwa: 'Mag bitewny',
       opis: 'Wspomaga umiejętności bojowe zaklęciami Magii Bitewnej.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         magia: 'Tradycja Magii Bitewnej lub zaklęcie',
@@ -738,6 +781,7 @@ const PATHS = {
       nazwa: 'Mag zagłady',
       opis: 'Zgłębia mroczne tajniki Sztuk Zakazanych, nie zważając na koszt.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', splugawienie: '+1', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Sztuk Zakazanych lub zaklęcie',
@@ -750,6 +794,7 @@ const PATHS = {
       nazwa: 'Magus',
       opis: 'Członek sekretnego zgromadzenia, rozpoznawany po magicznym kosturze.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
         magia: 'Nowa tradycja lub zaklęcie',
@@ -762,6 +807,7 @@ const PATHS = {
       nazwa: 'Mędrzec',
       opis: 'Skupia się na poznawaniu wielu zaklęć kosztem ogólnej Mocy.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: '2 wybory tradycji/zaklęć',
@@ -774,6 +820,7 @@ const PATHS = {
       nazwa: 'Mistrz oręża',
       opis: 'Osiąga prestiżowy status, skupiając szkolenie na jednym rodzaju broni.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Ulubiona broń', 'Specjalizacja w broni']
@@ -785,6 +832,7 @@ const PATHS = {
       nazwa: 'Mistrz Przemian',
       opis: 'Bada płynną naturę wszechrzeczy magią Przemiany.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Przemian lub zaklęcie',
@@ -797,6 +845,7 @@ const PATHS = {
       nazwa: 'Mistrz Sztuk Tajemnych',
       opis: 'Zgłębia magię Sztuk Tajemnych, by wzmacniać własne zaklęcia.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Sztuk Tajemnych lub zaklęcie',
@@ -809,6 +858,7 @@ const PATHS = {
       nazwa: 'Mistrz Uroków',
       opis: 'Do perfekcji opanowuje magię kontrolującą innych jak marionetki.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Uroków lub zaklęcie',
@@ -821,6 +871,7 @@ const PATHS = {
       nazwa: 'Mściciel',
       opis: 'Walczy z niesprawiedliwością, czerpiąc moc z przysiąg zemsty.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Przysięga zemsty', 'Gniew mściciela']
@@ -832,6 +883,7 @@ const PATHS = {
       nazwa: 'Myrmidon',
       opis: 'Specjalizuje się w walce z użyciem tarczy.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Odepchnięcie tarczą', 'Blok tarczą']
@@ -843,6 +895,7 @@ const PATHS = {
       nazwa: 'Negator',
       opis: 'Dąży do mistrzostwa w defensywnej magii Ochrony.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Ochrony lub zaklęcie',
@@ -855,6 +908,7 @@ const PATHS = {
       nazwa: 'Nekromanta',
       opis: 'Zgłębia mroczną sztukę Nekromancji, zyskując władzę nad śmiercią.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+1', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
         magia: 'Tradycja Nekromancji lub zaklęcie',
@@ -867,6 +921,7 @@ const PATHS = {
       nazwa: 'Niszczyciel',
       opis: 'Poskramia ryzykowne czary Zniszczenia, przekierowując ich efekty.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', moc: '+1',
         magia: 'Tradycja Zniszczenia lub zaklęcie',
         talenty: ['Okiełznać zniszczenie', 'Doszczętne zniszczenie']
@@ -878,6 +933,7 @@ const PATHS = {
       nazwa: 'Nożownik',
       opis: 'Mistrz walki na ostrza, zadający precyzyjne, krwawiące rany.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Krwotok', 'Szybkie cięcie']
@@ -889,6 +945,7 @@ const PATHS = {
       nazwa: 'Obrońca',
       opis: 'Chroni sojuszników, przyjmując na siebie ciosy przeznaczone dla innych.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         talenty: ['Asekuracja', 'Cios wyprzedzający', 'Odwet']
       },
@@ -899,6 +956,7 @@ const PATHS = {
       nazwa: 'Odkrywca',
       opis: 'Znosi trudy dalekich podróży, nie bacząc na niebezpieczne ekspedycje.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+3', predkosc: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.' },
         talenty: ['Nadludzkie zmysły', 'Niezłomność', 'Wytchnienie']
@@ -910,6 +968,7 @@ const PATHS = {
       nazwa: 'Pancerniak',
       opis: 'Zakuty w ciężki pancerz, niemal niezniszczalny.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Zakuty w stal', 'Niewzruszony', 'Odporność na broń']
@@ -921,6 +980,7 @@ const PATHS = {
       nazwa: 'Piromanta',
       opis: 'Posiada niezrównaną władzę nad żywiołem ognia.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Ognia lub zaklęcie',
@@ -933,6 +993,7 @@ const PATHS = {
       nazwa: 'Podróżnik',
       opis: 'Opanował magię Teleportacji, przemieszczając się z impetem.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         magia: 'Tradycja Teleportacji lub zaklęcie',
         talenty: ['Pośpieszna ucieczka', 'Daleka podróż']
@@ -944,6 +1005,7 @@ const PATHS = {
       nazwa: 'Przywoływacz',
       opis: 'Tworzy potężniejsze i przerażające potwory magią Przywołań.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Przywołań lub zaklęcie',
@@ -956,6 +1018,7 @@ const PATHS = {
       nazwa: 'Rewolwerowiec',
       opis: 'Ekspert broni palnej, modyfikujący oręż dla większej celności.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Sześciostrzałowiec', 'Sokole oko']
@@ -967,6 +1030,7 @@ const PATHS = {
       nazwa: 'Strzelec wyborowy',
       opis: 'Specjalizuje się w łukach i kuszach, oddając strzał za strzałem z celnością.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Przycelowanie', 'Perfekcyjny strzał']
@@ -978,6 +1042,7 @@ const PATHS = {
       nazwa: 'Szelma',
       opis: 'Zna się po trochu na wszystkim, nie będąc ekspertem w żadnej dziedzinie.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: {
           typ: 'oba',
@@ -993,6 +1058,7 @@ const PATHS = {
       nazwa: 'Taumaturg',
       opis: 'Wita nieprzewidywalną magię Chaosu z otwartymi ramionami.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Chaosu lub zaklęcie',
@@ -1005,6 +1071,7 @@ const PATHS = {
       nazwa: 'Technomanta',
       opis: 'Łączy magię i technologię, budując potężne urządzenia.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Technomancji lub zaklęcie',
@@ -1017,6 +1084,7 @@ const PATHS = {
       nazwa: 'Templariusz',
       opis: 'Strzeże ważnych dla wiary miejsc i przedmiotów przed profanatorami.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         talenty: ['Bastion wiary', 'Strażnik świątyni']
@@ -1028,6 +1096,7 @@ const PATHS = {
       nazwa: 'Tenebrysta',
       opis: 'Przyjmuje wszystkie dary Cienia, mimo złowieszczej reputacji tej magii.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Cienia lub zaklęcie',
@@ -1040,6 +1109,7 @@ const PATHS = {
       nazwa: 'Teurg',
       opis: 'Posiada bezpośrednią więź z Nowym Bogiem, na którego moc się powołuje.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         magia: 'Tradycja Teurgii lub zaklęcie',
@@ -1052,6 +1122,7 @@ const PATHS = {
       nazwa: 'Truciciel',
       opis: 'Wyrabia najbardziej śmiercionośne trucizny, zdolne powalić każdego.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Mistrz trucizn', 'Zatruty dotyk']
@@ -1063,6 +1134,7 @@ const PATHS = {
       nazwa: 'Uzdrowiciel',
       opis: 'Poświęca się bez reszty pomaganiu innym magią Życia.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4', moc: '+1',
         magia: 'Tradycja Życia lub zaklęcie',
         talenty: ['Leczenie na odległość', 'Wzmocnione leczenie', 'Siła życiowa']
@@ -1074,6 +1146,7 @@ const PATHS = {
       nazwa: 'Wartownik',
       opis: 'Wyostrzone zmysły pozwalają mu wykrywać to, co niedostrzegalne.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+5',
         talenty: ['Świadomość otoczenia', 'Warta']
       },
@@ -1084,6 +1157,7 @@ const PATHS = {
       nazwa: 'Władca bestii',
       opis: 'Tworzy więzi z zauroczonymi zwierzętami dzięki Magii Pierwotnej.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.' },
         magia: 'Tradycja Magii Pierwotnej lub zaklęcie',
@@ -1096,6 +1170,7 @@ const PATHS = {
       nazwa: 'Władca burz',
       opis: 'Kontroluje moc nawałnicy, ciskając pioruny i wywołując grzmoty.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Burzy lub zaklęcie',
@@ -1108,6 +1183,7 @@ const PATHS = {
       nazwa: 'Zabijaka',
       opis: 'Preferuje wielką, ciężką broń, zdolną wyrządzać poważne szkody.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         talenty: ['Brutalny zamach', 'Góra trupów']
       },
@@ -1118,6 +1194,7 @@ const PATHS = {
       nazwa: 'Zdobywca',
       opis: 'Urodzony dowódca, kierujący sojusznikami dla taktycznej korzyści.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Rozkaz ataku', 'Manewr taktyczny', 'Dowodzenie bitwą']
@@ -1129,6 +1206,7 @@ const PATHS = {
       nazwa: 'Zelota',
       opis: 'Wędrowny kaznodzieja, odmawiający sobie wygód, by zbliżyć się do bogów.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         talenty: ['Żarliwość', 'Niepohamowany obłęd']
@@ -1140,6 +1218,7 @@ const PATHS = {
       nazwa: 'Zmiennokształtny',
       opis: 'Przybiera potężniejsze formy dzięki znajomości magii Transformacji.',
       poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Transformacji lub zaklęcie',
