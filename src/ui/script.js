@@ -3391,17 +3391,37 @@ function opcjeWartosciDlaTrybu(slot, mode) {
 }
 
 /**
- * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze slotów.
+ * Zwraca kopię tablicy w losowej, jednorodnej kolejności (Fisher-Yates).
+ * `array.sort(() => Math.random() - 0.5)` NIE daje jednorodnego rozkładu -
+ * w większości silników JS faworyzuje pierwszy element, co w praktyce
+ * sprawiało, że losowanie "zawsze" wybierało tryb 'profesja' (bo jest
+ * pierwszy w liście `opcje`).
+ */
+function losowaKolejnosc(array) {
+  const wynik = [...array];
+  for (let i = wynik.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [wynik[i], wynik[j]] = [wynik[j], wynik[i]];
+  }
+  return wynik;
+}
+
+/**
+ * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze
+ * slotów. Jeśli użytkownik już wybrał tryb danego slotu (np. "Nowy język"),
+ * losowanie respektuje ten wybór i dobiera tylko wartość w jego ramach -
+ * nie zmienia trybu na inny. Tryb losuje się jednorodnie tylko dla slotów,
+ * których użytkownik jeszcze w żaden sposób nie dotknął.
  */
 function losujProfesjeCentralnie() {
   const { sloty } = obliczSlotyPostaci();
 
   for (const slot of sloty) {
     if (slotOdpowiedzKompletna(slot)) continue;
-    // Wypróbuj tryby w losowej kolejności - jeśli jeden nie ma już dostępnych
-    // wartości (np. pismo, gdy wszystkie znane języki są już opanowane),
-    // spróbuj kolejnego, zamiast pomijać slot.
-    const tryby = [...slot.opcje].sort(() => Math.random() - 0.5);
+
+    const wybranyTryb = odpowiedziSlotow[slot.id]?.mode;
+    const tryby = wybranyTryb ? [wybranyTryb] : losowaKolejnosc(slot.opcje);
+
     for (const mode of tryby) {
       const opcje = opcjeWartosciDlaTrybu(slot, mode);
       if (opcje.length === 0) continue;
