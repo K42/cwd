@@ -97,6 +97,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
     document.getElementById(id).addEventListener('change', aktualizujObliczoneAtrybuty);
   });
+
+  // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
+  document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetujWyborPochodzenia);
+  document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
+  document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
+  document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
+  document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
+      // nie pozwól, by kliknięcie przycisku Wyczyść też przełączało akordeon.
+      e.stopPropagation();
+      resetujSciezke(btn.dataset.resetSciezka);
+    });
+  });
 });
 
 /**
@@ -1508,6 +1522,77 @@ function odswiezSelektySwapuAtrybutow(pochodzenie) {
     const pula = Object.values(pochodzenie.atrybuty_bazowe).reduce((a, b) => a + b, 0);
     info.textContent = `Pula atrybutów pochodzenia: ${pula} (suma się nie zmienia po zamianie).`;
   }
+}
+
+/**
+ * Czyści wybór pochodzenia (Krok 1) i cały zależny od niego stan
+ * (poziom, ścieżki, profesje/języki, kurioza).
+ */
+function resetujWyborPochodzenia() {
+  resetujStanPoZmianiePochodzenia();
+  wybranePochodzenie = null;
+  document.querySelectorAll('.origin-tile').forEach(tile => tile.classList.remove('selected'));
+  const info = document.getElementById('selected-origin-info');
+  if (info) info.innerHTML = '';
+  const message = document.getElementById('step-1')?.querySelector('.selection-message');
+  if (message) message.remove();
+  const nextButton = document.getElementById('btn-next-1');
+  if (nextButton) nextButton.disabled = true;
+}
+
+/**
+ * Czyści wybór poziomu postaci (Krok 2), wracając do poziomu 0.
+ */
+function resetujPoziom() {
+  const radio0 = document.querySelector('input[name="poziom"][value="0"]');
+  if (radio0) {
+    radio0.checked = true;
+    radio0.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+/**
+ * Czyści jednorazową zamianę wartości atrybutów (Krok 2).
+ */
+function resetujSwapAtrybutow() {
+  const selZmniejszony = document.getElementById('atrybut-zmniejszony');
+  const selZwiekszony = document.getElementById('atrybut-zwiekszony');
+  if (selZmniejszony) selZmniejszony.value = '';
+  if (selZwiekszony) selZwiekszony.value = '';
+  aktualizujObliczoneAtrybuty();
+}
+
+/**
+ * Czyści wybór jednej ścieżki (Krok 3) - nowicjusza, eksperckiej lub
+ * mistrzowskiej - wraz z korzyściami, które ta ścieżka przyznała.
+ * @param {'nowicjusz'|'ekspert'|'mistrz'} tier
+ */
+function resetujSciezke(tier) {
+  const poziomMap = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+  const poziomWyboru = poziomMap[tier];
+  if (!poziomWyboru) return;
+
+  if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
+    odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
+    przyznaneKorzysciZeSciezek[poziomWyboru] = null;
+  }
+  wybraneSciezki[tier] = '';
+
+  const summaryEl = document.getElementById(`path-summary-${poziomWyboru}`);
+  if (summaryEl) summaryEl.innerHTML = '';
+
+  renderPathSectionsVisibility();
+  renderPathSection(poziomWyboru);
+  aktualizujPodgladPostaci();
+}
+
+/**
+ * Czyści wszystkie wybrane kurioza (Krok 4).
+ */
+function resetujKurioza() {
+  wybraneKurioza = [];
+  renderCuriosSection();
+  updateStep4NextButton();
 }
 
 /**
@@ -3122,7 +3207,10 @@ function renderSlotCard(slot) {
 
   return `
     <div class="slot-card" data-slot-id="${slot.id}">
-      <div class="slot-source">${slot.source}</div>
+      <div class="slot-source">
+        ${slot.source}
+        <button type="button" class="section-reset-btn" data-reset-jp-slot="${slot.id}" title="Wyczyść wybór dla tego slotu">Wyczyść</button>
+      </div>
       ${slot.opis ? `<div class="slot-opis">${slot.opis}</div>` : ''}
       ${trybyHtml}
       ${pickerHtml}
@@ -3151,6 +3239,12 @@ function renderProfessionsSection() {
     select.addEventListener('change', (e) => {
       const { slotId, slotField } = e.target.dataset;
       ustawSlotOdpowiedz(slotId, { [slotField]: e.target.value || null });
+    });
+  });
+  container.querySelectorAll('[data-reset-jp-slot]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      delete odpowiedziSlotow[btn.dataset.resetJpSlot];
+      renderProfessionsSection();
     });
   });
 

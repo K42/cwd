@@ -35,7 +35,10 @@
     <div id="step-1" class="step active">
         <div class="section">
             <h3>🎭 Krok 1: Wybór Pochodzenia</h3>
-            <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
+            <div class="flex-row-between">
+                <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
+                <button type="button" class="section-reset-btn" id="btn-reset-pochodzenie" title="Wyczyść wybór pochodzenia">Wyczyść wybór</button>
+            </div>
 
             <div id="pochodzenie-tiles" class="tiles-container">
                 <!-- Kafelki będą generowane przez JavaScript -->
@@ -64,7 +67,10 @@
 
             <!-- Sekcja poziomu postaci (0-10) -->
             <div class="level-section">
-                <h4>Poziom Postaci (0-10)</h4>
+                <div class="flex-row-between">
+                    <h4>Poziom Postaci (0-10)</h4>
+                    <button type="button" class="section-reset-btn" id="btn-reset-poziom" title="Wróć do poziomu 0">Wyczyść wybór</button>
+                </div>
                 <div class="level-selector">
                     <!-- Poziom 0 -->
                     <label class="level-option">
@@ -229,7 +235,10 @@
         </div>
 
         <div id="custom-attributes" style="display: none;">
-            <h4>Zmiana wartości atrybutów pochodzenia:</h4>
+            <div class="flex-row-between">
+                <h4>Zmiana wartości atrybutów pochodzenia:</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-swap" title="Wyczyść zamianę atrybutów">Wyczyść</button>
+            </div>
             <p class="hint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
             <div class="attribute-swap-row">
                 <div class="form-group">
@@ -332,6 +341,7 @@
             <div class="path-section" id="path-section-1" data-path-level="1">
                 <div class="path-section-header">
                     <h4>Ścieżka Nowicjusza (poziom 1)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-sciezka="nowicjusz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-1" class="tiles-container"></div>
@@ -341,6 +351,7 @@
             <div class="path-section" id="path-section-3" data-path-level="3">
                 <div class="path-section-header">
                     <h4>Ścieżka Ekspercka (poziom 3)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-sciezka="ekspert" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-3" class="tiles-container"></div>
@@ -350,6 +361,7 @@
             <div class="path-section" id="path-section-7" data-path-level="7">
                 <div class="path-section-header">
                     <h4>Ścieżka Mistrzowska (poziom 7)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-sciezka="mistrz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-7" class="tiles-container"></div>
@@ -442,6 +454,7 @@
                     <div class="list-controls">
                         <button id="btn-randomize-curios" class="btn-primary small">🎲 Losuj</button>
                         <button id="btn-toggle-curios" class="btn-secondary small" data-expanded="false">Rozwiń</button>
+                        <button type="button" class="section-reset-btn" id="btn-reset-kurioza" title="Wyczyść wybrane kurioza">Wyczyść</button>
                     </div>
                 </div>
                 <div class="curios-grid" id="curios-grid" style="display: none;">

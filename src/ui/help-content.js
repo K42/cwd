@@ -45,14 +45,39 @@ function getStartContent() {
       </ul>
       <p><strong>Atrybuty</strong> możesz ustawić na dwa sposoby:</p>
       <ul>
-        <li><strong>Domyślne</strong> (zalecane) - Automatyczne (10, 10, 10, 10) + modyfikatory pochodzenia</li>
-        <li><strong>Własne</strong> (zaawansowane) - Ustaw wartości 3-18 dla każdego atrybutu</li>
+        <li><strong>Domyślne</strong> (zalecane) - Wartości bazowe wynikające z pochodzenia, bez żadnych zmian</li>
+        <li><strong>Zmiana wartości</strong> (opcjonalna) - Jeden raz możesz obniżyć jeden atrybut o 1 i podnieść inny o 1 (odblokuje się po odznaczeniu "Użyj domyślnych wartości")</li>
       </ul>
     </div>
 
     <div class="help-step">
       <div class="help-step-header">
         <span class="help-step-number">3</span>
+        <h5>Ścieżki i Rozwój Atrybutów</h5>
+      </div>
+      <p>Na poziomach 1, 3 i 7 wybierasz ścieżkę (Krok 3). Niektóre ścieżki dodatkowo pozwalają zwiększyć atrybuty (Krok 3.5):</p>
+      <ul>
+        <li><strong>Ścieżki eksperckie</strong> (poziom 3) dają zawsze 2 punkty, <strong>mistrzowskie</strong> (poziom 7) - 3 punkty</li>
+        <li>Punkty możesz rozłożyć na różne atrybuty albo połączyć na jednym (np. +2 do Siły z jednej ścieżki)</li>
+        <li>Krok 3.5 pojawia się zawsze, ale jeśli żadna wybrana ścieżka nie daje punktów, wystarczy kliknąć "Dalej"</li>
+      </ul>
+    </div>
+
+    <div class="help-step">
+      <div class="help-step-header">
+        <span class="help-step-number">4</span>
+        <h5>Profesje, Języki i Kurioza</h5>
+      </div>
+      <p>W Kroku 4 rozdzielasz sloty przyznane przez pochodzenie i ścieżki - każdy pokazuje w nawiasie, z jakiego wyboru pochodzi (np. "Ścieżka: Łotr (poziom 1)"). Zależnie od slotu możesz wybrać profesję z określonej kategorii, nowy język do mówienia albo pismo w już znanym języku.</p>
+      <ul>
+        <li><strong>🎲 Losuj pozostałe</strong> - losuje tylko nierozdane sloty; jeśli już wybrałeś tryb (np. "Nowy język") bez wskazania wartości, losowanie dobierze wartość w tym trybie, nie zmieni go</li>
+        <li><strong>Wyczyść</strong> - mały przycisk przy każdej karcie/sekcji czyści tylko jej wybór, nie wpływając na resztę</li>
+      </ul>
+    </div>
+
+    <div class="help-step">
+      <div class="help-step-header">
+        <span class="help-step-number">5</span>
         <h5>Podsumowanie i Eksport</h5>
       </div>
       <p>Sprawdź podgląd postaci i zatwierdź:</p>
@@ -235,7 +260,14 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Jak zmienić wybrane pochodzenie?</div>
         <div class="faq-answer">
-          Kliknij przycisk <strong>"← Wstecz"</strong> na dole strony aby wrócić do kroku 1.
+          Kliknij przycisk <strong>"← Wstecz"</strong> na dole strony aby wrócić do kroku 1, albo skorzystaj z małego przycisku <strong>"Wyczyść wybór"</strong> nad kafelkami pochodzenia.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Jak wyczyścić tylko jeden wybór, bez resetowania całej postaci?</div>
+        <div class="faq-answer">
+          Każda sekcja wyboru (pochodzenie, poziom, ścieżka, atrybuty, profesja, język, kurioza) ma własny, mały przycisk <strong>"Wyczyść"</strong> - czyści tylko tę jedną sekcję, nie wpływając na resztę postaci.
         </div>
       </div>
 
@@ -303,7 +335,21 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Jak działa "domyślne atrybuty"?</div>
         <div class="faq-answer">
-          System ustawia bazowe wartości (10, 10, 10, 10) i dodaje modyfikatory z Twojego pochodzenia. To najprostszy sposób dla początkujących.
+          System ustawia atrybuty bazowe Twojego pochodzenia bez żadnych zmian - to najprostszy sposób dla początkujących.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Czy mogę zmienić wartości atrybutów?</div>
+        <div class="faq-answer">
+          Tak, ale tylko raz: odznacz "Użyj domyślnych wartości", a następnie wybierz jeden atrybut do obniżenia o 1 i jeden inny do podniesienia o 1. Suma atrybutów (pula pochodzenia) zawsze zostaje taka sama - nie da się wybrać tego samego atrybutu w obu polach.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Skąd biorą się dodatkowe punkty do atrybutów w Kroku 3.5?</div>
+        <div class="faq-answer">
+          Z wybranych ścieżek: każda ścieżka ekspercka (poziom 3) daje 2 punkty, a każda mistrzowska (poziom 7) - 3 punkty (ścieżki nowicjusza Mag i Wojownik dają 2, Kleryk i Łotr - żadnego). Punkty można rozdzielić na różne atrybuty albo połączyć wszystkie na jednym.
         </div>
       </div>
     </div>
