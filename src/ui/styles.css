@@ -81,6 +81,32 @@ h5 { font-size: 0.9rem; color: var(--gold); }
     margin: 15px 0;
 }
 
+.attribute-mode-toggle {
+    background: var(--bg-2);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 14px 18px;
+}
+
+.attribute-mode-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+    color: var(--gold-bright);
+    font-size: 1.05em;
+    cursor: pointer;
+}
+
+.attribute-mode-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--gold-bright);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
 .attribute-swap-row {
     display: flex;
     gap: 20px;
