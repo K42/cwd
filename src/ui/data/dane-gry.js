@@ -95,7 +95,9 @@ const DANE_GRY = {
      * pozostają jako reprezentatywna wartość średnia, używana wyłącznie do
      * podglądu kafelka pochodzenia przed rzeczywistym utworzeniem postaci.
      * @param {Object} pochodzenie - Dane pochodzenia
-     * @param {Object} wybor_atrybutu - Wybór gracza (+1 do wybranego atrybutu)
+     * @param {string|string[]} wybor_atrybutu - Atrybut(y) wybrane przez gracza jako
+     *   bonus z pochodzenia (np. Człowiek: 1 atrybut, Elf: 2 atrybuty); wartość
+     *   bonusu do każdego brana jest z pochodzenie.wybor_atrybutu.wartosc (domyślnie 1)
      * @returns {Object} Finalne atrybuty postaci
      */
     oblicz_atrybuty_poczatkowe(pochodzenie, wybor_atrybutu) {
@@ -110,10 +112,12 @@ const DANE_GRY = {
         atrybuty = { ...pochodzenie.atrybuty_bazowe };
       }
 
-      // Dodaj wybór gracza (+1 do wybranego atrybutu)
-      if (wybor_atrybutu && atrybuty[wybor_atrybutu]) {
-        atrybuty[wybor_atrybutu] += 1;
-      }
+      // Dodaj wybór gracza (bonus z pochodzenia do wybranego atrybutu/atrybutów)
+      const wartosc = (pochodzenie.wybor_atrybutu && pochodzenie.wybor_atrybutu.wartosc) || 1;
+      const wybraneAtrybuty = Array.isArray(wybor_atrybutu) ? wybor_atrybutu : (wybor_atrybutu ? [wybor_atrybutu] : []);
+      wybraneAtrybuty.forEach(atr => {
+        if (atr && atrybuty[atr] !== undefined) atrybuty[atr] += wartosc;
+      });
 
       return atrybuty;
     },

@@ -10,7 +10,8 @@ import DANE_GRY from '../data/dane-gry.js';
  * Buduje postać na podstawie specyfikacji zgodnie z zasadami z PDF
  * @param {Object} spec - Specyfikacja postaci
  * @param {string} spec.pochodzenie - ID pochodzenia
- * @param {string} [spec.wybor_atrybutu] - Wybór atrybutu (+1 do wybranego atrybutu)
+ * @param {string|string[]} [spec.wybor_atrybutu] - Atrybut(y) wybrane jako bonus
+ *   z pochodzenia (np. Człowiek: 1 atrybut, Elf: 2 atrybuty)
  * @param {string} [spec.sciezka] - ID ścieżki
  * @param {number} [spec.poziom] - Poziom postaci (0-10, domyślnie 0)
  * @returns {Object} Obiekt postaci

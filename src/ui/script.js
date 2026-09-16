@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetujWyborPochodzenia);
   document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
   document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
+  document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
   document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
   document.getElementById('btn-reset-professions')?.addEventListener('click', resetujWszystkieProfesjeIJezyki);
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
@@ -1491,19 +1492,112 @@ function aktualizujPodsumowaniePochodzenia() {
 /**
  * Oblicza finalne atrybuty główne pochodzenia z uwzględnieniem opcjonalnej
  * jednorazowej zmiany wartości (PG: "Możesz podnieść jedną z wartości o 1,
- * jeśli zmniejszysz inną o 1. Wolno ci dokonać takiej zmiany tylko raz.").
+ * jeśli zmniejszysz inną o 1. Wolno ci dokonać takiej zmiany tylko raz.")
+ * oraz bonusu do wybranych atrybutów przyznawanego przez samo pochodzenie
+ * (np. Człowiek: +1 do wybranego atrybutu, Elf: +1 do dwóch wybranych).
  * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
  * @param {string} [zmniejszony] - Atrybut obniżony o 1 (sila/zrecznosc/intelekt/wola)
  * @param {string} [zwiekszony] - Atrybut podniesiony o 1 (musi różnić się od zmniejszony)
+ * @param {string[]} [bonusoweAtrybuty] - Atrybuty wybrane do bonusu z pochodzenia
  * @returns {Object} Finalne wartości czterech atrybutów głównych
  */
-function obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony) {
+function obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtrybuty) {
   const atrybuty = { ...pochodzenie.atrybuty_bazowe };
   if (zmniejszony && zwiekszony && zmniejszony !== zwiekszony) {
     atrybuty[zmniejszony] -= 1;
     atrybuty[zwiekszony] += 1;
   }
+  if (pochodzenie.wybor_atrybutu && bonusoweAtrybuty) {
+    const wartosc = pochodzenie.wybor_atrybutu.wartosc || 1;
+    bonusoweAtrybuty.forEach(atr => {
+      if (atr && atrybuty[atr] !== undefined) atrybuty[atr] += wartosc;
+    });
+  }
   return atrybuty;
+}
+
+/**
+ * Renderuje selecty pozwalające wybrać atrybut(y) bonusowe przyznawane przez
+ * samo pochodzenie (poza jednorazową zamianą wartości). Wywoływane raz przy
+ * wyborze/zmianie pochodzenia - dalsze odczyty wartości korzystają z już
+ * wyrenderowanych selectów (patrz pobierzWybraneAtrybutyBonusowe).
+ * @param {Object} pochodzenie
+ */
+function renderOriginAttributeChoiceSection(pochodzenie) {
+  const sekcja = document.getElementById('origin-attribute-choice-section');
+  const selectyDiv = document.getElementById('origin-attribute-choice-selects');
+  const hint = document.getElementById('origin-attribute-choice-hint');
+  if (!sekcja || !selectyDiv || !hint) return;
+
+  const wybor = pochodzenie && pochodzenie.wybor_atrybutu;
+  if (!wybor) {
+    sekcja.style.display = 'none';
+    selectyDiv.innerHTML = '';
+    return;
+  }
+
+  sekcja.style.display = 'block';
+  hint.textContent = `${pochodzenie.nazwa}: ${wybor.opis}. Wybierz ${wybor.ilosc > 1 ? `${wybor.ilosc} różne atrybuty` : 'atrybut'}.`;
+
+  const ATRYBUTY = [
+    ['sila', 'Siła'], ['zrecznosc', 'Zręczność'], ['intelekt', 'Intelekt'], ['wola', 'Wola']
+  ];
+  const opcjeHtml = (selectId) => `
+    <option value="">-- brak wyboru --</option>
+    ${ATRYBUTY.map(([val, label]) => `<option value="${val}" id="${selectId}-opt-${val}">${label}</option>`).join('')}
+  `;
+
+  selectyDiv.innerHTML = Array.from({ length: wybor.ilosc }, (_, i) => {
+    const selectId = `origin-attr-choice-${i}`;
+    return `
+      <div class="form-group">
+        <label for="${selectId}">Atrybut ${i + 1}:</label>
+        <select id="${selectId}" class="origin-attr-choice-select">${opcjeHtml(selectId)}</select>
+      </div>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.origin-attr-choice-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      odswiezSelektyWyboruAtrybutu();
+      aktualizujObliczoneAtrybuty();
+    });
+  });
+  odswiezSelektyWyboruAtrybutu();
+}
+
+/**
+ * Wyłącza w każdym selectcie wyboru atrybutu bonusowego opcje już wybrane
+ * w innych selectach, by nie dało się wybrać tego samego atrybutu dwa razy.
+ */
+function odswiezSelektyWyboruAtrybutu() {
+  const selekty = Array.from(document.querySelectorAll('.origin-attr-choice-select'));
+  const wybrane = selekty.map(s => s.value).filter(Boolean);
+  selekty.forEach(sel => {
+    Array.from(sel.options).forEach(opt => {
+      opt.disabled = !!opt.value && opt.value !== sel.value && wybrane.includes(opt.value);
+    });
+  });
+}
+
+/**
+ * Odczytuje aktualnie wybrane atrybuty bonusowe z pochodzenia z selectów
+ * wyrenderowanych przez renderOriginAttributeChoiceSection.
+ * @returns {string[]}
+ */
+function pobierzWybraneAtrybutyBonusowe() {
+  return Array.from(document.querySelectorAll('.origin-attr-choice-select'))
+    .map(s => s.value)
+    .filter(Boolean);
+}
+
+/**
+ * Czyści wybór atrybutu(ów) bonusowego z pochodzenia (Krok 2).
+ */
+function resetujWyborAtrybutuPochodzenia() {
+  document.querySelectorAll('.origin-attr-choice-select').forEach(sel => { sel.value = ''; });
+  odswiezSelektyWyboruAtrybutu();
+  aktualizujObliczoneAtrybuty();
 }
 
 /**
@@ -1623,7 +1717,9 @@ function aktualizujDomyślneAtrybuty() {
   const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
   if (!pochodzenie) return;
 
-  const atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie);
+  renderOriginAttributeChoiceSection(pochodzenie);
+
+  const atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, undefined, undefined, pobierzWybraneAtrybutyBonusowe());
   wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie);
 }
 
@@ -1638,14 +1734,15 @@ function aktualizujObliczoneAtrybuty() {
   if (!pochodzenie) return;
 
   odswiezSelektySwapuAtrybutow(pochodzenie);
+  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
 
   let atrybutyFinalne;
   if (document.getElementById('domyslne-atrybuty').checked) {
-    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie);
+    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, undefined, undefined, bonusoweAtrybuty);
   } else {
     const zmniejszony = document.getElementById('atrybut-zmniejszony').value;
     const zwiekszony = document.getElementById('atrybut-zwiekszony').value;
-    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony);
+    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtrybuty);
   }
 
   // Zsynchronizuj ukryte pola (odczytywane przez starszy, niezależny
@@ -2282,6 +2379,11 @@ async function utworzPostac() {
     pochodzenie: wybranePochodzenie,
     sciezka: (sciezkaSelect && sciezkaSelect.value) || undefined
   };
+
+  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
+  if (bonusoweAtrybuty.length > 0) {
+    spec.wybor_atrybutu = bonusoweAtrybuty;
+  }
 
   // Własne atrybuty jeśli nie domyślne
   if (!document.getElementById('domyslne-atrybuty').checked) {

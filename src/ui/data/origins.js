@@ -16,7 +16,8 @@ const ORIGINS = {
       intelekt: 10,
       wola: 10
     },
-    wybor_atrybutu: '+1 do wybranego atrybutu',
+    // PG str. 11: "Wybierz jeden z atrybutów i podnieś go o 1."
+    wybor_atrybutu: { ilosc: 1, wartosc: 1, opis: '+1 do wybranego atrybutu' },
     rozmiar: '1/2 lub 1', // Poprawione zgodnie z PG str. 750
     predkosc: 10,
     jezyki: ['wspólny'],
@@ -233,7 +234,8 @@ const ORIGINS = {
       intelekt: 10,
       wola: 9
     },
-    wybor_atrybutu: '+1 do dwóch wybranych atrybutów',
+    // SP str. 9: "Wybierz dwa atrybuty i podnieś je o 1."
+    wybor_atrybutu: { ilosc: 2, wartosc: 1, opis: '+1 do dwóch wybranych atrybutów' },
     rozmiar: '1',
     predkosc: 12,
     jezyki: ['wspólny', 'wysoki_archaik', 'elficki'],
