@@ -660,14 +660,16 @@ function aktualizujOriginBenefitsContent() {
     <div class="benefit-item">
       <h5>Korzyści z Pochodzenia: ${pochodzenie.nazwa} (Poziom 4)</h5>
       <div class="origin-benefits-details">
+        ${parseInt(benefits.zdrowie.replace('+', '')) > 0 ? `
         <div class="health-bonus">
           <h6>🏥 Bonus do Zdrowia</h6>
           <p><strong>Zdrowie:</strong> +${benefits.zdrowie.replace('+', '')}</p>
         </div>
-        
+        ` : ''}
+
         <div class="options-selection">
           <h6>⚡ Wybierz Opcję</h6>
-          <p>Możesz nauczyć się jednego zaklęcia lub zyskać talent:</p>
+          <p>Wybierz jedną z poniższych opcji:</p>
           <div class="options-list">
             ${benefits.opcje.map(opcja => `
               <label class="option-choice">
@@ -717,6 +719,12 @@ function generujOpisyTalentow(opcje) {
       return `
         <div class="spell-description">
           <strong>1 zaklęcie:</strong> Możesz nauczyć się jednego zaklęcia z dostępnych szkół magii.
+        </div>
+      `;
+    } else if (opcja === 'zwiększenie Zdrowia o 4') {
+      return `
+        <div class="spell-description">
+          <strong>Zwiększenie Zdrowia o 4:</strong> Podnosisz swoje Zdrowie o 4 punkty.
         </div>
       `;
     }

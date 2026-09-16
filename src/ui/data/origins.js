@@ -24,9 +24,6 @@ const ORIGINS = {
     // losową profesję" - to wybór, nie gwarantowana profesja.
     profesje: ['dowolna'],
     bonus_jezyk_lub_profesja: true,
-    cechy_specjalne: {
-      determinacja: 'Gdy wykonujesz test atrybutu, możesz wydać punkt Determinacji aby rzucić dodatkową k20 i wybrać lepszy wynik.'
-    },
     // Korzyści na poziomie 4 (ekspert)
     poziom_4: {
       zdrowie: '+5',
@@ -253,9 +250,12 @@ const ORIGINS = {
       charyzmatyczna_aura: 'Twoja magiczna natura pozwala ci wpływać na to, jak inni cię postrzegają i zachowują się w twojej obecności.',
       wrażliwosc_na_zelazo: 'Jesteś osłabiony, kiedy dotykasz żelaza. Dodatkowo tracisz Ochronę przed magią, dopóki pozostajesz z nim w kontakcie i na 1 minutę po jego przerwaniu.'
     },
+    // SP str. 9: "Możesz nauczyć się jednego zaklęcia lub podnieść Zdrowie o +4."
+    // - to wzajemnie wykluczający się wybór, elf nie ma żadnego automatycznego
+    // bonusu do Zdrowia ani talentu na poziomie 4.
     poziom_4: {
-      zdrowie: '+3',
-      opcje: ['1 zaklęcie', 'talent Kontrolowany szał']
+      zdrowie: '+0',
+      opcje: ['1 zaklęcie', 'zwiększenie Zdrowia o 4']
     },
     strona_zrodlowa: 9,
     status: 'kompletne'
