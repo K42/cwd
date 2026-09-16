@@ -17,7 +17,13 @@ const TALENT_DESCRIPTIONS = {
   'Prymat sobowtóra': 'W trakcie swojej tury możesz użyć Kradzieży tożsamości jako reakcji. Ponadto gdy skradniesz tożsamość jakiejś istoty, to dopóki naśladujesz jej wygląd, wszelkie ataki przeciw niej wykonujesz z 1 ułatwieniem.',
   'Kontrolowany szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.',
   'Boskie uderzenie': 'Możesz użyć akcji, by twoje następne uderzenie zadaje dodatkowe obrażenia równe twojej Woli.',
-  'Barbarzyński szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.'
+  'Barbarzyński szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.',
+  'Boska ekstaza': 'Możesz wykorzystać akcję, by osiągnąć stan boskiej ekstazy, który trwa 1 minutę. W tym czasie zyskujesz +10 Zdrowia, jesteś niewrażliwy na zauroczenie, zniewolenie i przestraszenie, a także nie możesz otrzymywać punktów Szaleństwa.',
+  'Skrytobójstwo': 'Gdy istota zaskoczona lub taka, przed którą jesteś ukryty, otrzymuje obrażenia wskutek twojego ataku, musi wykonać test Siły (z 1 ułatwieniem za każdy Rozmiar, o który jest od ciebie większa). Porażka oznacza, że otrzymuje obrażenia równe swojemu Zdrowiu.',
+  'Wprawna charakteryzacja': 'Jeśli masz zestaw do charakteryzacji, możesz wykorzystać akcję i jedno użycie zestawu, by zmienić swój wygląd.',
+  'Czujność': 'Zyskujesz 1 ułatwienie we wszystkich testach Percepcji. Dodatkowo nie możesz zostać zaskoczony, o ile tylko jesteś przytomny.',
+  'Przednia straż': 'Gdy wykonujesz test, by się ukryć lub skradać, i znajdujesz się dalej niż w bliskim zasięgu od reszty drużyny, zyskujesz 1 ułatwienie.',
+  'Bez śladu': 'Poruszając się po twardym podłożu, nie zostawiasz śladów, jeśli nie chcesz.'
 };
 
 /**

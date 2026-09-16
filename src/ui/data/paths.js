@@ -295,8 +295,9 @@ const PATHS = {
       opis: 'Do perfekcji opanował sztukę zabijania z zaskoczenia.',
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
-        zdrowie: '+3',
-        talenty: ['Wprawna charakteryzacja', 'Dobry refleks']
+        percepcja: '+1', zdrowie: '+3',
+        jezyki_profesje: { typ: 'wybor', kategorie: ['pospolite', 'przestepcze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję pospolitą lub przestępczą.' },
+        talenty: ['Skrytobójstwo', 'Wprawna charakteryzacja', 'Dobry refleks']
       },
       strona_zrodlowa: 72
     },
@@ -352,7 +353,8 @@ const PATHS = {
           kategorie: ['dowolna'],
           opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.'
         },
-        talenty: ['Nawiedzenie']
+        magia: 'Poznajesz jedną z tradycji związanych z twoją religią lub uczysz się jednego zaklęcia.',
+        talenty: ['Boska ekstaza']
       },
       strona_zrodlowa: 75
     },
@@ -365,8 +367,8 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 2, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         moc: '+1',
-        magia: '1 tradycja lub 1 zaklęcie + zaklęta broń',
-        talenty: ['Zaklęta broń']
+        magia: 'Poznajesz nową tradycję lub uczysz się jednego zaklęcia. Dodatkowo uczysz się zaklęcia zaklęta broń.',
+        talenty: []
       },
       strona_zrodlowa: 76
     },
@@ -420,7 +422,7 @@ const PATHS = {
           kategorie: ['koczownicze'],
           opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.'
         },
-        talenty: ['Czujność']
+        talenty: ['Czujność', 'Przednia straż', 'Dobry refleks', 'Bez śladu']
       },
       strona_zrodlowa: 79
     }
@@ -437,7 +439,7 @@ const PATHS = {
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Powietrza lub zaklęcie',
-        talenty: ['Powietrzny krok', 'Lot']
+        talenty: ['Powietrzny krok']
       },
       strona_zrodlowa: 82
     },
@@ -449,7 +451,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', predkosc: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Akrobatyka', 'Mobilność']
+        talenty: ['Akrobatyka']
       },
       strona_zrodlowa: 82
     },
@@ -479,7 +481,7 @@ const PATHS = {
           opis: 'Uczysz się mówić nowym językiem i zyskujesz profesję muzyka lub artysty rozrywkowego.'
         },
         magia: 'Tradycja Pieśni lub zaklęcie',
-        talenty: ['Wiedza ezoteryczna', 'Przyśpiewka']
+        talenty: ['Wiedza ezoteryczna']
       },
       strona_zrodlowa: 83
     },
@@ -492,7 +494,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Czasu lub zaklęcie',
-        talenty: ['Pęd', 'Prekognicja']
+        talenty: ['Pęd']
       },
       strona_zrodlowa: 84
     },
@@ -515,7 +517,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Postawa bojowa', 'Wytrwałość czempiona']
+        talenty: ['Postawa bojowa']
       },
       strona_zrodlowa: 85
     },
@@ -551,7 +553,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Egzekucja', 'Wyćwiczony atak']
+        talenty: ['Egzekucja']
       },
       strona_zrodlowa: 85
     },
@@ -564,7 +566,7 @@ const PATHS = {
         zdrowie: '+4', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         magia: 'Zaklęcie egzorcyzm',
-        talenty: ['Magia egzorcysty', 'Żelazna wola']
+        talenty: ['Magia egzorcysty']
       },
       strona_zrodlowa: 86
     },
@@ -588,7 +590,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4', moc: '+1',
         magia: 'Tradycja Ziemi lub zaklęcie',
-        talenty: ['Kamienna ochrona', 'Przejście przez ziemię']
+        talenty: ['Kamienna ochrona']
       },
       strona_zrodlowa: 86
     },
@@ -611,7 +613,7 @@ const PATHS = {
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+8',
-        talenty: ['Krzepa', 'Potężne muskuły']
+        talenty: ['Krzepa']
       },
       strona_zrodlowa: 87
     },
@@ -636,7 +638,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Iluzji lub zaklęcie',
-        talenty: ['Wiarygodne iluzje', 'Iluzoryczny duplikat']
+        talenty: ['Wiarygodne iluzje']
       },
       strona_zrodlowa: 88
     },
@@ -648,7 +650,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['przestepcze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję przestępczą.' },
-        talenty: ['Bez twarzy', 'Zdradziecki cios']
+        talenty: ['Bez twarzy']
       },
       strona_zrodlowa: 88
     },
@@ -660,7 +662,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Straszliwa groźba', 'Lustracja']
+        talenty: ['Straszliwa groźba', 'Mistrz tortur', 'Lustracja']
       },
       strona_zrodlowa: 88
     },
@@ -672,7 +674,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
-        talenty: ['Eidolon', 'Kokpit']
+        talenty: ['Eidolon']
       },
       strona_zrodlowa: 89
     },
@@ -685,7 +687,7 @@ const PATHS = {
         obrona: '+1', zdrowie: '+1', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Jasnowidzenia lub zaklęcie',
-        talenty: ['Omeny', 'Przeczucie']
+        talenty: ['Omeny']
       },
       strona_zrodlowa: 89
     },
@@ -697,7 +699,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne', 'religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną lub religijną.' },
-        talenty: ['Hymn bitewny', 'Sukurs']
+        talenty: ['Hymn bitewny']
       },
       strona_zrodlowa: 90
     },
@@ -709,7 +711,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['pospolite', 'wojenne', 'koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję pospolitą, wojenną lub koczowniczą.' },
-        talenty: ['Jeździectwo bojowe', 'Niszczycielska szarża']
+        talenty: ['Jeździectwo bojowe']
       },
       strona_zrodlowa: 90
     },
@@ -722,7 +724,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Klątw lub zaklęcie',
-        talenty: ['Złe oko', 'Okrutna klątwa']
+        talenty: ['Złe oko']
       },
       strona_zrodlowa: 90
     },
@@ -735,7 +737,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Magii Runicznej lub zaklęcie',
-        talenty: ['Pieczęcie mocy', 'Potężne pieczęcie']
+        talenty: ['Pieczęcie mocy']
       },
       strona_zrodlowa: 90
     },
@@ -759,7 +761,7 @@ const PATHS = {
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5', predkosc: '+2',
-        talenty: ['Potężna szarża', 'Żądza krwi', 'Siła z bólu']
+        talenty: ['Potężna szarża']
       },
       strona_zrodlowa: 91
     },
@@ -772,7 +774,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         magia: 'Tradycja Magii Bitewnej lub zaklęcie',
-        talenty: ['Eskalacja przemocy', 'Magia i miecz']
+        talenty: ['Eskalacja przemocy']
       },
       strona_zrodlowa: 91
     },
@@ -785,7 +787,7 @@ const PATHS = {
         zdrowie: '+2', splugawienie: '+1', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Sztuk Zakazanych lub zaklęcie',
-        talenty: ['Przerażające gesty', 'Rychła zguba']
+        talenty: ['Przerażające gesty']
       },
       strona_zrodlowa: 92
     },
@@ -798,7 +800,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
         magia: 'Nowa tradycja lub zaklęcie',
-        talenty: ['Magiczny kostur', 'Kostur mocy']
+        talenty: ['Magiczny kostur']
       },
       strona_zrodlowa: 92
     },
@@ -823,7 +825,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Ulubiona broń', 'Specjalizacja w broni']
+        talenty: ['Ulubiona broń']
       },
       strona_zrodlowa: 92
     },
@@ -849,7 +851,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Sztuk Tajemnych lub zaklęcie',
-        talenty: ['Mistrzostwo w Sztukach Tajemnych', 'Odzyskanie czaru']
+        talenty: ['Mistrzostwo w Sztukach Tajemnych']
       },
       strona_zrodlowa: 93
     },
@@ -874,7 +876,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Przysięga zemsty', 'Gniew mściciela']
+        talenty: ['Przysięga zemsty']
       },
       strona_zrodlowa: 94
     },
@@ -899,7 +901,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Ochrony lub zaklęcie',
-        talenty: ['Magiczna protekcja', 'Bariera']
+        talenty: ['Magiczna protekcja']
       },
       strona_zrodlowa: 94
     },
@@ -924,7 +926,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3', moc: '+1',
         magia: 'Tradycja Zniszczenia lub zaklęcie',
-        talenty: ['Okiełznać zniszczenie', 'Doszczętne zniszczenie']
+        talenty: ['Okiełznać zniszczenie']
       },
       strona_zrodlowa: 95
     },
@@ -936,7 +938,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Krwotok', 'Szybkie cięcie']
+        talenty: ['Krwotok']
       },
       strona_zrodlowa: 95
     },
@@ -947,7 +949,7 @@ const PATHS = {
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
-        talenty: ['Asekuracja', 'Cios wyprzedzający', 'Odwet']
+        talenty: ['Asekuracja']
       },
       strona_zrodlowa: 95
     },
@@ -971,7 +973,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
-        talenty: ['Zakuty w stal', 'Niewzruszony', 'Odporność na broń']
+        talenty: ['Zakuty w stal', 'Niewzruszony']
       },
       strona_zrodlowa: 96
     },
@@ -984,7 +986,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Ognia lub zaklęcie',
-        talenty: ['Błogosławieństwo ognia', 'Zapalające płomienie']
+        talenty: ['Błogosławieństwo ognia']
       },
       strona_zrodlowa: 96
     },
@@ -996,7 +998,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         magia: 'Tradycja Teleportacji lub zaklęcie',
-        talenty: ['Pośpieszna ucieczka', 'Daleka podróż']
+        talenty: ['Pośpieszna ucieczka']
       },
       strona_zrodlowa: 96
     },
@@ -1009,7 +1011,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Przywołań lub zaklęcie',
-        talenty: ['Przywołanie drobnego potwora', 'Potężne wynaturzenia']
+        talenty: ['Przywołanie drobnego potwora', 'Przerażające wynaturzenia']
       },
       strona_zrodlowa: 97
     },
@@ -1021,7 +1023,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Sześciostrzałowiec', 'Sokole oko']
+        talenty: ['Sześciostrzałowiec']
       },
       strona_zrodlowa: 97
     },
@@ -1033,7 +1035,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Przycelowanie', 'Perfekcyjny strzał']
+        talenty: ['Przycelowanie']
       },
       strona_zrodlowa: 97
     },
@@ -1062,7 +1064,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Chaosu lub zaklęcie',
-        talenty: ['Okiełznanie chaosu', 'Płynna magia']
+        talenty: ['Okiełznanie chaosu']
       },
       strona_zrodlowa: 98
     },
@@ -1075,7 +1077,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Technomancji lub zaklęcie',
-        talenty: ['Wynalazek', 'Ożywienie obiektu']
+        talenty: ['Wynalazek']
       },
       strona_zrodlowa: 98
     },
@@ -1087,7 +1089,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
-        talenty: ['Bastion wiary', 'Strażnik świątyni']
+        talenty: ['Bastion wiary']
       },
       strona_zrodlowa: 99
     },
@@ -1100,7 +1102,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Cienia lub zaklęcie',
-        talenty: ['Cienisty płaszcz', 'Cienista postać']
+        talenty: ['Cienisty płaszcz']
       },
       strona_zrodlowa: 99
     },
@@ -1113,7 +1115,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         magia: 'Tradycja Teurgii lub zaklęcie',
-        talenty: ['Rozkwit wiary', 'Inwokacja']
+        talenty: ['Rozkwit wiary']
       },
       strona_zrodlowa: 99
     },
@@ -1125,7 +1127,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
-        talenty: ['Mistrz trucizn', 'Zatruty dotyk']
+        talenty: ['Mistrz trucizn']
       },
       strona_zrodlowa: 100
     },
@@ -1137,7 +1139,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+4', moc: '+1',
         magia: 'Tradycja Życia lub zaklęcie',
-        talenty: ['Leczenie na odległość', 'Wzmocnione leczenie', 'Siła życiowa']
+        talenty: ['Leczenie na odległość']
       },
       strona_zrodlowa: 100
     },
@@ -1148,7 +1150,7 @@ const PATHS = {
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+5',
-        talenty: ['Świadomość otoczenia', 'Warta']
+        talenty: ['Świadomość otoczenia']
       },
       strona_zrodlowa: 100
     },
@@ -1161,7 +1163,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.' },
         magia: 'Tradycja Magii Pierwotnej lub zaklęcie',
-        talenty: ['Pierwotna bestia', 'Pierwotna więź', 'Pierwotna potęga']
+        talenty: ['Pierwotna bestia', 'Pierwotna więź']
       },
       strona_zrodlowa: 101
     },
@@ -1174,7 +1176,7 @@ const PATHS = {
         zdrowie: '+2', predkosc: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Burzy lub zaklęcie',
-        talenty: ['Błysk przed oczami', 'Siła nawałnicy']
+        talenty: ['Błysk przed oczami']
       },
       strona_zrodlowa: 101
     },
@@ -1185,7 +1187,7 @@ const PATHS = {
       poziom_1: {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
-        talenty: ['Brutalny zamach', 'Góra trupów']
+        talenty: ['Brutalny zamach']
       },
       strona_zrodlowa: 101
     },
@@ -1197,7 +1199,7 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
-        talenty: ['Rozkaz ataku', 'Manewr taktyczny', 'Dowodzenie bitwą']
+        talenty: ['Rozkaz ataku', 'Manewr taktyczny']
       },
       strona_zrodlowa: 101
     },
@@ -1222,7 +1224,7 @@ const PATHS = {
         zdrowie: '+2', moc: '+1',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         magia: 'Tradycja Transformacji lub zaklęcie',
-        talenty: ['Ulepszona transformacja', 'Przyspieszenie transformacji']
+        talenty: ['Ulepszona transformacja']
       },
       strona_zrodlowa: 102
     }
