@@ -607,7 +607,7 @@ function aktualizujWealthSection(poziom) {
   const sec = document.getElementById('wealth-section');
   if (!sec) return;
   sec.style.display = poziom > 0 ? 'block' : 'none';
-  liczbaKuriozow = (poziom >= 1 ? 1 : 0) + (poziom >= 3 ? 1 : 0) + (poziom >= 7 ? 1 : 0);
+  liczbaKuriozow = obliczIloscWyborow().kurioza;
   const curiosSpan = document.getElementById('curios-summary');
   if (curiosSpan) curiosSpan.textContent = `Kurioza: ${liczbaKuriozow}`;
   const wealthSpan = document.getElementById('wealth-summary');
