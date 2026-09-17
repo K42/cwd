@@ -173,6 +173,7 @@ function pobierzZakleciaDoNauki({ znaneTradycje, moc, tradycjaOgraniczenie }) {
 function obliczRozwiazanieMagii(atomy, wybory) {
   const znaneTradycje = new Set();
   const rozwiazania = [];
+  let liczbaZnanychCzarnychZaklec = 0;
 
   for (const atom of atomy) {
     const wybor = wybory[atom.id] || {};
@@ -196,10 +197,31 @@ function obliczRozwiazanieMagii(atomy, wybory) {
       spellId = mode === 'zaklecie' ? (wybor.spellId || null) : null;
     }
 
-    if (mode === 'tradycja' && tradycjaId) znaneTradycje.add(tradycjaId);
+    if (mode === 'tradycja' && tradycjaId) {
+      znaneTradycje.add(tradycjaId);
+      // Poznanie tradycji przyznaje automatycznie jedno jej zaklęcie kręgu 0
+      // ("Poznawanie tradycji") - jeśli to tradycja czarnej magii, to darmowe
+      // zaklęcie liczy się już jako "znane zaklęcie czarnej magii" na potrzeby
+      // ryzyka splugawienia przy nauce KOLEJNYCH zaklęć z tej tradycji.
+      if (czyCzarnaMagia(tradycjaId)) liczbaZnanychCzarnychZaklec++;
+    }
 
     const kompletny = mode === 'tradycja' ? !!tradycjaId : (mode === 'zaklecie' ? !!spellId : false);
-    rozwiazania.push({ atom, mode, tradycjaId, spellId, kompletny });
+
+    // Ryzyko splugawienia dotyczy tylko zaklęć czarnej magii nauczonych
+    // jako "kolejne zaklęcie" (mode 'zaklecie') - nie darmowego zaklęcia
+    // kręgu 0 przyznanego automatycznie przy poznaniu samej tradycji
+    // (to już naliczone powyżej, jednorazowo, przy poznaniu tradycji).
+    let czarnaMagiaRyzyko = null;
+    if (mode === 'zaklecie' && spellId) {
+      const spell = SPELLS.find(s => s.id === spellId);
+      if (spell && czyCzarnaMagia(spell.tradycja)) {
+        czarnaMagiaRyzyko = { liczbaZnanychPrzed: liczbaZnanychCzarnychZaklec };
+        liczbaZnanychCzarnychZaklec++;
+      }
+    }
+
+    rozwiazania.push({ atom, mode, tradycjaId, spellId, kompletny, czarnaMagiaRyzyko });
   }
 
   return { rozwiazania, znaneTradycje };

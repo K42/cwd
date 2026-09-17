@@ -24,7 +24,9 @@ let wybraneProfesje = []; // Pochodna odpowiedziSlotow - profesje przypisane do 
 let odpowiedziSlotow = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
 let wybraneAtrybutySlotow = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
 let wybraneKurioza = [];
-let wybraneZaklecia = []; // Tablica id-ów zaklęć wybranych w Kroku 4.5 (opcjonalny)
+let magiaWybory = {}; // atomId (ze slotu magii) -> { mode: 'tradycja'|'zaklecie', tradycjaId, spellId }
+let magiaRyzykoWyniki = {}; // atomId -> { spellId, rzut, przyznane } - zapamiętany rzut k6 ryzyka splugawienia
+let magiaCzarnaMagiaZaTradycje = new Set(); // tradycje czarnej magii, za które już przyznano 1 Splugawienie
 let dostepneProfesje = [];
 let dostepneKurioza = [];
 let wylosowaneSrebrniki = null; // 2k6 za każdy poziom powyżej 0
@@ -110,12 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
   document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
   document.getElementById('btn-reset-professions')?.addEventListener('click', resetujWszystkieProfesjeIJezyki);
-  document.getElementById('btn-reset-spell-filters')?.addEventListener('click', resetujFiltrySpellow);
-  document.getElementById('btn-reset-known-spells')?.addEventListener('click', resetujZaklecia);
-  document.getElementById('spell-search')?.addEventListener('input', renderSpellResults);
-  ['spell-filter-tradycja', 'spell-filter-krag', 'spell-filter-kategoria'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', renderSpellResults);
-  });
+  document.getElementById('btn-reset-magia')?.addEventListener('click', resetujMagie);
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
@@ -1312,7 +1309,9 @@ function resetujStanPoZmianiePochodzenia() {
   odpowiedziSlotow = {};
   wybraneAtrybutySlotow = {};
   wybraneKurioza = [];
-  wybraneZaklecia = [];
+  magiaWybory = {};
+  magiaRyzykoWyniki = {};
+  magiaCzarnaMagiaZaTradycje = new Set();
   wylosowaneSrebrniki = null;
   liczbaKuriozow = 0;
   wynikiTabel = {};
@@ -1967,7 +1966,7 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
     szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1,
     moc: bonusySciezek.moc,
     predkosc: (pochodzenie.predkosc || 0) + bonusySciezek.predkosc,
-    splugawienie: bonusySciezek.splugawienie
+    splugawienie: bonusySciezek.splugawienie + obliczSplugawienieZMagiiAktualnej()
   };
 
   // Modyfikatory obrony na podstawie rozmiaru pochodzenia
@@ -2032,6 +2031,24 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
       document.getElementById('splugawienie-final').textContent = atrybutyDrugorzedne.splugawienie;
     }
   }
+}
+
+/**
+ * Przelicza atrybuty drugorzędne od nowa (np. po zmianie wyboru magii w
+ * Kroku 4.5, gdy poznanie/nauka czarnej magii zmienia Splugawienie) na
+ * podstawie atrybutów głównych aktualnie wyświetlonych w Kroku 2.
+ */
+function odswiezAtrybutyDrugorzedne() {
+  if (!wybranePochodzenie) return;
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie) return;
+  const atrybuty = {
+    sila: parseInt(document.getElementById('sila-final')?.textContent, 10) || 0,
+    zrecznosc: parseInt(document.getElementById('zrecznosc-final')?.textContent, 10) || 0,
+    intelekt: parseInt(document.getElementById('intelekt-final')?.textContent, 10) || 0,
+    wola: parseInt(document.getElementById('wola-final')?.textContent, 10) || 0
+  };
+  aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
 }
 
 /**
@@ -2459,19 +2476,32 @@ function renderKartaZasobySection() {
 }
 
 /**
- * Renderuje sekcję znanych zaklęć wybranych opcjonalnie w Kroku 4.5.
+ * Renderuje sekcję znanych tradycji i zaklęć wybranych opcjonalnie
+ * w Kroku 4.5, na podstawie rozwiązanych atomowych wyborów magii.
  */
 function renderKartaZakleciaSection() {
-  if (wybraneZaklecia.length === 0) return '';
-  const zaklecia = wybraneZaklecia
-    .map(id => SPELLS.find(s => s.id === id))
-    .filter(Boolean)
+  const atomy = pobierzAktualneAtomyMagii();
+  if (atomy.length === 0) return '';
+  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomy, magiaWybory);
+  const tradycjeList = [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
+  const zaklecia = rozwiazania
+    .filter(r => r.mode === 'zaklecie' && r.spellId)
+    .map(r => SPELLS.find(s => s.id === r.spellId))
+    .filter(Boolean);
+
+  if (tradycjeList.length === 0 && zaklecia.length === 0) return '';
+
+  const tradycjeHtml = tradycjeList.length
+    ? `<div class="trait-item"><strong>Znane tradycje:</strong> ${tradycjeList.join(', ')}</div>`
+    : '';
+  const zakleciaHtml = zaklecia
     .map(s => `<div class="trait-item"><strong>${s.nazwa}</strong> ${renderujZnacznikZrodla(s.zrodlo)} <em>(${s.tradycjaNazwa}, krąg ${s.krag}, ${s.kategoria === 'atak' ? 'atak' : 'użytkowe'})</em>: ${s.opis}</div>`)
     .join('');
+
   return `
     <div class="preview-section">
-      <h5>Znane Zaklęcia</h5>
-      <div class="trait-list">${zaklecia}</div>
+      <h5>Magia - Znane Tradycje i Zaklęcia</h5>
+      <div class="trait-list">${tradycjeHtml}${zakleciaHtml}</div>
     </div>
   `;
 }
@@ -3740,177 +3770,246 @@ function updateStep4NextButton() {
 }
 
 /**
- * Renderuje Krok 4.5: opcjonalna biblioteka zaklęć z wyszukiwaniem i filtrami.
+ * Zwraca wybraną opcję radiową sekcji "Korzyści z Pochodzenia" (poziom 4),
+ * jeśli już wybrana - potrzebne do ustalenia, czy pochodzenie przyznaje
+ * dodatkowy atomowy wybór zaklęcia na tym poziomie ("1 zaklęcie").
+ */
+function pobierzWybranaOpcjaPoziom4Aktualna() {
+  if (!wybranePochodzenie) return null;
+  return document.querySelector(`input[name="origin-option-${wybranePochodzenie}"]:checked`)?.value || null;
+}
+
+/**
+ * Oblicza aktualne atomowe wybory magii (jeden atom = jedna karta w Kroku
+ * 4.5) na podstawie pochodzenia, wybranych ścieżek i poziomu postaci.
+ */
+function pobierzAktualneAtomyMagii() {
+  if (!wybranePochodzenie) return [];
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie) return [];
+  return obliczSlotyMagii({
+    pochodzenie,
+    wybranaOpcjaPoziom4: pobierzWybranaOpcjaPoziom4Aktualna(),
+    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
+    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
+    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null,
+    wybranyPoziom
+  });
+}
+
+/** Odczytuje aktualną Moc postaci - limit kręgu zaklęć dostępnych do nauki. */
+function pobierzAktualnaMoc() {
+  return parseInt(document.getElementById('moc-final')?.textContent, 10) || 0;
+}
+
+/**
+ * Renderuje Krok 4.5: jedną kartę na każdy atomowy wybór magii faktycznie
+ * przyznany przez pochodzenie/ścieżki na obecnym poziomie postaci (zamiast
+ * swobodnie przeglądanej biblioteki) - w pełni zgodne z zasadami nauki
+ * tradycji i zaklęć z podręcznika (zob. logic/magia.js).
  */
 function renderSpellsSection() {
-  populateSpellFilters();
-  renderKnownTraditionsHint();
-  renderSpellResults();
-  renderKnownSpellsList();
-}
-
-/**
- * Uzupełnia listy rozwijane filtrów (tradycja/krąg) na podstawie danych w SPELLS.
- * Wykonywane tylko raz - kolejne wywołania nie duplikują opcji.
- */
-function populateSpellFilters() {
-  const tradSel = document.getElementById('spell-filter-tradycja');
-  const kragSel = document.getElementById('spell-filter-krag');
-  if (tradSel && tradSel.options.length <= 1) {
-    const tradycje = [...new Map(SPELLS.map(s => [s.tradycja, s.tradycjaNazwa])).entries()]
-      .sort((a, b) => a[1].localeCompare(b[1], 'pl'));
-    tradycje.forEach(([id, nazwa]) => {
-      const opt = document.createElement('option');
-      opt.value = id;
-      opt.textContent = nazwa;
-      tradSel.appendChild(opt);
-    });
-  }
-  if (kragSel && kragSel.options.length <= 1) {
-    const kragi = [...new Set(SPELLS.map(s => s.krag))].sort((a, b) => a - b);
-    kragi.forEach(k => {
-      const opt = document.createElement('option');
-      opt.value = k;
-      opt.textContent = `Krąg ${k}`;
-      kragSel.appendChild(opt);
-    });
-  }
-}
-
-/**
- * Wyświetla informację, jaką magię przyznały już wybrane ścieżki - czysto
- * informacyjne, nie ogranicza wyboru zaklęć w tym kroku.
- */
-function renderKnownTraditionsHint() {
+  const atomy = pobierzAktualneAtomyMagii();
+  const container = document.getElementById('magic-slots-container');
   const hint = document.getElementById('known-traditions-hint');
-  if (!hint) return;
-  const zrodla = [];
-  [1, 3, 7].forEach(poziomWyboru => {
-    const benefit = przyznaneKorzysciZeSciezek[poziomWyboru];
-    const magiaOpis = benefit?.pkt?.zaklecia?.[0]?.opis;
-    if (magiaOpis) zrodla.push(`<strong>${benefit.sciezkaNazwa}:</strong> ${magiaOpis}`);
-  });
-  hint.innerHTML = zrodla.length
-    ? `Magia przyznana przez Twoje ścieżki:<br>${zrodla.map(z => `• ${z}`).join('<br>')}`
-    : 'Żadna z dotychczas wybranych ścieżek nie przyznaje magii - ten krok jest w pełni opcjonalny.';
-}
-
-/**
- * Filtruje SPELLS zgodnie z aktualnym wyszukiwaniem tekstowym i filtrami.
- */
-function filtrowaneZaklecia() {
-  const search = (document.getElementById('spell-search')?.value || '').trim().toLowerCase();
-  const tradycja = document.getElementById('spell-filter-tradycja')?.value || '';
-  const kragValue = document.getElementById('spell-filter-krag')?.value;
-  const kategoria = document.getElementById('spell-filter-kategoria')?.value || '';
-
-  return SPELLS.filter(s => {
-    if (tradycja && s.tradycja !== tradycja) return false;
-    if (kragValue !== '' && kragValue !== undefined && s.krag !== parseInt(kragValue)) return false;
-    if (kategoria && s.kategoria !== kategoria) return false;
-    if (search) {
-      const haystack = `${s.nazwa} ${s.opis}`.toLowerCase();
-      if (!haystack.includes(search)) return false;
-    }
-    return true;
-  });
-}
-
-/**
- * Renderuje siatkę wyników wyszukiwania/filtrowania zaklęć w Kroku 4.5.
- */
-function renderSpellResults() {
-  const grid = document.getElementById('spell-results-grid');
-  const countEl = document.getElementById('spell-results-count');
-  if (!grid) return;
-
-  const results = filtrowaneZaklecia();
-  if (countEl) countEl.textContent = `Znaleziono ${results.length} z ${SPELLS.length} zaklęć`;
-
-  grid.innerHTML = results.map(s => {
-    const known = wybraneZaklecia.includes(s.id);
-    return `
-      <div class="spell-card ${known ? 'selected' : ''}">
-        <div class="spell-card-header">
-          <strong>${s.nazwa}</strong>
-          ${renderujZnacznikZrodla(s.zrodlo)}
-        </div>
-        <div class="spell-card-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
-        <details class="spell-card-opis">
-          <summary>Opis</summary>
-          <p>${s.opis}</p>
-        </details>
-        <button type="button" class="btn-secondary small" data-toggle-spell="${s.id}">${known ? '✓ Usuń z listy' : '+ Dodaj do znanych'}</button>
-      </div>
-    `;
-  }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
-
-  grid.querySelectorAll('[data-toggle-spell]').forEach(btn => {
-    btn.addEventListener('click', () => toggleZaklecie(btn.dataset.toggleSpell));
-  });
-}
-
-/**
- * Przełącza, czy dane zaklęcie jest na liście znanych zaklęć postaci.
- */
-function toggleZaklecie(spellId) {
-  const idx = wybraneZaklecia.indexOf(spellId);
-  if (idx === -1) wybraneZaklecia.push(spellId);
-  else wybraneZaklecia.splice(idx, 1);
-  renderSpellResults();
-  renderKnownSpellsList();
-}
-
-/**
- * Renderuje listę aktualnie znanych (wybranych) zaklęć wraz z przyciskiem usuwania.
- */
-function renderKnownSpellsList() {
-  const container = document.getElementById('known-spells-list');
   if (!container) return;
 
-  if (wybraneZaklecia.length === 0) {
-    container.innerHTML = '<p class="hint">Nie wybrano żadnych zaklęć.</p>';
+  if (atomy.length === 0) {
+    container.innerHTML = '<p class="hint">Żadna z dotychczas wybranych ścieżek (ani pochodzenie) nie przyznaje magii na obecnym poziomie postaci - ten krok jest w pełni opcjonalny.</p>';
+    if (hint) hint.innerHTML = '';
     return;
   }
 
-  container.innerHTML = wybraneZaklecia.map(id => {
-    const s = SPELLS.find(sp => sp.id === id);
-    if (!s) return '';
-    return `
-      <div class="selected-item">
-        <span>${s.nazwa} ${renderujZnacznikZrodla(s.zrodlo)} (${s.tradycjaNazwa}, krąg ${s.krag})</span>
-        <button type="button" class="remove-btn" data-remove-spell="${id}" title="Usuń ze znanych zaklęć">✕</button>
+  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomy, magiaWybory);
+  przeliczCzarnaMagieZTradycji(rozwiazania);
+
+  if (hint) {
+    const nazwy = [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
+    hint.innerHTML = nazwy.length
+      ? `<strong>Znane tradycje:</strong> ${nazwy.join(', ')}`
+      : 'Jeszcze nie poznano żadnej tradycji.';
+  }
+
+  container.innerHTML = rozwiazania.map(r => renderujKarteMagii(r, znaneTradycje)).join('');
+  podlaczObslugeKartMagii(container);
+  odswiezAtrybutyDrugorzedne();
+}
+
+/**
+ * Przelicza (od zera, na podstawie aktualnych rozwiązań) zbiór tradycji
+ * czarnej magii już poznanych - za każdą przysługuje jednorazowo 1 punkt
+ * Splugawienia. Liczone od zera przy każdym renderze, żeby wycofanie
+ * wcześniejszego wyboru poprawnie usunęło też przyznane Splugawienie.
+ */
+function przeliczCzarnaMagieZTradycji(rozwiazania) {
+  const nowy = new Set();
+  rozwiazania.forEach(r => {
+    if (r.mode === 'tradycja' && r.tradycjaId && czyCzarnaMagia(r.tradycjaId)) nowy.add(r.tradycjaId);
+  });
+  magiaCzarnaMagiaZaTradycje = nowy;
+}
+
+/**
+ * Suma Splugawienia przyznanego przez magię: 1 punkt za każdą poznaną
+ * tradycję czarnej magii, plus 1 punkt za każdy rzut ryzyka, który się
+ * powiódł (nauka kolejnego zaklęcia czarnej magii z już znanej tradycji).
+ */
+function obliczSplugawienieZMagiiAktualnej() {
+  const zTradycji = magiaCzarnaMagiaZaTradycje.size;
+  const zRyzyka = Object.values(magiaRyzykoWyniki).filter(w => w.przyznane).length;
+  return zTradycji + zRyzyka;
+}
+
+/** Renderuje pojedynczą kartę jednego atomowego wyboru magii. */
+function renderujKarteMagii(rozwiazanie, znaneTradycje) {
+  const { atom, mode, tradycjaId, spellId, kompletny, czarnaMagiaRyzyko } = rozwiazanie;
+  const moc = pobierzAktualnaMoc();
+  const jestCzarnaTradycja = mode === 'tradycja' && czyCzarnaMagia(tradycjaId);
+  const klasy = ['magic-slot-card'];
+  if (kompletny) klasy.push('complete');
+  if (jestCzarnaTradycja || czarnaMagiaRyzyko) klasy.push('black-magic');
+
+  let bodyHtml = '';
+  if (atom.rodzaj === 'wymuszona_tradycja') {
+    bodyHtml = renderujWyborTradycji(atom.id, atom.kategoria, znaneTradycje, tradycjaId);
+  } else if (atom.rodzaj === 'wybor_fixed') {
+    const nazwaTr = TRADYCJE[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
+    bodyHtml = mode === 'tradycja'
+      ? `<p class="magic-slot-status ok">Tradycja ${nazwaTr} nie jest jeszcze znana - zostanie automatycznie poznana (wraz z darmowym zaklęciem kręgu 0).</p>`
+      : renderujWyborZaklecia(atom.id, znaneTradycje, moc, spellId, atom.tradycjaNazwa);
+  } else if (atom.rodzaj === 'wybor') {
+    bodyHtml = `
+      <div class="magic-slot-mode-toggle">
+        <button type="button" class="btn-secondary small ${mode === 'tradycja' ? 'active' : ''}" data-magia-mode="${atom.id}" data-mode-value="tradycja">Nowa tradycja</button>
+        <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magia-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
       </div>
     `;
-  }).join('');
+    if (mode === 'tradycja') bodyHtml += renderujWyborTradycji(atom.id, atom.kategoria, znaneTradycje, tradycjaId);
+    else if (mode === 'zaklecie') bodyHtml += renderujWyborZaklecia(atom.id, znaneTradycje, moc, spellId);
+  } else if (atom.rodzaj === 'zaklecie_tylko') {
+    bodyHtml = renderujWyborZaklecia(atom.id, znaneTradycje, moc, spellId);
+  }
 
-  container.querySelectorAll('[data-remove-spell]').forEach(btn => {
-    btn.addEventListener('click', () => toggleZaklecie(btn.dataset.removeSpell));
+  return `
+    <div class="${klasy.join(' ')}" data-magic-slot="${atom.id}">
+      <p class="magic-slot-source">${atom.source}</p>
+      <p class="magic-slot-desc">${opisAtomu(atom)}</p>
+      ${bodyHtml}
+      ${renderujOstrzezenieCzarnejMagii(rozwiazanie)}
+      <p class="magic-slot-status ${kompletny ? 'ok' : ''}">${kompletny ? '✓ Rozwiązano' : 'Nierozwiązane (opcjonalne)'}</p>
+    </div>
+  `;
+}
+
+/** Renderuje listę rozwijaną wyboru nowej tradycji dla danego atomu. */
+function renderujWyborTradycji(atomId, kategoria, znaneTradycje, aktualnyWybor) {
+  const opcje = pobierzTradycjeDlaKategorii(kategoria, znaneTradycje);
+  const opcjeHtml = opcje
+    .map(t => `<option value="${t.id}" ${t.id === aktualnyWybor ? 'selected' : ''}>${t.nazwa}${t.czarnaMagia ? ' ⚠️ czarna magia' : ''}</option>`)
+    .join('');
+  return `
+    <select data-magia-tradycja="${atomId}">
+      <option value="">— wybierz tradycję —</option>
+      ${opcjeHtml}
+    </select>
+  `;
+}
+
+/**
+ * Renderuje listę rozwijaną wyboru zaklęcia do nauki, ograniczoną do
+ * tradycji już znanych (albo `tradycjaOgraniczenie`, dla wybor_fixed) i
+ * kręgu nie wyższego niż Moc postaci.
+ */
+function renderujWyborZaklecia(atomId, znaneTradycje, moc, aktualnyWybor, tradycjaOgraniczenie = null) {
+  const zaklecia = pobierzZakleciaDoNauki({ znaneTradycje, moc, tradycjaOgraniczenie });
+  if (zaklecia.length === 0) {
+    return '<p class="hint">Brak dostępnych zaklęć (sprawdź znane tradycje i Moc postaci).</p>';
+  }
+  const opcjeHtml = zaklecia
+    .slice()
+    .sort((a, b) => a.tradycjaNazwa.localeCompare(b.tradycjaNazwa, 'pl') || a.krag - b.krag || a.nazwa.localeCompare(b.nazwa, 'pl'))
+    .map(s => `<option value="${s.id}" ${s.id === aktualnyWybor ? 'selected' : ''}>${s.nazwa} (${s.tradycjaNazwa}, krąg ${s.krag})${czyCzarnaMagia(s.tradycja) ? ' ⚠️' : ''}</option>`)
+    .join('');
+  return `
+    <select data-magia-zaklecie="${atomId}">
+      <option value="">— wybierz zaklęcie —</option>
+      ${opcjeHtml}
+    </select>
+  `;
+}
+
+/**
+ * Renderuje ostrzeżenie/informację o czarnej magii dla danej karty: albo
+ * informację o automatycznym Splugawieniu za poznanie tradycji, albo
+ * widget rzutu ryzyka (k6) przy nauce kolejnego zaklęcia czarnej magii.
+ */
+function renderujOstrzezenieCzarnejMagii(rozwiazanie) {
+  const { atom, mode, tradycjaId, spellId, czarnaMagiaRyzyko } = rozwiazanie;
+  if (mode === 'tradycja' && tradycjaId && czyCzarnaMagia(tradycjaId)) {
+    return `<div class="black-magic-warning">⚠️ ${TRADYCJE[tradycjaId]?.nazwa || tradycjaId} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;
+  }
+  if (czarnaMagiaRyzyko) {
+    const wynik = magiaRyzykoWyniki[atom.id];
+    if (wynik && wynik.spellId === spellId) {
+      return `<div class="black-magic-warning">⚠️ Zaklęcie czarnej magii. Rzut ryzyka: <span class="black-magic-roll-result">k6 = ${wynik.rzut}</span> ${wynik.przyznane ? '→ +1 Splugawienie' : '→ bez efektu'}.</div>`;
+    }
+    return `
+      <div class="black-magic-warning">
+        ⚠️ Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${czarnaMagiaRyzyko.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
+        <button type="button" class="btn-secondary small" data-magia-rzut="${atom.id}" data-rzut-spell="${spellId}" data-rzut-limit="${czarnaMagiaRyzyko.liczbaZnanychPrzed}">Rzuć k6</button>
+      </div>
+    `;
+  }
+  return '';
+}
+
+/** Podłącza obsługę zdarzeń dla wszystkich kart magii w kontenerze (delegacja przez ponowny render). */
+function podlaczObslugeKartMagii(container) {
+  container.querySelectorAll('[data-magia-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.magiaMode;
+      const mode = btn.dataset.modeValue;
+      if ((magiaWybory[atomId] || {}).mode === mode) return;
+      magiaWybory[atomId] = { mode };
+      delete magiaRyzykoWyniki[atomId];
+      renderSpellsSection();
+    });
+  });
+  container.querySelectorAll('[data-magia-tradycja]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const atomId = sel.dataset.magiaTradycja;
+      const wybor = magiaWybory[atomId] || {};
+      magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId: sel.value || null };
+      renderSpellsSection();
+    });
+  });
+  container.querySelectorAll('[data-magia-zaklecie]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const atomId = sel.dataset.magiaZaklecie;
+      const wybor = magiaWybory[atomId] || {};
+      magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'zaklecie', spellId: sel.value || null };
+      delete magiaRyzykoWyniki[atomId];
+      renderSpellsSection();
+    });
+  });
+  container.querySelectorAll('[data-magia-rzut]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.magiaRzut;
+      const spellId = btn.dataset.rzutSpell;
+      const limit = parseInt(btn.dataset.rzutLimit, 10);
+      const rzut = Math.floor(Math.random() * 6) + 1;
+      magiaRyzykoWyniki[atomId] = { spellId, rzut, przyznane: rzut < limit };
+      renderSpellsSection();
+    });
   });
 }
 
-/**
- * Czyści wybór wyszukiwania i filtrów w Kroku 4.5 (nie dotyka znanych zaklęć).
- */
-function resetujFiltrySpellow() {
-  const search = document.getElementById('spell-search');
-  const tradSel = document.getElementById('spell-filter-tradycja');
-  const kragSel = document.getElementById('spell-filter-krag');
-  const katSel = document.getElementById('spell-filter-kategoria');
-  if (search) search.value = '';
-  if (tradSel) tradSel.value = '';
-  if (kragSel) kragSel.value = '';
-  if (katSel) katSel.value = '';
-  renderSpellResults();
-}
-
-/**
- * Czyści wszystkie znane zaklęcia (Krok 4.5).
- */
-function resetujZaklecia() {
-  wybraneZaklecia = [];
-  renderSpellResults();
-  renderKnownSpellsList();
+/** Czyści wszystkie wybory magii dokonane w Kroku 4.5. */
+function resetujMagie() {
+  magiaWybory = {};
+  magiaRyzykoWyniki = {};
+  magiaCzarnaMagiaZaTradycje = new Set();
+  renderSpellsSection();
 }
 
 // Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje

@@ -498,42 +498,18 @@
         </div>
     </div>
 
-    <!-- Krok 4.5: Zaklęcia (opcjonalnie) -->
+    <!-- Krok 4.5: Magia - tradycje i zaklęcia (opcjonalnie) -->
     <div id="step-4.5" class="step">
         <div class="section">
-            <h3>✨ Krok 4.5: Zaklęcia (opcjonalnie)</h3>
-            <p>Jeśli twoja postać potrafi rzucać zaklęcia, przeglądnij bibliotekę i wybierz znane czary. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez wybierania niczego.</p>
-
-            <div id="known-traditions-hint" class="hint"></div>
+            <h3>✨ Krok 4.5: Magia - tradycje i zaklęcia (opcjonalnie)</h3>
+            <p>Poniżej znajdują się wyłącznie korzyści magiczne faktycznie przyznane przez twoje pochodzenie i wybrane ścieżki na obecnym poziomie postaci, zgodnie z zasadami podręcznika. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez rozwiązania wszystkich kart.</p>
 
             <div class="flex-row-between">
-                <h4>🔍 Wyszukaj i filtruj</h4>
-                <button type="button" class="section-reset-btn" id="btn-reset-spell-filters" title="Wyczyść wyszukiwanie i filtry">Wyczyść filtry</button>
+                <div id="known-traditions-hint" class="hint"></div>
+                <button type="button" class="section-reset-btn" id="btn-reset-magia" title="Wyczyść wszystkie wybory magii">Wyczyść</button>
             </div>
-            <div class="spell-filters">
-                <input type="text" id="spell-search" placeholder="Szukaj po nazwie lub opisie...">
-                <select id="spell-filter-tradycja">
-                    <option value="">Wszystkie tradycje</option>
-                </select>
-                <select id="spell-filter-krag">
-                    <option value="">Wszystkie kręgi</option>
-                </select>
-                <select id="spell-filter-kategoria">
-                    <option value="">Wszystkie kategorie</option>
-                    <option value="atak">Atak</option>
-                    <option value="uzytkowe">Użytkowe</option>
-                </select>
-            </div>
-            <p id="spell-results-count" class="hint"></p>
-            <div id="spell-results-grid" class="spell-results-grid"></div>
 
-            <div class="flex-row-between">
-                <h4>📖 Znane zaklęcia</h4>
-                <button type="button" class="section-reset-btn" id="btn-reset-known-spells" title="Wyczyść wszystkie znane zaklęcia">Wyczyść</button>
-            </div>
-            <div id="known-spells-list" class="known-spells-list">
-                <p class="hint">Nie wybrano żadnych zaklęć.</p>
-            </div>
+            <div id="magic-slots-container"></div>
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(4.5)">
