@@ -4118,6 +4118,20 @@ function renderTradycjaPickerDynamicHtml() {
   `;
 }
 
+/**
+ * Zwraca id-y zaklęć już wybranych w INNYCH slotach magii (nie w
+ * `wylaczAtomId`, czyli slocie właśnie edytowanym) - używane do wyszarzenia
+ * ich w popupie, bo nauka tego samego zaklęcia drugi raz nie ma sensu.
+ */
+function pobierzZajeteZaklecia(wylaczAtomId) {
+  const { rozwiazania } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
+  return new Set(
+    rozwiazania
+      .filter(r => r.mode === 'zaklecie' && r.spellId && r.atom.id !== wylaczAtomId)
+      .map(r => r.spellId)
+  );
+}
+
 /** Renderuje kafelki zaklęć dostępnych do nauki w popupie, po zastosowaniu wyszukiwania i chipów filtrów. */
 function renderZakleciePickerDynamicHtml() {
   const { znaneTradycje, moc, tradycjaOgraniczenie, search, filterKrag, filterKategoria, filterTradycja } = magiaPicker;
@@ -4146,20 +4160,25 @@ function renderZakleciePickerDynamicHtml() {
     ? `<div class="picker-filter-chips">${tradChipy}${kregChipy}${katChipy}</div>`
     : '';
 
+  const zajete = pobierzZajeteZaklecia(magiaPicker.atomId);
   const tiles = wynik
     .slice()
     .sort((a, b) => a.tradycjaNazwa.localeCompare(b.tradycjaNazwa, 'pl') || a.krag - b.krag || a.nazwa.localeCompare(b.nazwa, 'pl'))
-    .map(s => `
-      <button type="button" class="picker-tile" data-pick-zaklecie="${s.id}">
+    .map(s => {
+      const jestZajete = zajete.has(s.id);
+      return `
+      <button type="button" class="picker-tile ${jestZajete ? 'disabled' : ''}" ${jestZajete ? 'disabled' : ''} data-pick-zaklecie="${s.id}">
         <div class="picker-tile-header">
           <span>${s.nazwa}</span>
           ${renderujZnacznikZrodla(s.zrodlo)}
         </div>
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
         <p class="picker-tile-opis">${s.opis}</p>
-        ${czyCzarnaMagia(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
+        ${jestZajete ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
+        ${!jestZajete && czyCzarnaMagia(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
       </button>
-    `).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
+    `;
+    }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
 
   return `
     ${chipyHtml}

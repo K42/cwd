@@ -2302,3 +2302,20 @@ kbd {
     font-size: 0.8em;
     color: var(--blood-bright);
 }
+
+.picker-tile.disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    filter: grayscale(0.4);
+}
+
+.picker-tile.disabled:hover {
+    border-color: var(--border);
+    background: var(--bg-2);
+}
+
+.picker-tile-taken {
+    font-size: 0.8em;
+    color: var(--ink-mute);
+    font-style: italic;
+}
