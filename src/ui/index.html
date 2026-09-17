@@ -27,6 +27,7 @@
         <div class="breadcrumb-item" data-step="3">3. Ścieżki</div>
         <div class="breadcrumb-item" data-step="3.5">3.5 Atrybuty</div>
         <div class="breadcrumb-item" data-step="4">4. Profesje i Kurioza</div>
+        <div class="breadcrumb-item" data-step="4.5">4.5 Zaklęcia</div>
         <div class="breadcrumb-item" data-step="5">5. Podgląd</div>
         <div class="breadcrumb-item" data-step="6">6. Podsumowanie i Eksport</div>
     </nav>
@@ -490,6 +491,54 @@
         </div>
     </div>
 
+    <!-- Krok 4.5: Zaklęcia (opcjonalnie) -->
+    <div id="step-4.5" class="step">
+        <div class="section">
+            <h3>✨ Krok 4.5: Zaklęcia (opcjonalnie)</h3>
+            <p>Jeśli twoja postać potrafi rzucać zaklęcia, przeglądnij bibliotekę i wybierz znane czary. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez wybierania niczego.</p>
+
+            <div id="known-traditions-hint" class="hint"></div>
+
+            <div class="flex-row-between">
+                <h4>🔍 Wyszukaj i filtruj</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-spell-filters" title="Wyczyść wyszukiwanie i filtry">Wyczyść filtry</button>
+            </div>
+            <div class="spell-filters">
+                <input type="text" id="spell-search" placeholder="Szukaj po nazwie lub opisie...">
+                <select id="spell-filter-tradycja">
+                    <option value="">Wszystkie tradycje</option>
+                </select>
+                <select id="spell-filter-krag">
+                    <option value="">Wszystkie kręgi</option>
+                </select>
+                <select id="spell-filter-kategoria">
+                    <option value="">Wszystkie kategorie</option>
+                    <option value="atak">Atak</option>
+                    <option value="uzytkowe">Użytkowe</option>
+                </select>
+            </div>
+            <p id="spell-results-count" class="hint"></p>
+            <div id="spell-results-grid" class="spell-results-grid"></div>
+
+            <div class="flex-row-between">
+                <h4>📖 Znane zaklęcia</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-known-spells" title="Wyczyść wszystkie znane zaklęcia">Wyczyść</button>
+            </div>
+            <div id="known-spells-list" class="known-spells-list">
+                <p class="hint">Nie wybrano żadnych zaklęć.</p>
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(4.5)">
+                    ← Wstecz
+                </button>
+                <button id="btn-next-4-5" class="btn-primary" onclick="nextStep(4.5)">
+                    Dalej →
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Krok 5: Podsumowanie Postaci -->
     <div id="step-5" class="step">
         <div class="section">
@@ -501,7 +550,7 @@
             </div>
 
             <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(4)">
+                <button class="btn-secondary" onclick="prevStep(4.5)">
                     ← Wstecz
                 </button>
                 <button id="btn-create" class="btn-primary" onclick="utworzPostac()">

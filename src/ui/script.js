@@ -9,6 +9,7 @@ import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
 import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
 import { rollTable } from './data/table_utils.js';
 import DANE_GRY from './data/dane-gry.js';
+import SPELLS from './data/spells.js';
 
 let biezacaPostac = null;
 let wybranePochodzenie = null;
@@ -21,6 +22,7 @@ let wybraneProfesje = []; // Pochodna odpowiedziSlotow - profesje przypisane do 
 let odpowiedziSlotow = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
 let wybraneAtrybutySlotow = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
 let wybraneKurioza = [];
+let wybraneZaklecia = []; // Tablica id-ów zaklęć wybranych w Kroku 4.5 (opcjonalny)
 let dostepneProfesje = [];
 let dostepneKurioza = [];
 let wylosowaneSrebrniki = null; // 2k6 za każdy poziom powyżej 0
@@ -105,6 +107,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
   document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
   document.getElementById('btn-reset-professions')?.addEventListener('click', resetujWszystkieProfesjeIJezyki);
+  document.getElementById('btn-reset-spell-filters')?.addEventListener('click', resetujFiltrySpellow);
+  document.getElementById('btn-reset-known-spells')?.addEventListener('click', resetujZaklecia);
+  document.getElementById('spell-search')?.addEventListener('input', renderSpellResults);
+  ['spell-filter-tradycja', 'spell-filter-krag', 'spell-filter-kategoria'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', renderSpellResults);
+  });
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
@@ -1281,6 +1289,7 @@ function resetujStanPoZmianiePochodzenia() {
   odpowiedziSlotow = {};
   wybraneAtrybutySlotow = {};
   wybraneKurioza = [];
+  wybraneZaklecia = [];
   wylosowaneSrebrniki = null;
   liczbaKuriozow = 0;
   wynikiTabel = {};
@@ -1360,6 +1369,9 @@ function nextStep(currentStep) {
     renderProfessionsSection();
     renderCuriosSection();
   } else if (currentStep === 4) {
+    pokazKrok(4.5);
+    renderSpellsSection();
+  } else if (currentStep === 4.5) {
     pokazKrok(5);
     aktualizujPodgladPostaci();
   }
@@ -1378,8 +1390,10 @@ function prevStep(currentStep) {
     pokazKrok(3);
   } else if (currentStep === 4) {
     pokazKrok(3.5);
-  } else if (currentStep === 5) {
+  } else if (currentStep === 4.5) {
     pokazKrok(4);
+  } else if (currentStep === 5) {
+    pokazKrok(4.5);
   } else if (currentStep === 6) {
     pokazKrok(5);
   }
@@ -1429,8 +1443,9 @@ function goToStep(stepNumber) {
     });
     if (!slotyAtr.every(slotAtrybutowKompletny)) return;
   }
-  if (stepNumber === 5) {
-    // Wymagane profesje/języki i kurioza
+  if (stepNumber === 4.5 || stepNumber === 5) {
+    // Wymagane profesje/języki i kurioza (Krok 4.5 jest opcjonalny, ale wciąż wymaga,
+    // że Krok 4 zostanie zakończony, tak jak wcześniej wymagał tego Krok 5)
     const { kurioza } = obliczIloscWyborow();
     const { sloty } = obliczSlotyPostaci();
     if (!sloty.every(slot => slotOdpowiedzKompletna(slot))) return;
@@ -1450,6 +1465,9 @@ function goToStep(stepNumber) {
   if (stepNumber === 4) {
     renderProfessionsSection();
     renderCuriosSection();
+  }
+  if (stepNumber === 4.5) {
+    renderSpellsSection();
   }
   if (stepNumber === 5) {
     aktualizujPodgladPostaci();
@@ -2418,9 +2436,27 @@ function renderKartaZasobySection() {
 }
 
 /**
+ * Renderuje sekcję znanych zaklęć wybranych opcjonalnie w Kroku 4.5.
+ */
+function renderKartaZakleciaSection() {
+  if (wybraneZaklecia.length === 0) return '';
+  const zaklecia = wybraneZaklecia
+    .map(id => SPELLS.find(s => s.id === id))
+    .filter(Boolean)
+    .map(s => `<div class="trait-item"><strong>${s.nazwa}</strong> ${renderujZnacznikZrodla(s.zrodlo)} <em>(${s.tradycjaNazwa}, krąg ${s.krag}, ${s.kategoria === 'atak' ? 'atak' : 'użytkowe'})</em>: ${s.opis}</div>`)
+    .join('');
+  return `
+    <div class="preview-section">
+      <h5>Znane Zaklęcia</h5>
+      <div class="trait-list">${zaklecia}</div>
+    </div>
+  `;
+}
+
+/**
  * Buduje kompletną, czytelną Kartę Postaci ze wszystkich informacji
  * zebranych w kreatorze: pochodzenia, atrybutów, ścieżek z talentami,
- * profesji/języków/kuriozów, zasobów i wyników tabel losowych.
+ * profesji/języków/kuriozów, zaklęć, zasobów i wyników tabel losowych.
  * Używana zarówno przez live podgląd w Kroku 5, jak i finalną Kartę
  * Postaci po kliknięciu "Utwórz Postać".
  * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
@@ -2440,6 +2476,7 @@ function generujKartePostaciHTML() {
     ${renderKartaPoziom4Section(pochodzenie)}
     ${renderKartaSciezkiSection()}
     ${renderProfessionsAndCuriosSummary()}
+    ${renderKartaZakleciaSection()}
     ${renderKartaZasobySection()}
     ${generujSekcjeWynikowTabel(pochodzenie.id)}
   `;
@@ -3677,6 +3714,180 @@ function updateStep4NextButton() {
   const hasRequiredCurios = wybraneKurioza.length >= kurioza;
 
   btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);
+}
+
+/**
+ * Renderuje Krok 4.5: opcjonalna biblioteka zaklęć z wyszukiwaniem i filtrami.
+ */
+function renderSpellsSection() {
+  populateSpellFilters();
+  renderKnownTraditionsHint();
+  renderSpellResults();
+  renderKnownSpellsList();
+}
+
+/**
+ * Uzupełnia listy rozwijane filtrów (tradycja/krąg) na podstawie danych w SPELLS.
+ * Wykonywane tylko raz - kolejne wywołania nie duplikują opcji.
+ */
+function populateSpellFilters() {
+  const tradSel = document.getElementById('spell-filter-tradycja');
+  const kragSel = document.getElementById('spell-filter-krag');
+  if (tradSel && tradSel.options.length <= 1) {
+    const tradycje = [...new Map(SPELLS.map(s => [s.tradycja, s.tradycjaNazwa])).entries()]
+      .sort((a, b) => a[1].localeCompare(b[1], 'pl'));
+    tradycje.forEach(([id, nazwa]) => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = nazwa;
+      tradSel.appendChild(opt);
+    });
+  }
+  if (kragSel && kragSel.options.length <= 1) {
+    const kragi = [...new Set(SPELLS.map(s => s.krag))].sort((a, b) => a - b);
+    kragi.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = `Krąg ${k}`;
+      kragSel.appendChild(opt);
+    });
+  }
+}
+
+/**
+ * Wyświetla informację, jaką magię przyznały już wybrane ścieżki - czysto
+ * informacyjne, nie ogranicza wyboru zaklęć w tym kroku.
+ */
+function renderKnownTraditionsHint() {
+  const hint = document.getElementById('known-traditions-hint');
+  if (!hint) return;
+  const zrodla = [];
+  [1, 3, 7].forEach(poziomWyboru => {
+    const benefit = przyznaneKorzysciZeSciezek[poziomWyboru];
+    const magiaOpis = benefit?.pkt?.zaklecia?.[0]?.opis;
+    if (magiaOpis) zrodla.push(`<strong>${benefit.sciezkaNazwa}:</strong> ${magiaOpis}`);
+  });
+  hint.innerHTML = zrodla.length
+    ? `Magia przyznana przez Twoje ścieżki:<br>${zrodla.map(z => `• ${z}`).join('<br>')}`
+    : 'Żadna z dotychczas wybranych ścieżek nie przyznaje magii - ten krok jest w pełni opcjonalny.';
+}
+
+/**
+ * Filtruje SPELLS zgodnie z aktualnym wyszukiwaniem tekstowym i filtrami.
+ */
+function filtrowaneZaklecia() {
+  const search = (document.getElementById('spell-search')?.value || '').trim().toLowerCase();
+  const tradycja = document.getElementById('spell-filter-tradycja')?.value || '';
+  const kragValue = document.getElementById('spell-filter-krag')?.value;
+  const kategoria = document.getElementById('spell-filter-kategoria')?.value || '';
+
+  return SPELLS.filter(s => {
+    if (tradycja && s.tradycja !== tradycja) return false;
+    if (kragValue !== '' && kragValue !== undefined && s.krag !== parseInt(kragValue)) return false;
+    if (kategoria && s.kategoria !== kategoria) return false;
+    if (search) {
+      const haystack = `${s.nazwa} ${s.opis}`.toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+/**
+ * Renderuje siatkę wyników wyszukiwania/filtrowania zaklęć w Kroku 4.5.
+ */
+function renderSpellResults() {
+  const grid = document.getElementById('spell-results-grid');
+  const countEl = document.getElementById('spell-results-count');
+  if (!grid) return;
+
+  const results = filtrowaneZaklecia();
+  if (countEl) countEl.textContent = `Znaleziono ${results.length} z ${SPELLS.length} zaklęć`;
+
+  grid.innerHTML = results.map(s => {
+    const known = wybraneZaklecia.includes(s.id);
+    return `
+      <div class="spell-card ${known ? 'selected' : ''}">
+        <div class="spell-card-header">
+          <strong>${s.nazwa}</strong>
+          ${renderujZnacznikZrodla(s.zrodlo)}
+        </div>
+        <div class="spell-card-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
+        <details class="spell-card-opis">
+          <summary>Opis</summary>
+          <p>${s.opis}</p>
+        </details>
+        <button type="button" class="btn-secondary small" data-toggle-spell="${s.id}">${known ? '✓ Usuń z listy' : '+ Dodaj do znanych'}</button>
+      </div>
+    `;
+  }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
+
+  grid.querySelectorAll('[data-toggle-spell]').forEach(btn => {
+    btn.addEventListener('click', () => toggleZaklecie(btn.dataset.toggleSpell));
+  });
+}
+
+/**
+ * Przełącza, czy dane zaklęcie jest na liście znanych zaklęć postaci.
+ */
+function toggleZaklecie(spellId) {
+  const idx = wybraneZaklecia.indexOf(spellId);
+  if (idx === -1) wybraneZaklecia.push(spellId);
+  else wybraneZaklecia.splice(idx, 1);
+  renderSpellResults();
+  renderKnownSpellsList();
+}
+
+/**
+ * Renderuje listę aktualnie znanych (wybranych) zaklęć wraz z przyciskiem usuwania.
+ */
+function renderKnownSpellsList() {
+  const container = document.getElementById('known-spells-list');
+  if (!container) return;
+
+  if (wybraneZaklecia.length === 0) {
+    container.innerHTML = '<p class="hint">Nie wybrano żadnych zaklęć.</p>';
+    return;
+  }
+
+  container.innerHTML = wybraneZaklecia.map(id => {
+    const s = SPELLS.find(sp => sp.id === id);
+    if (!s) return '';
+    return `
+      <div class="selected-item">
+        <span>${s.nazwa} ${renderujZnacznikZrodla(s.zrodlo)} (${s.tradycjaNazwa}, krąg ${s.krag})</span>
+        <button type="button" class="remove-btn" data-remove-spell="${id}" title="Usuń ze znanych zaklęć">✕</button>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-remove-spell]').forEach(btn => {
+    btn.addEventListener('click', () => toggleZaklecie(btn.dataset.removeSpell));
+  });
+}
+
+/**
+ * Czyści wybór wyszukiwania i filtrów w Kroku 4.5 (nie dotyka znanych zaklęć).
+ */
+function resetujFiltrySpellow() {
+  const search = document.getElementById('spell-search');
+  const tradSel = document.getElementById('spell-filter-tradycja');
+  const kragSel = document.getElementById('spell-filter-krag');
+  const katSel = document.getElementById('spell-filter-kategoria');
+  if (search) search.value = '';
+  if (tradSel) tradSel.value = '';
+  if (kragSel) kragSel.value = '';
+  if (katSel) katSel.value = '';
+  renderSpellResults();
+}
+
+/**
+ * Czyści wszystkie znane zaklęcia (Krok 4.5).
+ */
+function resetujZaklecia() {
+  wybraneZaklecia = [];
+  renderSpellResults();
+  renderKnownSpellsList();
 }
 
 // Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje
