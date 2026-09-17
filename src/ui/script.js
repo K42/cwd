@@ -3640,8 +3640,13 @@ function _randomizeCurio() {
  */
 function slotOdpowiedzKompletna(slot) {
   const odp = odpowiedziSlotow[slot.id];
-  if (!odp || !odp.mode) return false;
-  return odp.mode === 'profesja' ? !!odp.profesjaId : !!odp.jezyk;
+  // Gdy slot ma tylko jedną dozwoloną opcję (np. 'tylko_profesja'), UI nie
+  // renderuje przełącznika trybu (radiogroup) - tryb trzeba więc wywnioskować
+  // tak samo, jak robi to renderSlotCard(), inaczej odpowiedź nigdy nie
+  // zostanie uznana za kompletną, mimo wybranej wartości w widocznym select.
+  const mode = odp?.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+  if (!mode) return false;
+  return mode === 'profesja' ? !!odp?.profesjaId : !!odp?.jezyk;
 }
 
 /**
