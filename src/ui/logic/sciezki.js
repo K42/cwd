@@ -5,6 +5,7 @@
 
 import PATHS from '../data/paths.js';
 import { getTalentDescription } from './talenty.js';
+import { opisMagii } from './magia.js';
 
 /**
  * Zwraca grupę ścieżek (obiekt id -> ścieżka) z danych PATHS odpowiadającą
@@ -49,7 +50,7 @@ function getPathsForLevel(poziom) {
           })),
           zaklecia: (pkt.magia ? [{
             nazwa: 'Magia',
-            opis: pkt.magia
+            opis: opisMagii(pkt.magia)
           }] : []),
           mod_atrybuty: {},
           atrybuty_glowne: pkt.atrybuty_glowne || null,

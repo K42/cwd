@@ -7,6 +7,8 @@ import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/sciezki.js';
 import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
 import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
 import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
+import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magia.js';
+import { TRADYCJE } from './data/tradycje.js';
 import { rollTable } from './data/table_utils.js';
 import DANE_GRY from './data/dane-gry.js';
 import SPELLS from './data/spells.js';
@@ -364,7 +366,7 @@ function renderPathTile(path, poziomWyboru) {
 function renderPathBenefitsList(path, poziomWyboru) {
   const pkt = (path.korzysci && path.korzysci[poziomWyboru]) || {};
   const talenty = (pkt.talenty || []).map(t => `<li><strong>Talent:</strong> ${t.nazwa || t} – ${t.opis || ''}</li>`).join('');
-  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Zaklęcie:</strong> ${z.nazwa || z} ${z.tradycja ? `(${  z.tradycja  })` : ''}</li>`).join('');
+  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Magia:</strong> ${z.opis || z.nazwa || z}</li>`).join('');
   const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const atrybutyGlowne = pkt.atrybuty_glowne
@@ -2742,7 +2744,7 @@ function wyswietlKorzysciPoziomu(benefits) {
     const magicContent = document.getElementById('magic-content');
     const magicSection = document.getElementById('magic-section');
     if (magicContent) {
-      magicContent.textContent = benefits.korzyści.magia;
+      magicContent.textContent = opisMagii(benefits.korzyści.magia);
     }
     if (magicSection) {
       magicSection.style.display = 'block';
