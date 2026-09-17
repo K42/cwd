@@ -2255,148 +2255,205 @@ function generujSekcjeWynikowTabel(originId) {
 }
 
 /**
- * Aktualizuje podgląd postaci w kroku 3
+ * Zwraca nazwę tieru poziomu postaci (0=startowy, 1-2=Nowicjusz,
+ * 3-6=Ekspert, 7-10=Mistrz), zgodnie z etykietami użytymi na kartach
+ * poziomu w Kroku 2.
+ * @param {number} poziom
+ * @returns {string}
  */
-function aktualizujPodgladPostaci() {
-  if (!wybranePochodzenie) return;
-    
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
-  if (!pochodzenie) return;
-    
-  const container = document.getElementById('character-preview');
-    
-  // Pobierz obliczone atrybuty
+function nazwaTieruPoziomu(poziom) {
+  if (poziom === 0) return 'Poziom startowy';
+  if (poziom <= 2) return 'Nowicjusz';
+  if (poziom <= 6) return 'Ekspert';
+  return 'Mistrz';
+}
+
+/**
+ * Renderuje sekcję pochodzenia: nazwa, opis, cechy specjalne, rozmiar,
+ * prędkość bazowa, języki i bonus profesyjny/językowy z pochodzenia.
+ */
+function renderKartaPochodzeniaSection(pochodzenie) {
+  const cechy = pobierzWszystkieCechy(pochodzenie.cechy_specjalne);
+  return `
+    <div class="preview-section">
+      <h5>${pochodzenie.nazwa}</h5>
+      <p>${pochodzenie.opis}</p>
+      <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość bazowa:</strong> ${pochodzenie.predkosc}</p>
+      <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
+      <p><strong>Profesja/język z pochodzenia:</strong> ${formatujBonusProfesjiPochodzenia(pochodzenie)}</p>
+      ${cechy ? `
+        <div class="trait-list">
+          ${cechy.map(c => `<div class="trait-item"><strong>${c.nazwa}:</strong> ${c.opis}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję atrybutów podstawowych wraz z notatkami o jednorazowej
+ * zamianie wartości (Krok 2) i bonusie do atrybutu z pochodzenia, jeśli
+ * były użyte.
+ */
+function renderKartaAtrybutyPodstawoweSection(pochodzenie) {
   const atrybuty = {
     sila: parseInt(document.getElementById('sila-final').textContent),
     zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
     intelekt: parseInt(document.getElementById('intelekt-final').textContent),
     wola: parseInt(document.getElementById('wola-final').textContent)
   };
-    
-  // Oblicz atrybuty drugorzędne
-  let zdrowie = atrybuty.sila;
-  
-  // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
-  if (wybranyPoziom >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
-    const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
-    zdrowie += healthBonus;
-  }
-  
-  const atrybutyDrugorzedne = {
-    percepcja: atrybuty.intelekt,
-    obrona: atrybuty.zrecznosc,
-    zdrowie,
-    szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
-  };
-    
-  // Modyfikatory obrony na podstawie rozmiaru
-  if (pochodzenie.rozmiar === '1/4') {
-    atrybutyDrugorzedne.obrona += 4;
-  } else if (pochodzenie.rozmiar === '1/2') {
-    atrybutyDrugorzedne.obrona += 2;
-  } else if (pochodzenie.rozmiar === '2') {
-    atrybutyDrugorzedne.obrona -= 2;
-  }
-    
-  container.innerHTML = `
-        <h4>📜 Podgląd Postaci</h4>
-        
-        <div class="preview-section">
-            <h5>${pochodzenie.nazwa}</h5>
-            <p>${pochodzenie.opis}</p>
-        </div>
-        
-        <div class="preview-section">
-            <h5>Atrybuty Podstawowe</h5>
-            <div class="preview-stats">
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Siła</div>
-                    <div class="preview-stat-value">${atrybuty.sila}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Zręczność</div>
-                    <div class="preview-stat-value">${atrybuty.zrecznosc}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Intelekt</div>
-                    <div class="preview-stat-value">${atrybuty.intelekt}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Wola</div>
-                    <div class="preview-stat-value">${atrybuty.wola}</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="preview-section">
-            <h5>Atrybuty Drugorzędne</h5>
-            <div class="preview-stats">
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Percepcja</div>
-                    <div class="preview-stat-value">${atrybutyDrugorzedne.percepcja}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Obrona</div>
-                    <div class="preview-stat-value">${atrybutyDrugorzedne.obrona}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Zdrowie</div>
-                    <div class="preview-stat-value">${atrybutyDrugorzedne.zdrowie}</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="preview-stat-label">Szybkość Zdrowienia</div>
-                    <div class="preview-stat-value">${atrybutyDrugorzedne.szybkosc_zdrowienia}</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="preview-section">
-            <h5>Szczegóły</h5>
-            <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
-            <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
-            <p><strong>Profesje:</strong> ${formatujBonusProfesjiPochodzenia(pochodzenie)}</p>
-        </div>
 
-        ${renderPathBenefitsSummary()}
-        
-        ${renderProfessionsAndCuriosSummary()}
-        
-        ${generujSekcjeWynikowTabel(pochodzenie.id)}
+  const notatki = [];
+  const domyslneAtrybuty = document.getElementById('domyslne-atrybuty');
+  if (domyslneAtrybuty && !domyslneAtrybuty.checked) {
+    const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
+    const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
+    if (zmniejszony && zwiekszony) {
+      notatki.push(`Zamiana wartości: −1 ${ETYKIETY_ATRYBUTOW[zmniejszony]}, +1 ${ETYKIETY_ATRYBUTOW[zwiekszony]}.`);
+    }
+  }
+  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
+  if (pochodzenie.wybor_atrybutu && bonusoweAtrybuty.length > 0) {
+    const wartoscBonusu = pochodzenie.wybor_atrybutu.wartosc || 1;
+    notatki.push(`Bonus z pochodzenia: ${bonusoweAtrybuty.map(a => `${ETYKIETY_ATRYBUTOW[a]} +${wartoscBonusu}`).join(', ')}.`);
+  }
 
-        ${generujSekcjeSciezekIZasobow()}
-    `;
+  return `
+    <div class="preview-section">
+      <h5>Atrybuty Podstawowe</h5>
+      <div class="attributes-grid">
+        <div class="attribute-box"><strong>Siła</strong><br>${atrybuty.sila}</div>
+        <div class="attribute-box"><strong>Zręczność</strong><br>${atrybuty.zrecznosc}</div>
+        <div class="attribute-box"><strong>Intelekt</strong><br>${atrybuty.intelekt}</div>
+        <div class="attribute-box"><strong>Wola</strong><br>${atrybuty.wola}</div>
+      </div>
+      ${notatki.map(n => `<p class="hint">${n}</p>`).join('')}
+    </div>
+  `;
 }
 
 /**
- * Generuje sekcję wybranych ścieżek i zasobów w podglądzie
+ * Renderuje sekcję atrybutów drugorzędnych, czytając już poprawnie
+ * przeliczone wartości (łącznie z bonusami ze ścieżek) z Kroku 2 -
+ * patrz aktualizujAtrybutyDrugorzedne().
  */
-function generujSekcjeSciezekIZasobow() {
-  const parts = [];
-  const sc = [];
-  if (wybraneSciezki.nowicjusz) sc.push(`<li>Nowicjusz: ${formatSciezkaName(wybraneSciezki.nowicjusz)}</li>`);
-  if (wybraneSciezki.ekspert) sc.push(`<li>Ekspert: ${formatSciezkaName(wybraneSciezki.ekspert)}</li>`);
-  if (wybraneSciezki.mistrz) sc.push(`<li>Mistrz: ${formatSciezkaName(wybraneSciezki.mistrz)}</li>`);
-  if (sc.length > 0) {
-    parts.push('<div class="preview-section">');
-    parts.push('<h5>Ścieżki</h5>');
-    parts.push(`<ul>${sc.join('')}</ul>`);
-    parts.push('</div>');
-  }
-  if (wybranyPoziom > 1) {
-    const srebro = wylosowaneSrebrniki != null ? wylosowaneSrebrniki : 'nie wylosowano';
-    parts.push('<div class="preview-section">');
-    parts.push('<h5>Zasoby</h5>');
-    parts.push(`<p><strong>Srebrniki:</strong> ${srebro} | <strong>Kurioza:</strong> ${liczbaKuriozow}</p>`);
-    parts.push('</div>');
-  }
-  return parts.join('');
+function renderKartaAtrybutyDrugorzedneSection() {
+  const odczytaj = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+  return `
+    <div class="preview-section">
+      <h5>Atrybuty Drugorzędne</h5>
+      <div class="attributes-grid">
+        <div class="attribute-box"><strong>Percepcja</strong><br>${odczytaj('percepcja-final')}</div>
+        <div class="attribute-box"><strong>Obrona</strong><br>${odczytaj('obrona-final')}</div>
+        <div class="attribute-box"><strong>Zdrowie</strong><br>${odczytaj('zdrowie-final')}</div>
+        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${odczytaj('szybkosc-zdrowienia-final', '1')}</div>
+        <div class="attribute-box"><strong>Prędkość</strong><br>${odczytaj('predkosc-final')}</div>
+        <div class="attribute-box"><strong>Moc</strong><br>${odczytaj('moc-final')}</div>
+        <div class="attribute-box"><strong>Splugawienie</strong><br>${odczytaj('splugawienie-final')}</div>
+      </div>
+    </div>
+  `;
 }
 
-function formatSciezkaName(id) {
-  return id
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (m) => m.toUpperCase())
-    .replace('Ł', 'Ł');
+/**
+ * Renderuje wybraną korzyść z pochodzenia na poziomie 4 (spell/talent/inna
+ * opcja wybrana w radiobuttonach sekcji "Korzyści z Pochodzenia").
+ */
+function renderKartaPoziom4Section(pochodzenie) {
+  if (wybranyPoziom < 4 || !pochodzenie.poziom_4) return '';
+  const wybranaOpcja = document.querySelector(`input[name="origin-option-${pochodzenie.id}"]:checked`)?.value;
+  const zdrowieBonus = parseInt((pochodzenie.poziom_4.zdrowie || '+0').replace('+', '')) || 0;
+  return `
+    <div class="preview-section">
+      <h5>Korzyść z Pochodzenia (Poziom 4)</h5>
+      ${zdrowieBonus > 0 ? `<p><strong>Zdrowie:</strong> +${zdrowieBonus}</p>` : ''}
+      <p><strong>Wybrana opcja:</strong> ${wybranaOpcja || 'nie wybrano'}</p>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję wybranych ścieżek wraz z talentami i magią, które
+ * przyznają, oraz zasoby (srebrniki, kurioza) przyznane wraz z poziomem.
+ */
+function renderKartaSciezkiSection() {
+  const etykietyTieru = { 1: 'Nowicjusz', 3: 'Ekspert', 7: 'Mistrz' };
+  const sekcje = [1, 3, 7].map(poziomWyboru => {
+    const benefit = przyznaneKorzysciZeSciezek[poziomWyboru];
+    if (!benefit) return '';
+    const pkt = benefit.pkt || {};
+    const talenty = (pkt.talenty || []).map(t => `<div class="trait-item"><strong>${t.nazwa}:</strong> ${t.opis}</div>`).join('');
+    const magia = (pkt.zaklecia || []).map(z => `<div class="trait-item"><strong>Magia:</strong> ${z.opis}</div>`).join('');
+    return `
+      <div class="path-benefit-item">
+        <h6>${etykietyTieru[poziomWyboru]}: ${benefit.sciezkaNazwa || benefit.sciezkaId} (poziom ${poziomWyboru})</h6>
+        ${talenty || magia ? `<div class="trait-list">${talenty}${magia}</div>` : ''}
+      </div>
+    `;
+  }).filter(Boolean);
+
+  if (sekcje.length === 0) return '';
+
+  return `
+    <div class="preview-section">
+      <h5>Wybrane Ścieżki</h5>
+      ${sekcje.join('')}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję zasobów: srebrniki wylosowane za poziomy powyżej 0
+ * i liczbę dostępnych kuriozów.
+ */
+function renderKartaZasobySection() {
+  if (wybranyPoziom <= 0) return '';
+  const srebro = wylosowaneSrebrniki != null ? wylosowaneSrebrniki : 'nie wylosowano';
+  return `
+    <div class="preview-section">
+      <h5>Zasoby</h5>
+      <p><strong>Srebrniki:</strong> ${srebro} | <strong>Kurioza:</strong> ${liczbaKuriozow}</p>
+    </div>
+  `;
+}
+
+/**
+ * Buduje kompletną, czytelną Kartę Postaci ze wszystkich informacji
+ * zebranych w kreatorze: pochodzenia, atrybutów, ścieżek z talentami,
+ * profesji/języków/kuriozów, zasobów i wyników tabel losowych.
+ * Używana zarówno przez live podgląd w Kroku 5, jak i finalną Kartę
+ * Postaci po kliknięciu "Utwórz Postać".
+ * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
+ */
+function generujKartePostaciHTML() {
+  if (!wybranePochodzenie) return '';
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie) return '';
+
+  return `
+    <div class="preview-section">
+      <p><strong>Poziom:</strong> ${wybranyPoziom} (${nazwaTieruPoziomu(wybranyPoziom)})</p>
+    </div>
+    ${renderKartaPochodzeniaSection(pochodzenie)}
+    ${renderKartaAtrybutyPodstawoweSection(pochodzenie)}
+    ${renderKartaAtrybutyDrugorzedneSection()}
+    ${renderKartaPoziom4Section(pochodzenie)}
+    ${renderKartaSciezkiSection()}
+    ${renderProfessionsAndCuriosSummary()}
+    ${renderKartaZasobySection()}
+    ${generujSekcjeWynikowTabel(pochodzenie.id)}
+  `;
+}
+
+/**
+ * Aktualizuje podgląd postaci (Krok 5) - żywa, aktualizowana na bieżąco
+ * wersja Karty Postaci, zanim użytkownik kliknie "Utwórz Postać".
+ */
+function aktualizujPodgladPostaci() {
+  if (!wybranePochodzenie) return;
+  const container = document.getElementById('character-preview');
+  if (!container) return;
+  container.innerHTML = `<h4>📜 Podgląd Postaci</h4>${generujKartePostaciHTML()}`;
 }
 
 /**
@@ -2440,7 +2497,7 @@ async function utworzPostac() {
     const postac = budujPostac(spec);
     biezacaPostac = postac;
 
-    wyswietlPostac(postac);
+    wyswietlPostac();
 
   } catch (error) {
     pokazBlad(`Błąd tworzenia postaci: ${  error.message}`);
@@ -2451,100 +2508,16 @@ async function utworzPostac() {
 }
 
 /**
- * Wyświetla kartę postaci
+ * Wyświetla finalną Kartę Postaci (po kliknięciu "Utwórz Postać") -
+ * ta sama kompletna karta co żywy podgląd w Kroku 5, patrz
+ * generujKartePostaciHTML().
  */
-function wyswietlPostac(postac) {
+function wyswietlPostac() {
   const content = document.getElementById('character-content');
-
-  content.innerHTML = `
-        <div class="section">
-            <h4>🎭 ${postac.pochodzenie.nazwa}</h4>
-            <p><em>${postac.pochodzenie.opis}</em></p>
-
-            <div class="attributes-grid">
-                <div class="attribute-box">
-                    <strong>Siła</strong><br>
-                    ${postac.atrybuty.sila}
-                </div>
-                <div class="attribute-box">
-                    <strong>Zręczność</strong><br>
-                    ${postac.atrybuty.zrecznosc}
-                </div>
-                <div class="attribute-box">
-                    <strong>Intelekt</strong><br>
-                    ${postac.atrybuty.intelekt}
-                </div>
-                <div class="attribute-box">
-                    <strong>Wola</strong><br>
-                    ${postac.atrybuty.wola}
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h4>📊 Atrybuty Drugorzędne</h4>
-            <div class="attributes-grid">
-                <div class="attribute-box">
-                    <strong>Percepcja</strong><br>
-                    ${postac.atrybuty_drugorzedne.percepcja}
-                </div>
-                <div class="attribute-box">
-                    <strong>Obrona</strong><br>
-                    ${postac.atrybuty_drugorzedne.obrona}
-                </div>
-                <div class="attribute-box">
-                    <strong>Zdrowie</strong><br>
-                    ${postac.atrybuty_drugorzedne.zdrowie}
-                </div>
-                <div class="attribute-box">
-                    <strong>Szybkość Zdrowienia</strong><br>
-                    ${postac.atrybuty_drugorzedne.szybkosc_zdrowienia}
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h4>🎯 Szczegóły</h4>
-            <p><strong>Rozmiar:</strong> ${postac.atrybuty_drugorzedne.rozmiar}</p>
-            <p><strong>Prędkość:</strong> ${postac.atrybuty_drugorzedne.predkosc}</p>
-            <p><strong>Moc:</strong> ${postac.atrybuty_drugorzedne.moc}</p>
-            <p><strong>Języki:</strong> ${postac.jezyki.join(', ')}</p>
-            <p><strong>Profesje:</strong> ${postac.profesje.join(', ')}</p>
-        </div>
-
-        ${postac.cechy_specjalne ? renderujCechySpecjalne(postac.cechy_specjalne) : ''}
-        ${postac.sciezka ? renderujSciezke(postac.sciezka) : ''}
-    `;
+  content.innerHTML = generujKartePostaciHTML();
 
   document.getElementById('character-sheet').style.display = 'block';
   document.getElementById('character-sheet').scrollIntoView({ behavior: 'smooth' });
-}
-
-/**
- * Renderuje cechy specjalne pochodzenia
- */
-function renderujCechySpecjalne(cechy) {
-  let html = '<div class="section"><h4>✨ Cechy Specjalne</h4>';
-
-  Object.entries(cechy).forEach(([nazwa, opis]) => {
-    html += `<p><strong>${nazwa}:</strong> ${opis}</p>`;
-  });
-
-  html += '</div>';
-  return html;
-}
-
-/**
- * Renderuje informacje o ścieżce
- */
-function renderujSciezke(sciezka) {
-  return `
-        <div class="section">
-            <h4>🛤️ Ścieżka: ${sciezka.nazwa}</h4>
-            <p><em>${sciezka.opis}</em></p>
-            <!-- Szczegóły ścieżki będą dodane w przyszłych wersjach -->
-        </div>
-    `;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -3104,47 +3077,6 @@ async function losujZTabeliUI(originId, tableName) {
       resultDiv.innerHTML = `<div class="error">❌ Błąd: ${error.message}</div>`;
     }
   }
-}
-
-/**
- * Renderuje podsumowanie korzyści ze ścieżek w podglądzie postaci
- * @returns {string} HTML z podsumowaniem ścieżek
- */
-function renderPathBenefitsSummary() {
-  const benefits = [];
-  
-  // Sprawdź wybrane ścieżki
-  if (wybraneSciezki.nowicjusz) {
-    const benefit = przyznaneKorzysciZeSciezek[1];
-    if (benefit) {
-      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Nowicjusza:</strong> ${benefit.sciezkaId} (poziom 1)</div>`);
-    }
-  }
-  
-  if (wybraneSciezki.ekspert && wybranyPoziom >= 3) {
-    const benefit = przyznaneKorzysciZeSciezek[3];
-    if (benefit) {
-      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Ekspercka:</strong> ${benefit.sciezkaId} (poziom 3)</div>`);
-    }
-  }
-  
-  if (wybraneSciezki.mistrz && wybranyPoziom >= 7) {
-    const benefit = przyznaneKorzysciZeSciezek[7];
-    if (benefit) {
-      benefits.push(`<div class="path-benefit-item"><strong>Ścieżka Mistrzowska:</strong> ${benefit.sciezkaId} (poziom 7)</div>`);
-    }
-  }
-  
-  if (benefits.length === 0) {
-    return '';
-  }
-  
-  return `
-    <div class="preview-section">
-      <h5>Wybrane Ścieżki</h5>
-      ${benefits.join('')}
-    </div>
-  `;
 }
 
 /**
