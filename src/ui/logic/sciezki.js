@@ -54,7 +54,11 @@ function getPathsForLevel(poziom) {
           mod_atrybuty: {},
           atrybuty_glowne: pkt.atrybuty_glowne || null,
           mod_drugorzedne: {
-            zdrowie: parseInt(pkt.zdrowie?.replace('+', '') || '0')
+            zdrowie: parseInt(pkt.zdrowie?.replace('+', '') || '0'),
+            moc: parseInt(pkt.moc?.replace('+', '') || '0'),
+            obrona: parseInt(pkt.obrona?.replace('+', '') || '0'),
+            predkosc: parseInt(pkt.predkosc?.replace('+', '') || '0'),
+            splugawienie: parseInt(pkt.splugawienie?.replace('+', '') || '0')
           },
           bieglosci: pkt.jezyki_profesje ? [pkt.jezyki_profesje.opis] : [],
           jezyki_profesje: pkt.jezyki_profesje || null,

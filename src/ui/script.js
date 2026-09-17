@@ -381,10 +381,9 @@ function applyPathBenefits({ poziomWyboru, sciezka }) {
   // eslint-disable-next-line no-console
   console.log('applyPathBenefits:', { poziomWyboru, sciezka: sciezka.id, wybranyPoziom });
   
-  // Usuń poprzednie benefity z tego progu
-  if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
-    odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
-  }
+  // Poprzednie korzyści z tego progu (jeśli były) zostaną zastąpione niżej -
+  // dodajBenefity() przelicza atrybuty drugorzędne od zera na podstawie
+  // aktualnego stanu przyznaneKorzysciZeSciezek, więc nie trzeba ich osobno odjąć.
   // Zapisz wybór ścieżki w stanie uproszczonym
   if (poziomWyboru === 1) {
     wybraneSciezki.nowicjusz = sciezka.id;
@@ -404,7 +403,7 @@ function applyPathBenefits({ poziomWyboru, sciezka }) {
 
   // Zastosuj nowy pakiet korzyści
   const pkt = (sciezka.korzysci && sciezka.korzysci[poziomWyboru]) || {};
-  przyznaneKorzysciZeSciezek[poziomWyboru] = { sciezkaId: sciezka.id, poziomWyboru, pkt };
+  przyznaneKorzysciZeSciezek[poziomWyboru] = { sciezkaId: sciezka.id, sciezkaNazwa: sciezka.nazwa, poziomWyboru, pkt };
   dodajBenefity(pkt);
   aktualizujPodgladPostaci();
   renderPathSummary(poziomWyboru, sciezka);
@@ -1676,8 +1675,11 @@ function resetujSciezke(tier) {
   if (!poziomWyboru) return;
 
   if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
-    odejmijBenefity(przyznaneKorzysciZeSciezek[poziomWyboru]);
+    const usuwanaKorzysc = przyznaneKorzysciZeSciezek[poziomWyboru];
+    // Wyczyść stan PRZED przeliczeniem, by sumujBonusyDrugorzedneZeSciezek()
+    // (wywoływane wewnątrz odejmijBenefity) nie liczyło już usuwanej ścieżki.
     przyznaneKorzysciZeSciezek[poziomWyboru] = null;
+    odejmijBenefity(usuwanaKorzysc);
   }
   wybraneSciezki[tier] = '';
 
@@ -1889,25 +1891,44 @@ function renderAtrybutySlotySection() {
 }
 
 /**
+ * Sumuje bonusy do atrybutów drugorzędnych (Zdrowie, Moc, Obrona, Prędkość,
+ * Splugawienie) przyznane przez wszystkie aktualnie wybrane ścieżki.
+ * @returns {{zdrowie: number, moc: number, obrona: number, predkosc: number, splugawienie: number}}
+ */
+function sumujBonusyDrugorzedneZeSciezek() {
+  const suma = { zdrowie: 0, moc: 0, obrona: 0, predkosc: 0, splugawienie: 0 };
+  [1, 3, 7].forEach(poziomWyboru => {
+    const mod = przyznaneKorzysciZeSciezek[poziomWyboru]?.pkt?.mod_drugorzedne;
+    if (!mod) return;
+    Object.keys(suma).forEach(k => { suma[k] += mod[k] || 0; });
+  });
+  return suma;
+}
+
+/**
  * Aktualizuje atrybuty drugorzędne na podstawie atrybutów głównych i pochodzenia
  */
 function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
   // Oblicz atrybuty drugorzędne zgodnie z Podręcznikiem Głównym
-  let zdrowie = atrybuty.sila;
-  
+  const bonusySciezek = sumujBonusyDrugorzedneZeSciezek();
+  let zdrowie = atrybuty.sila + bonusySciezek.zdrowie;
+
   // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
   if (wybranyPoziom >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
     const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
     zdrowie += healthBonus;
   }
-  
+
   const atrybutyDrugorzedne = {
     percepcja: atrybuty.intelekt,
-    obrona: atrybuty.zrecznosc,
+    obrona: atrybuty.zrecznosc + bonusySciezek.obrona,
     zdrowie,
-    szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1
+    szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1,
+    moc: bonusySciezek.moc,
+    predkosc: (pochodzenie.predkosc || 0) + bonusySciezek.predkosc,
+    splugawienie: bonusySciezek.splugawienie
   };
-  
+
   // Modyfikatory obrony na podstawie rozmiaru pochodzenia
   if (pochodzenie.rozmiar === '1/4') {
     atrybutyDrugorzedne.obrona += 4;
@@ -1944,6 +1965,18 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
             <label>Szybkość Zdrowienia:</label>
             <span id="szybkosc-zdrowienia-final">${atrybutyDrugorzedne.szybkosc_zdrowienia}</span>
           </div>
+          <div class="attribute-display">
+            <label>Prędkość:</label>
+            <span id="predkosc-final">${atrybutyDrugorzedne.predkosc}</span>
+          </div>
+          <div class="attribute-display">
+            <label>Moc:</label>
+            <span id="moc-final">${atrybutyDrugorzedne.moc}</span>
+          </div>
+          <div class="attribute-display">
+            <label>Splugawienie:</label>
+            <span id="splugawienie-final">${atrybutyDrugorzedne.splugawienie}</span>
+          </div>
         </div>
       `;
       container.appendChild(secondaryDiv);
@@ -1953,6 +1986,9 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
       document.getElementById('obrona-final').textContent = atrybutyDrugorzedne.obrona;
       document.getElementById('zdrowie-final').textContent = atrybutyDrugorzedne.zdrowie;
       document.getElementById('szybkosc-zdrowienia-final').textContent = atrybutyDrugorzedne.szybkosc_zdrowienia;
+      document.getElementById('predkosc-final').textContent = atrybutyDrugorzedne.predkosc;
+      document.getElementById('moc-final').textContent = atrybutyDrugorzedne.moc;
+      document.getElementById('splugawienie-final').textContent = atrybutyDrugorzedne.splugawienie;
     }
   }
 }
