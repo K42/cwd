@@ -107,6 +107,25 @@ h5 { font-size: 0.9rem; color: var(--gold); }
     cursor: pointer;
 }
 
+.quick-random-fill {
+    background: var(--bg-2);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.quick-random-fill .btn-primary {
+    font-size: 1.1em;
+    padding: 12px 28px;
+}
+
+.quick-random-fill .hint {
+    margin: 10px 0 0 0;
+}
+
 .attribute-swap-row {
     display: flex;
     gap: 20px;

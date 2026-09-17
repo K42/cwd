@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
   document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetujWyborPochodzenia);
+  document.getElementById('btn-losuj-krok-1')?.addEventListener('click', losujPochodzenieICechy);
   document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
   document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
   document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
@@ -1226,6 +1227,26 @@ function zbierzWynikiTabel(originId) {
       }
     }
   });
+}
+
+/**
+ * Krok 1 "Losuj postać": wybiera losowe pochodzenie i losuje wszystkie jego tabele
+ * (przeszłość, wygląd itd.), naśladując ręczny przepływ (rzuć każdą tabelę, potem
+ * kliknij "Wybierz") - dzięki temu wynikiTabel wypełnia się tak samo, jak przy ręcznym
+ * wyborze, patrz zbierzWynikiTabel() wywoływane wewnątrz wybierzPochodzenie().
+ */
+async function losujPochodzenieICechy() {
+  if (!dostepnePochodzenia.length) return;
+
+  const losowe = dostepnePochodzenia[Math.floor(Math.random() * dostepnePochodzenia.length)];
+
+  if (losowe.tabele) {
+    for (const nazwaTabeli of Object.keys(losowe.tabele)) {
+      await losujZTabeliUI(losowe.id, nazwaTabeli);
+    }
+  }
+
+  wybierzPochodzenie(losowe.id);
 }
 
 /**
