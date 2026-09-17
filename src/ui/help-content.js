@@ -77,6 +77,20 @@ function getStartContent() {
 
     <div class="help-step">
       <div class="help-step-header">
+        <span class="help-step-number">4.5</span>
+        <h5>Zaklęcia (opcjonalnie)</h5>
+      </div>
+      <p>Jeśli twoja postać potrafi rzucać zaklęcia, w Kroku 4.5 możesz przeszukać całą bibliotekę zaklęć z podręcznika głównego i oznaczyć te, które twoja postać zna.</p>
+      <ul>
+        <li>Ten krok jest <strong>całkowicie opcjonalny</strong> - "Dalej" nigdy nie jest zablokowane, więc postać bez magii może go pominąć bez wybierania niczego</li>
+        <li><strong>Wyszukiwanie i filtry</strong> - szukaj po nazwie lub treści opisu, albo filtruj po tradycji, kręgu (0-10) i kategorii (atak/użytkowe)</li>
+        <li>Podpowiedź na górze kroku pokazuje, jaką magię przyznały już twoje wybrane ścieżki - to tylko informacja, nie ogranicza wyboru</li>
+        <li>Każde zaklęcie ma etykietę źródła (np. "PG" - Podręcznik Główny)</li>
+      </ul>
+    </div>
+
+    <div class="help-step">
+      <div class="help-step-header">
         <span class="help-step-number">5</span>
         <h5>Podsumowanie i Eksport</h5>
       </div>
@@ -282,6 +296,13 @@ function getFAQContent() {
         <div class="faq-question">Czy mogę edytować postać po utworzeniu?</div>
         <div class="faq-answer">
           Obecnie nie. Edycja będzie dostępna w przyszłych wersjach. Możesz jednak stworzyć nową postać.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Muszę wybrać zaklęcia w Kroku 4.5?</div>
+        <div class="faq-answer">
+          Nie. Krok 4.5 jest w pełni opcjonalny - możesz kliknąć "Dalej" bez wybierania żadnego zaklęcia, niezależnie od tego, czy twoja postać posługuje się magią. Wybrane zaklęcia trafiają do Karty Postaci jako lista informacyjna.
         </div>
       </div>
     </div>
