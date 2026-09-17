@@ -1,14 +1,14 @@
 /**
  * Biblioteka zaklęć - Podręcznik Główny (PG) oraz suplementy.
- * PG: Rozdział 7 "Magia" (30 tradycji, wyodrębnione ze strukturalnego tekstu
- * podręcznika - patrz komentarz w historii commitów dla szczegółów ekstrakcji).
- * Suplementy (SP, RA, NW, GWP, GP, SUP, CS): zaklęcia wyodrębnione automatycznym
- * parserem z dwukolumnowego układu strony; wpisy, których granice opisu nie
- * dało się wiarygodnie ustalić (opis nienaturalnie długi lub z powtórzonymi
- * nagłówkami pól), zostały odrzucone, by nie publikować uszkodzonych opisów -
- * z tego powodu pokrycie zaklęć z suplementów jest częściowe, w przeciwieństwie
- * do w pełni zweryfikowanego PG.
- * `strona_zrodlowa` jest znane tylko dla PG (strona początku danej tradycji).
+ * PG: Rozdział 7 "Magia" (30 tradycji) - wyodrębnione i ręcznie zweryfikowane wpis po
+ * wpisie względem tekstu podręcznika.
+ * SP/RA/NW/GWP/GP/SUP: wyodrębnione z czystych transkrypcji markdown w sources/ (a nie z
+ * PDF-a bezpośrednio) - dużo wyższa jakość niż pierwsze podejście przez pdftotext, ale
+ * wciąż automatyczne; opisy nienaturalnie krótkie/ucięte oznaczają miejsce, w którym
+ * nagłówek jakiegoś zaklęcia zgubił się w źródle (patrz lista do weryfikacji w commicie).
+ * CS: brak czystej transkrypcji źródłowej - pozostało wyodrębnione z PDF-a (niższa
+ * pewność, część wpisów oznaczona do weryfikacji - patrz commit).
+ * `strona_zrodlowa` jest znane tylko dla PG.
  */
 
 const SPELLS = [
@@ -3621,13 +3621,24 @@ const SPELLS = [
     "strona_zrodlowa": 153
   },
   {
+    "id": "stworzenie_plomienia",
+    "nazwa": "Stworzenie Płomienia",
+    "tradycja": "ogien",
+    "tradycjaNazwa": "Ogień",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 1 godzina; patrz niżej.\nSprawiasz, że w twojej dłoni lub na czubku obiektu, który trzymasz, pojawia się kula ognia. Płomień jest ciepły, ale nie wyrządza szkody tobie ani niczemu, co trzymasz lub masz na sobie. Emituje światło wypełniające sferę o promieniu 3 metrów i punkcie początkowym w miejscu płomienia.\nMożesz wykorzystać akcję, aby zaatakować z użyciem płomienia, co kończy działanie zaklęcia. Wykonaj oparty na Zręczności rzut na atak z 1 ułatwieniem przeciwko Zręczności jednego stworzenia w bliskim zasięgu. Sukces oznacza, że płomień trafia, a cel otrzymuje 1k6 + 1 obrażeń.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
     "id": "zwodzenie",
     "nazwa": "Zwodzenie",
     "tradycja": "magia_fey",
     "tradycjaNazwa": "Magia Fey",
     "krag": 0,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Percepcji celu. Sukces oznacza, że przez 1 minutę wykonuje on rzuty na atak z 1 utrudnieniem, o ile pozostaje w bliskim zasięgu od ciebie\nRzut na atak 20+: Cel zostaje również osłabiony na 1 minutę.",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Percepcji celu. Sukces oznacza, że przez 1 minutę wykonuje on rzuty na atak z 1 utrudnieniem, o ile pozostaje w bliskim zasięgu od ciebie.\nRzut na atak 20+: Cel zostaje również osłabiony na 1 minutę.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3638,62 +3649,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Fey",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jeden obiekt o Rozmiarze 1 lub mniejszym w twoim bezpośrednim zasięgu. Dotykasz celu, sprawiając, że przybiera Rozmiar 1/8 lub połowę swojego Rozmiaru – w zależności, która wartość jest mniejsza. Obiekt pozostaje tej wielkości, dopóki nie wykorzystasz akcji, aby go z powrotem powiększyć. 20 Straszliwe piękno",
-    "zrodlo": "SP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "wymazanie_pamieci",
-    "nazwa": "Wymazanie Pamięci",
-    "tradycja": "magia_fey",
-    "tradycjaNazwa": "Magia Fey",
-    "krag": 3,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, która jest w stanie cię słyszeć. Twoje słowa sprawiają, że wspomnienia stworzenia ulatują z jego umysłu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi celu. Jeśli jest on zauroczony, otrzymujesz 1 ułatwienie. Sukces oznacza, że wymazujesz wspomnienia wybranej istoty na temat tego, czego doświadczyła w trakcie minuty, zanim rzuciłeś zaklęcie. Czar ten usuwa także jakiekolwiek Szaleństwo zyskane przez cel w ubiegłej minucie.\nRzut na atak 20+: Cel staje się również osłabiony na 1 minutę.",
-    "zrodlo": "SP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "halucynacje",
-    "nazwa": "Halucynacje",
-    "tradycja": "magia_fey",
-    "tradycjaNazwa": "Magia Fey",
-    "krag": 4,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Wybrane stworzenie widzi i słyszy rzeczy, które nie są prawdziwe. Wykonaj oparty na Intelekcie rzut na atak przeciwko Percepcji celu. Sukces oznacza, że doświadcza on halucynacji przez 1 minutę. Dopóki efekt nie dobiegnie końca, za każdym razem, kiedy cel miałby podjąć akcję, musi najpierw wykonać test Percepcji z 1 utrudnieniem. Porażka oznacza, że staje się zamroczony na 1 rundę.",
-    "zrodlo": "SP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "poskrecana_korona",
-    "nazwa": "Poskręcana Korona",
-    "tradycja": "magia_fey",
-    "tradycjaNazwa": "Magia Fey",
-    "krag": 5,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: Koncentracja, do 1 minuty. Na twojej głowie pojawia się powykręcana drewniana korona i pozostaje tam na czas trwania zaklęcia. Kiedy rzucasz to zaklęcie, a także kiedy wykorzystujesz akcję, aby się na nim koncentrować, każde stworzenie w bliskim zasięgu musi wykonać test Woli. Porażka oznacza, że staje się ono oszołomione na 1 rundę, sukces zaś uodparnia je na efekty tego użycia zaklęcia.",
-    "zrodlo": "SP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "stworzenie_odmienca",
-    "nazwa": "Stworzenie Odmieńca",
-    "tradycja": "magia_fey",
-    "tradycjaNazwa": "Magia Fey",
-    "krag": 6,
-    "kategoria": "uzytkowe",
-    "opis": "Wymagania: Zanim będziesz w stanie rzucić to zaklęcie, musisz spędzić 1 godzinę, formując z błota, patyków, liści utrudnienia wynikające z osłony; możesz też atakować cele za całkowitą osłoną, ale jeśli nie jesteś w stanie ich widzieć, liczy to tak, jakbyś był oślepiony. Jeśli jesteś w stanie widzieć cel za pełną osłoną, możesz go zaatakować tak, jakby nie miał osłony.",
-    "zrodlo": "SP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "przyzwanie_wierzchowcow",
-    "nazwa": "Przyzwanie Wierzchowców",
-    "tradycja": "magia_pierwotna",
-    "tradycjaNazwa": "Magia Pierwotna",
-    "krag": 4,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Okrąg na podłożu o promieniu 5 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 8 godzin; patrz niżej. Pod koniec rundy we wskazanym obszarze pojawia się sześć stojących na ziemi koni. Zachowują istnienie, dopóki trwa zaklęcie lub dopóki nie zostaną obezwładnione, kiedy to znikają. Przywołane konie stają się zniewolone przez każde stworzenie, które ich dosiądzie.",
+    "opis": "Cel: Jeden obiekt o Rozmiarze 1 lub mniejszym w twoim bezpośrednim zasięgu.\nDotykasz celu, sprawiając, że przybiera Rozmiar 1/8 lub połowę swojego Rozmiaru – w zależności, która wartość jest mniejsza. Obiekt pozostaje tej wielkości, dopóki nie wykorzystasz akcji, aby go z powrotem powiększyć.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3704,7 +3660,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Fey",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Stajesz się ukryty na czas trwania zaklęcia. Efekt ten dobiega końca, jeśli podejmiesz akcję lub reakcję.\nReakcja: Kiedy otrzymujesz obrażenia, możesz wykorzystać reakcję, aby rzucić to zaklęcie. Jego czas trwania skraca się wtedy do 1 rundy.",
+    "opis": "Czas trwania: 1 minuta.\nStajesz się ukryty na czas trwania zaklęcia. Efekt ten dobiega końca, jeśli podejmiesz akcję lub reakcję.\nReakcja: Kiedy otrzymujesz obrażenia, możesz wykorzystać reakcję, aby rzucić to zaklęcie. Jego czas trwania skraca się wtedy do 1 rundy.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3715,7 +3671,18 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Fey",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 2 metrów i punkcie początkowym w średnim zasięgu. Po obszarze działania zaklęcia rozchodzą się magiczne opary, a następnie rozwiewają się. Każde znajdujące się tam żywe stworzenie musi uzyskać sukces w teście Siły; w przeciwnym razie zostaje odurzone. Odurzona istota jest osłabiona, otrzymuje połowę obrażeń ze wszystkich źródeł i nie może zyskiwać Szaleństwa. Efekt odurzenia spowodowany tym zaklęciem trwa 1 minutę.",
+    "opis": "Obszar: Sfera o promieniu 2 metrów i punkcie początkowym w średnim zasięgu.\nPo obszarze działania zaklęcia rozchodzą się magiczne opary, a następnie rozwiewają się. Każde znajdujące się tam żywe stworzenie musi uzyskać sukces w teście Siły; w przeciwnym razie zostaje odurzone. Odurzona istota jest osłabiona, otrzymuje połowę obrażeń ze wszystkich źródeł i nie może zyskiwać Szaleństwa. Efekt odurzenia spowodowany tym zaklęciem trwa 1 minutę.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "bledne_ogniki",
+    "nazwa": "Błędne Ogniki",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Cel: Punkt w przestrzeni w średnim zasięgu. Czas trwania: Koncentracja, do 1 minuty.\nW wybranym punkcie pojawia się kula migoczących płomieni o średnicy 30 centymetrów i pozostaje tam na czas trwania zaklęcia. Ogniki rzucają światło w promieniu 2 metrów. Kiedy się pojawiają, każde stworzenie w średnim zasięgu, które jest w stanie je widzieć, musi uzyskać sukces w teście Woli z 1 ułatwieniem; w przeciwnym razie zostaje oczarowane przez płomienie, dopóki zaklęcie nie dobiegnie końca lub dopóki nie otrzyma obrażeń.\nZa każdym razem, kiedy wykorzystujesz akcję, aby skoncentrować się na efekcie czaru, możesz poruszyć kulę płomieni do 5 metrów w dowolnym kierunku. Kiedy tak robisz, stworzenie oczarowane przez ogniki musi się poruszyć w ich stronę na odległość równą połowie swojej Prędkości lub mniejszą.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3726,7 +3693,62 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Fey",
     "krag": 2,
     "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 3 metrów i punkcie początkowym w średnim zasięgu. W obszarze działania zaklęcia migoczą połyskliwe drobinki złota i znikają. Każde żywe stworzenie ze Zdrowiem 10 lub mniejszym zostaje powalone i zasypia na 8 godzin. Każde żywe stworzenie ze Zdrowiem 11 lub większym musi wykonać test Woli. Otrzymuje w nim 1 utrudnienie, jeśli jest poważnie ranne, i 2 utrudnienia, jeśli jest wyczerpane. Ofiara ze Zdrowiem 30 lub wyższym wykonuje rzut z 1 ułatwieniem. Porażka oznacza, że zostaje ona powalona i zasypia na 8 godzin. Śpiąca istota budzi się natychmiast, jeśli otrzyma obrażenia lub jeśli inne stworzenie wykorzysta akcję, aby je ocucić potrząśnięciem bądź kopniakiem.",
+    "opis": "Obszar: Sfera o promieniu 3 metrów i punkcie początkowym w średnim zasięgu.\nW obszarze działania zaklęcia migoczą połyskliwe drobinki złota i znikają. Każde żywe stworzenie ze Zdrowiem 10 lub mniejszym zostaje powalone i zasypia na 8 godzin.\nKażde żywe stworzenie ze Zdrowiem 11 lub większym musi wykonać test Woli. Otrzymuje w nim 1 utrudnienie, jeśli jest poważnie ranne, i 2 utrudnienia, jeśli jest wyczerpane. Ofiara ze Zdrowiem 30 lub wyższym wykonuje rzut z 1 ułatwieniem. Porażka oznacza, że zostaje ona powalona i zasypia na 8 godzin. Śpiąca istota budzi się natychmiast, jeśli otrzyma obrażenia lub jeśli inne stworzenie wykorzysta akcję, aby je ocucić potrząśnięciem bądź kopniakiem.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zloto_faerie",
+    "nazwa": "Złoto Faerie",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jeden liść, który trzymasz. Czas trwania: Patrz niżej.\nCel zmienia się w złotą monetę i pozostaje w tej formie do kolejnego wschodu słońca, w którym to momencie staje się ponownie liściem. Kiedy stworzenie inne niż ty dotyka monety, musi wykonać test Intelektu. Otrzymuje w nim 1 utrudnienie, jeśli jest przez ciebie zauroczone. Sukces oznacza, że efekt zaklęcia natychmiast się kończy.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby uleczyć obrażenia równe twojej Szybkości Zdrowienia.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wymazanie_pamieci",
+    "nazwa": "Wymazanie Pamięci",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, która jest w stanie cię słyszeć.\nTwoje słowa sprawiają, że wspomnienia stworzenia ulatują z jego umysłu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi celu. Jeśli jest on zauroczony, otrzymujesz 1 ułatwienie. Sukces oznacza, że wymazujesz wspomnienia wybranej istoty na temat tego, czego doświadczyła w trakcie minuty, zanim rzuciłeś zaklęcie. Czar ten usuwa także jakiekolwiek Szaleństwo zyskane przez cel w ubiegłej minucie.\nRzut na atak 20+: Cel staje się również osłabiony na 1 minutę.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "halucynacje",
+    "nazwa": "Halucynacje",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nWybrane stworzenie widzi i słyszy rzeczy, które nie są prawdziwe. Wykonaj oparty na Intelekcie rzut na atak przeciwko Percepcji celu. Sukces oznacza, że doświadcza on halucynacji przez 1 minutę. Dopóki efekt nie dobiegnie końca, za każdym razem, kiedy cel miałby podjąć akcję, musi najpierw wykonać test Percepcji z 1 utrudnieniem. Porażka oznacza, że staje się zamroczony na 1 rundę.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "poskrecana_korona",
+    "nazwa": "Poskręcana Korona",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: Koncentracja, do 1 minuty.\nNa twojej głowie pojawia się powykręcana drewniana korona i pozostaje tam na czas trwania zaklęcia. Kiedy rzucasz to zaklęcie, a także kiedy wykorzystujesz akcję, aby się na nim koncentrować, każde stworzenie w bliskim zasięgu musi wykonać test Woli. Porażka oznacza, że staje się ono oszołomione na 1 rundę, sukces zaś uodparnia je na efekty tego użycia zaklęcia.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "stworzenie_odmienca",
+    "nazwa": "Stworzenie Odmieńca",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 6,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Zanim będziesz w stanie rzucić to zaklęcie, musisz spędzić 1 godzinę, formując z błota, patyków, liści i drobnych kamieni kukłę przypominającą antropomorficzne stworzenie. Kukła nie może być większa niż Rozmiar 1. Po uformowaniu zachowuje ona swój magiczny potencjał, dopóki nie odbędziesz pełnego odpoczynku bądź nie otrzyma 10 lub więcej obrażeń.\nCel: Uformowana przez ciebie kukła w bezpośrednim zasięgu. Czas trwania: 1k6 + 1 dni; patrz niżej.\nTransformujesz cel w odmieńca, ten zaś przybiera wygląd jednego żywego stworzenia w średnim zasięgu, które jesteś w stanie widzieć. Wartości wszystkich atrybutów odmieńca wynoszą 1 i co godzinę rosną o 1, dopóki nie uzyska on Siły 9, Zręczności 10, Intelektu 10 i Woli 10.\nKiedy zaklęcie miałoby dobiec końca, rzuć k20. Jeśli wynikiem będzie 1, efekt staje się permanentny. W przeciwnym razie efekt czaru przestaje działać i odmieniec rozpada się w stos pyłu, patyków, liści i drobnych kamieni.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3737,7 +3759,18 @@ const SPELLS = [
     "tradycjaNazwa": "Iluzja",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 godzina. W czasie trwania zaklęcia stworzenia, które są w stanie cię widzieć i są tego samego Rozmiaru lub mają ten sam zakres Rozmiarów, co istoty o twoim pochodzeniu, postrzegają cię, jakbyś dzielił z nimi pochodzenie. Dodatkowo kiedy przemawiasz, ci, którzy cię słyszą i znają przynajmniej jeden język, rozumieją, co mówisz, tak jakbyś używał znanego im języka.",
+    "opis": "Czas trwania: 1 godzina.\nW czasie trwania zaklęcia stworzenia, które są w stanie cię widzieć i są tego samego Rozmiaru lub mają ten sam zakres Rozmiarów, co istoty o twoim pochodzeniu, postrzegają cię, jakbyś dzielił z nimi pochodzenie. Dodatkowo kiedy przemawiasz, ci, którzy cię słyszą i znają przynajmniej jeden język, rozumieją, co mówisz, tak jakbyś używał znanego im języka.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zatrute_jablko",
+    "nazwa": "Zatrute Jabłko",
+    "tradycja": "klatwy",
+    "tradycjaNazwa": "Klątwy",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno jabłko, które trzymasz.\nCzas trwania: 24 godziny lub do momentu spożycia.\nKoncentrujesz się na 1 minutę, w trakcie której musisz przekłuć swoją dłoń i przelać nieco krwi na cel. Po upływie tego czasu nasycasz jabłko magią sprawiającą, że ktokolwiek je zje, zostaje przeklęty. Owoc zachowuje te właściwości do końca trwania zaklęcia. Kiedy rzucasz czar, musisz określić, co konkretnie zdejmuje powiązaną z jabłkiem klątwę: na przykład pocałunek śmiertelnika szlachetnego urodzenia, łzy dziewicy lub kropla krwi śmiertelnego dziecka. Możesz również wykorzystać akcję, aby oczyścić owoc ze szkodliwej magii, o ile znajduje się on w twoim w dalekim zasięgu.\nStworzenie, które zje jabłko, zostaje powalone i staje się przeklęte. W tym czasie śpi, nie potrzebuje jeść ani pić i nie starzeje się. Efekt trwa, dopóki klątwa nie zostanie zdjęta lub dopóki nie umrzesz.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3759,7 +3792,40 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Bitewna",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "W trakcie rzucania tego zaklęcia wykonaj z 1 ułatwieniem atak z użyciem broni dystansowej lub miotanej. Ignoruje on Straszliwe piękno 21",
+    "opis": "W trakcie rzucania tego zaklęcia wykonaj z 1 ułatwieniem atak z użyciem broni dystansowej lub miotanej. Ignoruje on utrudnienia wynikające z osłony; możesz też atakować cele za całkowitą osłoną, ale jeśli nie jesteś w stanie ich widzieć, liczy się to tak, jakbyś był oślepiony. Jeśli jesteś w stanie widzieć cel za pełną osłoną, możesz go zaatakować tak, jakby nie miał osłony.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "przyzwanie_wierzchowcow",
+    "nazwa": "Przyzwanie Wierzchowców",
+    "tradycja": "magia_pierwotna",
+    "tradycjaNazwa": "Magia Pierwotna",
+    "krag": 4,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Okrąg na podłożu o promieniu 5 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 8 godzin; patrz niżej.\nPod koniec rundy we wskazanym obszarze pojawia się sześć stojących na ziemi koni. Zachowują istnienie, dopóki trwa zaklęcie lub dopóki nie zostaną obezwładnione, kiedy to znikają. Przywołane konie stają się zniewolone przez każde stworzenie, które ich dosiądzie.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "kamienny_krag",
+    "nazwa": "Kamienny Krąg",
+    "tradycja": "natura",
+    "tradycjaNazwa": "Natura",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Osiem punktów na podłożu w bliskim zasięgu, z których każdy musi być oddalony co najmniej 2 metry od pozostałych.\nKiedy rzucasz to zaklęcie, sprawiasz, że z jednego z wybranych punktów wyrasta kamień. Następnie w każdej rundzie, w której wykorzystujesz akcję, aby skoncentrować się na czarze, z kolejnego punktu wyrasta kolejny kamień, dopóki nie będzie ich w sumie osiem. Każdy z nich jest szeroki na 2 metry, gruby na 1 metr i wysoki na 4 metry, jego Obrona wynosi 5, a Zdrowie 100. Pozostaje on w miejscu, dopóki nie zostanie zniszczony.\nKamień, który pojawił się w efekcie rzucenia tego zaklęcia, jest nasycony magiczną energią; zachowuje tę właściwość, dopóki nie odbędziesz pełnego odpoczynku. W swojej turze możesz wykorzystać akcję lub reakcję, aby wybrać do ośmiu stworzeń w średnim zasięgu od siebie, które jesteś w stanie widzieć. Kamienie zapewniają im premię +1 do Obrony i 1 ułatwienie w rzutach na atak, jeśli istoty znajdują się w obrębie 1 metra od przynajmniej jednego z nich.\nWybrane stworzenia mogą wykorzystać akcję, aby dotknąć nasyconego magiczną energią kamienia i przemieścić się na zajmowaną przez niego przestrzeń. Kiedy istota się tam znajduje, pozostaje świadoma swojego otoczenia i upływu czasu, ale nie może zrobić nic poza wykorzystaniem akcji, aby wyjść poza kamień przez tę samą powierzchnię, którą weszła. Jeśli kamień zostanie zniszczony, podczas gdy znajduje się w nim stworzenie, stapia się ono z gruzem i umiera. Jeżeli stworzenie wciąż znajduje się w kamieniu, kiedy magiczna energia tego drugiego ulegnie rozproszeniu, zostaje siłą wypchnięte na zewnątrz; otrzymuje wtedy obrażenia równe dwukrotności swojej Szybkości Zdrowienia i zyskuje 1k6 punktów Szaleństwa.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "adamantytowe_lancuchy",
+    "nazwa": "Adamantytowe Łańcuchy",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w dalekim zasięgu, które stoi na twardym podłożu.\nZ ziemi wystrzeliwują adamantytowe łańcuchy, zmuszając cel do wykonania testu Zręczności. Jeśli jego Zdrowie wynosi 50 lub mniej, otrzymuje 1 utrudnienie za każdy punkt swojej Mocy. Jeżeli jego Zdrowie wynosi 100 lub więcej, otrzymuje 1 ułatwienie. Porażka oznacza, że stworzenie zostaje unieruchomione, dopóki utrzymujesz koncentrację, maksymalnie do 1 minuty. W tym czasie może wykorzystać akcję, aby wykonać test Siły z 1 utrudnieniem i dodatkowym za każdą rundę, w której przeznaczyłeś akcję, żeby skoncentrować się na zaklęciu. Sukces oznacza, że ofiara przestaje być unieruchomiona i łańcuchy znikają.\nJeśli utrzymasz koncentrację na zaklęciu przez 1 minutę, łańcuchy wciągają cel 3k6 kilometrów w głąb ziemi, gdzie pozostaje związany, dopóki nie wykorzystasz akcji lub reakcji, aby go uwolnić. Związanym w ten sposób cel pozostaje niewidoczny dla zaklęć Jasnowidzenia.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3770,7 +3836,7 @@ const SPELLS = [
     "tradycjaNazwa": "Ochrona",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Cel: Jedno przeklęte stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Wykonaj test Intelektu. Sukces oznacza, że zdejmujesz z celu jedną klątwę. Jeśli całkowity wynik twojego rzutu wynosi 20 lub więcej, zdejmujesz z celu wszystkie klątwy.",
+    "opis": "Cel: Jedno przeklęte stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nWykonaj test Intelektu. Sukces oznacza, że zdejmujesz z celu jedną klątwę. Jeśli całkowity wynik twojego rzutu wynosi 20 lub więcej, zdejmujesz z celu wszystkie klątwy.",
     "zrodlo": "SP",
     "strona_zrodlowa": null
   },
@@ -3781,8 +3847,74 @@ const SPELLS = [
     "tradycjaNazwa": "Pieśni",
     "krag": 3,
     "kategoria": "atak",
-    "opis": "Czas trwania: Koncentracja, do 1 minuty. Kiedy rzucasz to zaklęcie, a także za każdym razem, gdy wykorzystasz akcję, by utrzymać na nim koncentrację, wybierz jedno stworzenie w bliskim zasięgu, które jest w stanie cię słyszeć. Cel musi wykonać udany test Woli; w przeciwnym razie staje się osłabiony na 1 minutę. Osłabione w ten sposób stworzenie musi w każdej rundzie podjąć turę długą, a jeśli jesteś w stanie je widzieć, decydujesz, jak się podczas niej porusza. Osłabiony cel może wykorzystać akcję, by wykonać test Woli, w którym porażka oznacza, że otrzymuje 1 punkt Szaleństwa, sukces zaś pozwala pozbyć się tego stanu.",
+    "opis": "Czas trwania: Koncentracja, do 1 minuty.\nKiedy rzucasz to zaklęcie, a także za każdym razem, gdy wykorzystasz akcję, by utrzymać na nim koncentrację, wybierz jedno stworzenie w bliskim zasięgu, które jest w stanie cię słyszeć. Cel musi wykonać udany test Woli; w przeciwnym razie staje się osłabiony na 1 minutę. Osłabione w ten sposób stworzenie musi w każdej rundzie podjąć turę długą, a jeśli jesteś w stanie je widzieć, decydujesz, jak się podczas niej porusza. Osłabiony cel może wykorzystać akcję, by wykonać test Woli, w którym porażka oznacza, że otrzymuje 1 punkt Szaleństwa, sukces zaś pozwala pozbyć się tego stanu.",
     "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "piesn_fascynacji",
+    "nazwa": "Pieśń Fascynacji",
+    "tradycja": "piesni",
+    "tradycjaNazwa": "Pieśni",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Cel: Dowolna liczba żywych stworzeń w bliskim zasięgu, które są w stanie cię słyszeć.\nGrasz lub śpiewasz radosną piosenkę. Każdy cel musi uzyskać sukces w teście Woli, w przeciwnym razie staje się zafascynowany na tak długo, jak utrzymujesz koncentrację i grasz, maksymalnie do 1 godziny. Zafascynowane stworzenie jest zamroczone i w każdej swojej turze musi poruszyć się, aby pozostać w średnim zasięgu od ciebie. Jeśli w swojej turze nie widzi cię ani nie słyszy, efekt natychmiastowo dobiega końca.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "sekretne_drzwi",
+    "nazwa": "Sekretne Drzwi",
+    "tradycja": "przywolania",
+    "tradycjaNazwa": "Przywołania",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Okrąg o promieniu 1 metra i punkcie początkowym na płaskiej powierzchni w bliskim zasięgu.\nCzas trwania: 1 godzina.\nNa wskazanym obszarze pojawiają się zdobione, okrągłe drzwi o średnicy 2 metrów, wykonane z drewna. Są zamknięte, jednak mogą zostać otwarte i ponownie zamknięte – jak zwykłe drzwi. Za nimi znajduje się wolna przestrzeń o średnicy 2 metrów, sięgająca do 2 metrów w głąb powierzchni, na którą zostało rzucone zaklęcie. Zarówno drzwi, jak i przestrzeń zachowują istnienie na czas trwania zaklęcia. Jeśli grubość powierzchni wynosi 2 metry lub mniej, otwarcie drzwi zapewnia dostęp do tego, co znajduje się po drugiej stronie.\nKiedy efekt zaklęcia dobiega końca, stworzenia lub obiekty wewnątrz stworzonej przez nie przestrzeni zostają wciągnięte w Pustkę – i pewnie już nikt nigdy więcej ich nie zobaczy.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ukryta_przestrzen",
+    "nazwa": "Ukryta Przestrzeń",
+    "tradycja": "teleportacja",
+    "tradycjaNazwa": "Teleportacja",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Sześcian w przestrzeni o krawędzi 2 metrów i punkcie początkowym w średnim zasięgu.\nCzas trwania: 8 godzin.\nW centrum obszaru otwiera się portal i pozostaje tam na czas trwania zaklęcia. Jest szeroki na 1 metr i wysoki na 2 metry, ale nie posiada grubości. Ma przód i tył i może być ułożony w dowolnym kierunku.\nWszystko, co wejdzie do portalu od przodu, wkracza do międzywymiarowej przestrzeni rozciągającej się na 2 metry we wszystkich kierunkach za każdy punkt twojej Mocy. Przykładowo jeśli masz Moc 5, przestrzeń może być sześcianem o krawędzi do 10 metrów. Jej ściany, podłoga i sufit stanowią twarde powierzchnie, na których kłębią się wiry srebrzystej mgły. Znajduje się tam wystarczająco dużo powietrza, aby oddychać, dopóki przestrzeń istnieje.\nDo znajdujących się tam stworzeń i obiektów nie da się zbliżyć w żaden sposób, jedynie przez otwarty portal. Jeśli przebywasz wewnątrz przestrzeni, możesz wykorzystać akcję, aby zamknąć wejście, sprawiając, że staje się ona niedostępna. Kiedy zaklęcie dobiega końca, rzuć k6 za każde stworzenie lub obiekt w środku. Przy nieparzystym wyniku zostają wciągnięte w Pustkę, spadają w wieczną ciemność i najprawdopodobniej ulegają rozszarpaniu przez demony. Przy parzystym stworzenia lub obiekty otrzymują obrażenia równe połowie swojego Zdrowia i lądują powalone w wybranej przez MG wolnej przestrzeni w bliskim zasięgu od przestrzeni, którą zajmował portal.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wygnanie",
+    "nazwa": "Wygnanie",
+    "tradycja": "teleportacja",
+    "tradycjaNazwa": "Teleportacja",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nWykonaj oparty na Woli rzut na atak przeciwko Woli celu. Sukces oznacza, że traci on synchronizację z rzeczywistością na tak długo, jak utrzymujesz koncentrację, maksymalnie do 1 minuty. W tym czasie otrzymuje połowę obrażeń od wszystkich ataków i jego ataki również zadają połowę obrażeń. Może wykorzystać akcję, aby wykonać test Woli z 1 utrudnieniem i 1 kolejnym za każdą rundę, w której poświęciłeś akcję, aby koncentrować się na zaklęciu. Sukces oznacza, że efekt czaru dobiega końca. Jeśli koncentrujesz się na działaniu zaklęcia przez 1 minutę, cel znika. Jeżeli został przyzwany, wraca tam, skąd przybył. W przeciwnym razie teleportuje się do miejsca, które wybierze MG, odległego o 5k20 kilometrów.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "blogostan",
+    "nazwa": "Błogostan",
+    "tradycja": "uroki",
+    "tradycjaNazwa": "Uroki",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Dowolna liczba stworzeń w bliskim zasięgu.\nKażdy cel musi wykonać test Woli. Jeśli jest zauroczony, otrzymuje w nim 1 utrudnienie. Jeżeli od czasu swojego ostatniego pełnego odpoczynku zaatakowałeś cel, to jest on odporny na to zaklęcie. Porażka oznacza, że staje się zamroczony na 1 minutę lub dopóki nie otrzyma obrażeń.",
+    "zrodlo": "SP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "swad_siarki",
+    "nazwa": "Swąd Siarki",
+    "tradycja": "diabolista",
+    "tradycjaNazwa": "Diabolista",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posiadać co najmniej 1 punkt Splugawienia.\nRozwiewasz się w chmurę czarnego dymu, a następnie przemieszczasz na odległość równą dwukrotności twojej Prędkości. W tej postaci jesteś odporny na obrażenia ze wszystkich źródeł, twój ruch nie prowokuje darmowych ataków i możesz przechodzić przez przestrzenie zajęte przez inne stworzenia oraz otwory wystarczająco duże, aby pozwolić na przepływ powietrza. Kiedy zakończysz ruch, powracasz do normalnej formy, a przestrzeń, którą zajmujesz, oraz wolne przestrzenie w obrębie 1 metra od ciebie, stają się częściowo przesłonięte na 1 rundę lub dopóki dymu nie rozwieje wiatr.\nReakcja: Możesz wykorzystać w swojej turze reakcję, aby rzucić to zaklęcie. Jeśli tak zrobisz, przemieszczasz się do wolnej przestrzeni, którą jesteś w stanie widzieć, leżącej w odległości równej twojej Prędkości.",
+    "zrodlo": "RA",
     "strona_zrodlowa": null
   },
   {
@@ -3792,7 +3924,40 @@ const SPELLS = [
     "tradycjaNazwa": "Iluzja",
     "krag": 2,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu, które jest w stanie cię widzieć.\nCzas trwania: 1 godzina. Przyjmujesz iluzoryczny wygląd osoby, której cel najbardziej pragnie. Czar nie jest wystarczająco potężny, aby zmienić twój Rozmiar ani zamaskować zwykły sposób poruszania się, co może wystarczyć, aby ofiara spróbowała wykryć iluzję (Cień Władcy Demonów, strona 123). Dopóki efekt nie dobiegnie końca, rzuty na atak w sytuacjach społecznych mające na celu wpływanie na ofiarę tego zaklęcia wykonujesz z 2 ułatwieniami.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu, które jest w stanie cię widzieć.\nCzas trwania: 1 godzina.\nPrzyjmujesz iluzoryczny wygląd osoby, której cel najbardziej pragnie. Czar nie jest wystarczająco potężny, aby zmienić twój Rozmiar ani zamaskować zwykły sposób poruszania się, co może wystarczyć, aby ofiara spróbowała wykryć iluzję (Cień Władcy Demonów, strona 123).\nDopóki efekt nie dobiegnie końca, rzuty na atak w sytuacjach społecznych mające na celu wpływanie na ofiarę tego zaklęcia wykonujesz z 2 ułatwieniami.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "camera_obscura",
+    "nazwa": "Camera Obscura",
+    "tradycja": "iluzja",
+    "tradycjaNazwa": "Iluzja",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nCelowi wydaje się, że wokół przygasły światła i dźwięki uległy stłumieniu. Wykonaj oparty na Intelekcie rzut na atak przeciwko jego Percepcji. Jeśli Zdrowie stworzenia wynosi 50 lub więcej, otrzymujesz 1 utrudnienie. Sukces oznacza, że cel na 1 minutę staje się oślepiony, ogłuszony i unieruchomiony.\nRzut na atak 20+: Stany trwają 1 godzinę.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "geas",
+    "nazwa": "Geas",
+    "tradycja": "klatwy",
+    "tradycjaNazwa": "Klątwy",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jest w stanie cię widzieć, słyszeć i rozumieć, a także nie jest przeklęte.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli jego Zdrowie wynosi 30 lub mniej, otrzymujesz 1 ułatwienie. Sukces oznacza, że nakładasz na ofiarę jedną z poniższych klątw. Utrzymuje się ona przez 1 miesiąc, 1 tydzień, 1 dzień, 1 godzinę i 1 minutę.\nMiłość: Rozbudzasz w celu uczucia miłości i pożądania, których nie może kontrolować ani nie zdoła im zaprzeczyć. Przeklęte w ten sposób stworzenie jest zauroczone i uznaje cię za swoją jedyną prawdziwą miłość. Jeśli je zaatakujesz, uczucie to przeradza się w nienawiść. Nienawidząca cię istota wykonuje rzuty na atak przeciwko tobie i testy na odpieranie twoich ataków z 1 ułatwieniem.\nTabu: Wybierz jeden rodzaj zachowania lub aktywności, z których cel może zrezygnować bez krzywdy dla siebie, swojej własności lub bliskich. Przykłady obejmują picie alkoholu, dobywanie broni lub udanie się w jakieś konkretne miejsce. Przeklęte w ten sposób stworzenie otrzymuje 3k6 obrażeń i staje się oszołomione na 1k6 minut za każdym razem, kiedy złamie to tabu. Ofiara nie może otrzymać tych obrażeń ani zostać oszołomiona przez ten efekt więcej niż raz na godzinę.\nMisja: Opisz celowi zadanie, takie jak odzyskanie legendarnego Miecza Unicestwienia lub podróż do świątyni na szczycie Góry Strachu. Nie może to być misja samobójcza. Przeklęte w ten sposób stworzenie musi osiągnąć cel. Jeśli zachowuje się w sposób, który nie przybliża go do wykonania zadania, otrzymuje 1 utrudnienie w rzutach na atak i testach, dopóki nie wznowi odpowiednich wysiłków. Jeśli zrobi coś, co uczyniłoby wypełnienie misji trudniejszym, otrzymuje 4k6 obrażeń i staje się zamroczone na 1k6 minut. Ofiara nie może otrzymać tych obrażeń lub zostać oszołomiona przez ten efekt więcej niż raz na godzinę. Ukończenie misji zdejmuje klątwę.\nWizja: Nici magicznej mocy tworzą połączenie pomiędzy tobą i celem. Kiedy jest on przeklęty w ten sposób, możesz wykorzystać akcję, aby sprawić, że na lustrzanej powierzchni, którą jesteś w stanie widzieć, pojawi się podobizna tego stworzenia wraz z jego bezpośrednim otoczeniem. Obraz utrzymuje się, dopóki zachowujesz koncentrację.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić znany ci czar Klątw 2 lub niższego kręgu.\nRzut na atak 20+: Cel staje się również oszołomiony na 1 rundę.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "diagram",
+    "nazwa": "Diagram",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz spędzić 1 minutę, używając zestawu pisarskiego, aby narysować na płaskiej powierzchni w twoim bezpośrednim zasięgu diagram pokrywający okrągłą przestrzeń o promieniu do 2 metrów.\nCel: Nieprzerwany krąg w bliskim zasięgu, narysowany zgodnie z wymaganiami zaklęcia.\nCzas trwania: 4 godziny; patrz niżej.\nNasycasz wybrany krąg magiczną mocą, która utrzymuje się na czas trwania zaklęcia lub dopóki ktoś nie przerwie rysunku, rozmazując go, kładąc coś na nim lub ścierając jego część.\nDiagram sprawia, że dowolne przebywające w nim stworzenie nie może wyjść poza jego krawędź, zaatakować znajdujących się na zewnątrz istot ani wpłynąć za pomocą magii na cokolwiek poza pokrytym rysunkiem obszarem.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby wydłużyć czas trwania wcześniej już rzuconego diagramu o 4 godziny.",
     "zrodlo": "RA",
     "strona_zrodlowa": null
   },
@@ -3803,7 +3968,7 @@ const SPELLS = [
     "tradycjaNazwa": "Ogień",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Wymagania: Musisz posiadać przynajmniej 1 punkt Splugawienia.\nCel: Jedno stworzenie w dalekim zasięgu. Rzucasz w cel pociskiem czarnych płomieni. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności wybranego stworzenia. Sukces oznacza, że otrzymuje ono obrażenia równe 2k6 + wartość twojego Splugawienia.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń i musi uzyskać sukces w teście Woli, inaczej zyskuje 1 punkt Splugawienia.",
+    "opis": "Wymagania: Musisz posiadać przynajmniej 1 punkt Splugawienia.\nCel: Jedno stworzenie w dalekim zasięgu.\nRzucasz w cel pociskiem czarnych płomieni. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności wybranego stworzenia. Sukces oznacza, że otrzymuje ono obrażenia równe 2k6 + wartość twojego Splugawienia.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń i musi uzyskać sukces w teście Woli, inaczej zyskuje 1 punkt Splugawienia.",
     "zrodlo": "RA",
     "strona_zrodlowa": null
   },
@@ -3814,7 +3979,7 @@ const SPELLS = [
     "tradycjaNazwa": "Ogień",
     "krag": 3,
     "kategoria": "atak",
-    "opis": "Wymagania: Musisz posiadać przynajmniej 3 punkty Splugawienia.\nObszar: Stożek o długości 5 metrów i punkcie początkowym w bezpośrednim zasięgu. Z twojej dłoni wylatują czarne płomienie i rozchodzą się po wskazanym obszarze. Każde znajdujące się tam stworzenie musi wykonać test Zręczności z 1 utrudnieniem za każdy twój punkt Splugawienia. Porażka oznacza, że otrzymuje 4k6 obrażeń i zyskuje 1 punkt Splugawienia, sukces zaś – że otrzymuje jedynie połowę obrażeń.",
+    "opis": "Wymagania: Musisz posiadać przynajmniej 3 punkty Splugawienia.\nObszar: Stożek o długości 5 metrów i punkcie początkowym w bezpośrednim zasięgu.\nZ twojej dłoni wylatują czarne płomienie i rozchodzą się po wskazanym obszarze. Każde znajdujące się tam stworzenie musi wykonać test Zręczności z 1 utrudnieniem za każdy twój punkt Splugawienia. Porażka oznacza, że otrzymuje 4k6 obrażeń i zyskuje 1 punkt Splugawienia, sukces zaś – że otrzymuje jedynie połowę obrażeń.",
     "zrodlo": "RA",
     "strona_zrodlowa": null
   },
@@ -3825,7 +3990,40 @@ const SPELLS = [
     "tradycjaNazwa": "Pieśni",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Wymagania: Musisz posiadać przynajmniej 1 punkt Splugawienia.\nCel: Każde stworzenie w bliskim zasięgu, która jest w stanie cię słyszeć. Powietrze wypełnia brzęczący dźwięk, zmuszając każdą wybraną istotę do wykonania testu Woli. Cel, którego Zdrowie wynosi 10 lub mniej, automatycznie ponosi porażkę. Za każde 10 punktów Zdrowia powyżej 20 stworzenie otrzymuje 1 ułatwienie. Porażka oznacza, że ofiara przemienia się w potwora swojego Rozmiaru, a czarna magia zmusza ją do zabijania tak długo, jak zachowujesz koncentrację, maksymalnie do 1 minuty.",
+    "opis": "Wymagania: Musisz posiadać przynajmniej 1 punkt Splugawienia.\nCel: Każde stworzenie w bliskim zasięgu, która jest w stanie cię słyszeć.\nPowietrze wypełnia brzęczący dźwięk, zmuszając każdą wybraną istotę do wykonania testu Woli. Cel, którego Zdrowie wynosi 10 lub mniej, automatycznie ponosi porażkę. Za każde 10 punktów Zdrowia powyżej 20 stworzenie otrzymuje 1 ułatwienie. Porażka oznacza, że ofiara przemienia się w potwora swojego Rozmiaru, a czarna magia zmusza ją do zabijania tak długo, jak zachowujesz koncentrację, maksymalnie do 1 minuty.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "otwor_do_zaswiatow",
+    "nazwa": "Otwór Do Zaświatów",
+    "tradycja": "spirytyzm",
+    "tradycjaNazwa": "Spirytyzm",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Obszar wewnątrz leżącego na ziemi okręgu o promieniu 1 metra i punkcie początkowym w bliskim zasięgu.\nObszar wypełnia się mrokiem, który następnie się rozwiewa, aby ukazać pozornie bezdenną dziurę, łączącą się losowo z Zaświatami, Piekłem lub Pustką. Obiekty znajdujące się na powierzchni obszaru wpadają do otworu i znikają. Można je odzyskać poprzez podróż do miejsca, z którym dziura się łączy. Każde stworzenie na powierzchni obszaru musi wykonać test Zręczności. Sukces oznacza, że przemieszcza się do 2 metrów w stronę najbliższej wolnej przestrzeni, porażka zaś, że spada przez otwór i znika. Istota, której się to przytrafi, pojawia się ponownie powalona na tym samym obszarze na koniec rundy i otrzymuje 1k6 punktów Szaleństwa.\nKiedy dziura się otwiera, rzuć k6 i dodaj swoją wartość Splugawienia do wyniku, aby zobaczyć, co z niej wychodzi. Stworzenie pojawia się w najbliższej wolnej przestrzeni. | Wynik | Efekt | |-------|---------------------------| | 1–5 | 1 mana | | 6–7 | 1 lemur (patrz strona 30) | | 8–9 | 1k3 lemurów | | 10–11 | 1 upiór | | 12 | 1 duży demon | | 13+ | 1 wielki demon |\nKiedy stworzenie się pojawia, wykonaj oparty na Woli rzut na atak przeciwko jego Woli. Otrzymujesz w nim 1 utrudnienie, jeśli istota jest upiorem, lub 3 utrudnienia, jeśli jest demonem. Sukces oznacza, że staje się ona zniewolona na 1 godzinę, porażka zaś – że staje się wobec ciebie wroga. Po upływie 1 godziny lemur wraca do Piekła, a mana do Zaświatów. Demony i upiory pozostają, dopóki nie zostaną zniszczone.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić znany ci czar Spirytyzmu kręgu 1 lub 0.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "chowaniec",
+    "nazwa": "Chowaniec",
+    "tradycja": "sztuki_zakazane",
+    "tradycjaNazwa": "Sztuki Zakazane",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Za każdym razem, kiedy rzucasz to zaklęcie, wybierz jeden z poniższych efektów.\nPrzyzwanie chowańca: Wybierz sześcian przestrzeni o krawędzi 1 metra spoczywający na twardej powierzchni w bliskim zasięgu, którą jesteś w stanie widzieć, i przez 1 godzinę utrzymaj koncentrację. Pod koniec tego czasu w centrum obszaru pojawia się smuga dymu i tężeje, aby przyjąć formę wybranego przez ciebie drobnego zwierzęcia: kota, szczura, węża, ropuchy i tak dalej. Ów chowaniec służy ci, dopóki nie umrzesz, on sam nie umrze lub dopóki nie rzucisz ponownie tego zaklęcia, aby przywołać nowego chowańca. Stworzenie pozostaje pod kontrolą MG, ale zazwyczaj słucha się wypowiedzianych przez ciebie komend.\nUleczenie chowańca: Jeśli twój chowaniec jest w bliskim zasięgu, leczy obrażenia równe twojej Szybkości Zdrowienia.\nZawołanie chowańca: Jeśli twój chowaniec jest w ekstremalnym zasięgu od ciebie, teleportuje się na twoją dłoń. Jeżeli nie masz wolnej dłoni, zamiast tego pojawia się gdzieś na twoim ciele lub u twoich stóp.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "potworny_glod",
+    "nazwa": "Potworny Głód",
+    "tradycja": "sztuki_zakazane",
+    "tradycjaNazwa": "Sztuki Zakazane",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie, które posiada ciało i znajduje się w średnim zasięgu.\nCel odczuwa wywołane głodem bolesne skurcze. Wykonaj oparty na Intelekcie rzut na atak przeciwko jego Woli. Sukces oznacza, że staje się on osłabiony na 1 godzinę. Będąc osłabiony w ten sposób, jest również spowolniony. Ofiara może pozbyć się tego stanu, jeśli spędzi 1 minutę na obżeraniu się; jednak jedzenie musi należeć do kogoś innego. Na koniec tego czasu cel musi uzyskać sukces w teście Woli, w przeciwnym razie otrzymuje 1 punkt Splugawienia.\nRzut na atak 20+: Cel otrzymuje również karę −5 do Zdrowia, dopóki nie przestanie być osłabiony.",
     "zrodlo": "RA",
     "strona_zrodlowa": null
   },
@@ -3836,7 +4034,7 @@ const SPELLS = [
     "tradycjaNazwa": "Sztuki Zakazane",
     "krag": 2,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Umysł postaci staje się opętany przez zachłanność. Dopóki efekt nie dobiegnie końca, za każdym razem, kiedy jeden z sojuszników celu przebywający w jego bliskim zasięgu miałby wykonać rzut na atak lub test z co najmniej 1 ułatwieniem, ofiara czaru może zdecydować się skraść mu ułatwienia. Ma następnie 1 rundę, aby je wykorzystać, w przeciwnym razie przepadają. Kiedy efekt zaklęcia dobiega końca, cel musi wykonać test Woli, jeśli ukradł jakiekolwiek ułatwienia. Porażka oznacza, że otrzymuje 1 punkt Splugawienia.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nUmysł postaci staje się opętany przez zachłanność. Dopóki efekt nie dobiegnie końca, za każdym razem, kiedy jeden z sojuszników celu przebywający w jego bliskim zasięgu miałby wykonać rzut na atak lub test z co najmniej 1 ułatwieniem, ofiara czaru może zdecydować się skraść mu ułatwienia. Ma następnie 1 rundę, aby je wykorzystać, w przeciwnym razie przepadają. Kiedy efekt zaklęcia dobiega końca, cel musi wykonać test Woli, jeśli ukradł jakiekolwiek ułatwienia. Porażka oznacza, że otrzymuje 1 punkt Splugawienia.",
     "zrodlo": "RA",
     "strona_zrodlowa": null
   },
@@ -3847,8 +4045,85 @@ const SPELLS = [
     "tradycjaNazwa": "Sztuki Zakazane",
     "krag": 4,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Sześcian przestrzeni o krawędzi 1 metra spoczywający na twardej powierzchni w bliskim zasięgu.\nCzas trwania: 1 godzina. Musisz zachować koncentrację przez 1 minutę. Pod koniec tego czasu we wskazanym obszarze pojawia się gargulec; zachowuje istnienie na czas trwania zaklęcia. Kiedy się pojawia, wykonaj oparty na Intelekcie rzut na atak z 1 utrudnieniem przeciwko jego Woli. Sukces oznacza, że przywołany stwór staje się zniewolony, dopóki nie umrzesz, sam nie umrze lub zaklęcie nie dobiegnie końca. Porażka zaś oznacza, że gargulec działa w sposób zgodny ze swoją naturą.",
+    "opis": "Obszar: Sześcian przestrzeni o krawędzi 1 metra spoczywający na twardej powierzchni w bliskim zasięgu.\nCzas trwania: 1 godzina.\nMusisz zachować koncentrację przez 1 minutę. Pod koniec tego czasu we wskazanym obszarze pojawia się gargulec; zachowuje istnienie na czas trwania zaklęcia. Kiedy się pojawia, wykonaj oparty na Intelekcie rzut na atak z 1 utrudnieniem przeciwko jego Woli. Sukces oznacza, że przywołany stwór staje się zniewolony, dopóki nie umrzesz, sam nie umrze lub zaklęcie nie dobiegnie końca. Porażka zaś oznacza, że gargulec działa w sposób zgodny ze swoją naturą.",
     "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "piekielna_audiencja",
+    "nazwa": "Piekielna Audiencja",
+    "tradycja": "sztuki_zakazane",
+    "tradycjaNazwa": "Sztuki Zakazane",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Jedynie posiadający duszę śmiertelnicy mogą rzucić to zaklęcie. Musisz użyć zestawu pisarskiego, aby wyrysować na płaskiej powierzchni w swoim bezpośrednim zasięgu diagram, co zajmuje 1 minutę. Diagram musi być wystarczająco duży, aby zmieściło się na nim stworzenie twojego Rozmiaru. Później w dowolnym momencie wejdź do kręgu i zabij żywą istotę Rozmiaru 1/2 lub większego, używając rytualnego noża wykonanego z kości. Następnie wysmaruj swoją twarz jej krwią, rzucając to zaklęcie.\nCzas trwania: 1 godzina.\nZyskujesz 1 punkt Splugawienia, a twoja dusza wyślizguje się z ciała i schodzi do Piekła, aby stanąć przed jednym z większych diabłów. Pełen grozy majestat tego bytu zmusza cię do wykonania testu Woli. Porażka oznacza, że otrzymujesz 1k6 punktów Szaleństwa i stajesz się osłabiony na 1k6 dni. Jeśli poskutkuje to popadnięciem w obłęd, czart porywa twoją duszę, a ciało zapada w permanentny stan katatonii, z którego już nigdy się nie zbudzi.\nJeśli nie popadniesz w obłęd lub po prostu uzyskasz sukces w teście, możesz zadać do trzech pytań. Diabeł raz odpowiada prawdziwie, raz kłamie i raz mówi albo prawdę, albo kłamstwo. MG decyduje, w jaki sposób odpowiada na pytania. Kiedy mroczna faerie odpowie na ostatnie pytanie, twoja dusza wraca do ciała, a efekt zaklęcia dobiega końca.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "przyzwanie_dreczyciela",
+    "nazwa": "Przyzwanie Dręczyciela",
+    "tradycja": "sztuki_zakazane",
+    "tradycjaNazwa": "Sztuki Zakazane",
+    "krag": 6,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Sześcian przestrzeni o krawędzi 3 metrów spoczywający na twardej powierzchni w bliskim zasięgu.\nCzas trwania: 1 godzina.\nMusisz zabić żywe stworzenie, które nie ma żadnego Splugawienia, a następnie utrzymać koncentrację przez 1 minutę. Po upływie tego czasu we wskazanej przestrzeni pojawia się dręczyciel i zachowuje istnienie na czas trwania efektu. Kiedy się pojawia, wykonaj oparty na Intelekcie rzut na atak z 1 utrudnieniem przeciwko jego Woli. Sukces oznacza, że przywołany stwór staje się zniewolony, dopóki nie umrzesz, on sam nie umrze lub zaklęcie nie dobiegnie końca. Porażka zaś oznacza, że dręczyciel działa w zgodzie ze swoją naturą.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "chlosta",
+    "nazwa": "Chłosta",
+    "tradycja": "teurgia",
+    "tradycjaNazwa": "Teurgia",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jest w stanie cię słyszeć.\nPrzemawiasz dudniącym głosem, rzucając klątwy na cel. Wykonaj oparty na Woli rzut na atak przeciwko jego Woli. Jeśli mierzysz się z demonem, diabłem, faerie lub nieumarłym, otrzymujesz 1 ułatwienie. Sukces oznacza, że nakładasz 1 utrudnienie na rzuty na atak i testy wykonywane przez cel na tak długo, jak się koncentrujesz, maksymalnie do 1 minuty. Za każdym razem, kiedy wykorzystasz akcję, aby skoncentrować się na tym zaklęciu, podnosisz liczbę utrudnień o 1. Czar natychmiastowo dobiega końca, jeśli cel nie jest w stanie słyszeć, jak mówisz, lub jeśli ty sam nie możesz mówić.\nRzut na atak 20+: Cel otrzymuje 2k6 dodatkowych obrażeń od grzmiącego dźwięku twego głosu.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wyrok",
+    "nazwa": "Wyrok",
+    "tradycja": "teurgia",
+    "tradycjaNazwa": "Teurgia",
+    "krag": 6,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie znajdujące się na twardej powierzchni w średnim zasięgu, które jesteś w stanie widzieć.\nZiemia rozstępuje się pod celem; z otworu buchają płomienie i toksyczne gazy, a następnie się on zamyka. Wybrana istota i wszystko w promieniu 1 metra od niej otrzymuje 2k6 obrażeń od płomieni. Cel musi również wykonać test Zręczności z liczbą utrudnień równą swojej wartości Splugawienia. Porażka oznacza, że znika w dziurze i spada do Piekła, gdzie pozostaje, dopóki nie zostanie uratowany lub nie ucieknie.\nJeśli cel poniósł w teście porażkę, ale nie miał żadnego Splugawienia, ty zyskujesz 1k3 punktów Splugawienia i stajesz się oszołomiony na 1 rundę.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "lep",
+    "nazwa": "Lep",
+    "tradycja": "uroki",
+    "tradycjaNazwa": "Uroki",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu, które jest w stanie cię słyszeć.\nSzepczesz do celu i wykonujesz oparty na Intelekcie rzut na atak przeciwko jego Woli. Sukces oznacza, że na 1 minutę otrzymujesz 1 ułatwienie w rzutach na atak przeciwko Intelektowi, Woli i Percepcji wskazanego stworzenia.\nReakcja: Możesz w swojej turze rzucić to zaklęcie w ramach reakcji, ale efekt sukcesu utrzymuje się tylko przez 1 rundę.\nRzut na atak 20+: Liczba ułatwień w przypadku sukcesu wzrasta do 2.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ekstaza",
+    "nazwa": "Ekstaza",
+    "tradycja": "uroki",
+    "tradycjaNazwa": "Uroki",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu z funkcjonującymi organami seksualnymi.\nCel ogarnia uczucie intensywnej fizycznej przyjemności. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że staje się ono zamroczone na 1 rundę i spowolnione na 1 kolejną rundę.\nRzut na atak 20+: Cel dodatkowo zostaje powalony.",
+    "zrodlo": "RA",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "konsekracja",
+    "nazwa": "Konsekracja",
+    "tradycja": "kleryk",
+    "tradycjaNazwa": "Kleryk",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedna świątynia, kaplica lub monument w bliskim zasięgu, które jesteś w stanie widzieć i należące do twojej religii.\nCzas trwania: 24 godziny.\nNa czas trwania zaklęcia cel i obszar w promieniu 5 metrów od niego stają się świętą ziemią, zyskując zalety charakterystyczne dla twojej religii. Jeśli ich dla niej nie opisano, zamiast tego czar zapewnia poniższe korzyści.\nKiedy przebywasz na świętej ziemi stworzonej za pomocą tego zaklęcia, za każdym razem, gdy atakujesz zaklęciem z tradycji związanej z twoją religią, rzut na atak wykonujesz z 1 ułatwieniem, a stworzenia na tym obszarze wykonują testy na odpieranie jego efektów z 1 utrudnieniem.\nUtrwalenie: Jeśli będziesz rzucać to zaklęcie na ten sam obszar każdego dnia przez miesiąc i jeden dzień, efekt stanie się permanentny.",
+    "zrodlo": "NW",
     "strona_zrodlowa": null
   },
   {
@@ -3858,7 +4133,18 @@ const SPELLS = [
     "tradycjaNazwa": "Jasnowidzenie",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Wieszcza.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Do końca rundy wszystkie sukcesy w rzutach na atak przeciwko wskazanemu celowi zamieniają się w porażki. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, a rzut zakończy się sukcesem, do końca rundy wykonujesz rzuty na atak i testy z 1 ułatwieniem.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Wieszcza.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nDo końca rundy wszystkie sukcesy w rzutach na atak przeciwko wskazanemu celowi zamieniają się w porażki.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, a rzut zakończy się sukcesem, do końca rundy wykonujesz rzuty na atak i testy z 1 ułatwieniem.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "przedswit",
+    "nazwa": "Przedświt",
+    "tradycja": "jasnowidzenie",
+    "tradycjaNazwa": "Jasnowidzenie",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posłużyć się narzędziem do wróżenia, takim jak karty, kości, fusy z herbaty lub łodygi krwawnika.\nOpisz przebieg akcji, która będzie miała miejsce w najbliższym tygodniu, jakiś cel, który zostanie osiągnięty, lub wydarzenie. Jeśli przez 1 minutę skoncentrujesz się na tym, co opisałeś, MG udzieli ci przydatnej informacji na temat tej rzeczy. Może po prostu ci coś powiedzieć, ale informacja może być też zaprezentowana jako krótka fraza lub zagadkowa rymowanka.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić zaklęcie 2 lub niższego kręgu z tradycji Jasnowidzenia.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3869,7 +4155,7 @@ const SPELLS = [
     "tradycjaNazwa": "Klątwy",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Sukces oznacza, że zostaje on przeklęty na 1 minutę. W tym czasie wykonuje rzuty na atak i testy z 1 utrudnieniem. Dodatkowo za każdym razem, kiedy całkowity wynik rzutu wyniesie 0 lub mniej, jeden przedmiot, który istota ma przy sobie, upada na ziemię i przemieszcza się na odległość 1k6 metrów od niej.\nReakcja: Kiedy stworzenie w bliskim zasięgu, które jesteś w stanie widzieć, wykonuje rzut na atak lub test, możesz wykorzystać reakcję, aby rzucić na nie to zaklęcie. Sukces oznacza, że efekt utrzymuje się przez 1 rundę zamiast 1 minutę.",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Sukces oznacza, że zostaje on przeklęty na 1 minutę. W tym czasie wykonuje rzuty na atak i testy z 1 utrudnieniem. Dodatkowo za każdym razem, kiedy całkowity wynik rzutu wyniesie 0 lub mniej, jeden przedmiot, który istota ma przy sobie, upada na ziemię i przemieszcza się na odległość 1k6 metrów od niej.\nReakcja: Kiedy stworzenie w bliskim zasięgu, które jesteś w stanie widzieć, wykonuje rzut na atak lub test, możesz wykorzystać reakcję, aby rzucić na nie to zaklęcie. Sukces oznacza, że efekt utrzymuje się przez 1 rundę zamiast 1 minutę.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3880,18 +4166,18 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Bitewna",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Jeśli jesteś zauroczony lub przestraszony, pozbywasz się tego stanu. W czasie trwania zaklęcia rzuty na atak z użyciem broni wykonujesz z 1 ułatwieniem.",
+    "opis": "Czas trwania: 1 minuta.\nJeśli jesteś zauroczony lub przestraszony, pozbywasz się tego stanu.\nW czasie trwania zaklęcia rzuty na atak z użyciem broni wykonujesz z 1 ułatwieniem.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
   {
-    "id": "w_imie_mrocznych_bogow",
-    "nazwa": "W Imię Mrocznych Bogów",
+    "id": "w_imie_przodkow",
+    "nazwa": "W Imię Przodków",
     "tradycja": "magia_bitewna",
     "tradycjaNazwa": "Magia Bitewna",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Mrocznych Bogów.\nCel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Do końca rundy cel wykonuje rzuty na atak z 3 ułatwieniami. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, zyskujesz kumulatywną premię +1k6 do Zdrowia, która utrzymuje się, dopóki efekt czaru nie dobiegnie końca.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą czcigodnych zmarłych.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nCel wykonuje atak bronią.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, a ten zakończy się sukcesem, następny atak wykonany przez ciebie przed końcem rundy zadaje dodatkowe 1k6 obrażeń.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3902,7 +4188,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Cienia",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Maskujesz swój prawdziwy wygląd przy pomocy cieni tak, że na czas trwania zaklęcia wydajesz się być trupem. Każde żywe stworzenie w bliskim zasięgu, które jest w stanie cię widzieć i nie należy do twojej drużyny, musi uzyskać sukces w teście Woli, w przeciwnym razie staje się przestraszone na 1 rundę. Dopóki zaklęcie nie dobiegnie końca, nieumarli nie atakują cię, o ile ty nie zaatakujesz ich pierwszy.",
+    "opis": "Czas trwania: 1 minuta.\nMaskujesz swój prawdziwy wygląd przy pomocy cieni tak, że na czas trwania zaklęcia wydajesz się być trupem. Każde żywe stworzenie w bliskim zasięgu, które jest w stanie cię widzieć i nie należy do twojej drużyny, musi uzyskać sukces w teście Woli, w przeciwnym razie staje się przestraszone na 1 rundę.\nDopóki zaklęcie nie dobiegnie końca, nieumarli nie atakują cię, o ile ty nie zaatakujesz ich pierwszy.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3913,7 +4199,18 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Cienia",
     "krag": 4,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz mieć w bezpośrednim zasięgu specjalnie przygotowaną czaszkę wartą 1 srebrnik.\nCel: Punkt w przestrzeni w średnim zasięgu, który jesteś w stanie widzieć.\nCzas trwania: 1 godzina. Czar zapewnia ułatwienia jedynie istotom, które zyskają Szaleństwo. Zyskanie Szaleństwa z tego powodu nie skutkuje przestraszeniem. Dodatkowo stworzenie, które popadnie w ten sposób w obłęd, rzuca 3k6 zamiast k20, aby określić jego formę (tabela Obłęd, Cień Władcy Demonów, s. 36).",
+    "opis": "Wymagania: Musisz mieć w bezpośrednim zasięgu specjalnie przygotowaną czaszkę wartą 1 srebrnik.\nCel: Punkt w przestrzeni w średnim zasięgu, który jesteś w stanie widzieć.\nCzas trwania: 1 godzina.\nRzucając to zaklęcie, musisz skoncentrować się na 1 minutę i utrzymać w tym czasie kontakt z czaszką, co sprawia, że wyrzeźbione na niej runy rozbłyskują zielonym światłem. Następnie przemieszcza się ona do wybranego punktu i znika, a w jej miejscu pojawia się owalne przejście do Zaświatów, które pozostaje otwarte przez 1 godzinę. Portal jest szeroki na 1 metr i na 1 metr wysoki; może mieć dowolną, wybraną przez ciebie orientację. Posiada przód, ale nie ma tyłu.\nWszelkie naturalne światło w średnim zasięgu od przejścia, a także takie stworzone przez zaklęcie 4 lub niższego kręgu staje się na czas trwania tego czaru cieniem.\nStworzenie jest w stanie przejść przez portal i wkroczyć do Zaświatów. Podobnie istoty po drugiej stronie są w stanie się przez niego wydostać.\nDopóki przejście istnieje, możesz wymówić imię dowolnego martwego stworzenia. Jeśli jego dusza rezyduje w Zaświatach, na koniec następnej rundy zbliża się do portalu i pozostaje tam, aż zaklęcie nie dobiegnie końca. Jeśli zaoferujesz mu 1 uncję ciepłej, świeżej krwi, odpowie na nie więcej niż trzy pytania, ale tylko zgodnie z wiedzą, którą wciąż pamięta ze swojego życia.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "szalona_pijatyka",
+    "nazwa": "Szalona Pijatyka",
+    "tradycja": "magia_fey",
+    "tradycjaNazwa": "Magia Fey",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 1 minuta.\nZapach wina wypełnia wyśrodkowaną na tobie sferę o promieniu 5 metrów, która przez czas trwania zaklęcia przemieszcza się wraz z tobą. Kiedy znajdujące się na tym obszarze żywe stworzenie wykonuje rzut na atak, może zdecydować się przyjąć 1 punkt Szaleństwa, aby otrzymać do tego rzutu na atak 1k3 ułatwień.\nCzar zapewnia ułatwienia jedynie istotom, które zyskają Szaleństwo. Zyskanie Szaleństwa z tego powodu nie skutkuje przestraszeniem. Dodatkowo stworzenie, które popadnie w ten sposób w obłęd, rzuca 3k6 zamiast k20, aby określić jego formę (tabela Obłęd, Cień Władcy Demonów, s. 36).",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3924,7 +4221,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Niebiańska",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Okrąg o promieniu 1 metra, dowolnej orientacji i punkcie początkowym w średnim zasięgu.\nCzas trwania: 1 minuta. W wybranym obszarze rozchodzi się światło i utrzymuje się tam na czas trwania zaklęcia. Obie płaszczyzny okręgu emitują blask o kształcie stożka o długości pięciu metrów.",
+    "opis": "Obszar: Okrąg o promieniu 1 metra, dowolnej orientacji i punkcie początkowym w średnim zasięgu.\nCzas trwania: 1 minuta.\nW wybranym obszarze rozchodzi się światło i utrzymuje się tam na czas trwania zaklęcia. Obie płaszczyzny okręgu emitują blask o kształcie stożka o długości pięciu metrów.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3935,18 +4232,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Niebiańska",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Księżycowej Dziewicy.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Do końca rundy na cel pada księżycowe światło. W tym czasie rzuty na atak przeciwko niemu są wykonywane z 1 utrudnieniem. W czasie trwania czaru za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak z użyciem magii lub w teście na odpieranie zaklęcia ataku, zapewniasz swojemu celowi 2 dodatkowe ułatwienia.",
-    "zrodlo": "NW",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "aureola",
-    "nazwa": "Aureola",
-    "tradycja": "magia_niebianska",
-    "tradycjaNazwa": "Magia Niebiańska",
-    "krag": 2,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. W czasie trwania zaklęcia twoją głowę spowija niebiański blask, wypełniając światłem sferę o promieniu 5 metrów, wyśrodkowaną na tobie. Dopóki czar nie dobiegnie końca, za każdym razem, kiedy otrzymujesz obrażenia, wszystkie obdarzone wzrokiem stworzenia w bliskim zasięgu muszą uzyskać sukces w teście Percepcji, inaczej zostają oślepione na 1 rundę.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Księżycowej Dziewicy.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nDo końca rundy na cel pada księżycowe światło. W tym czasie rzuty na atak przeciwko niemu są wykonywane z 1 utrudnieniem.\nW czasie trwania czaru za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak z użyciem magii lub w teście na odpieranie zaklęcia ataku, zapewniasz swojemu celowi 2 dodatkowe ułatwienia.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3957,7 +4243,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Pierwotna",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 godzina. W czasie trwania zaklęcia twoje oczy lśnią szmaragdowym światłem. Kiedy rzucasz ten czar, wybierz jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Rzuty na atak przeciwko niemu wykonujesz z 1 ułatwieniem. Jeśli istota znajduje się na przesłoniętym obszarze, twoje rzuty na atak przeciwko niej ignorują utrudnienia wynikające z przesłonięcia.\nReakcja: Możesz wykorzystać reakcję, aby rzucić ten czar w swojej turze. Jeśli tak zrobisz, czas jego trwania skraca się do 1 minuty.",
+    "opis": "Czas trwania: 1 godzina.\nW czasie trwania zaklęcia twoje oczy lśnią szmaragdowym światłem. Kiedy rzucasz ten czar, wybierz jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Rzuty na atak przeciwko niemu wykonujesz z 1 ułatwieniem. Jeśli istota znajduje się na przesłoniętym obszarze, twoje rzuty na atak przeciwko niej ignorują utrudnienia wynikające z przesłonięcia.\nReakcja: Możesz wykorzystać reakcję, aby rzucić ten czar w swojej turze. Jeśli tak zrobisz, czas jego trwania skraca się do 1 minuty.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3968,7 +4254,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Pierwotna",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Rogatego Króla.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Do końca rundy cel wykonuje rzuty na atak z 2 ułatwieniami. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, po jego wykonaniu cel talentu może poruszyć się na odległość równą połowie swojej Prędkości lub mniejszą, nie prowokując darmowych ataków.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Rogatego Króla.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nDo końca rundy cel wykonuje rzuty na atak z 2 ułatwieniami.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, po jego wykonaniu cel talentu może poruszyć się na odległość równą połowie swojej Prędkości lub mniejszą, nie prowokując darmowych ataków.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3979,7 +4265,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Runiczna",
     "krag": 5,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jeden pełen pancerz noszony przez stworzenie w twoim bezpośrednim zasięgu.\nCzas trwania: 1 minuta. Kreślisz lśniącą runę na wybranej zbroi, która pozostaje na niej na czas trwania zaklęcia. Rzuty na atak przeciwko stworzeniu noszącemu zaklęty w ten sposób pancerz wykonywane są z 2 utrudnieniami.",
+    "opis": "Cel: Jeden pełen pancerz noszony przez stworzenie w twoim bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nKreślisz lśniącą runę na wybranej zbroi, która pozostaje na niej na czas trwania zaklęcia. Rzuty na atak przeciwko stworzeniu noszącemu zaklęty w ten sposób pancerz wykonywane są z 2 utrudnieniami.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -3990,7 +4276,29 @@ const SPELLS = [
     "tradycjaNazwa": "Natura",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz spędzić 1 godzinę, zbierając zioła na dzikim terenie – takim, gdzie mogłyby faktycznie rosnąć.\nCel: Zioła, które zebrałeś.\nCzas trwania: 24 godziny. Zioła stają się uzdrawiającym kompresem. Za każdym razem, zanim odbędziesz pełny odpoczynek, możesz wykorzystać akcję, aby zrobić z niego okłady stworzeniu w bezpośrednim zasięgu. Gdy odbędzie ono pełny odpoczynek, mając przyłożony uzdrawiający kompres, leczy dodatkowe obrażenia równe połowie swojej Szybkości Zdrowienia. Stworzenie może korzystać tylko z jednego takiego okładu naraz.",
+    "opis": "Wymagania: Musisz spędzić 1 godzinę, zbierając zioła na dzikim terenie – takim, gdzie mogłyby faktycznie rosnąć.\nCel: Zioła, które zebrałeś. Czas trwania: 24 godziny.\nZioła stają się uzdrawiającym kompresem. Za każdym razem, zanim odbędziesz pełny odpoczynek, możesz wykorzystać akcję, aby zrobić z niego okłady stworzeniu w bezpośrednim zasięgu. Gdy odbędzie ono pełny odpoczynek, mając przyłożony uzdrawiający kompres, leczy dodatkowe obrażenia równe połowie swojej Szybkości Zdrowienia. Stworzenie może korzystać tylko z jednego takiego okładu naraz.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_starej_wiary",
+    "nazwa": "W Imię Starej Wiary",
+    "tradycja": "natura",
+    "tradycjaNazwa": "Natura",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Starej Wiary.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nCel leczy obrażenia równe połowie swojej Szybkości Zdrowienia. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, możesz sprawić, żeby roślinność pokryła kwadrat podłoża o boku 2 metrów, który znajduje się w twoim bliskim zasięgu. Obszar ten staje się trudnym terenem.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "pareidolia",
+    "nazwa": "Pareidolia",
+    "tradycja": "natura",
+    "tradycjaNazwa": "Natura",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno drzewo Rozmiaru 2 lub większego w twoim bezpośrednim zasięgu.\nCzas trwania: Koncentracja, do 1 godziny.\nDotykasz celu i stajesz się świadom dokładnej pozycji każdego drzewa w obrębie 1 kilometra od niego. Zachowujesz tę wiedzę na czas trwania zaklęcia, pod warunkiem, że pozostaniesz w kontakcie z celem. Za każdym razem, kiedy wykorzystujesz akcję, aby skoncentrować się na tym czarze, możesz zdecydować się postrzegać zmysłowo z przestrzeni zajmowanej przez dowolne drzewo Rozmiaru 2, którego pozycję poznałeś w wyniku tego użycia zaklęcia. Twoje oblicze pojawia się na korze objętej efektem rośliny, dzięki czemu widzisz i słyszysz z zajmowanej przez nią przestrzeni z użyciem twoich normalnych zmysłów. Jeśli drzewo, za pośrednictwem którego postrzegasz otoczenie, zostanie zniszczone, działanie czaru dobiega końca, a ty zyskujesz 1 punkt Szaleństwa.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4001,7 +4309,7 @@ const SPELLS = [
     "tradycjaNazwa": "Natura",
     "krag": 4,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Sześcian przestrzeni o krawędzi 3 metrów i punkcie początkowym w średnim zasięgu na twardej powierzchni z ziemi lub kamienia.\nCzas trwania: 1 minuta. Ziemia we wskazanym obszarze drży, kiedy wychodzi z niej 1k3 strażników kniei, otrząsając z siebie pył i kamienie. Każdy z nich musi wykonać test Woli. Jeśli pojawił się tylko jeden stwór, rzuca z 2 utrudnieniami, a jeśli dwa – z 1. Porażka oznacza, że dana istota staje się zniewolona na czas trwania zaklęcia. Strażnicy kniei zachowują istnienie, dopóki zaklęcie nie dobiegnie końca, w którym to momencie zapadają się z powrotem pod ziemię.",
+    "opis": "Obszar: Sześcian przestrzeni o krawędzi 3 metrów i punkcie początkowym w średnim zasięgu na twardej powierzchni z ziemi lub kamienia.\nCzas trwania: 1 minuta.\nZiemia we wskazanym obszarze drży, kiedy wychodzi z niej 1k3 strażników kniei, otrząsając z siebie pył i kamienie. Każdy z nich musi wykonać test Woli. Jeśli pojawił się tylko jeden stwór, rzuca z 2 utrudnieniami, a jeśli dwa – z 1. Porażka oznacza, że dana istota staje się zniewolona na czas trwania zaklęcia. Strażnicy kniei zachowują istnienie, dopóki zaklęcie nie dobiegnie końca, w którym to momencie zapadają się z powrotem pod ziemię.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4012,7 +4320,7 @@ const SPELLS = [
     "tradycjaNazwa": "Natura",
     "krag": 5,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno drzewo w twoim bezpośrednim zasięgu.\nCzas trwania: 1 minuta. Dotykasz obranego za cel drzewa i nasycasz je magiczną mocą. Roślina wyrywa korzenie z ziemi i staje się zniewolonym potworem swojego Rozmiaru z poniższymi dodatkowymi cechami: Obrona +3 Niewrażliwość na oszołomienie, oślepienie, przestraszenie, uśpienie, wyczerpanie, zamroczenie; potwór nie może zostać przemieszczony wbrew swojej woli ani powalony, dopóki stoi na podłożu. Wrażliwość na ogień: Potwór otrzymuje podwójne obrażenia od ognia.",
+    "opis": "Cel: Jedno drzewo w twoim bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nDotykasz obranego za cel drzewa i nasycasz je magiczną mocą. Roślina wyrywa korzenie z ziemi i staje się zniewolonym potworem swojego Rozmiaru z poniższymi dodatkowymi cechami:",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4023,7 +4331,18 @@ const SPELLS = [
     "tradycjaNazwa": "Ogień",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Do trzech stworzeń w bezpośrednim zasięgu.\nCzas trwania: 1 minuta. Dotykasz każdego celu, aby natchnąć go ogniem swojej wiary. W czasie trwania zaklęcia wybrane stworzenia emitują światło o promieniu 5 metrów i wykonują rzuty na atak i testy z 1 ułatwieniem.",
+    "opis": "Cel: Do trzech stworzeń w bezpośrednim zasięgu. Czas trwania: 1 minuta.\nDotykasz każdego celu, aby natchnąć go ogniem swojej wiary. W czasie trwania zaklęcia wybrane stworzenia emitują światło o promieniu 5 metrów i wykonują rzuty na atak i testy z 1 ułatwieniem.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "duch_rogatego_krola",
+    "nazwa": "Duch Rogatego Króla",
+    "tradycja": "spirytyzm",
+    "tradycjaNazwa": "Spirytyzm",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nZa wybraną istotą pojawia się cień Rogatego Króla i wchodzi na zajmowaną przez nią przestrzeń, a następnie znika. Dopóki zaklęcie nie dobiegnie końca, cel zyskuje wszystkie poniższe korzyści.\n- Widzenie w ciemności.\n- Premię +10 do Zdrowia.\n- Premię +4 do Prędkości.\n- 1 ułatwienie do opartych na Sile oraz Zręczności rzutów na atak i testów.\n- 1k6 dodatkowych obrażeń zadawanych atakami z użyciem broni.\nPonadto za każdym razem, kiedy przeciwnik poniesie porażkę w rzucie na atak przeciwko celowi, możesz wykorzystać reakcję, aby poruszyć objęte działaniem czaru stworzenie na odległość równą w metrach dwukrotności twojej Mocy.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4034,7 +4353,18 @@ const SPELLS = [
     "tradycjaNazwa": "Sztuki Tajemne",
     "krag": 4,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Sfera o promieniu równym twojej Mocy i punkcie początkowym w bliskim zasięgu, który jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Na czas trwania zaklęcia oczyszczasz wskazany obszar z magii. Przebywające w nim stworzenia otrzymują karę −3 do Mocy (minimum 0), dopóki tam pozostają.",
+    "opis": "Obszar: Sfera o promieniu równym twojej Mocy i punkcie początkowym w bliskim zasięgu, który jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nNa czas trwania zaklęcia oczyszczasz wskazany obszar z magii. Przebywające w nim stworzenia otrzymują karę −3 do Mocy (minimum 0), dopóki tam pozostają.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_ojczulka_smierci",
+    "nazwa": "W Imię Ojczulka Śmierci",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Ojczulka Śmierci.\nCel: Jedno obezwładnione stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nCel leczy obrażenia równe połowie swojej Szybkości Zdrowienia. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, atak ten zadaje dodatkowe 1k6 obrażeń.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4045,7 +4375,18 @@ const SPELLS = [
     "tradycjaNazwa": "Śmierć",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Cel: Dowolna liczba nieumarłych stworzeń w dalekim zasięgu. Ze środka twojej piersi wystrzeliwują cieniste macki i uderzają w stronę wskazanych nieumarłych, omijając lub przechodząc przez przeszkody na swej drodze. Każdy cel otrzymuje 20 obrażeń. Stworzenie obezwładnione wskutek tych obrażeń umiera natychmiast, ulegając całkowitemu zniszczeniu.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić czar morowe powietrze† z tradycji Śmierci.",
+    "opis": "Cel: Dowolna liczba nieumarłych stworzeń w dalekim zasięgu.\nZe środka twojej piersi wystrzeliwują cieniste macki i uderzają w stronę wskazanych nieumarłych, omijając lub przechodząc przez przeszkody na swej drodze. Każdy cel otrzymuje 20 obrażeń. Stworzenie obezwładnione wskutek tych obrażeń umiera natychmiast, ulegając całkowitemu zniszczeniu.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić czar morowe powietrze† z tradycji Śmierci.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wedrowka_po_snach",
+    "nazwa": "Wędrówka Po Snach",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 8 godzin.\nRzucając ten czar, musisz utrzymać koncentrację przez 1 minutę. Następnie na czas trwania zaklęcia zapadasz w sen.\nJeśli kiedy rzucałeś to zaklęcie, trzymałeś kawałek paznokcia, ciała lub włos jakiejś istoty, możesz wkroczyć do jej snu bez względu na dzielącą was odległość. Obserwujesz, o czym śni. Dopóki czar trwa, nie da się ciebie wykryć, jesteś też w stanie odwiedzać sny dowolnej liczby stworzeń, jednak przejście z jednego do drugiego zajmuje 10 minut i musisz mieć kawałek paznokcia, ciała lub włos każdego z nich. Przebywając w cudzym śnie, możesz się objawić i komunikować się z daną istotą, o ile zna ona przynajmniej jeden język.\nPrzebywając w cudzym śnie, możesz przejąć nad nim kontrolę, wykonawszy oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że istota śni, co tylko zechcesz. Jeśli zmusisz ją do doświadczenia czegoś, co byłoby wstrząsające, może wykonać test Woli. Sukces oznacza, że wyrzuca cię ze swojego snu i jeśli chce, może się obudzić. Porażka zaś oznacza, że otrzymuje 1 punkt Szaleństwa i nie czerpie żadnych korzyści z odpoczynku, kiedy się budzi.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4056,7 +4397,7 @@ const SPELLS = [
     "tradycjaNazwa": "Teurgia",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Nowego Boga.\nCel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Na czas trwania zaklęcia cel otrzymuje premię +1k6 do Zdrowia. Dopóki jest pod jej wpływem, raz na rundę, kiedy wykorzystujesz talent Modlitwa, odzyskujesz możliwość użycia reakcji.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Nowego Boga.\nCel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nNa czas trwania zaklęcia cel otrzymuje premię +1k6 do Zdrowia. Dopóki jest pod jej wpływem, raz na rundę, kiedy wykorzystujesz talent Modlitwa, odzyskujesz możliwość użycia reakcji.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4067,7 +4408,7 @@ const SPELLS = [
     "tradycjaNazwa": "Uroki",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Hulaki.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Sprawiasz, że cel pozbywa się jednego z następujących stanów: zauroczenie, zniewolenie lub przestraszenie. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, a ten zakończy się sukcesem, cel ataku zostaje przez ciebie zauroczony na 1 rundę.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Hulaki.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nSprawiasz, że cel pozbywa się jednego z następujących stanów: zauroczenie, zniewolenie lub przestraszenie.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, a ten zakończy się sukcesem, cel ataku zostaje przez ciebie zauroczony na 1 rundę.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4078,7 +4419,7 @@ const SPELLS = [
     "tradycjaNazwa": "Uroki",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Królowej Lata.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Przez 1 rundę, kiedy cel jest w twoim bliskim zasięgu, rzuty na atak przeciwko tobie są wykonywane z 1 utrudnieniem. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, a rzut zakończy się sukcesem, cel talentu leczy 1 punkt obrażeń.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Królowej Lata.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nPrzez 1 rundę, kiedy cel jest w twoim bliskim zasięgu, rzuty na atak przeciwko tobie są wykonywane z 1 utrudnieniem.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, a rzut zakończy się sukcesem, cel talentu leczy 1 punkt obrażeń.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4089,7 +4430,7 @@ const SPELLS = [
     "tradycjaNazwa": "Uroki",
     "krag": 4,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli ty lub członkowie twojej drużyny atakowaliście go od czasu, kiedy ostatnio odbyliście pełny odpoczynek, otrzymujesz 1 utrudnienie. Sukces oznacza, że stworzenie staje się zauroczone, dopóki nie odbędziesz pełnego odpoczynku. Dopóki pozostaje zauroczone w ten sposób i znajduje się w twoim bliskim zasięgu, możesz wykorzystać reakcję w momencie, kiedy miałoby podjąć turę, aby zdecydować, co w niej zrobi.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli ty lub członkowie twojej drużyny atakowaliście go od czasu, kiedy ostatnio odbyliście pełny odpoczynek, otrzymujesz 1 utrudnienie. Sukces oznacza, że stworzenie staje się zauroczone, dopóki nie odbędziesz pełnego odpoczynku. Dopóki pozostaje zauroczone w ten sposób i znajduje się w twoim bliskim zasięgu, możesz wykorzystać reakcję w momencie, kiedy miałoby podjąć turę, aby zdecydować, co w niej zrobi.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4100,7 +4441,7 @@ const SPELLS = [
     "tradycjaNazwa": "Uroki",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu. Roztrzaskujesz umysł celu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi wybranego stworzenia. Jeśli jego Zdrowie wynosi 20 lub mniej, odnosisz automatyczny sukces. Jeśli jego Zdrowie wynosi 50 lub więcej, otrzymujesz 1k3 utrudnień. Sukces oznacza, że istota zyskuje Szaleństwo równe wartości swojej Woli.",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nRoztrzaskujesz umysł celu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi wybranego stworzenia. Jeśli jego Zdrowie wynosi 20 lub mniej, odnosisz automatyczny sukces. Jeśli jego Zdrowie wynosi 50 lub więcej, otrzymujesz 1k3 utrudnień. Sukces oznacza, że istota zyskuje Szaleństwo równe wartości swojej Woli.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4111,7 +4452,7 @@ const SPELLS = [
     "tradycjaNazwa": "Woda",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta; patrz niżej. Na czas trwania zaklęcia całkowicie pokrywasz się lodem. Dopóki czar trwa, otrzymujesz premię +2 do Obrony i jesteś niewrażliwy na obrażenia od zimna lub lodu. Kiedy otrzymasz obrażenia od ognia, przyjmujesz ich tylko połowę, a efekt ten dobiega końca.",
+    "opis": "Czas trwania: 1 minuta; patrz niżej.\nNa czas trwania zaklęcia całkowicie pokrywasz się lodem. Dopóki czar trwa, otrzymujesz premię +2 do Obrony i jesteś niewrażliwy na obrażenia od zimna lub lodu. Kiedy otrzymasz obrażenia od ognia, przyjmujesz ich tylko połowę, a efekt ten dobiega końca.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4122,7 +4463,7 @@ const SPELLS = [
     "tradycjaNazwa": "Woda",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Dziadka Mroza.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta. Ciskasz w wybrane stworzenie strumieniem lodowatej wody. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że otrzymuje on 1k3 obrażeń i staje się unieruchomiony na 1 rundę. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, a ten zakończy się sukcesem, wokół celu objętego Modlitwą wybucha fala zimna o promieniu 1 metra. Każde stworzenie na tym obszarze otrzymuje 1k3 obrażeń.",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Dziadka Mroza.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nCiskasz w wybrane stworzenie strumieniem lodowatej wody. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że otrzymuje on 1k3 obrażeń i staje się unieruchomiony na 1 rundę.\nW czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, aby zapewnić 1 ułatwienie w rzucie na atak, a ten zakończy się sukcesem, wokół celu objętego Modlitwą wybucha fala zimna o promieniu 1 metra. Każde stworzenie na tym obszarze otrzymuje 1k3 obrażeń.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4133,7 +4474,7 @@ const SPELLS = [
     "tradycjaNazwa": "Woda",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Obszar: Sześcian o krawędzi 10 metrów i punkcie początkowym w dalekim zasięgu.\nCzas trwania: 1 minuta. Po wskazanym obszarze rozchodzi się śnieg, powodując na czas trwania zaklęcia znaczne przesłonięcie. Stworzenia traktują go jako trudny teren. Kiedy rzucasz ten czar i na koniec każdej rundy w czasie jego trwania, wszystkie istoty na pokrytym zamiecią obszarze muszą wykonać test Siły. Porażka oznacza, że otrzymują 5k6 obrażeń i stają się osłabione na 1 rundę, sukces zaś, że otrzymują tylko połowę obrażeń. Osłabione z tego powodu stworzenie jest również spowolnione. Jeśli było latające i uzyskało porażkę w teście, upada powalone.",
+    "opis": "Obszar: Sześcian o krawędzi 10 metrów i punkcie początkowym w dalekim zasięgu.\nCzas trwania: 1 minuta.\nPo wskazanym obszarze rozchodzi się śnieg, powodując na czas trwania zaklęcia znaczne przesłonięcie. Stworzenia traktują go jako trudny teren.\nKiedy rzucasz ten czar i na koniec każdej rundy w czasie jego trwania, wszystkie istoty na pokrytym zamiecią obszarze muszą wykonać test Siły. Porażka oznacza, że otrzymują 5k6 obrażeń i stają się osłabione na 1 rundę, sukces zaś, że otrzymują tylko połowę obrażeń. Osłabione z tego powodu stworzenie jest również spowolnione. Jeśli było latające i uzyskało porażkę w teście, upada powalone.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4144,7 +4485,29 @@ const SPELLS = [
     "tradycjaNazwa": "Ziemia",
     "krag": 5,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Punkt w bezpośrednim zasięgu leżący na obiekcie przynajmniej na 2 metry szerokim i na 2 metry wysokim. Dotykasz celu i sprawiasz, że wokół punktu pojawia się sześcian wolnej przestrzeni. Ma ona maksymalnie 2 metry wysokości i 2 szerokości. Sięga wewnątrz obiektu na liczbę metrów równą 5 + twoja wartość Mocy lub dopóki nie otworzy się na inną wolną przestrzeń.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić trzęsienie ziemi z tradycji Ziemi.",
+    "opis": "Cel: Punkt w bezpośrednim zasięgu leżący na obiekcie przynajmniej na 2 metry szerokim i na 2 metry wysokim.\nDotykasz celu i sprawiasz, że wokół punktu pojawia się sześcian wolnej przestrzeni. Ma ona maksymalnie 2 metry wysokości i 2 szerokości. Sięga wewnątrz obiektu na liczbę metrów równą 5 + twoja wartość Mocy lub dopóki nie otworzy się na inną wolną przestrzeń.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić trzęsienie ziemi z tradycji Ziemi.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_pramatki",
+    "nazwa": "W Imię Pramatki",
+    "tradycja": "zycie",
+    "tradycjaNazwa": "Życie",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posiadać talent Modlitwa i być wyznawcą Pramatki.\nCel: Jedno stworzenie w bliskim zasięgu.\nCzas trwania: 1 minuta.\nCel leczy obrażenia równe połowie swojej Szybkości Zdrowienia. W czasie trwania zaklęcia za każdym razem, kiedy użyjesz talentu Modlitwa, leczysz obrażenia równe wartości twojej Mocy lub robi to wybrane przez ciebie stworzenie w bliskim zasięgu.",
+    "zrodlo": "NW",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ozywienie",
+    "nazwa": "Ożywienie",
+    "tradycja": "zycie",
+    "tradycjaNazwa": "Życie",
+    "krag": 4,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno stworzenie w bezpośrednim zasięgu, uśmiercone nie dawniej niż 1 minutę temu.\nDotykasz celu i przywracasz go do życia. Musi on wykonać test Siły. Sukces oznacza, że leczy 1 obrażenie i zyskuje 1k6 punktów Szaleństwa, porażka zaś, że ponownie umiera.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić czar leczenie średnich ran z tradycji Życia.",
     "zrodlo": "NW",
     "strona_zrodlowa": null
   },
@@ -4155,7 +4518,51 @@ const SPELLS = [
     "tradycjaNazwa": "Alchemia",
     "krag": 2,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1; musisz też mieć zestaw alchemika.\nCel: Specjalne składniki w twoim bezpośrednim zasięgu, warte połowę ceny zakazanego przedmiotu, który zamierzasz stworzyć. Wybierz jeden zakazany przedmiot (przykłady znajdziesz w Rozdziale 3 w Suplemencie Władcy Demonów), który nie jest żywym stworzeniem, takim jak askaryda, i którego cena nie przewyższa 5 złotych koron. Musisz utrzymać koncentrację przez 1 godzinę, gdy będziesz pracować z użyciem zestawu alchemika, aby przygotować i połączyć specjalne składniki i stworzyć przedmiot. Po upływie tego czasu kończysz pracę, a obiekt zyskuje wszystkie swoje właściwości.",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1; musisz też mieć zestaw alchemika.\nCel: Specjalne składniki w twoim bezpośrednim zasięgu, warte połowę ceny zakazanego przedmiotu, który zamierzasz stworzyć.\nWybierz jeden zakazany przedmiot (przykłady znajdziesz w Rozdziale 3 w Suplemencie Władcy Demonów), który nie jest żywym stworzeniem, takim jak askaryda, i którego cena nie przewyższa 5 złotych koron. Musisz utrzymać koncentrację przez 1 godzinę, gdy będziesz pracować z użyciem zestawu alchemika, aby przygotować i połączyć specjalne składniki i stworzyć przedmiot. Po upływie tego czasu kończysz pracę, a obiekt zyskuje wszystkie swoje właściwości.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zelazna_butelka",
+    "nazwa": "Żelazna Butelka",
+    "tradycja": "alchemia",
+    "tradycjaNazwa": "Alchemia",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 3; musisz też mieć zestaw alchemika.\nCel: Jedna butelka wykonana z żelaza (warta 1 złotą koronę), którą jesteś w stanie chwycić w jedną dłoń.\nZa każdym razem, kiedy rzucasz to zaklęcie, wybierz jeden z poniższych efektów.\nPrzygotowanie butelki: Musisz utrzymać koncentrację przez 1 godzinę, podczas której pracujesz nad butelką z użyciem zestawu alchemika. Kiedy skończysz, możesz jej użyć, aby przywołać inne efekty tego zaklęcia.\nPochwycenie demona: Aby skorzystać z tego efektu, musisz mieć przygotowaną uprzednio butelkę. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli jednego demona w bliskim zasięgu. Sukces oznacza, że porzuca on swoją fizyczną formę, aby stać się podobną do dymu esencją, która wlatuje do pojemnika, gdzie przebywa, dopóki nie zostanie uwolniony. W ramach drobnej czynności możesz wypuścić uwięzione stworzenie, sprawiając, że pojawi się w wybranej przez ciebie przestrzeni w bliskim zasięgu. W butelce może się znajdować naraz tylko jeden demon.\nZniewolenie zabutelkowanego demona: Aby skorzystać z tego efektu, musisz mieć przygotowaną uprzednio butelkę. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli jednego demona w bliskim zasięgu, który został uwięziony wewnątrz twojej żelaznej butelki w dowolnym momencie, od kiedy ostatni raz odbyłeś pełny odpoczynek. Sukces oznacza, że staje się on zniewolony na 1 minutę, porażka zaś, że butelka pęka i demon zostaje uwolniony.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_wiecznego_cienia",
+    "nazwa": "W Imię Wiecznego Cienia",
+    "tradycja": "cien",
+    "tradycjaNazwa": "Cień",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Bractwo Cieni.\nCzas trwania: 1 minuta.\nZe wszystkich otworów twojego ciała wypływa śliski, czarny płyn, który pokrywa cię całkowicie na czas trwania zaklęcia. Dopóki nie dobiegnie ono końca, zyskujesz widzenie w ciemności, wykonujesz testy na ukrywanie się z 3 ułatwieniami i jesteś niewrażliwy na ataki za pomocą Magii Niebiańskiej. Dodatkowo w każdej ze swoich tur możesz wykorzystać akcję lub reakcję, aby ugasić w bliskim zasięgu jedno naturalne źródło światła lub takie stworzone za pomocą zaklęcia kręgu 0.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "cien_z_pustki",
+    "nazwa": "Cień Z Pustki",
+    "tradycja": "cien",
+    "tradycjaNazwa": "Cień",
+    "krag": 4,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Obszar: Sfera o promieniu 10 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 godzina.\nObszar wypełnia mrożąca do szpiku kości ciemność, przesłaniając go całkowicie na czas trwania zaklęcia. Blokuje ona wszelkie światło z naturalnych źródeł oraz takie stworzone za pomocą zaklęć 2 lub niższego kręgu, a także ogranicza wszelkie niemagiczne widzenie poza prawdziwym widzeniem.\nKiedy pojawia się ciemność, a także pod koniec każdej rundy w czasie trwania zaklęcia, każde stworzenie na wskazanym obszarze musi uzyskać sukces w teście Woli, w przeciwnym razie otrzymuje 1 punkt Szaleństwa. Jeśli popadnie z tego powodu w obłęd, automatycznie staje się opętane przez demona. Rzuć k6, aby określić jego wielkość: 1 – drobny; 2 – mały; 3 – średni; 4 – duży; 5 – wielki; 6 – tytaniczny.\nNa koniec każdej minuty trwania zaklęcia rzuć 2k6. Przy wyniku 12 czar dobiega końca i pojawia się wyłom do Pustki (patrz Rozdział 1).",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zwiazanie_demona",
+    "nazwa": "Związanie Demona",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Wymagania: Musisz trzymać w jednej dłoni obiekt warty przynajmniej 1 złotą koronę.\nCel: Jeden demon w bliskim zasięgu, którego jesteś w stanie widzieć.\nWyciągasz obiekt w kierunku celu i przyjmujesz 1k6 + 1 obrażeń. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli jest on Rozmiaru 1/2 lub mniejszego, zyskujesz 1 ułatwienie. Za każdy punkt Rozmiaru demona powyżej 1 otrzymujesz 1 utrudnienie. Sukces oznacza, że stwór porzuca swoją fizyczną formę, która rozwiewa się w zajmowanej przezeń przestrzeni, a jego esencja zostaje wessana do trzymanego przez ciebie obiektu, gdzie pozostaje, dopóki przedmiot nie ulegnie zniszczeniu.\nKiedy esencja demona zostaje wessana do obiektu, rzuć k6. Wynik 1 oznacza, że obiekt zyskuje specjalną właściwość wylosowaną z tabeli Właściwości demonicznych przedmiotów w Rozdziale 4.\nPrzy wynikach 2–5 obiekt zyskuje jedną losowo wybraną właściwość zaklętego przedmiotu (Cień Władcy Demonów, strona 216).\nWynik 6 sprawia, że obiekt zyskuje 1k3 losowo wybranych właściwości zaklętego przedmiotu.\nNiezależnie od nabytych właściwości przedmiot jest splugawiony i każde stworzenie, które go dotyka, musi odnieść sukces w teście Woli, w przeciwnym razie otrzymuje 1 punkt Splugawienia. Kiedy istota raz zyska w ten sposób Splugawienie, nie otrzymuje go już więcej z powodu używania tego przedmiotu.\nJeśli obiekt zostanie zniszczony, związany z nim demon obleka się w nowe ciało i pojawia się w wybranej przez MG wolnej przestrzeni w bliskim zasięgu od przedmiotu.\nPoświęcenie: Możesz wykorzystać akcję, aby poświęcić użycie tego zaklęcia i rzucić czar przyzwanie pomniejszego demona",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4166,7 +4573,18 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 3,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Przyjmujesz 1k6 + 1 obrażeń. Zyskujesz jeden losowo wybrany demoniczny talent (patrz Rozdział 4) i zachowujesz dostęp do niego na czas trwania zaklęcia. Jeśli zdecydujesz się otrzymać 1 punkt Splugawienia, kiedy rzucasz ten czar, ale zanim wylosujesz talent, czas trwania zwiększa się do 1 godziny.",
+    "opis": "Czas trwania: 1 minuta.\nPrzyjmujesz 1k6 + 1 obrażeń. Zyskujesz jeden losowo wybrany demoniczny talent (patrz Rozdział 4) i zachowujesz dostęp do niego na czas trwania zaklęcia. Jeśli zdecydujesz się otrzymać 1 punkt Splugawienia, kiedy rzucasz ten czar, ale zanim wylosujesz talent, czas trwania zwiększa się do 1 godziny.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wyluskanie_wrzeszczacej_duszy",
+    "nazwa": "Wyłuskanie Wrzeszczącej Duszy",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe, śmiertelne stworzenie w bliskim zasięgu.\nPrzyjmujesz 2k6 obrażeń. Ze środka twojego czoła wydobywa się pasmo magicznego mroku i sunie w stronę celu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli ofiary. Jeśli jej Splugawienie wynosi co najmniej 6, zyskujesz 1 ułatwienie. Jeśli jej Zdrowie wynosi 30 lub więcej, otrzymujesz 1 utrudnienie. Sukces oznacza, że cel staje się zamroczony na tak długo, jak się koncentrujesz, i w tym czasie krzyczy. Jeśli zachowasz koncentrację przez 1 minutę, stworzenie umiera, a ty wydobywasz jego duszę, która natychmiast staje się cieniem. Jeśli zdecydujesz się przyjąć 1 punkt Splugawienia, cień ów staje się zniewolony na 1 godzinę lub dopóki nie zostanie obezwładniony.\nRzut na atak 20+: Cel umiera natychmiast i wydobywasz jego duszę tak jak opisano wyżej.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4177,7 +4595,18 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 9,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Punkt w ekstremalnym zasięgu, który jesteś w stanie widzieć. Przyjmujesz 10k6 obrażeń i tyle punktów Szaleństwa, ile wynosi twoja Wola. Wybijasz we wskazanym miejscu dziurę w rzeczywistości, aby stworzyć wyłom do Pustki (patrz Rozdział 1). Ustal losowo czas trwania wyłomu, obszar wpływu i efekty.",
+    "opis": "Cel: Punkt w ekstremalnym zasięgu, który jesteś w stanie widzieć.\nPrzyjmujesz 10k6 obrażeń i tyle punktów Szaleństwa, ile wynosi twoja Wola. Wybijasz we wskazanym miejscu dziurę w rzeczywistości, aby stworzyć wyłom do Pustki (patrz Rozdział 1). Ustal losowo czas trwania wyłomu, obszar wpływu i efekty.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zamiana_w_fomora",
+    "nazwa": "Zamiana W Fomora",
+    "tradycja": "klatwy",
+    "tradycjaNazwa": "Klątwy",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jeden człowiek w bliskim zasięgu, którego jesteś w stanie widzieć.\nPasma mrocznej mocy oplatają cel. Wykonaj oparty na Intelekcie rzut na atak przeciwko Sile ofiary. Jeśli jej Zdrowie wynosi 15 lub mniej, zyskujesz 1 ułatwienie. Jeśli jej Zdrowie wynosi 30 lub więcej, otrzymujesz 1 utrudnienie. Sukces oznacza, że cel staje się przestraszony, dopóki zachowujesz koncentrację. Przestraszony z tego powodu człowiek musi w każdej turze wykorzystać akcję, aby zaatakować z użyciem broni. Jeśli będziesz się koncentrować przez 1 minutę, cel otrzymuje 1k6 punktów Szaleństwa i na stałe transformuje się w fomora. Zastosuj następujące zmiany do jego statystyk:",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4188,7 +4617,7 @@ const SPELLS = [
     "tradycjaNazwa": "Klątwy",
     "krag": 4,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które nie ma cech „straszny” ani „przerażający”. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli jego Szaleństwo wynosi co najmniej 3, otrzymujesz 1 ułatwienie. Sukces oznacza, że ofiara przez 1 minutę traktuje wszystkie inne stworzenia, które jest w stanie widzieć, jakby posiadały cechę „przerażające”.\nRzut na atak 20+: Klątwa działa, dopóki nie umrzesz lub nie użyjesz akcji, aby ją zdjąć, kiedy stworzenie jest w twoim średnim zasięgu.",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które nie ma cech \"straszny\" ani \"przerażający\".\nWykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli jego Szaleństwo wynosi co najmniej 3, otrzymujesz 1 ułatwienie. Sukces oznacza, że ofiara przez 1 minutę traktuje wszystkie inne stworzenia, które jest w stanie widzieć, jakby posiadały cechę \"przerażające\".\nRzut na atak 20+: Klątwa działa, dopóki nie umrzesz lub nie użyjesz akcji, aby ją zdjąć, kiedy stworzenie jest w twoim średnim zasięgu.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4210,7 +4639,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Fey",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1.\nCel: Jedno żywe stworzenie, która ma skórę na całym swoim ciele. Wykonaj oparty na Intelekcie rzut na atak przeciwko Sile celu. Jeśli jego Zdrowie wynosi 20 lub mniej, odnosisz automatyczny sukces. Jeśli jego Zdrowie wynosi 40 lub więcej, otrzymujesz 1 utrudnienie. Sukces oznacza, że cel zrzuca skórę i staje się krwawym chudzielcem. Nie zachowuje żadnych ze swoich oryginalnych statystyk.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić czar halucynacje z tradycji Fey.",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Cel: Jedno żywe stworzenie, która ma skórę na całym swoim ciele.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Sile celu. Jeśli jego Zdrowie wynosi 20 lub mniej, odnosisz automatyczny sukces. Jeśli jego Zdrowie wynosi 40 lub więcej, otrzymujesz 1 utrudnienie. Sukces oznacza, że cel zrzuca skórę i staje się krwawym chudzielcem. Nie zachowuje żadnych ze swoich oryginalnych statystyk.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić czar halucynacje z tradycji Fey.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4221,7 +4650,40 @@ const SPELLS = [
     "tradycjaNazwa": "Nekromancja",
     "krag": 2,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno martwe, humanoidalne stworzenie Rozmiaru 1/2 lub 1 w twoim bezpośrednim zasięgu. Dotykasz celu i nasycasz go mroczną mocą. Jeśli zachowasz koncentrację przez 1 minutę, w którym to czasie musisz utrzymać kontakt z ciałem, staje się ono zniewolonym zombie.",
+    "opis": "Cel: Jedno martwe, humanoidalne stworzenie Rozmiaru 1/2 lub 1 w twoim bezpośrednim zasięgu.\nDotykasz celu i nasycasz go mroczną mocą. Jeśli zachowasz koncentrację przez 1 minutę, w którym to czasie musisz utrzymać kontakt z ciałem, staje się ono zniewolonym zombie.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "okowy",
+    "nazwa": "Okowy",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nDookoła celu pojawiają się łańcuchy złożone z czarnych, lśniących ogniw i kajdan i starają się go pochwycić. Wykonaj oparty na Intelekcie rzut na atak przeciwko Zręczności stworzenia. Jeśli jest ono demonem, otrzymujesz 2 ułatwienia. Sukces oznacza, że ofiara staje się bezbronna na tak długo, jak utrzymujesz koncentrację, do 1 minuty. Dopóki cel pozostaje bezbronny z powodu tego zaklęcia, jest także odporny na obrażenia ze wszystkich źródeł innych niż ty.\nZa każdym razem, kiedy wykorzystasz akcję, aby skoncentrować się tym zaklęciu, możesz wywołać u celu wyniszczającą psychicznie agonię. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli ofiary. Sukces oznacza, że otrzymuje ona 2k6 obrażeń, a ty możesz wywołać u niej jeden z następujących stanów: osłabienie, przestraszenie lub zauroczenie. Jeśli stworzenie jest już osłabione, staje się zamiast tego oślepione na 1 godzinę. Jeśli jest już przestraszone, staje się zamiast tego zamroczone na 1 godzinę. Jeśli jest już zauroczone, staje się zamiast tego zniewolone na 1 godzinę.\nJeśli w dowolnym momencie poniesiesz porażkę w rzucie na atak przeciwko objętemu efektem zaklęcia celowi, czar dobiega końca, a stworzenie to może podjąć najbliższą dostępną turę.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_jedynego_prawdziwego_boga",
+    "nazwa": "W Imię Jedynego Prawdziwego Boga",
+    "tradycja": "ogien",
+    "tradycjaNazwa": "Ogień",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Rycerzy Jedynego Prawdziwego Boga.\nCzas trwania: 1 minuta.\nBuchają od ciebie płomienie, zadając każdemu stworzeniu i obiektowi w promieniu 1 metra 1k6 obrażeń. Istota może wykonać test Zręczności, w którym sukces oznacza, że otrzymuje tylko połowę obrażeń.\nW czasie trwania zaklęcia nad twoją głową wisi język ognia, rzucając światło w promieniu 2 metrów. Możesz wykorzystać akcję, aby zaatakować z jego użyciem, ciskając nim w jedno stworzenie w bliskim zasięgu. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że otrzymuje on 1k6 obrażeń. Dopóki zaklęcie nie dobiegnie końca, na koniec rundy, w której cisnąłeś językiem ognia, nad twoją głową pojawia się nowy.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "atawizm",
+    "nazwa": "Atawizm",
+    "tradycja": "przemiany",
+    "tradycjaNazwa": "Przemiany",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Cel: Jedno stworzenie w bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nWykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że dotykasz stworzenia, które staje się zamroczone na 1 rundę. Kiedy ten stan dobiega końca, cel musi wykonać test Siły, może jednak zdecydować się ponieść w nim dobrowolną porażkę. Jeśli jego Zdrowie wynosi 15 lub mniej, rzut automatycznie kończy się porażką. Jeśli jego Zdrowie wynosi 30 lub więcej, otrzymuje 1 ułatwienie. Porażka oznacza, że ofiara przechodzi przerażającą metamorfozę, a jej nowa forma trwa 1 minutę. Dowolna istota, która widzi tę transformację a także przemieniony cel, musi uzyskać sukces w teście Woli z 1 utrudnieniem; w przeciwnym razie otrzymuje 1 punkt Szaleństwa.\nOdmienione przez to zaklęcie stworzenie zyskuje premie +1k3 do Siły, +3k6 do Zdrowia oraz +2 do Prędkości. Jego Intelekt spada do 5 i dopóki czar nie dobiegnie końca, może w ramach akcji jedynie atakować bronią lub szarżować.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4232,7 +4694,7 @@ const SPELLS = [
     "tradycjaNazwa": "Sztuki Zakazane",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Filozofów Lśniącego Księcia.\nCzas trwania: 1 minuta. Szarpiesz swoje ciało, przyjmując 1k6 obrażeń, co powoduje, że przez resztę czasu trwania zaklęcia otrzymujesz tylko połowę obrażeń. Za każdym razem, kiedy ucierpisz obrażenia poza tymi pierwszymi, musisz odnieść sukces w teście Woli, w przeciwnym razie zyskujesz 1 punkt Szaleństwa.",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Filozofów Lśniącego Księcia.\nCzas trwania: 1 minuta.\nSzarpiesz swoje ciało, przyjmując 1k6 obrażeń, co powoduje, że przez resztę czasu trwania zaklęcia otrzymujesz tylko połowę obrażeń. Za każdym razem, kiedy ucierpisz obrażenia poza tymi pierwszymi, musisz odnieść sukces w teście Woli, w przeciwnym razie zyskujesz 1 punkt Szaleństwa.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4243,7 +4705,7 @@ const SPELLS = [
     "tradycjaNazwa": "Sztuki Zakazane",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Dzieci Macierzy. Twój brzuch puchnie, a następnie pęka i wychodzi z niego mały potwór, który posiada cechę „przerażający”. Otrzymujesz obrażenia równe swojej Szybkości Zdrowienia i stajesz się zamroczony na 1 minutę lub dopóki stworzenie, które „urodziłeś”, nie zostanie obezwładnione. Kontrolujesz potwora i decydujesz, co robi w każdej ze swoich tur.",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Dzieci Macierzy.\nTwój brzuch puchnie, a następnie pęka i wychodzi z niego mały potwór, który posiada cechę \"przerażający\". Otrzymujesz obrażenia równe swojej Szybkości Zdrowienia i stajesz się zamroczony na 1 minutę lub dopóki stworzenie, które \"urodziłeś\", nie zostanie obezwładnione. Kontrolujesz potwora i decydujesz, co robi w każdej ze swoich tur.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4254,7 +4716,7 @@ const SPELLS = [
     "tradycjaNazwa": "Telepatia",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Sióstr Niebieskiej Dłoni.\nCel: Jedno żywe stworzenie w bliskim zasięgu. Zalewasz umysł celu przyjemnością, dopóki nie zacznie jęczeć w ekstazie. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że staje się ono zamroczone na 1 rundę. Zamroczona z tego powodu istota otrzymuje tylko połowę obrażeń. W każdej swojej turze może wykonać test Woli z 1 utrudnieniem. Sukces pozwala pozbyć się tego stanu.",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Sióstr Niebieskiej Dłoni.\nCel: Jedno żywe stworzenie w bliskim zasięgu.\nZalewasz umysł celu przyjemnością, dopóki nie zacznie jęczeć w ekstazie. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że staje się ono zamroczone na 1 rundę. Zamroczona z tego powodu istota otrzymuje tylko połowę obrażeń. W każdej swojej turze może wykonać test Woli z 1 utrudnieniem. Sukces pozwala pozbyć się tego stanu.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4265,7 +4727,18 @@ const SPELLS = [
     "tradycjaNazwa": "Teleportacja",
     "krag": 5,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1.\nCzas trwania: 1 minuta. W czasie trwania zaklęcia możesz w swojej turze wykorzystać akcję lub reakcję, aby teleportować się do przestrzeni w średnim zasięgu, którą jesteś w stanie widzieć, przechodząc przez Pustkę. Za każdym razem, kiedy tak robisz, zyskujesz 1 punkt Szaleństwa, a następnie rzucasz k6. Przy wyniku 1 zaklęcie dobiega końca.",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Czas trwania: 1 minuta.\nW czasie trwania zaklęcia możesz w swojej turze wykorzystać akcję lub reakcję, aby teleportować się do przestrzeni w średnim zasięgu, którą jesteś w stanie widzieć, przechodząc przez Pustkę. Za każdym razem, kiedy tak robisz, zyskujesz 1 punkt Szaleństwa, a następnie rzucasz k6. Przy wyniku 1 zaklęcie dobiega końca.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "brama_do_pustki",
+    "nazwa": "Brama Do Pustki",
+    "tradycja": "teleportacja",
+    "tradycjaNazwa": "Teleportacja",
+    "krag": 7,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Nie możesz być w Pustce.\nObszar: Sześcian przestrzeni o krawędzi 3 metrów i punkcie początkowym w średnim zasięgu.\nCzas trwania: Patrz niżej.\nŚwiatło zagina się i załamuje wewnątrz obszaru tak długo, jak się koncentrujesz, maksymalnie do 1 minuty. Jeśli nie zachowasz koncentracji przez pełną minutę, zaklęcie dobiega końca. Jeśli jednak ci się to uda, w centrum obszaru pojawia się czarny, owalny portal i pozostaje tam na 1 godzinę plus 1 godzinę za każdy punkt Splugawienia, który masz w momencie rzucania czaru. Przejście liczy 3 metry wysokości i 2 metry szerokości, ale nie posiada grubości i kiedy patrzeć na nie od boku, jest niewidoczne. Ma przód i tył i możesz nadać mu dowolną orientację. Każde stworzenie, które przez nie przejdzie, wkracza do Pustki. Portal jest widoczny w Pustce i znajdujące się tam istoty mogą przez niego przejść, a następnie oddalić się od obszaru działania zaklęcia.",
     "zrodlo": "GWP",
     "strona_zrodlowa": null
   },
@@ -4276,8 +4749,41 @@ const SPELLS = [
     "tradycjaNazwa": "Uroki",
     "krag": 3,
     "kategoria": "atak",
-    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1.\nCel: Jedno żywe stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Mieszasz zmysły celu tak, że odczuwa niesamowitą przyjemność za każdym razem, kiedy powinien odczuwać ból. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Jeśli jego Szaleństwo wynosi co najmniej 6, zyskujesz 1 ułatwienie. Sukces oznacza, że przez 1 minutę za każdym razem, kiedy cel otrzymuje obrażenia, cierpi również dodatkowe 1k6 obrażeń, a następnie przez 1 rundę wykonuje rzuty na atak i testy z 1 ułatwieniem. Ułatwienia te kumulują się.\nRzut na atak 20+: Dopóki efekt nie dobiegnie końca, cel jest również zauroczony.",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 1. Cel: Jedno żywe stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nMieszasz zmysły celu tak, że odczuwa niesamowitą przyjemność za każdym razem, kiedy powinien odczuwać ból. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Jeśli jego Szaleństwo wynosi co najmniej 6, zyskujesz 1 ułatwienie. Sukces oznacza, że przez 1 minutę za każdym razem, kiedy cel otrzymuje obrażenia, cierpi również dodatkowe 1k6 obrażeń, a następnie przez 1 rundę wykonuje rzuty na atak i testy z 1 ułatwieniem. Ułatwienia te kumulują się.\nRzut na atak 20+: Dopóki efekt nie dobiegnie końca, cel jest również zauroczony.",
     "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "demoniczna_apoteoza",
+    "nazwa": "Demoniczna Apoteoza",
+    "tradycja": "transformacja",
+    "tradycjaNazwa": "Transformacja",
+    "krag": 5,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Twoje Splugawienie musi wynosić co najmniej 4 i musisz być żywym, śmiertelnym stworzeniem.\nCzas trwania: 1 godzina.\nPrzechodzisz ohydną transformację, wykorzystując obciążające twoją duszę Splugawienie, aby stać się demonem. Każde stworzenie w bliskim zasięgu, które jest w stanie cię widzieć, musi uzyskać sukces w teście Woli, w przeciwnym razie otrzymuje 1 punkt Szaleństwa.\nTo zaklęcie zapewnia kilka korzyści, które utrzymują się przez czas jego trwania.\n- Testy Percepcji wykonujesz z 1 ułatwieniem i zyskujesz widzenie w ciemności, jeśli jeszcze go nie posiadasz.\n- Zyskujesz premie +2 do Obrony i +10 do Zdrowia.\n- Nie możesz zyskiwać Szaleństwa.\n- Otrzymujesz połowę obrażeń od zaklęć. Testy na odpieranie ataków czarami wykonujesz z 1 ułatwieniem, a stworzenia atakujące cię zaklęciami wykonują rzuty na atak z 1 utrudnieniem.\n- Twoje ataki bez broni zadają 2k6 dodatkowych obrażeń. Kiedy efekt dobiega końca, wykonaj test Woli z liczbą utrudnień równą swojemu Splugawieniu. Porażka oznacza, że otrzymujesz 1k3 punktów Szaleństwa lub 1 punkt Splugawienia.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_imie_pozbawionego_imienia",
+    "nazwa": "W Imię Pozbawionego Imienia",
+    "tradycja": "zniszczenie",
+    "tradycjaNazwa": "Zniszczenie",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Wymagania: Musisz posiadać talent Szaleńcze oddanie i należeć do kultu Bezimiennych.\nCzas trwania: 1 minuta.\nPrzyjmujesz 2 obrażenia. Kiedy rzucasz to zaklęcie oraz na koniec każdej rundy przez czas jego trwania, wydobywają się z ciebie impulsy destrukcyjnej mocy. Rozchodzą się one od punktu w twojej przestrzeni na promień 1k6 metrów i zadają 1 obrażenie tobie oraz 1k6 obrażeń wszystkiemu na tym obszarze. Stworzenie może wykonać test Zręczności, w którym sukces oznacza, że nie otrzymuje żadnych obrażeń.",
+    "zrodlo": "GWP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "spaczenie",
+    "nazwa": "Spaczenie",
+    "tradycja": "spaczeniec",
+    "tradycjaNazwa": "Spaczeniec",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Wymagania: Nie możesz znajdować się na spaczonym obszarze.\nObszar: Sfera o promieniu 5 metrów i punkcie początkowym w twoim bezpośrednim zasięgu.\nCzas trwania: Patrz niżej.\nObszar staje się spaczony na 1k6 lat; w tym czasie nie zdołają tu wyrosnąć żadne rośliny. Dodatkowo każde stworzenie próbujące rzucić na tym terenie zaklęcie musi najpierw uzyskać sukces w teście Woli. Porażka oznacza, że użycie czaru zostaje zachowane, ale akcja się marnuje.\nKiedy rzucasz to zaklęcie, wszystkie zwyczajne rośliny zmieniają się w popiół, który wiruje w powietrzu, przesłaniając obszar częściowo na 1 rundę. Każde znajdujące się tam żywe stworzenie musi uzyskać sukces w teście Siły, w przeciwnym razie staje się wyczerpane na 1 minutę i otrzymuje karę −1k3 do Zdrowia, dopóki nie odbędzie pełnego odpoczynku. Ponowne rzucenie tego zaklęcia powoduje kumulowanie się kary.\nPodnosisz o 1 liczbę użyć jednego znanego ci zaklęcia o kręgu równym połowie twojej Mocy lub niższym. Zachowujesz to dodatkowe użycie, dopóki go nie poświęcisz.\nUtrwalenie: Jeśli rzucisz to zaklęcie na ten sam obszar codziennie przez 8 dni, staje się on trwale spaczony.",
+    "zrodlo": "GP",
     "strona_zrodlowa": null
   },
   {
@@ -4287,7 +4793,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Krwi",
     "krag": 0,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Na skórze celu tworzą się bąble. Wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile przeciwnika. Sukces oznacza, że bąble pękają, ofiara otrzymuje 1k3 obrażeń, a na koniec każdej rundy musi uzyskać sukces w teście Siły, inaczej cierpi kolejne 1 obrażenie. Uzyskanie trzech sukcesów w tym teście lub uleczenie jakichkolwiek obrażeń kończy ten efekt.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k3 obrażeń.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nNa skórze celu tworzą się bąble. Wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile przeciwnika. Sukces oznacza, że bąble pękają, ofiara otrzymuje 1k3 obrażeń, a na koniec każdej rundy musi uzyskać sukces w teście Siły, inaczej cierpi kolejne 1 obrażenie. Uzyskanie trzech sukcesów w tym teście lub uleczenie jakichkolwiek obrażeń kończy ten efekt.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k3 obrażeń.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4298,7 +4804,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Krwi",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno żywe stworzenie w twoim bezpośrednim zasięgu. Dotykasz celu i wykonujesz test Woli lub Intelektu. Sukces oznacza, że stworzenie leczy obrażenia równe swojej Szybkości Zdrowienia, porażka zaś, że otrzymuje obrażenia równe jej połowie.",
+    "opis": "Cel: Jedno żywe stworzenie w twoim bezpośrednim zasięgu.\nDotykasz celu i wykonujesz test Woli lub Intelektu. Sukces oznacza, że stworzenie leczy obrażenia równe swojej Szybkości Zdrowienia, porażka zaś, że otrzymuje obrażenia równe jej połowie.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4309,18 +4815,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Krwi",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Jeśli cel ma 10 lub mniej Zdrowia, umiera natychmiast, a rozwodniona krew wycieka z otworów jego ciała. W przeciwnym razie wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile stworzenia. Sukces oznacza, że otrzymuje ono 1k3 obrażeń i staje się zamroczone oraz wyczerpane na 1 rundę. 1 Ku ziemi jałowej Pozostałe nowe zaklęcia Wielkie Pustkowie zainspirowało magów do opracowania różnorakich czarów w celu ochrony przed okropieństwami tej ziemi – lub by je okiełznać. Poniższe nowe zaklęcia stanowią uzupełnienie istniejących tradycji.",
-    "zrodlo": "GP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "przyzwanie_pylistego_diabla",
-    "nazwa": "Przyzwanie Pylistego Diabła",
-    "tradycja": "powietrze",
-    "tradycjaNazwa": "Powietrze",
-    "krag": 3,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Sześcian piachu lub pyłu o krawędzi 1 metra i punkcie początkowym w średnim zasięgu.\nCzas trwania: 1 minuta. Na koniec rundy, w której rzucasz to zaklęcie, cel staje się pylistym diabłem (patrz Rozdział 3). Efektów tego czaru nie możesz dobrowolnie zakończyć. Kiedy jego trwanie dobiega końca, stwór rozpada się w piach lub pył, który pokrywa ziemię w zajmowanej przez niego przestrzeni. Kiedy pylisty diabeł się pojawia, wykonaj oparty na Woli rzut na atak przeciwko jego Woli. Sukces oznacza, że staje się on zniewolony na czas trwania zaklęcia, porażka zaś, że staje się wobec ciebie wrogi.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nJeśli cel ma 10 lub mniej Zdrowia, umiera natychmiast, a rozwodniona krew wycieka z otworów jego ciała. W przeciwnym razie wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile stworzenia. Sukces oznacza, że otrzymuje ono 1k3 obrażeń i staje się zamroczone oraz wyczerpane na 1 rundę.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4331,7 +4826,73 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Krwi",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Gdzieś na ciele celu pojawia się otwór, a następnie się zamyka. Wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile ofiary. W wypadku sukcesu rzuć 2k6. Wynik staje się karą do jej Zdrowia, ty zaś zyskujesz taką samą premię do Zdrowia. Oba te modyfikatory utrzymują się przez 1 minutę. Specjalne: Jeśli jesteś wampirem, możesz zyskać 1 punkt krwi zamiast premii do Zdrowia. WRZĄCA KREW",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nGdzieś na ciele celu pojawia się otwór, a następnie się zamyka. Wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile ofiary. W wypadku sukcesu rzuć 2k6. Wynik staje się karą do jej Zdrowia, ty zaś zyskujesz taką samą premię do Zdrowia. Oba te modyfikatory utrzymują się przez 1 minutę.\nSpecjalne: Jeśli jesteś wampirem, możesz zyskać 1 punkt krwi zamiast premii do Zdrowia.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wrzaca_krew",
+    "nazwa": "Wrząca Krew",
+    "tradycja": "magia_krwi",
+    "tradycjaNazwa": "Magia Krwi",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nKrew w żyłach celu wrze. Jeśli ma on 15 lub mniej Zdrowia, umiera natychmiast, a jego ciało staje się napuchnięte i sczerniałe. W przeciwnym razie wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że otrzymuje ona 2k6 + 3 obrażeń.\nCel zabity tym czarem wybucha i rozbryzguje wrzącą krew w promieniu 3 metrów od punktu początkowego w jego przestrzeni. Każde stworzenie na tym obszarze musi uzyskać sukces w teście Zręczności, inaczej otrzymuje 1k6 obrażeń.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "krwotok",
+    "nazwa": "Krwotok",
+    "tradycja": "magia_krwi",
+    "tradycjaNazwa": "Magia Krwi",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie w średnim zasięgu.\nJeśli cel ma 20 lub mniej Zdrowia, umiera natychmiast, a z otworów jego ciała wylewa się krew. W przeciwnym razie wykonaj oparty na Intelekcie lub Woli rzut na atak przeciwko Sile stworzenia. Sukces oznacza, że gdzieś na jego ciele pojawia się okropna, brocząca rana; ofiara otrzymuje 5k6 obrażeń i zaczyna krwawić. Krwawienie utrzymuje się, dopóki cel nie wyleczy dowolnej liczby obrażeń lub dopóki nie zostanie ono zatamowane – w tym celu ofiara lub stworzenie w jej bezpośrednim zasięgu musi uzyskać sukces w teście Intelektu. Krwawiący cel otrzymuje na koniec każdej rundy 1k6 obrażeń.\nRzut na atak 20+: Cel otrzymuje dodatkowe 2k6 obrażeń.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "klatwa_pustynnych_krolow",
+    "nazwa": "Klątwa Pustynnych Królów",
+    "tradycja": "klatwy",
+    "tradycjaNazwa": "Klątwy",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Sile celu i kolejny przeciwko jego Woli. Sukces przeciwko Sile oznacza, że przeciwnik otrzymuje 2k6 obrażeń, a intensywny ból rozdziera jego ciało. Sukces przeciwko Woli oznacza zaś, że ofiara staje się przestraszona na 1 minutę. Sukcesy w obu testach oznaczają, że cel zostaje również przeklęty. Przeklęte w ten sposób stworzenie jest wyczerpane i nie może leczyć obrażeń.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "miazdzaca_swiatlosc",
+    "nazwa": "Miażdżąca Światłość",
+    "tradycja": "magia_niebianska",
+    "tradycjaNazwa": "Magia Niebiańska",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Obszar: Pionowy walec o wysokości 25 metrów i promieniu 2 metrów, o punkcie początkowym na podłożu oświetlonym przez słońce w ekstremalnym zasięgu.\nPromień intensywnego światła słonecznego zadaje 2k6 + 3 obrażeń wszystkiemu na wskazanym obszarze. Każde stworzenie, które otrzyma te obrażenia, musi wykonać test Siły. Porażka oznacza, że zostaje powalone i staje się wyczerpane na 1 minutę, sukces zaś, że cierpi jedynie połowę obrażeń.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "licz",
+    "nazwa": "Licz",
+    "tradycja": "nekromancja",
+    "tradycjaNazwa": "Nekromancja",
+    "krag": 6,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz być śmiertelnikiem, który nie został stworzony przez magię.\nZanim będziesz mógł rzucić to zaklęcie, musisz spędzić 8 godzin każdego dnia przez 1 miesiąc, 1 tydzień i 1 dzień, tworząc filakterium, aby przechowywać swoją duszę. Jego wygląd zależy od ciebie: może to być amulet, niewielkie pudełko lub broń – ale do wykonania potrzebne są materiały o wartości 100 złotych koron. Ukończony obiekt ma Obronę 25 i Zdrowie równe twojemu Zdrowiu.\nCel: Jedna dawka trucizny w twoim bezpośrednim zasięgu. Czas trwania: 1 godzina.\nNa czas trwania zaklęcia trucizna staje się śmiertelna. Jeśli ją wypijesz, zanim czar dobiegnie końca, otrzymujesz obrażenia równe twojemu Zdrowiu i natychmiast umierasz. Twoja dusza zostaje uwięziona wewnątrz filakterium, dopóki nie zostanie ono zniszczone, w którym to momencie podąża w to miejsce, gdzie powinna udać się po śmierci.\n8 godzin po tym, jak umrzesz od wypicia trucizny, stajesz się nieumarłą istotą, dopóki nie zostaniesz zniszczony. Nie dochodzi do wstrzymania rozkładu, więc o ile nie podejmiesz kroków, aby zakonserwować swoje ciało, mięso gnije, aż w końcu pozostaje jedynie szkielet. W wyniku transformacji zyskujesz następujące cechy.\nWartości atrybutów: Siła +1, Wola +1.\nAtrybuty drugorzędne: Obrona +1, Zdrowie +20,\nPercepcja +2, Splugawienie +1k3.\nNiewrażliwość na obrażenia od choroby, trucizny, zimna; a także na chorobę, spowolnienie, unieruchomienie, uśpienie, wyczerpanie, zatrucie.\nWidzenie w ciemności: W obszarach spowitych cieniem lub mrokiem widzisz na średni zasięg tak samo dobrze, jak w oświetlonych. Poza średnim zasięgiem widzisz w cieniu jak w świetle, a w mroku jak w cieniu.\nFilakterium: Dopóki twoje filakterium pozostaje nieuszkodzone, leczysz obrażenia na koniec pełnego odpoczynku według normalnych zasad. Jeśli zostaniesz obezwładniony, twoje ciało zmienia się w pył i pojawia ponownie w wolnej przestrzeni w bliskim zasięgu od filakterium 1k20 godzin później. Powracasz do życia z obrażeniami równym twojemu Zdrowiu − 1.\nJeśli twoje filakterium zostanie zniszczone, natychmiast otrzymujesz obrażenia równe swojemu Zdrowiu i umierasz.\nJedną nogą w grobie: Magia i eliksiry pozwalają ci leczyć jedynie połowę normalnych wartości obrażeń.\nGrobowy dotyk: Twój dotyk budzi w żywych stworzeniach paraliżujące obrzydzenie. Możesz wykorzystać akcję, aby zaatakować istotę w swoim bezpośrednim zasięgu. Wykonaj oparty na Intelekcie lub Woli rzut na atak z 1 ułatwieniem przeciwko Obronie celu. Sukces oznacza, że otrzymuje on 4k6 + 3 obrażeń i musi uzyskać sukces w teście Siły, w przeciwnym razie staje się przestraszony na 1 minutę. Przestraszona z tego powodu ofiara jest także spowolniona. Jeśli cel jest już spowolniony, zamiast tego zostaje unieruchomiony; jeśli jest już unieruchomiony, zamiast tego staje się bezbronny.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "przystosowanie_do_zywiolow",
+    "nazwa": "Przystosowanie Do Żywiołów",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Do pięciu stworzeń w bezpośrednim zasięgu. Czas trwania: 2 godziny.\nDotykasz każdego celu. Na czas trwania zaklęcia każdy z nich jest odporny na efekty deprywacji i wystawienia na działanie żywiołów.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4342,7 +4903,7 @@ const SPELLS = [
     "tradycjaNazwa": "Powietrze",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Obszar: Stożek o długości 3 metrów i punkcie początkowym w bliskim zasięgu. Każde znajdujące się na wskazanym obszarze żywe stworzenie musi uzyskać sukces w teście Siły, w przeciwnym razie staje się wyczerpane na 1 minutę. Wyczerpana z tego powodu istota otrzymuje 1 punkt obrażeń za każdym razem, kiedy wykonuje rzut na atak lub test.",
+    "opis": "Obszar: Stożek o długości 3 metrów i punkcie początkowym w bliskim zasięgu.\nKażde znajdujące się na wskazanym obszarze żywe stworzenie musi uzyskać sukces w teście Siły, w przeciwnym razie staje się wyczerpane na 1 minutę. Wyczerpana z tego powodu istota otrzymuje 1 punkt obrażeń za każdym razem, kiedy wykonuje rzut na atak lub test.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4353,7 +4914,29 @@ const SPELLS = [
     "tradycjaNazwa": "Powietrze",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Linia łamana o długości 5 metrów, wysokości 2 metrów i szerokości 1 metra, o punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 minuta. w, Na czas trwania zaklęcia zwiększasz temperaturę powietrza na wskazanym obszarze, sprawiając, że zaczyna ono falować. Stworzenia znajdujące się dalej niż w bliskim zasięgu od granicy obszaru wykonują rzuty na atak przeciwko istotom po drugiej jego stronie z 3 utrudnieniami. Ku ziemi jałowej 1",
+    "opis": "Obszar: Linia łamana o długości 5 metrów, wysokości 2 metrów i szerokości 1 metra, o punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 minuta.\nNa czas trwania zaklęcia zwiększasz temperaturę powietrza na wskazanym obszarze, sprawiając, że zaczyna ono falować. Stworzenia znajdujące się dalej niż w bliskim zasięgu od granicy obszaru wykonują rzuty na atak przeciwko istotom po drugiej jego stronie z 3 utrudnieniami.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "odwodnienie",
+    "nazwa": "Odwodnienie",
+    "tradycja": "woda",
+    "tradycjaNazwa": "Woda",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu.\nZ ciała celu wznosi się drobna smuga szkarłatnej mgły, w miarę jak uchodzą z niego płyny fizjologiczne. Wykonaj oparty na Woli rzut na atak przeciwko Sile stworzenia. Sukces oznacza, że otrzymuje ono 2k6 obrażeń i staje się wyczerpane na 1 godzinę. Jeśli wypije liczbę galonów wody równą swojemu Rozmiarowi, pozbywa się tego stanu. Jeśli jest już wyczerpane, otrzymuje zamiast tego 2k6 dodatkowych obrażeń.",
+    "zrodlo": "GP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ruchome_piaski",
+    "nazwa": "Ruchome Piaski",
+    "tradycja": "ziemia",
+    "tradycjaNazwa": "Ziemia",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Obszar: Okrąg na podłożu o promieniu 4 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 minuta.\nZiemia na wskazanym obszarze staje się na czas trwania zaklęcia trudnym terenem. Każde stworzenie, które znajduje się tam w momencie rzucania czaru lub na koniec rundy, musi wykonać test Siły. Porażka oznacza, że utyka, sukces zaś, że zostaje przemieszczone do najbliższej wolnej przestrzeni poza obszarem. Jeśli istota, która już utknęła, poniesie kolejną porażkę w tym teście, zapada się w piaski i nie może oddychać.\nJeśli stworzenie utknie, staje się unieruchomione. Może w ramach akcji wykonać test Siły; sukces oznacza, że pozbywa się tego stanu.\nJeśli istota zapadnie się w piaski, staje się oślepiona i unieruchomiona. Może w ramach akcji wykonać test Siły z 1 utrudnieniem. Sukces oznacza, że liczy się z powrotem jako ofiara, która utknęła, porażka zaś, że otrzymuje 1k6 obrażeń.\nKiedy zaklęcie dobiega końca, ziemia powraca do swojej normalnej konsystencji. Stworzenia, które utknęły bądź się zapadły, mogą podejmować dalsze próby uwolnienia się, tak jak opisano to wyżej. Jednakże jeśli podłoże było pierwotnie kamieniem, istota, która utknęła, pozostaje unieruchomiona, dopóki nie uda się jej uwolnić – co wymaga zadania przynajmniej 10 obrażeń ziemi na danym obszarze z użyciem broni lub innych narzędzi – a istota, która się zapadła, otrzymuje obrażenia równe swojemu Zdrowiu i natychmiast umiera.",
     "zrodlo": "GP",
     "strona_zrodlowa": null
   },
@@ -4364,7 +4947,51 @@ const SPELLS = [
     "tradycjaNazwa": "Opiekun",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Wymagania: Nie możesz nosić średniego ani ciężkiego pancerza. Atakujesz bronią. Rzut na atak wykonujesz z 1 ułatwieniem. Możesz użyć Woli w miejsce typowego dla tego ataku atrybutu. Sukces oznacza, że cel otrzymuje obrażenia typowe dla danego oręża i zostaje unieruchomiony na 1 minutę. Unieruchomione w ten sposób stworzenie może wykorzystać akcję, aby wykonać test Siły. Sukces sprawia, że pozbywa się tego stanu.",
+    "opis": "Wymagania: Nie możesz nosić średniego ani ciężkiego pancerza.\nAtakujesz bronią. Rzut na atak wykonujesz z 1 ułatwieniem. Możesz użyć Woli w miejsce typowego dla tego ataku atrybutu. Sukces oznacza, że cel otrzymuje obrażenia typowe dla danego oręża i zostaje unieruchomiony na 1 minutę. Unieruchomione w ten sposób stworzenie może wykorzystać akcję, aby wykonać test Siły. Sukces sprawia, że pozbywa się tego stanu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "w_obronie_ziem",
+    "nazwa": "W Obronie Ziem",
+    "tradycja": "opiekun",
+    "tradycjaNazwa": "Opiekun",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Nie możesz nosić średniego ani ciężkiego pancerza i musisz stać na ziemi.\nObszar: Okrąg na ziemi o promieniu 3 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nNa czas trwania zaklęcia zapuszczasz w miejscu korzenie i stajesz się unieruchomiony. Dopóki efekt nie dobiegnie końca, zyskujesz premię +1 do Obrony i wykonujesz rzuty na atak przeciwko stworzeniom znajdującym się na wskazanym obszarze z 2 ułatwieniami. Dodatkowo po obszarze rozchodzi się zgrubiała, poskręcana roślinność, czyniąc go trudnym terenem.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "straznik_natury",
+    "nazwa": "Strażnik Natury",
+    "tradycja": "opiekun",
+    "tradycjaNazwa": "Opiekun",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Nie możesz nosić średniego ani ciężkiego pancerza.\nCzas trwania: 1 minuta.\nPrzemieniasz się w strażnika natury, górującą nad innymi postać o przerażającej sile i mocy. Z twojego czoła wyrasta jelenie poroże, oczy lśnią szmaragdowym światłem, a grube, zielone futro pokrywa ci nogi. Każde stworzenie poza tobą i członkami twojej drużyny, które widzi tę przemianę, musi uzyskać sukces w teście Woli; w przeciwnym razie staje się przestraszone na 1 rundę. Pozostajesz w swojej nowej formie na czas trwania zaklęcia.\nKiedy jesteś przemieniony w strażnika natury, zyskujesz poniższe korzyści.\n- Twój rozmiar zwiększa się o 1, do minimum 2.\n- Zyskujesz premię +2 do Obrony.\n- Zyskujesz premię +10 do Zdrowia.\n- Zyskujesz premię +2 do Prędkości.\n- Twoje ataki bronią zadają dodatkowe 1k6 obrażeń.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zwiazany_duch",
+    "nazwa": "Związany Duch",
+    "tradycja": "szaman",
+    "tradycjaNazwa": "Szaman",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Otwarty sześcian przestrzeni o krawędzi 2 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 minuta bądź dopóki ty lub duch nie zostaniecie obezwładnieni albo ponownie nie rzucisz tego zaklęcia.\nPasma ektoplazmy gromadzą się w obszarze działania czaru, aby uformować ducha, którego ze sobą związałeś. Pozostaje on zamanifestowany przez czas trwania zaklęcia.\nDopóki byt ten pozostaje w naszej rzeczywistości, możesz przemieścić go na odległość równą jego Prędkości lub mniejszą za każdym razem, gdy podejmujesz turę. Kiedy rzucasz zaklęcie, jesteś w stanie zrobić to z przestrzeni zajmowanej przez siebie lub przez ducha. W czasie swojej tury możesz wykorzystać reakcję, aby na 1 rundę używać jego zmysłów zamiast własnych.\nJeśli duch zostanie obezwładniony, musisz wykonać test Siły. Porażka oznacza, że otrzymujesz obrażenia równe swojej Szybkości Zdrowienia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "kropla_kwasu",
+    "nazwa": "Kropla Kwasu",
+    "tradycja": "alchemia",
+    "tradycjaNazwa": "Alchemia",
+    "krag": 0,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie lub obiekt w bliskim zasięgu.\nW twojej dłoni pojawia się błyszcząca kropla żrącego śluzu, którą następnie ciskasz w cel. Wykonaj oparty na Intelekcie rzut na atak przeciwko Zręczności celu. Sukces oznacza, że otrzymuje on 1k6 + 2 obrażeń.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4375,7 +5002,7 @@ const SPELLS = [
     "tradycjaNazwa": "Alchemia",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedna substancja w bliskim zasięgu, którą jesteś w stanie widzieć. Odkrywasz nazwę celu i jego działanie. Jeśli jest to eliksir, poznajesz również przepis na jego wykonanie z użyciem zaklęcia warzenie eliksiru.",
+    "opis": "Cel: Jedna substancja w bliskim zasięgu, którą jesteś w stanie widzieć.\nOdkrywasz nazwę celu i jego działanie. Jeśli jest to eliksir, poznajesz również przepis na jego wykonanie z użyciem zaklęcia warzenie eliksiru.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4386,40 +5013,18 @@ const SPELLS = [
     "tradycjaNazwa": "Alchemia",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz mieć zestaw alchemika, niewielki, pusty pojemnik i specjalne składniki warte połowę ceny eliksiru. Wybierz jeden eliksir zidentyfikowany uprzednio zaklęciem identyfikacja substancji. Musisz utrzymać koncentrację przez 1 godzinę, podczas której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się pojedynczą dawką wskazanego eliksiru.",
+    "opis": "Wymagania: Musisz mieć zestaw alchemika, niewielki, pusty pojemnik i specjalne składniki warte połowę ceny eliksiru.\nWybierz jeden eliksir zidentyfikowany uprzednio zaklęciem identyfikacja substancji. Musisz utrzymać koncentrację przez 1 godzinę, podczas której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się pojedynczą dawką wskazanego eliksiru.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "warzenie_nadzwyczajnego_kleju",
-    "nazwa": "Warzenie Nadzwyczajnego Kleju",
+    "id": "warzenie_remedium",
+    "nazwa": "Warzenie Remedium",
     "tradycja": "alchemia",
     "tradycjaNazwa": "Alchemia",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz mieć zestaw alchemika i niewielki, pusty pojemnik.\nCzas trwania: 8 godzin lub do momentu zużycia. Musisz utrzymać koncentrację przez 1 minutę, w trakcie której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się nadzwyczajnym klejem (patrz Rozdział 3); zachowuje on swoje właściwości do końca trwania zaklęcia.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "kwasowe_strzalki",
-    "nazwa": "Kwasowe Strzałki",
-    "tradycja": "alchemia",
-    "tradycjaNazwa": "Alchemia",
-    "krag": 2,
-    "kategoria": "atak",
-    "opis": "Cel: Do trzech stworzeń lub obiektów w średnim zasięgu. Ciskasz ze swej dłoni trzema żrącymi, galaretowatymi kroplami, rozdzielonymi dowolnie pomiędzy cele. Dla każdej z nich wykonaj oparty na Intelekcie rzut na atak przeciwko Zręczności celu. Sukces oznacza, że otrzymuje on 1k6 obrażeń, a na koniec rundy, o ile nie poświęcił akcji, aby pozbyć się z siebie kwasu, kolejne 1k3 obrażeń.\nRzut na atak 20+: Cel otrzymuje 1k3 dodatkowych obrażeń na końcu każdej rundy przez 1 minutę lub dopóki nie poświęci akcji, aby pozbyć się z siebie kwasu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "warzenie_cieklego_dymu",
-    "nazwa": "Warzenie Ciekłego Dymu",
-    "tradycja": "alchemia",
-    "tradycjaNazwa": "Alchemia",
-    "krag": 2,
-    "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz mieć zestaw alchemika i niewielki, pusty pojemnik.\nCzas trwania: 8 godzin lub do momentu zużycia. Musisz utrzymać koncentrację przez 1 minutę, w trakcie której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się ciekłym dymem (patrz Rozdział 3, dym w butelce); zachowuje on swoje właściwości do końca trwania zaklęcia.",
+    "opis": "Wymagania: Musisz mieć zestaw alchemika i niewielki, pusty pojemnik.\nCzas trwania: 8 godzin lub do momentu spożycia.\nMusisz utrzymać koncentrację przez 1 minutę, w trakcie której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się magicznym remedium; zachowuje ono swoje właściwości do końca trwania zaklęcia.\nRemedium jest eliksirem. Stworzenie, które je spożyje, leczy liczbę obrażeń równą połowie swojej Szybkości Zdrowienia. Jeśli pijący jest chory, wyczerpany lub zatruty, może wykonać test Siły. Sukces pozwala pozbyć się jednego z tych stanów.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4430,18 +5035,18 @@ const SPELLS = [
     "tradycjaNazwa": "Śmierć",
     "krag": 0,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bezpośrednim zasięgu. Twój palec czernieje, kiedy sięgasz, aby dotknąć celu. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności stworzenia. Sukces oznacza, że go dotykasz. Rzuć 3k6. Jeśli wynik jest równy Zdrowiu ofiary lub od niego wyższy, istota umiera. Jeśli nie, staje się wyczerpana na 1 rundę.",
+    "opis": "Cel: Jedno żywe stworzenie w bezpośrednim zasięgu.\nTwój palec czernieje, kiedy sięgasz, aby dotknąć celu. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności stworzenia. Sukces oznacza, że go dotykasz. Rzuć 3k6. Jeśli wynik jest równy Zdrowiu ofiary lub od niego wyższy, istota umiera. Jeśli nie, staje się wyczerpana na 1 rundę.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "ochrona_przed_smiercia",
-    "nazwa": "Ochrona Przed Śmiercią",
-    "tradycja": "smierc",
-    "tradycjaNazwa": "Śmierć",
+    "id": "przed_smiercia_smierc",
+    "nazwa": "Przed Śmiercią Śmierć",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
     "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno żywe stworzenie w bezpośrednim zasięgu.\nCzas trwania: 1 godzina. Dotykasz celu i naznaczasz go pieczęcią w kształcie czaszki, która pozostaje na jego ciele do końca trwania czaru. W tym czasie ofiara wykonuje testy na odpieranie efektów zaklęć Śmierci z 1 ułatwieniem, a rzuty na atak zaklęciami Śmierci przeciwko niej zyskują 1 utrudnienie. Dodatkowo kiedy cel wykonuje próby przeznaczenia, może rzucić dwukrotnie i użyć wyższego wyniku.",
+    "opis": "Cel: Jedno żywe stworzenie w bezpośrednim zasięgu. Czas trwania: 1 godzina.\nDotykasz celu i naznaczasz go pieczęcią w kształcie czaszki, która pozostaje na jego ciele do końca trwania czaru. W tym czasie ofiara wykonuje testy na odpieranie efektów zaklęć Śmierci z 1 ułatwieniem, a rzuty na atak zaklęciami Śmierci przeciwko niej zyskują 1 utrudnienie. Dodatkowo kiedy cel wykonuje próby przeznaczenia, może rzucić dwukrotnie i użyć wyższego wyniku.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4452,7 +5057,7 @@ const SPELLS = [
     "tradycjaNazwa": "Śmierć",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Nici mrocznej energii splatają się dokoła celu. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że otrzymuje ona 2k6 + 3 obrażeń.\nRzut na atak 20+: Cel otrzymuje 1k6 dodatkowych obrażeń.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nNici mrocznej energii splatają się dokoła celu. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że otrzymuje ona 2k6 + 3 obrażeń.\nRzut na atak 20+: Cel otrzymuje 1k6 dodatkowych obrażeń.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4463,7 +5068,7 @@ const SPELLS = [
     "tradycjaNazwa": "Śmierć",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu. Wyciągasz rękę w kierunku celu, by wyssać zeń życie. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że otrzymuje ona 1k6 + 3 obrażeń, a ty leczysz się o tę samą wartość.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń, a ty leczysz się o tę samą wartość.",
+    "opis": "Cel: Jedno żywe stworzenie w bliskim zasięgu.\nWyciągasz rękę w kierunku celu, by wyssać zeń życie. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że otrzymuje ona 1k6 + 3 obrażeń, a ty leczysz się o tę samą wartość.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń, a ty leczysz się o tę samą wartość.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4474,7 +5079,73 @@ const SPELLS = [
     "tradycjaNazwa": "Śmierć",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno żywe, niestawiające oporu stworzenie w bezpośrednim zasięgu.\nCzas trwania: 8 godzin Dotykasz celu, który pada powalony i staje się bezbronny na czas trwania zaklęcia. Inne stworzenia poza tobą postrzegają go jako martwego. W tym stanie zyskuje on niewrażliwość na chorobę i zatrucie, nie może zyskiwać Szaleństwa i otrzymuje połowę obrażeń. Nie widzi, ale jest w stanie słyszeć i pozostaj świadomy upływu czasu.",
+    "opis": "Cel: Jedno żywe, niestawiające oporu stworzenie w bezpośrednim zasięgu.\nCzas trwania: 8 godzin\nDotykasz celu, który pada powalony i staje się bezbronny na czas trwania zaklęcia. Inne stworzenia poza tobą postrzegają go jako martwego. W tym stanie zyskuje on niewrażliwość na chorobę i zatrucie, nie może zyskiwać Szaleństwa i otrzymuje połowę obrażeń. Nie widzi, ale jest w stanie słyszeć i pozostaje świadomy upływu czasu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "gnicie",
+    "nazwa": "Gnicie",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno posiadające fizyczną postać stworzenie lub obiekt w bezpośrednim zasięgu.\nWykonaj test Woli przeciw Zręczności celu. Sukces oznacza, że go dotykasz, zadajesz mu 2k6 obrażeń, a także zarażasz go gniciem. Dopóki utrzymujesz koncentrację – maksymalnie przez 1 minutę – na koniec każdej rundy cel otrzymuje 1k6 obrażeń. Stworzenie, które zostanie obezwładnione wskutek tych obrażeń, umiera i rozpływa się w kałużę czarnego śluzu, ta zaś wysycha po 1k6 godzinach. Zniszczone w ten sposób obiekty rozsypują się w pył.\nRzut na atak 20+: Cel otrzymuje 1k6 dodatkowych obrażeń.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "trujacy_dech",
+    "nazwa": "Trujący Dech",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Obszar: Stożek o długości 5 metrów i punkcie początkowym w bezpośrednim zasięgu.\nWydychasz chmurę śmierdzącej mgły, która rozchodzi się po wskazanym obszarze, a następnie rozpływa. Każde znajdujące się tam stworzenie musi wykonać test Siły. Porażka oznacza, że otrzymuje 2k6 obrażeń i staje się zatrute, a sukces – że otrzymuje tylko 1k6 obrażeń. Zatruta w ten sposób istota musi uzyskać sukces w teście Siły na końcu każdej rundy, w przeciwnym razie otrzymuje 1k6 obrażeń. Trzy sukcesy sprawiają, że pozbywa się tego stanu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "uczta_dla_dusz",
+    "nazwa": "Uczta Dla Dusz",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Obszar: Sfera o promieniu 3 metrów i punkcie początkowym w średnim zasięgu.\nPo obszarze rozchodzą się wijące macki ciemności, po czym rozpływają się. Każde znajdujące się tam żywe stworzenie musi wykonać test Siły. Porażka oznacza, że otrzymuje 5k6 obrażeń, a sukces – połowę z nich. Istota umiera, jeśli obrażenia te doprowadzą do jej obezwładnienia. Jeśli przynajmniej jedna ofiara umrze z powodu tego zaklęcia, zyskujesz trwającą 1 godzinę premię 2k6 do Zdrowia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "dotyk_tradu",
+    "nazwa": "Dotyk Trądu",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 1 minuta.\nNa czas trwania zaklęcia twoje ręce przybierają niezdrowo zielony kolor i unoszą się z nich kłęby szkodliwych oparów. Kiedy zadajesz cios dłonią jako atak bez broni, wykonaj rzut na atak z 1 ułatwieniem. Sukces oznacza, że cel staje się chory. Dopóki pozostaje chory z tego powodu, nie może leczyć obrażeń. Dodatkowo na koniec każdej rundy ofiara musi uzyskać sukces w teście Siły, w przeciwnym razie otrzymuje 3k6 obrażeń. Trzy sukcesy sprawiają, że pozbywa się tego stanu.\nStworzenia, które stały się chore z powodu tego zaklęcia, mogą zarażać kolejne przez kontakt fizyczny. Dotknięta istota musi wykonać test Siły. Porażka oznacza, że staje się chora tak, jak w wyniku użycia czaru.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "morowe_smierc",
+    "nazwa": "Morowe Śmierć",
+    "tradycja": "powietrze",
+    "tradycjaNazwa": "Powietrze",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Obszar: Spoczywający na podłożu sześcian o krawędzi 8 metrów i punkcie początkowym w dalekim zasięgu.\nCzas trwania: Koncentracja, do 1 minuty.\nNiezdrowo zielona mgła rozchodzi się po wskazanym obszarze, znacznie go przesłaniając, i utrzymuje się w nim na czas trwania zaklęcia lub dopóki nie rozproszy jej wiatr. Za każdym razem, kiedy koncentrujesz się, by podtrzymać ten efekt, możesz przesunąć obszar z mgłą do 5 metrów po podłożu.\nKiedy mgła się pojawia, a także pod koniec każdej następnej rundy, wszystkie żywe istoty na jej obszarze muszą wykonać test Siły. Jeśli stworzenie jest poważnie ranne, zyskuje w tym teście 1 utrudnienie. Porażka oznacza, że ofiara otrzymuje 3k6 obrażeń i staje się zatruta na 1 rundę, sukces zaś – że otrzymuje tylko połowę obrażeń.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zawal_serca",
+    "nazwa": "Zawał Serca",
+    "tradycja": "smierc",
+    "tradycjaNazwa": "Śmierć",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno żywe stworzenie w średnim zasięgu.\nCel otrzymuje 30 obrażeń.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4485,7 +5156,62 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 0,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu. Przyjmujesz 1 obrażenie. W powietrzu materializuje się czarny szpon i tnie w cel. Wykonaj oparty na Intelekcie rzut na atak 4 Magia",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu.\nPrzyjmujesz 1 obrażenie. W powietrzu materializuje się czarny szpon i tnie w cel. Wykonaj oparty na Intelekcie rzut na atak przeciwko Zręczności ofiary. Sukces oznacza, że otrzymuje ona obrażenia równe 1k3 + twoje Splugawienie.\nRzut na Atak 20+: Przemieszczasz cel o 1 metr i staje się on osłabiony na 1 rundę.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "demoniczny_nadzor",
+    "nazwa": "Demoniczny Nadzór",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 1 minuta.\nPrzyjmujesz 1 obrażenie. W czasie trwania zaklęcia wykonujesz rzuty na atak i testy z 1 ułatwieniem. Za każdym razem, kiedy ci się nie powiedzie, zyskujesz 1 punkt Szaleństwa, nie powoduje to jednak przestraszenia.\nReakcja: Kiedy wykonujesz rzut na atak lub test, możesz wykorzystać swoją reakcję, aby rzucić to zaklęcie. Zyskujesz w danym rzucie 2 ułatwienia, ale jeśli ci się nie powiedzie, otrzymujesz 1k6 obrażeń i zyskujesz 1 punkt Szaleństwa. Następnie efekt zaklęcia dobiega końca.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zniewolenie_demona",
+    "nazwa": "Zniewolenie Demona",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Cel: Jeden demon w bliskim zasięgu, którego jesteś w stanie widzieć.\nPrzyjmujesz 1k3 obrażeń i wykonujesz oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli wcześniej przywołałeś go zaklęciem Demonologii, zyskujesz w tym rzucie 1 ułatwienie. Sukces oznacza, że demon staje się zniewolony na 1 minutę, porażka zaś, że wykonuje rzuty na atak przeciwko tobie z 1 ułatwieniem i staje się niewrażliwy na twoje użycia tego zaklęcia.\nRzut na atak 20+: Demon staje się zniewolony, dopóki nie odbędziesz pełnego odpoczynku.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "laska_wladcy_demonow",
+    "nazwa": "Łaska Władcy Demonów",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: Patrz niżej.\nPrzyjmujesz 1k3 obrażeń. Cień Władcy Demonów pada na ciebie. Zyskujesz 1k6 punktów Szaleństwa. O ile nie popadniesz w obłęd, podnosisz swoje Zdrowie o 4k6 i wykonujesz wszystkie rzuty na atak i testy z 1 ułatwieniem. Na koniec każdej rundy rzuć k6. Wynik 6 sprawia, że efekt łaski dobiega końca.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ofiara_z_krwi",
+    "nazwa": "Ofiara Z Krwi",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Czas trwania: 1 minuta.\nPrzyjmujesz 1k3 obrażeń. W czasie trwania zaklęcia, kiedy rzucasz czar ataku, wykonujesz rzut na atak z 1 ułatwieniem, a inne stworzenia otrzymują 1 utrudnienie w testach na odpieranie tego zaklęcia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "przyzwanie_pomniejszego_demona",
+    "nazwa": "Przyzwanie Pomniejszego Demona",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Spoczywający na podłożu sześcian o krawędzi 1 metra i punkcie początkowym w bliskim zasięgu.\nPrzyjmujesz 1k6 obrażeń, a rzeczywistość pęka w centrum wyznaczonego obszaru. Rzuć k6 i sprawdź wynik w poniższej tabeli. | Rzut | Efekt | |------|--------------------------------------------------------| | 1 | Wyrwa się zamyka. | | 2–5 | Pojawia się mały demon, po czym wyrwa się<br>zamyka. | | 6 | Pojawia się średni demon, po czym wyrwa się<br>zamyka. |\nDemon, który wyłoni się z wyrwy, działa w zgodzie ze swoją naturą i pozostaje na świecie, dopóki nie zostanie zniszczony.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4496,18 +5222,29 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 2,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: Dopóki nie odbędziesz pełnego odpoczynku lub nie wydasz ostatniego szeptu. Przyjmujesz 1k6 obrażeń. Słyszysz oszalałe szepty z Pustki, kierujące tobą tak, abyś popełniał przerażające, złe czyny. Za każdy punkt obrażeń, który przyjąłeś, zyskujesz szept. Kiedy ni powiedzie ci się rzut na atak lub test, możesz zyskać 1 punkt S leństwa, aby wydać szept i zmienić porażkę w sukces.",
+    "opis": "Czas trwania: Dopóki nie odbędziesz pełnego odpoczynku lub nie wydasz ostatniego szeptu.\nPrzyjmujesz 1k6 obrażeń. Słyszysz oszalałe szepty z Pustki, kierujące tobą tak, abyś popełniał przerażające, złe czyny. Za każdy punkt obrażeń, który przyjąłeś, zyskujesz szept. Kiedy nie powiedzie ci się rzut na atak lub test, możesz zyskać 1 punkt Szaleństwa, aby wydać szept i zmienić porażkę w sukces.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "cien_z_pustki",
+    "id": "opetanie",
+    "nazwa": "Opętanie",
+    "tradycja": "demonologia",
+    "tradycjaNazwa": "Demonologia",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno niebędące demonem stworzenie w bliskim zasięgu.\nPrzyjmujesz 1k6 + 1 obrażeń. Przywołujesz z Pustki demona, aby wtargnął w ciało celu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli przeciwnik ma jakiekolwiek punkty Splugawienia, wykonujesz rzut na atak z 1 ułatwieniem. Sukces oznacza, że ofiara zyskuje 1 punkt Splugawienia i zostaje opętana przez demona.\nOpętane w ten sposób stworzenie musi w każdej rundzie podjąć turę krótką i wykorzystać akcję, aby zaatakować najbliższą istotę, szarżując, jeśli to konieczne. Jeżeli zostanie powstrzymane przed atakowaniem, zamiast tego otrzymuje 2k6 obrażeń i staje się oszołomione na 1 rundę.\nPod koniec każdej rundy rzuć k6. Przy wyniku 1 opętanie dobiega końca.\nRzut na atak 20+: Kiedy cel jest opętany, zyskuje premię +10 do Zdrowia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "cien_z_pustki_2",
     "nazwa": "Cień Z Pustki",
     "tradycja": "demonologia",
     "tradycjaNazwa": "Demonologia",
     "krag": 3,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Przesłonięty cieniem lub ciemnością, spoczywający na podłożu sześcian o krawędzi 1 metra i punkcie początkowym w średnim zasięgu.\nCzas trwania: 1 minuta lub dopóki cień nie zostanie zniszczony. Przyjmujesz 1k6 + 1 obrażeń. Wewnątrz obszaru pojawia się cień; jest on przez ciebie zniewolony i istnieje tak długo, jak długo trwa zaklęcie. Każda istota, która widzi go po raz pierwszy, musi wykonać test Woli z 1 utrudnieniem. Jeśli odniesie porażkę, staje się przestraszona na czas trwania zaklęcia.",
+    "opis": "Obszar: Przesłonięty cieniem lub ciemnością, spoczywający na podłożu sześcian o krawędzi 1 metra i punkcie początkowym w średnim zasięgu.\nCzas trwania: 1 minuta lub dopóki cień nie zostanie zniszczony.\nPrzyjmujesz 1k6 + 1 obrażeń. Wewnątrz obszaru pojawia się cień; jest on przez ciebie zniewolony i istnieje tak długo, jak długo trwa zaklęcie. Każda istota, która widzi go po raz pierwszy, musi wykonać test Woli z 1 utrudnieniem. Jeśli odniesie porażkę, staje się przestraszona na czas trwania zaklęcia.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4518,7 +5255,7 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 4,
     "kategoria": "uzytkowe",
-    "opis": "Obszar: Spoczywający na podłożu sześcian o krawędzi 2 metrów i punkcie początkowym w bliskim zasięgu. Przyjmujesz 1k6 + 2 obrażeń, a rzeczywistość pęka w centrum wskazanego obszaru. Rzuć k6 i sprawdź wynik w poniższej tabeli. Efekt 1 Wyrwa się zamyka. Pojawia się średni demon, po czym wyrwa się 2–5 zamyka. Pojawia się duży demon, po czym wyrwa się 6 zamyka. Demon, który wyłoni się z wyrwy, działa w zgodzie ze swoją naturą i pozostaje na świecie, dopóki nie zostanie zniszczony.",
+    "opis": "Obszar: Spoczywający na podłożu sześcian o krawędzi 2 metrów i punkcie początkowym w bliskim zasięgu.\nPrzyjmujesz 1k6 + 2 obrażeń, a rzeczywistość pęka w centrum wskazanego obszaru. Rzuć k6 i sprawdź wynik w poniższej tabeli. | Rzut | Efekt | |------|--------------------------------------------------------| | 1 | Wyrwa się zamyka. | | 2–5 | Pojawia się średni demon, po czym wyrwa się<br>zamyka. | | 6 | Pojawia się duży demon, po czym wyrwa się<br>zamyka. |\nDemon, który wyłoni się z wyrwy, działa w zgodzie ze swoją naturą i pozostaje na świecie, dopóki nie zostanie zniszczony.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4529,73 +5266,40 @@ const SPELLS = [
     "tradycjaNazwa": "Demonologia",
     "krag": 5,
     "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 3k6 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 3k6 rund; efektów tego czaru nie da się dobrowolnie zakończyć. Przyjmujesz 2k6 obrażeń. Po obszarze rozchodzi się magiczna ciemność, całkowicie go przesłaniając. Nie da się jej przebić żadną formą widzenia ani światłem. 40 Suplement\u0017W\u0015adcy\u0017Demon\u000ew",
+    "opis": "Obszar: Sfera o promieniu 3k6 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 3k6 rund; efektów tego czaru nie da się dobrowolnie zakończyć.\nPrzyjmujesz 2k6 obrażeń. Po obszarze rozchodzi się magiczna ciemność, całkowicie go przesłaniając. Nie da się jej przebić żadną formą widzenia ani światłem.\nKiedy rzucasz to zaklęcie i na koniec każdej rundy podczas jego trwania, wszystkie żywe stworzenia w obszarze jego działania muszą wykonać test Woli. Każdy posiadany punkt Splugawienia nakłada na ten test 1 utrudnienie. Porażka oznacza, że dana istota zyskuje 1 punkt Szaleństwa. Jeśli zyskanie Szaleństwa skutkowałoby popadnięciem w obłęd, stworzenie zamiast tego zostaje opętane, tak jak w opisie zaklęcia opętanie.\nDodatkowo pod koniec każdej rundy w czasie trwania zaklęcia MG wybiera 1k6 istot znajdujących we wskazanym obszarze. Muszą one wykonać test Zręczności. Porażka oznacza, że dane stworzenie otrzymuje 2k6 + 3 obrażeń, a sukces – połowę z nich. Obezwładniona tymi obrażeniami ofiara zostaje wciągnięta do Pustki i całkowicie zniszczona.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "wladza_nad_duchem",
-    "nazwa": "Władza Nad Duchem",
+    "id": "zguba_dusz",
+    "nazwa": "Zguba Dusz",
     "tradycja": "spirytyzm",
     "tradycjaNazwa": "Spirytyzm",
-    "krag": 1,
+    "krag": 0,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jeden duch lub jedno stworzenie (pod wpływem rzuconego przez ciebie zaklęcia Spirytyzmu) w bliskim zasięgu, które jesteś w stanie widzieć. Wykonaj test Woli. Sukces oznacza, że przesuwasz cel na odległość równą połowie jego Prędkości lub mniejszą, on zaś następnie wykonuje atak przeciwko jednemu stworzeniu w swoim bezpośrednim zasięgu.",
+    "opis": "Cel: Jedna broń w bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nDotknij celu. W czasie trwania zaklęcia udane ataki tym orężem zadają duchom i innym istotom, które normalnie otrzymują tylko połowę obrażeń od broni, pełne obrażenia.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "duch_wilka",
-    "nazwa": "Duch Wilka",
+    "id": "msciwy_duch",
+    "nazwa": "Mściwy Duch",
     "tradycja": "spirytyzm",
     "tradycjaNazwa": "Spirytyzm",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Pojawia się widmowy duch wilka i na czas trwania zaklęcia wnika w wyznaczone stworzenie. Wykonuje ono testy Percepcji z 1 ułatwieniem, a jego ataki bronią zadają dodatkowe 1k6 obrażeń.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "duch_orla",
-    "nazwa": "Duch Orła",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 2,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Pojawia się widmowy duch orła i na czas trwania zaklęcia wnika w wyznaczone stworzenie. Otrzymuje ono premię +4 do Prędkości, porusza się z pełną Prędkością po trudnym terenie i wykonuje oparte na Zręczności rzuty na atak i testy z 1 ułatwieniem.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "duch_udreki",
-    "nazwa": "Duch Udręki",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 2,
+    "krag": 0,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć. Pojawia się nienawistny duch i atakuje cel. Wykonaj oparty na Woli rzut na atak przeciwko Woli przeciwnika. Sukces oznacza, że duch na 1 minutę wnika w jego ciało. W tym czasie ofiara otrzymuje karę −5 do Zdrowia, a także jest osłabiona i spowolniona.\nRzut na atak 20+: Kara do Zdrowia zwiększa się do −10.",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nNa czas trwania zaklęcia mściwy duch związuje się z wybranym stworzeniem. Raz na rundę, kiedy zadaje ono obrażenia innej istocie, ofiara musi wykonać test Woli. Porażka oznacza, że otrzymuje dodatkowe 1 obrażenie i staje się przestraszona na 1 rundę.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
   {
-    "id": "duch_zdrowienia",
-    "nazwa": "Duch Zdrowienia",
+    "id": "duch_niedzwiedzia",
+    "nazwa": "Duch Niedźwiedzia",
     "tradycja": "spirytyzm",
     "tradycjaNazwa": "Spirytyzm",
-    "krag": 3,
+    "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Pojawiają się blade światła i na czas trwania zaklęcia wnikają w wyznaczone stworzenie. Natychmiast leczy ono obrażenia równe swojej Szybkości Zdrowienia, a dopóki działanie czaru nie dobiegnie końca, za każdym razem, kiedy się leczy, pozbywa się dodatkowych 1k6 obrażeń.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "seans",
-    "nazwa": "Seans",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 3,
-    "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz rozpalić niewielkie ognisko i wrzucić w płomienie specjalny proszek warty 1 miedziak, co sprawia, że rozbłyskują one zielonym światłem.\nCzas trwania: Dopóki nie odbędziesz pełnego odpoczynku lub nie poświęcisz ostatniego ducha . Wdychasz dym z ogniska, wskutek czego na czas trwania zaklęcia 2k6 duchów wnika w twoje ciało. Za każdym razem, kiedy wykonujesz rzut na atak lub test, możesz uwolnić 1 ducha, aby wykonać rzut z 1 ułatwieniem. Możesz również wykorzystać akcję, aby uwolnić trzy duchy i zadać MG jedno pytanie, na które da się odpowiedzieć „tak” lub „nie”. Odpowiedź musi być zgodna z prawdą. 4 Magia",
+    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta.\nPojawia się widmowy duch niedźwiedzia i na czas trwania zaklęcia wnika w wyznaczone stworzenie. Otrzymuje ono premię +5 do Zdrowia i wykonuje oparte na Sile ataki i testy z 1 ułatwieniem.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4606,7 +5310,7 @@ const SPELLS = [
     "tradycjaNazwa": "Telekineza",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Cel: Jedna broń, którą trzymasz lub nosisz przy sobie, albo broń w bliskim zasięgu, której nikt nie trzyma ani nie nosi przy sobie.\nCzas trwania: 1 minuta. W czasie trwania zaklęcia cel unosi się 2 metry nad ziemią. Kiedy rzucasz ten czar, możesz przesunąć broń na odległość do 10 metrów i zaatakować jedno stworzenie lub obiekt w odległości do 1 metra od niej. Możesz w kolejnych turach wykorzystać akcję lub reakcję, aby znów poruszyć i zaatakować zaczarowanym orężem. Atakujesz na takich zasadach, jakbyś go trzymał, wykonując oparty na Woli rzut na atak.",
+    "opis": "Cel: Jedna broń, którą trzymasz lub nosisz przy sobie, albo broń w bliskim zasięgu, której nikt nie trzyma ani nie nosi przy sobie.\nCzas trwania: 1 minuta.\nW czasie trwania zaklęcia cel unosi się 2 metry nad ziemią. Kiedy rzucasz ten czar, możesz przesunąć broń na odległość do 10 metrów i zaatakować jedno stworzenie lub obiekt w odległości do 1 metra od niej. Możesz w kolejnych turach wykorzystać akcję lub reakcję, aby znów poruszyć i zaatakować zaczarowanym orężem. Atakujesz na takich zasadach, jakbyś go trzymał, wykonując oparty na Woli rzut na atak.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4617,7 +5321,7 @@ const SPELLS = [
     "tradycjaNazwa": "Telekineza",
     "krag": 1,
     "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta lub do momentu, kiedy obrażenia zadane tarczy będą równe jej Zdrowiu. Dookoła ciebie pojawia się tarcza z niewidzialnej telekinetycznej energii. Rzuć 4k6. Wynik to Zdrowie tarczy. Jakiekolwiek obrażenia zadane ci w czasie trwania zaklęcia odlicza się od Zdrowia tarczy.",
+    "opis": "Czas trwania: 1 minuta lub do momentu, kiedy obrażenia zadane tarczy będą równe jej Zdrowiu.\nDookoła ciebie pojawia się tarcza z niewidzialnej telekinetycznej energii. Rzuć 4k6. Wynik to Zdrowie tarczy. Jakiekolwiek obrażenia zadane ci w czasie trwania zaklęcia odlicza się od Zdrowia tarczy.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4628,7 +5332,106 @@ const SPELLS = [
     "tradycjaNazwa": "Telekineza",
     "krag": 2,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nCzas trwania: Koncentracja, do 1 minuty lub dopóki cel nie otrzyma obrażeń. Sploty niewidocznej energii spowijają cel. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że staje się ona bezbronna na czas trwania zaklęcia.",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nCzas trwania: Koncentracja, do 1 minuty lub dopóki cel nie otrzyma obrażeń.\nSploty niewidocznej energii spowijają cel. Wykonaj oparty na Woli rzut na atak przeciwko Sile ofiary. Sukces oznacza, że staje się ona bezbronna na czas trwania zaklęcia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "lewitacja",
+    "nazwa": "Lewitacja",
+    "tradycja": "telekineza",
+    "tradycjaNazwa": "Telekineza",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno stworzenie lub obiekt o Rozmiarze 2 lub mniejszym w średnim zasięgu, które jesteś w stanie widzieć. Czas trwania: Koncentracja, do 1 minuty.\nChwytasz cel siłą telekinezy i podnosisz go maksymalnie do 3 metrów w powietrze, gdzie pozostaje zawieszony na czas trwania zaklęcia. Jeśli stawia opór lub jest obiektem w posiadaniu innego stworzenia, to czar staje się atakiem. W takiej sytuacji efekt dochodzi do skutku jedynie, jeśli uzyskasz sukces w opartym na Woli rzucie na atak przeciwko Sile celu lub trzymającej go istoty.\nZawieszony w powietrzu cel może poruszać się jedynie, pełznąc po powierzchni w swoim bezpośrednim zasięgu. Rzuty na atak przeciwko jego Obronie lub Zręczności są wykonywane z 1 ułatwieniem.\nKiedy koncentrujesz się na efekcie zaklęcia, możesz przesunąć cel wyżej lub niżej, maksymalnie do 3 metrów.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "sciana_mocy",
+    "nazwa": "Ściana Mocy",
+    "tradycja": "telekineza",
+    "tradycjaNazwa": "Telekineza",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Linia długa maksymalnie na 10 metrów, wysoka na 10 metrów i szeroka na 3 centymetry, o punkcie początkowym w dalekim zasięgu.\nCzas trwania: 1 godzina.\nObszar wypełnia niewidoczna ściana telekinetycznej mocy i pozostaje w nim na czas trwania zaklęcia. Nie da się jej fizycznie przekroczyć; ściana jest także odporna na wszelkie obrażenia.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "fala_mocy",
+    "nazwa": "Fala Mocy",
+    "tradycja": "telekineza",
+    "tradycjaNazwa": "Telekineza",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Obszar: Sfera o promieniu 3 metrów punkcie początkowym w średnim zasięgu.\nZ centrum obszaru wybucha fala mocy. Wszystko, co się tam znajduje, otrzymuje 5k6 obrażeń. Każde stworzenie oraz niezabezpieczony obiekt zostają odepchnięte na 1k6 metrów od centrum obszaru. Istota, która uzyska sukces w teście Siły, otrzymuje połowę obrażeń i nie przemieszcza się.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "banka_mocy",
+    "nazwa": "Bańka Mocy",
+    "tradycja": "telekineza",
+    "tradycjaNazwa": "Telekineza",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie lub obiekt w dalekim zasięgu o Rozmiarze 2 lub mniejszym.\nCzas trwania: Koncentracja, do 1 minuty lub dopóki nie przesuniesz bańki poza daleki zasięg.\nWykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że zostaje on uwięziony wewnątrz sfery niewidzialnej mocy, która utrzymuje się przez czas trwania zaklęcia. Sfera ta jest odporna na wszelkie obrażenia i nie da się jej fizycznie przekroczyć. Kiedy wykorzystujesz akcję, aby skoncentrować się na efekcie czaru, możesz poruszyć sferę i wszystko, co zawiera, do 5 metrów w dowolnym kierunku.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "telekinetyczny_wybuch",
+    "nazwa": "Telekinetyczny Wybuch",
+    "tradycja": "telekineza",
+    "tradycjaNazwa": "Telekineza",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Obszar: Sfera o promieniu 5 metrów i punkcie początkowym w bezpośrednim zasięgu.\nTelekinetyczna moc, na którą ty sam jesteś niewrażliwy, wybucha w centrum obszaru. Wszystko, co się tam znajduje, otrzymuje 6k6 obrażeń, a każde stworzenie i niezabezpieczony obiekt zostają odepchnięte na 1k6 metrów od centrum i upadają powalone. Istota, która uzyska sukces w teście Siły, otrzymuje połowę obrażeń i nie przemieszcza się ani nie zostaje powalona.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wyczucie_mysli",
+    "nazwa": "Wyczucie Myśli",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Obszar: Sfera o promieniu 10 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 1 minuta.\nWyczuwasz pozycję każdego stworzenia, które znajduje się wewnątrz obszaru działania zaklęcia i ma przypisaną wartość Intelektu. Istoty te nie mogą się przed tobą ukryć. Obszar działania zaklęcia porusza się wraz z tobą i pozostaje wyśrodkowany na punkcie w twoim bezpośrednim zasięgu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "dzielenie_mysli",
+    "nazwa": "Dzielenie Myśli",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 0,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu o Intelekcie 5 lub wyższym.\nCzas trwania: 1 minuta lub dopóki cel nie wyjdzie poza średni zasięg.\nNa czas trwania zaklęcia ty i cel możecie porozumiewać się bez użycia mowy, nawet jeśli nie posługujecie się tymi samymi językami.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "mentalne_zaklocenia",
+    "nazwa": "Mentalne Zakłócenia",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 1,
+    "kategoria": "atak",
+    "opis": "Obszar: Sześcian o krawędzi 3 metrów i punkcie początkowym w bliskim zasięgu.\nCzas trwania: 1 minuta lub dopóki nie staniesz się nieprzytomny.\nPo obszarze rozchodzi się zakłócający myśli szum i utrzymuje się w nim przez czas trwania zaklęcia. Znajdujące się tam stworzenia wykonują rzuty na atak i testy Intelektu, Woli i Percepcji z 2 utrudnieniami.\nReakcja: Kiedy inne stworzenie wykonuje rzut na atak przeciwko twojemu Intelektowi, Woli lub Percepcji, możesz wykorzystać reakcję, aby rzucić to zaklęcie. Trwa ono wtedy 1 rundę.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "system_krotkich_wiadomosci",
+    "nazwa": "System Krótkich Wiadomości",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno stworzenie, które już kiedyś widziałeś i które znajduje się w odległości do 150 kilometrów.\nPrzesyłasz wiadomość bezpośrednio do umysłu celu. Może się ona składać z 25 słów lub być obrazem miejsca, obiektu albo istoty, którą widzisz. Stworzenie otrzymuje wiadomość i może odpowiedzieć podobną wiadomością z powrotem do ciebie. Cel rozumie przekaz, nawet jeśli nie posługujecie się tymi samymi językami.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić zaklęcie dzielenie myśli, nawet jeśli jeszcze się go nie nauczyłeś.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4639,7 +5442,18 @@ const SPELLS = [
     "tradycjaNazwa": "Telepatia",
     "krag": 1,
     "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu o Intelekcie 5 lub wyższym. Wykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi celu. Sukces oznacza, że otrzymuje on 1k6 + 6 obrażeń.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.\nReakcja: Możesz w swojej turze wykorzystać reakcję, aby rzucić to zaklęcie, ale wtedy sukces oznacza, że cel otrzymuje jedynie połowę obrażeń.",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu o Intelekcie 5 lub wyższym.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Intelektowi celu. Sukces oznacza, że otrzymuje on 1k6 + 6 obrażeń.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.\nReakcja: Możesz w swojej turze wykorzystać reakcję, aby rzucić to zaklęcie, ale wtedy sukces oznacza, że cel otrzymuje jedynie połowę obrażeń.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "czytanie_w_myslach",
+    "nazwa": "Czytanie W Myślach",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Czas trwania: Koncentracja, do 1 minuty.\nW czasie trwania zaklęcia słyszysz myśli i czujesz emocje stworzeń w średnim zasięgu od siebie. Dopóki efekt się utrzymuje, wykonujesz testy Percepcji z 1 utrudnieniem ze względu na ów psychiczny szum. Twoja świadomość przenika przez bariery – do 1 metra drewna, 30 centymetrów kamienia lub 3 centymetrów metalu. Istoty, których myśli słyszysz, nie mogą się przed tobą ukryć.\nKiedy koncentrujesz się na zaklęciu, możesz sięgnąć do umysłu jednego stworzenia w średnim zasięgu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Sukces oznacza, że poznajesz najwyraźniejsze odczucie istoty: jej główne zmartwienie, to, czego najbardziej pożąda, lub przeważający stan emocjonalny. Za każdym razem, kiedy uzyskasz sukces w rzucie przeciwko temu samemu celowi, zdobywasz poszukiwane przez siebie dodatkowe informacje – o ile znajdują się one w umyśle celu.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4650,7 +5464,84 @@ const SPELLS = [
     "tradycjaNazwa": "Telepatia",
     "krag": 2,
     "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 2 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 1 minuta lub dopóki nie staniesz się nieprzytomny. Wrogie myśli rozchodzą się po wskazanym obszarze na czas trwania zaklęcia. Znajdujące się tam stworzenia inne niż ty czują potrzebę opuszczenia tego miejsca; rzuty na atak i testy wykonują z 2 utrudnieniami. Obszar przemieszcza się wraz z tobą tak, by pozostać wyśrodkowany na punkcie w twoim bezpośrednim zasięgu. 4 Magia podąża, podróżujecie po niej, poruszacie się dwa razy szybciej. Dodatkowo ślady twoje i do dziesięciu innych podążających za tobą stworzeń pozostawione na ścieżce same się zacierają.",
+    "opis": "Obszar: Sfera o promieniu 2 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 1 minuta lub dopóki nie staniesz się nieprzytomny.\nWrogie myśli rozchodzą się po wskazanym obszarze na czas trwania zaklęcia. Znajdujące się tam stworzenia inne niż ty czują potrzebę opuszczenia tego miejsca; rzuty na atak i testy wykonują z 2 utrudnieniami. Obszar przemieszcza się wraz z tobą tak, by pozostać wyśrodkowany na punkcie w twoim bezpośrednim zasięgu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "ladunek_emocjonalny",
+    "nazwa": "Ładunek Emocjonalny",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nNegatywne emocje atakują cel. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że staje się ono zamroczone na 1 minutę. Zamroczona z tej przyczyny istota może na koniec każdej rundy wykonać test Intelektu. Sukces pozwala jej pozbyć się tego stanu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wymazanie_obecnosci",
+    "nazwa": "Wymazanie Obecności",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Cel: Do pięciu stworzeń w średnim zasięgu.\nCzas trwania: 1 minuta.\nKażdy cel musi wykonać test Intelektu. Porażka oznacza, że stworzenie traktuje cię, jakbyś był niewidoczny, dopóki znajdujesz się w jego średnim zasięgu.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "wydrazenie_umyslu",
+    "nazwa": "Wydrążenie Umysłu",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 4,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie w średnim zasięgu.\nWykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Sukces oznacza, że otrzymuje on 6k6 + 3 obrażeń. Jeśli wskutek tych obrażeń stworzenie stanie się obezwładnione, staje się także bezmyślne: na zawsze traci swoją wartość Intelektu, wszystkie profesje i znane języki.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "uderzenie_umyslu",
+    "nazwa": "Uderzenie Umysłu",
+    "tradycja": "telepatia",
+    "tradycjaNazwa": "Telepatia",
+    "krag": 5,
+    "kategoria": "atak",
+    "opis": "Obszar: Stożek o długości 8 metrów i punkcie początkowym w bezpośrednim zasięgu.\nPo obszarze rozchodzi się fala telepatycznych zakłóceń. Każde znajdujące się tam stworzenie o Zdrowiu 20 lub mniej umiera, a jego głowa eksploduje. Jeśli istota ma 21 lub więcej Zdrowia, musi wykonać test Woli; przy Zdrowiu 40 lub więcej zyskuje 1 ułatwienie. Porażka oznacza, że ofiara staje się oszołomiona na 1k3 + 1 rund.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "trupi_wzrok",
+    "nazwa": "Trupi Wzrok",
+    "tradycja": "nekromancja",
+    "tradycjaNazwa": "Nekromancja",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno nieumarłe stworzenie w dalekim zasięgu.\nWykonaj test Inteligencji. Sukces oznacza, że przenosisz się umysłem do ciała wybranego stworzenia i jesteś w stanie postrzegać otoczenie z perspektywy przestrzeni zajmowanej przez nie lub swojej własnej. Możesz wykorzystać akcję, aby zmienić ciało, dzięki któremu prowadzisz obserwację. Jeśli cel jest przez ciebie zniewolony, to kiedy posługujesz się jego zmysłami, możesz ustalić punkt początkowy rzucanego zaklęcia względem ciała nieumarłego stworzenia, a nie własnego.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "linia_geomantyczna",
+    "nazwa": "Linia Geomantyczna",
+    "tradycja": "natura",
+    "tradycjaNazwa": "Natura",
+    "krag": 1,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz znajdować się na otwartej przestrzeni w dziczy.\nCzas trwania: 8 godzin.\nWskaż miejsce, co do którego przypuszczasz, że znajduje się w obrębie 100 kilometrów od ciebie. Jeśli tak jest, dostrzegasz prowadzącą do niego ścieżkę. Pozostaje ona dla ciebie widoczna przez czas trwania zaklęcia. Kiedy ty i ktokolwiek, kto za tobą podąża, podróżujecie po niej, poruszacie się dwa razy szybciej. Dodatkowo ślady twoje i do dziesięciu innych podążających za tobą stworzeń pozostawione na ścieżce same się zacierają.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zwierzecy_szpieg",
+    "nazwa": "Zwierzęcy Szpieg",
+    "tradycja": "magia_pierwotna",
+    "tradycjaNazwa": "Magia Pierwotna",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Jedno zwierzę w średnim zasięgu o Rozmiarze 1/2 lub mniejszym, które jesteś w stanie widzieć.\nCzas trwania: Dopóki ty lub cel nie staniecie się nieprzytomni; patrz niżej.\nTwój umysł wnika do ciała celu i pozostaje w nim na czas trwania zaklęcia. Dopóki efekt się utrzymuje, używasz wszystkich statystyk zwierzęcia oprócz Intelektu, Woli oraz Splugawienia. Zachowujesz swoje talenty i wiedzę o zaklęciach. O ile to nowe ciało nie potrafi mówić, zdołasz rzucać jedynie te zaklęcia, które nie wymagają słów, oraz korzystać jedynie z tych talentów, których użycie w tej formie jest możliwe. Twoje własne ciało spoczywa w katatonii, dopóki do niego nie wrócisz.\nPod koniec każdej godziny, kiedy przebywasz umysłem w ciele celu, musisz wykonać test Woli. Porażka oznacza, że zyskujesz 1 punkt Szaleństwa. Jeśli sprawiłoby to, że popadniesz w obłęd, twój umysł zostaje zniszczony, a twoje ciało pozostaje w katatonii, dopóki nie zginie.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić znany sobie czar Magii Pierwotnej 0 lub 1 kręgu.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4661,7 +5552,7 @@ const SPELLS = [
     "tradycjaNazwa": "Magia Runiczna",
     "krag": 2,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz użyć zestawu pisarskiego i rzadkich tuszy wartych co najmniej 1 złotą koronę, aby nakreślić runę na celu.\nCel: Punkt na obiekcie w bezpośrednim zasięgu, który można otworzyć lub zamknąć.\nCzas trwania: 1 dzień lub do aktywacji. Dotykasz runy, która znika. Kiedy stworzenie inne niż ty otwiera obiekt opatrzony runą, wybuch płomieni wypełnia stożek o długości 6 metrów i punkcie początkowym na celu zaklęcia. Wszystko wewnątrz tego obszaru otrzymuje 3k6 + 5 obrażeń. Istota, która uzyska sukces w teście Zręczności, otrzymuje tylko połowę obrażeń.",
+    "opis": "Wymagania: Musisz użyć zestawu pisarskiego i rzadkich tuszy wartych co najmniej 1 złotą koronę, aby nakreślić runę na celu.\nCel: Punkt na obiekcie w bezpośrednim zasięgu, który można otworzyć lub zamknąć.\nCzas trwania: 1 dzień lub do aktywacji.\nDotykasz runy, która znika. Kiedy stworzenie inne niż ty otwiera obiekt opatrzony runą, wybuch płomieni wypełnia stożek o długości 6 metrów i punkcie początkowym na celu zaklęcia. Wszystko wewnątrz tego obszaru otrzymuje 3k6 + 5 obrażeń. Istota, która uzyska sukces w teście Zręczności, otrzymuje tylko połowę obrażeń.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4677,266 +5568,13 @@ const SPELLS = [
     "strona_zrodlowa": null
   },
   {
-    "id": "warzenie_cudownego_dekoktu",
-    "nazwa": "Warzenie Cudownego Dekoktu",
-    "tradycja": "alchemia",
-    "tradycjaNazwa": "Alchemia",
+    "id": "wiazacy_pentagram",
+    "nazwa": "Wiążący Pentagram",
+    "tradycja": "ochrona",
+    "tradycjaNazwa": "Ochrona",
     "krag": 3,
     "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz mieć zestaw alchemika i niewielki, pusty pojemnik.\nCzas trwania: 8 godzin lub do momentu zużycia. Musisz utrzymać koncentrację przez 1 minutę, w trakcie której pracujesz z użyciem zestawu alchemika. Po upływie tego czasu twój pojemnik wypełnia się magicznym płynem; zachowuje on swoje właściwości do końca trwania zaklęcia. Dekokt jest eliksirem. Stworzenie, które go spożyje, leczy obrażenia równe swojej Szybkości Zdrowienia. Dodatkowo pijący otrzymuje na 1 minutę premię +2 do Prędkości i wykonuje rzuty na atak z 2 ułatwieniami.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "rozpuszczenie_2",
-    "nazwa": "Rozpuszczenie",
-    "tradycja": "alchemia",
-    "tradycjaNazwa": "Alchemia",
-    "krag": 4,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie lub obiekt w bliskim zasięgu. Ciskasz w cel silnym kwasem. Wykonaj oparty na Intelekcie rzut na atak przeciw Zręczności celu. Sukces oznacza, że cel, który posiada formę fizyczną, otrzymuje 3k6 + 5 obrażeń. Dodatkowo otrzymuje 2k6 obrażeń przez 1 minutę na koniec każdej rundy lub dopóki nie poświęci akcji, aby usunąć z siebie kwas. Jeśli wskutek tych obrażeń stworzenie stanie się obezwładnione, rozpływa się w kałuży śmierdzącego płynu i umiera.\nRzut na atak 20+: Cel otrzymuje 2k6 dodatkowych obrażeń.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "trujacy_dech",
-    "nazwa": "Trujący Dech",
-    "tradycja": "smierc",
-    "tradycjaNazwa": "Śmierć",
-    "krag": 2,
-    "kategoria": "atak",
-    "opis": "Obszar: Stożek o długości 5 metrów i punkcie początkowym w bezpośrednim zasięgu. Wydychasz chmurę śmierdzącej mgły, która rozchodzi się po wskazanym obszarze, a następnie rozpływa. Każde znajdujące się tam stworzenie musi wykonać test Siły. Porażka oznacza, że otrzymuje 2k6 obrażeń i staje się zatrute, a sukces – że otrzymuje tylko 1k6 obrażeń. Zatruta w ten sposób istota musi uzyskać sukces w teście Siły na końcu każdej rundy, w przeciwnym razie otrzymuje 1k6 obrażeń. Trzy sukcesy sprawiają, że pozbywa się tego stanu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "uczta_dla_dusz",
-    "nazwa": "Uczta Dla Dusz",
-    "tradycja": "smierc",
-    "tradycjaNazwa": "Śmierć",
-    "krag": 3,
-    "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 3 metrów i punkcie początkowym w średnim zasięgu. Po obszarze rozchodzą się wijące macki ciemności, po czym rozpływają się. Każde znajdujące się tam żywe stworzenie musi wykonać test Siły. Porażka oznacza, że otrzymuje 5k6 obrażeń, a sukces – połowę z nich. Istota umiera, jeśli obrażenia te doprowadzą do jej obezwładnienia. Jeśli przynajmniej jedna ofiara umrze z powodu tego zaklęcia, zyskujesz trwającą 1 godzinę premię 2k6 do Zdrowia.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "demoniczny_nadzor",
-    "nazwa": "Demoniczny Nadzór",
-    "tradycja": "demonologia",
-    "tradycjaNazwa": "Demonologia",
-    "krag": 0,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Przyjmujesz 1 obrażenie. W czasie trwania zaklęcia wykonujesz rzuty na atak i testy z 1 ułatwieniem. Za każdym razem, kiedy ci się nie powiedzie, zyskujesz 1 punkt Szaleństwa, nie powoduje to jednak przestraszenia.\nReakcja: Kiedy wykonujesz rzut na atak lub test, możesz wykorzystać swoją reakcję, aby rzucić to zaklęcie. Zyskujesz w danym rzucie 2 ułatwienia, ale jeśli ci się nie powiedzie, otrzymujesz 1k6 obrażeń i zyskujesz 1 punkt Szaleństwa. Następnie efekt zaklęcia dobiega końca.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "zniewolenie_demona",
-    "nazwa": "Zniewolenie Demona",
-    "tradycja": "demonologia",
-    "tradycjaNazwa": "Demonologia",
-    "krag": 1,
-    "kategoria": "atak",
-    "opis": "Cel: Jeden demon w bliskim zasięgu, którego jesteś w stanie widzieć. Przyjmujesz 1k3 obrażeń i wykonujesz oparty na Intelekcie rzut na atak przeciwko Woli celu. Jeśli wcześniej przywołałeś go zaklęciem Demonologii, zyskujesz w tym rzucie 1 ułatwienie. Sukces oznacza, że demon staje się zniewolony na 1 minutę, porażka zaś, że wykonuje rzuty na atak przeciwko tobie z 1 ułatwieniem i staje się niewrażliwy na twoje użycia tego zaklęcia.\nRzut na atak 20+: Demon staje się zniewolony, dopóki nie odbędziesz pełnego odpoczynku.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "laska_wladcy_demonow",
-    "nazwa": "Łaska Władcy Demonów",
-    "tradycja": "demonologia",
-    "tradycjaNazwa": "Demonologia",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: Patrz niżej. Przyjmujesz 1k3 obrażeń. Cień Władcy Demonów pada na ciebie. Zyskujesz 1k6 punktów Szaleństwa. O ile nie popadniesz w obłęd, podnosisz swoje Zdrowie o 4k6 i wykonujesz wszystkie rzuty na atak i testy z 1 ułatwieniem. Na koniec każdej rundy rzuć k6. Wynik 6 sprawia, że efekt łaski dobiega końca.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "ofiara_z_krwi",
-    "nazwa": "Ofiara Z Krwi",
-    "tradycja": "demonologia",
-    "tradycjaNazwa": "Demonologia",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. Przyjmujesz 1k3 obrażeń. W czasie trwania zaklęcia, kiedy rzucasz czar ataku, wykonujesz rzut na atak z 1 ułatwieniem, a inne stworzenia otrzymują 1 utrudnienie w testach na odpieranie tego zaklęcia.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "zguba_dusz",
-    "nazwa": "Zguba Dusz",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 0,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedna broń w bezpośrednim zasięgu.\nCzas trwania: 1 minuta. Dotknij celu. W czasie trwania zaklęcia udane ataki tym orężem zadają duchom i innym istotom, które normalnie otrzymują tylko połowę obrażeń od broni, pełne obrażenia.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "msciwy_duch",
-    "nazwa": "Mściwy Duch",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 0,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Na czas trwania zaklęcia mściwy duch związuje się z wybranym stworzeniem. Raz na rundę, kiedy zadaje ono obrażenia innej istocie, ofiara musi wykonać test Woli. Porażka oznacza, że otrzymuje dodatkowe 1 obrażenie i staje się przestraszona na 1 rundę.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "duch_niedzwiedzia",
-    "nazwa": "Duch Niedźwiedzia",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno stworzenie w bliskim zasięgu, które jesteś w stanie widzieć.\nCzas trwania: 1 minuta. Pojawia się widmowy duch niedźwiedzia i na czas trwania zaklęcia wnika w wyznaczone stworzenie. Otrzymuje ono premię +5 do Zdrowia i wykonuje oparte na Sile ataki i testy z 1 ułatwieniem. 4",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "skowyt_wendigo",
-    "nazwa": "Skowyt Wendigo",
-    "tradycja": "spirytyzm",
-    "tradycjaNazwa": "Spirytyzm",
-    "krag": 4,
-    "kategoria": "atak",
-    "opis": "Obszar: Sfera o promieniu 10 metrów i punkcie początkowym w dalekim zasięgu, który jesteś w stanie widzieć. W centrum obszaru pojawia się duch wendigo – dzikiego, przerażającego monstrum – który wyje i następnie znika. Każde znajdujące się tam stworzenie będące w stanie usłyszeć ów skowyt musi wykonać test Woli. Porażka oznacza, że istota otrzymuje 3k6 obrażeń, a także staje się ogłuszona i przestraszona na 1 minutę, sukces zaś – że otrzymuje tylko połowę obrażeń.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "mocne_pchniecie",
-    "nazwa": "Mocne Pchnięcie",
-    "tradycja": "telekineza",
-    "tradycjaNazwa": "Telekineza",
-    "krag": 0,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie lub obiekt w średnim zasięgu. Kierujesz swoje myśli, aby pchnąć obiekt lub stworzenie. Wykonaj oparty na Woli rzut na atak przeciwko Sile celu. Jeśli cel ma większy Rozmiar niż ty, otrzymujesz 1 utrudnienie. Sukces oznacza, że odpychasz go od siebie o liczbę metrów równą 1k3 + twoja Moc.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "umysl_ponad_cialem",
-    "nazwa": "Umysł Ponad Ciałem",
-    "tradycja": "telekineza",
-    "tradycjaNazwa": "Telekineza",
-    "krag": 0,
-    "kategoria": "uzytkowe",
-    "opis": "Czas trwania: 1 minuta. W czasie trwania zaklęcia możesz wykorzystać akcję, aby poruszyć jednym niezabezpieczonym obiektem o Rozmiarze 1 lub mniejszym, który znajduje się w krótkim zasięgu od ciebie, na nie więcej niż 5 metrów. Jesteś również w stanie skoncentrować się na danym obiekcie, aby zawisnął w powietrzu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "zmiazdzenie",
-    "nazwa": "Zmiażdżenie",
-    "tradycja": "telekineza",
-    "tradycjaNazwa": "Telekineza",
-    "krag": 1,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie lub obiekt w krótkim zasięgu. Telekinetyczna energia oplata obiekt lub stworzenie i zaciska się. Wykonaj oparty na Woli rzut na atak przeciwko Sile celu. Sukces oznacza, że otrzymuje on 3k6 obrażeń i musi uzyskać sukces w teście Siły, w przeciwnym razie staje się osłabiony na 1 rundę.\nRzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń. Suplement\u0017W\u0015adcy\u0017Demon\u000ew 41",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "banka_mocy",
-    "nazwa": "Bańka Mocy",
-    "tradycja": "telekineza",
-    "tradycjaNazwa": "Telekineza",
-    "krag": 4,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie lub obiekt w dalekim zasięgu o Rozmiarze 2 lub mniejszym.\nCzas trwania: Koncentracja, do 1 minuty lub dopóki nie przesuniesz bańki poza daleki zasięg. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że zostaje on uwięziony wewnątrz sfery niewidzialnej mocy, która utrzymuje się przez czas trwania zaklęcia. Sfera ta jest odporna na wszelkie obrażenia i nie da się jej fizycznie przekroczyć. Kiedy wykorzystujesz akcję, aby skoncentrować się na efekcie czaru, możesz poruszyć sferę i wszystko, co zawiera, do 5 metrów w dowolnym kierunku.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "wyczucie_mysli",
-    "nazwa": "Wyczucie Myśli",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 0,
-    "kategoria": "uzytkowe",
-    "opis": "Obszar: Sfera o promieniu 10 metrów i punkcie początkowym w bezpośrednim zasięgu.\nCzas trwania: 1 minuta. Wyczuwasz pozycję każdego stworzenia, które znajduje się wewnątrz obszaru działania zaklęcia i ma przypisaną wartość Intelektu. Istoty te nie mogą się przed tobą ukryć. Obszar działania zaklęcia porusza się wraz z tobą i pozostaje wyśrodkowany na punkcie w twoim bezpośrednim zasięgu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "dzielenie_mysli",
-    "nazwa": "Dzielenie Myśli",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 0,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu o Intelekcie 5 lub wyższym.\nCzas trwania: 1 minuta lub dopóki cel nie wyjdzie poza średni zasięg. Na czas trwania zaklęcia ty i cel możecie porozumiewać się bez użycia mowy, nawet jeśli nie posługujecie się tymi samymi językami.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "mentalne_zaklocenia",
-    "nazwa": "Mentalne Zakłócenia",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 1,
-    "kategoria": "atak",
-    "opis": "Obszar: Sześcian o krawędzi 3 metrów i punkcie początkowym w bliskim zasięgu. 4",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "ladunek_emocjonalny",
-    "nazwa": "Ładunek Emocjonalny",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 3,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu. Negatywne emocje atakują cel. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli stworzenia. Sukces oznacza, że staje się ono zamroczone na 1 minutę. Zamroczona z tej przyczyny istota może na koniec każdej rundy wykonać test Intelektu. Sukces pozwala jej pozbyć się tego stanu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "wymazanie_obecnosci",
-    "nazwa": "Wymazanie Obecności",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 3,
-    "kategoria": "atak",
-    "opis": "Cel: Do pięciu stworzeń w średnim zasięgu.\nCzas trwania: 1 minuta. Każdy cel musi wykonać test Intelektu. Porażka oznacza, że stworzenie traktuje cię, jakbyś był niewidoczny, dopóki znajdujesz się w jego średnim zasięgu.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "wydrazenie_umyslu",
-    "nazwa": "Wydrążenie Umysłu",
-    "tradycja": "telepatia",
-    "tradycjaNazwa": "Telepatia",
-    "krag": 4,
-    "kategoria": "atak",
-    "opis": "Cel: Jedno stworzenie w średnim zasięgu. Wykonaj oparty na Intelekcie rzut na atak przeciwko Woli celu. Sukces oznacza, że otrzymuje on 6k6 + 3 obrażeń. Jeśli wskutek tych obrażeń stworzenie stanie się obezwładnione, staje się także bezmyślne: na zawsze traci swoją wartość Intelektu, wszystkie profesje i znane języki.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "trupi_wzrok",
-    "nazwa": "Trupi Wzrok",
-    "tradycja": "nekromancja",
-    "tradycjaNazwa": "Nekromancja",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Cel: Jedno nieumarłe stworzenie w dalekim zasięgu. Wykonaj test Inteligencji. Sukces oznacza, że przenosisz się umysłem do ciała wybranego stworzenia i jesteś w stanie postrzegać otoczenie z perspektywy przestrzeni zajmowanej przez nie lub swojej własnej. Możesz wykorzystać akcję, aby zmienić ciało, dzięki któremu prowadzisz obserwację. Jeśli cel jest przez ciebie zniewolony, to kiedy posługujesz się jego zmysłami, możesz ustalić punkt początkowy rzucanego zaklęcia względem ciała nieumarłego stworzenia, a nie własnego.",
-    "zrodlo": "SUP",
-    "strona_zrodlowa": null
-  },
-  {
-    "id": "linia_geomantyczna",
-    "nazwa": "Linia Geomantyczna",
-    "tradycja": "natura",
-    "tradycjaNazwa": "Natura",
-    "krag": 1,
-    "kategoria": "uzytkowe",
-    "opis": "Wymagania: Musisz znajdować się na otwartej przestrzeni w dziczy.\nCzas trwania: 8 godzin. Wskaż miejsce, co do którego przypuszczasz, że znajduje się w obrębie 100 kilometrów od ciebie. Jeśli tak jest, dostrzegasz prowadzącą do niego ścieżkę. Pozostaje ona dla ciebie widoczna przez czas trwania zaklęcia. Kiedy ty i ktokolwiek, kto za tobą Suplement\u0017W\u0015adcy\u0017Demon\u000ew 43 taki sam jak w przypadku duszy z Zaświatów, jednak kiedy opuszcza ona ciało, MG sekretnie rzuca k6. Przy wyniku 6 dusza wyłania się z ciała i staje się widmem, które atakuje ciebie i twoich kompanów.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić znany sobie czar Nekromancji 0 lub 1 kręgu.",
+    "opis": "Wymagania: Musisz poświęcić 1 minutę i użyć zestawu pisarskiego i rzadkich tuszy wartych co najmniej 1 srebrnik, aby narysować pentagram ze środkiem w punkcie na poziomej powierzchni w bezpośrednim zasięgu. Pentagram znajduje się wewnątrz koła o promieniu 1 metra.\nCel: Narysowany przez ciebie pentagram.\nCzas trwania: 24 godziny lub do momentu aktywacji.\nPentagram staje się niewidoczny. Kiedy stworzenie inne niż ty wejdzie na zawierającą go przestrzeń, symbol robi się widoczny i emituje jasne, czerwone światło. Istota, która aktywowała efekt, staje się unieruchomiona i nie może w żaden sposób zostać z tej przestrzeni przemieszczona. Pod koniec każdej godziny w czasie, kiedy jest w ten sposób unieruchomiona, ofiara może wykonać test Intelektu. Sukces pozwala jej pozbyć się tego stanu i sprawia, że pentagram znika.",
     "zrodlo": "SUP",
     "strona_zrodlowa": null
   },
@@ -4949,6 +5587,28 @@ const SPELLS = [
     "kategoria": "uzytkowe",
     "opis": "Dotknij naturalnego, charakterystycznego elementu krajobrazu, takiego jak prastare drzewo, gigantyczny głaz, głębokie zapadlisko czy kamienna formacja. Jeśli utrzymasz kontakt i koncentrację przez 1 minutę, dowiesz się trzech prawdziwych rzeczy o otoczeniu w promieniu 15 kilometrów od siebie.",
     "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "pokuta",
+    "nazwa": "Pokuta",
+    "tradycja": "teurgia",
+    "tradycjaNazwa": "Teurgia",
+    "krag": 6,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz mieć fiolkę wody święconej i święty symbol.\nCel: Jedno stworzenie.\nDotykasz celu. Jeśli utrzymasz kontakt i koncentrację przez 1 minutę, stworzenie musi wykonać test Woli. Sukces oznacza, że jego Splugawienie spada o 1k3, porażka zaś, że oboje otrzymujecie 1k6 obrażeń za każdy punkt Splugawienia celu. \\$ozdział ten przeznaczony jest dla mistrzów gry i zawiera dodatkowe materiały przydatne przy tworzeniu przygód w systemie Cień Władcy Demonów.",
+    "zrodlo": "SUP",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "krwawe_objawienie",
+    "nazwa": "Krwawe Objawienie",
+    "tradycja": "jasnowidzenie",
+    "tradycjaNazwa": "Jasnowidzenie",
+    "krag": 2,
+    "kategoria": "uzytkowe",
+    "opis": "Wymagania: Musisz mieć broń posiadającą ostrze.\nCel: Jedno bezbronne i żywe stworzenie w twoim bezpośrednim zasięgu. Opisz jedną sytuację, która w najbliższym tygodniu przytrafi się celowi: na przykład że obudzi się i zaatakuje smok lub że armie trolli zejdą ze Smoczych Kłów. Zabijasz to stworzenie i wypruwasz jego wnętrzności, aby szukać w nich odpowiedzi. Jeśli przez 1 minutę skoncentrujesz się na trzewiach i znasz język, którym ofiara umiała się posługiwać, możesz zadać MG do trzech pytań na temat opisanej sytuacji. Na każde z nich musi dać się odpowiedzieć „tak” lub „nie”, a prowadzącemu nie wolno minąć się z prawdą. Jeśli pytanie nie jest należycie sformułowane lub MG po prostu nie zna odpowiedzi, jest ona negatywna i liczy się do limitu zadanych pytań.\nPoświęcenie: Możesz poświęcić użycie tego zaklęcia, aby rzucić znany sobie czar 2 lub niższego kręgu z tradycji Jasnowidzenia.",
+    "zrodlo": "CS",
     "strona_zrodlowa": null
   },
   {
@@ -5113,6 +5773,39 @@ const SPELLS = [
     "krag": 6,
     "kategoria": "uzytkowe",
     "opis": "Obszar: Sześcian przestrzeni o krawędzi 12 metrów i punkcie początkowym w dalekim zasięgu.\nCzas trwania: 4 godziny. Na koniec rundy, w której rzucisz to zaklęcie, we wskazanym obszarze pojawia się wielki kruk (ruk, patrz Suplement Władcy Demonów). Kiedy to nastąpi, możesz wykonać oparty na Woli rzut na atak przeciwko jego Woli. Sukces oznacza, że na czas działania czaru stworzenie zostaje zniewolone, porażka zaś, że może okazać się wrogo do ciebie nastawione.",
+    "zrodlo": "CS",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "zrodlo_eitru",
+    "nazwa": "Źródło Eitru",
+    "tradycja": "sztuki_zakazane",
+    "tradycjaNazwa": "Sztuki Zakazane",
+    "krag": 3,
+    "kategoria": "uzytkowe",
+    "opis": "Cel: Punkt na podłożu w bliskim zasięgu. Gęsty, złoty płyn sączy się z punktu początkowego i rozchodzi w kałużę o promieniu 3 metrów, która wyparowuje pod koniec rundy. Natychmiast też zaczyna bulgotać, kiedy wyłaniają się z niej stworzenia. Rzuć 3k6 i sprawdź wynik w poniższej tabeli, aby zobaczyć, co się pojawiło. 3k6 Zrodzone potwory 3 1 duży potwór 4–5 1k3 średnich potworów 6–8 1k6 małych potworów 9–12 2k6 drobnych potworów 13–15 1k6 średnich potworów 16–17 1k3 dużych potworów 18 1 wielki potwór Potwór, który wyłania się z kałuży, zachowuje istnienie, dopóki nie zostanie zniszczony, i może natychmiast podjąć działanie, zazwyczaj atakując najbliższą sobie istotę – także innego potwora stworzonego przez to zaklęcie. Ponadto każdy z nich wykonuje rzuty na atak z 1 ułatwieniem i zadaje 1k6 dodatkowych obrażeń.",
+    "zrodlo": "CS",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "lodowa_cela",
+    "nazwa": "Lodowa Cela",
+    "tradycja": "woda",
+    "tradycjaNazwa": "Woda",
+    "krag": 2,
+    "kategoria": "atak",
+    "opis": "Cel: Jedno stworzenie o Rozmiarze 1 lub mniejsze w średnim zasięgu.\nCzas trwania: 1 minuta; patrz niżej. Wokół przestrzeni zajętej przez cel formuje się klatka z lodu i pozostaje tam na czas trwania zaklęcia lub dopóki nie zostanie zniszczona. Ma ona Obronę 5, Zdrowie 20 i otrzymuje podwójne obrażenia od ognia. Wykonaj oparty na Woli rzut na atak przeciwko Zręczności celu. Sukces oznacza, że więzisz go w klatce, porażka zaś, że stworzenie porusza się o 1 metr w wybranym przez siebie kierunku. Na koniec każdej tury, w której lodowa klatka zachowuje istnienie, każda istota w obrębie 1 metra od niej musi uzyskać sukces w teście Siły, inaczej otrzymuje 1k6 obrażeń od emanującego z niej lodowatego zimna.",
+    "zrodlo": "CS",
+    "strona_zrodlowa": null
+  },
+  {
+    "id": "lodowe_odlamki",
+    "nazwa": "Lodowe Odłamki",
+    "tradycja": "woda",
+    "tradycjaNazwa": "Woda",
+    "krag": 3,
+    "kategoria": "atak",
+    "opis": "Czas trwania: 1 godzina lub dopóki nie zostanie wykorzystany ostatni odłamek; patrz niżej. W powietrzu wokół ciebie pojawia się pięć lśniących odłamków lodu; zachowują one istnienie na czas trwania zaklęcia. Jeśli otrzymasz obrażenia od ognia, czar dobiega końca. Kiedy rzucasz to zaklęcie, a także w ramach akcji lub reakcji w swojej turze, ciskasz jednym odłamkiem w stronę istoty lub obiektu w średnim zasięgu. Za każdym razem wykonaj oparty na Woli rzut na atak z 1 ułatwieniem przeciwko Zręczności celu. Sukces oznacza, że odłamek trafia, a przeciwnik otrzymuje 3k6 obrażeń. Rzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.",
     "zrodlo": "CS",
     "strona_zrodlowa": null
   }
