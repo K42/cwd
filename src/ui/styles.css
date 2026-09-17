@@ -2123,6 +2123,11 @@ kbd {
     margin-bottom: 6px;
 }
 
+.magic-slot-picker-secondary {
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+}
+
 .magic-picked-chip {
     display: inline-flex;
     align-items: center;

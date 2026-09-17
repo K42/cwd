@@ -180,6 +180,7 @@ function obliczRozwiazanieMagii(atomy, wybory) {
     let mode = null;
     let tradycjaId = null;
     let spellId = null;
+    let darmowyZaklecieId = null;
 
     if (atom.rodzaj === 'wymuszona_tradycja') {
       mode = 'tradycja';
@@ -199,14 +200,16 @@ function obliczRozwiazanieMagii(atomy, wybory) {
 
     if (mode === 'tradycja' && tradycjaId) {
       znaneTradycje.add(tradycjaId);
-      // Poznanie tradycji przyznaje automatycznie jedno jej zaklęcie kręgu 0
-      // ("Poznawanie tradycji") - jeśli to tradycja czarnej magii, to darmowe
-      // zaklęcie liczy się już jako "znane zaklęcie czarnej magii" na potrzeby
-      // ryzyka splugawienia przy nauce KOLEJNYCH zaklęć z tej tradycji.
+      // "Poznawanie tradycji": poznanie tradycji oznacza naukę jednego jej
+      // zaklęcia kręgu 0 - gracz wybiera, które (patrz pobierzZakleciaKregu0()).
+      darmowyZaklecieId = wybor.darmowyZaklecieId || null;
+      // Jeśli to tradycja czarnej magii, to darmowe zaklęcie liczy się już
+      // jako "znane zaklęcie czarnej magii" na potrzeby ryzyka splugawienia
+      // przy nauce KOLEJNYCH zaklęć z tej tradycji.
       if (czyCzarnaMagia(tradycjaId)) liczbaZnanychCzarnychZaklec++;
     }
 
-    const kompletny = mode === 'tradycja' ? !!tradycjaId : (mode === 'zaklecie' ? !!spellId : false);
+    const kompletny = mode === 'tradycja' ? !!(tradycjaId && darmowyZaklecieId) : (mode === 'zaklecie' ? !!spellId : false);
 
     // Ryzyko splugawienia dotyczy tylko zaklęć czarnej magii nauczonych
     // jako "kolejne zaklęcie" (mode 'zaklecie') - nie darmowego zaklęcia
@@ -221,10 +224,19 @@ function obliczRozwiazanieMagii(atomy, wybory) {
       }
     }
 
-    rozwiazania.push({ atom, mode, tradycjaId, spellId, kompletny, czarnaMagiaRyzyko });
+    rozwiazania.push({ atom, mode, tradycjaId, spellId, darmowyZaklecieId, kompletny, czarnaMagiaRyzyko });
   }
 
   return { rozwiazania, znaneTradycje };
+}
+
+/**
+ * Zwraca zaklęcia kręgu 0 należące do danej tradycji - to z nich gracz
+ * wybiera darmowe zaklęcie przyznawane automatycznie przy poznaniu tejże
+ * tradycji ("Poznawanie tradycji", PG).
+ */
+function pobierzZakleciaKregu0(tradycjaId) {
+  return SPELLS.filter(s => s.tradycja === tradycjaId && s.krag === 0);
 }
 
 /** Krótki, czytelny opis jednego atomowego wyboru - do podglądu/pomocy. */
@@ -299,6 +311,7 @@ export {
   obliczRozwiazanieMagii,
   pobierzTradycjeDlaKategorii,
   pobierzZakleciaDoNauki,
+  pobierzZakleciaKregu0,
   czyCzarnaMagia,
   opisAtomu,
   opisMagii

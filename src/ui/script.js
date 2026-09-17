@@ -7,7 +7,7 @@ import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/sciezki.js';
 import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
 import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
 import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
-import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magia.js';
+import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, pobierzZakleciaKregu0, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magia.js';
 import { TRADYCJE } from './data/tradycje.js';
 import { rollTable } from './data/table_utils.js';
 import DANE_GRY from './data/dane-gry.js';
@@ -2492,8 +2492,12 @@ function renderKartaZakleciaSection() {
   const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomy, magiaWybory);
   const tradycjeList = [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
   const zaklecia = rozwiazania
-    .filter(r => r.mode === 'zaklecie' && r.spellId)
-    .map(r => SPELLS.find(s => s.id === r.spellId))
+    .flatMap(r => {
+      if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
+      if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
+      return [];
+    })
+    .map(id => SPELLS.find(s => s.id === id))
     .filter(Boolean);
 
   if (tradycjeList.length === 0 && zaklecia.length === 0) return '';
@@ -3874,7 +3878,7 @@ function obliczSplugawienieZMagiiAktualnej() {
 
 /** Renderuje pojedynczą kartę jednego atomowego wyboru magii. */
 function renderujKarteMagii(rozwiazanie) {
-  const { atom, mode, tradycjaId, spellId, kompletny, czarnaMagiaRyzyko } = rozwiazanie;
+  const { atom, mode, tradycjaId, spellId, darmowyZaklecieId, kompletny, czarnaMagiaRyzyko } = rozwiazanie;
   const jestCzarnaTradycja = mode === 'tradycja' && czyCzarnaMagia(tradycjaId);
   const klasy = ['magic-slot-card'];
   if (kompletny) klasy.push('complete');
@@ -3883,11 +3887,15 @@ function renderujKarteMagii(rozwiazanie) {
   let bodyHtml = '';
   if (atom.rodzaj === 'wymuszona_tradycja') {
     bodyHtml = renderujWyborTradycji(atom.id, atom.kategoria, tradycjaId);
+    if (tradycjaId) bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, tradycjaId, darmowyZaklecieId);
   } else if (atom.rodzaj === 'wybor_fixed') {
     const nazwaTr = TRADYCJE[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
-    bodyHtml = mode === 'tradycja'
-      ? `<p class="magic-slot-status ok">Tradycja ${nazwaTr} nie jest jeszcze znana - zostanie automatycznie poznana (wraz z darmowym zaklęciem kręgu 0).</p>`
-      : renderujWyborZaklecia(atom.id, spellId, atom.tradycjaNazwa);
+    if (mode === 'tradycja') {
+      bodyHtml = `<p class="magic-slot-status ok">Tradycja ${nazwaTr} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
+      bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
+    } else {
+      bodyHtml = renderujWyborZaklecia(atom.id, spellId, atom.tradycjaNazwa);
+    }
   } else if (atom.rodzaj === 'wybor') {
     bodyHtml = `
       <div class="magic-slot-mode-toggle">
@@ -3895,8 +3903,12 @@ function renderujKarteMagii(rozwiazanie) {
         <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magia-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
       </div>
     `;
-    if (mode === 'tradycja') bodyHtml += renderujWyborTradycji(atom.id, atom.kategoria, tradycjaId);
-    else if (mode === 'zaklecie') bodyHtml += renderujWyborZaklecia(atom.id, spellId);
+    if (mode === 'tradycja') {
+      bodyHtml += renderujWyborTradycji(atom.id, atom.kategoria, tradycjaId);
+      if (tradycjaId) bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, tradycjaId, darmowyZaklecieId);
+    } else if (mode === 'zaklecie') {
+      bodyHtml += renderujWyborZaklecia(atom.id, spellId);
+    }
   } else if (atom.rodzaj === 'zaklecie_tylko') {
     bodyHtml = renderujWyborZaklecia(atom.id, spellId);
   }
@@ -3954,6 +3966,27 @@ function renderujWyborZaklecia(atomId, aktualnyWybor, tradycjaOgraniczenie = nul
 }
 
 /**
+ * Renderuje przycisk otwarcia popupu wyboru DARMOWEGO zaklęcia kręgu 0
+ * przyznawanego automatycznie przy poznaniu nowej tradycji ("Poznawanie
+ * tradycji", PG) wraz z kafelkiem aktualnego wyboru - analogicznie do
+ * renderujWyborZaklecia(), ale ograniczone wyłącznie do kręgu 0 danej
+ * tradycji (zob. otworzDarmoweZakleciePicker()).
+ */
+function renderujWyborDarmowegoZaklecia(atomId, tradycjaId, aktualnyWybor) {
+  const spell = aktualnyWybor ? SPELLS.find(s => s.id === aktualnyWybor) : null;
+  return `
+    <div class="magic-slot-picker magic-slot-picker-secondary">
+      ${spell ? `
+        <div class="magic-picked-chip">${spell.nazwa} (krąg 0)
+          <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">✕</button>
+        </div>
+      ` : ''}
+      <button type="button" class="btn-secondary small" data-open-darmowe-zaklecie-picker="${atomId}" data-tradycja-darmowa="${tradycjaId}">${spell ? 'Zmień darmowe zaklęcie' : 'Wybierz zaklęcie kręgu 0'}</button>
+    </div>
+  `;
+}
+
+/**
  * Renderuje ostrzeżenie/informację o czarnej magii dla danej karty: albo
  * informację o automatycznym Splugawieniu za poznanie tradycji, albo
  * widget rzutu ryzyka (k6) przy nauce kolejnego zaklęcia czarnej magii.
@@ -4004,6 +4037,11 @@ function podlaczObslugeKartMagii(container) {
       const tradycjaOgraniczenie = btn.dataset.tradycjaOgraniczenie || null;
       const { znaneTradycje } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
       otworzZakleciePicker(atomId, znaneTradycje, pobierzAktualnaMoc(), tradycjaOgraniczenie);
+    });
+  });
+  container.querySelectorAll('[data-open-darmowe-zaklecie-picker]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      otworzDarmoweZakleciePicker(btn.dataset.openDarmoweZakleciePicker, btn.dataset.tradycjaDarmowa);
     });
   });
   container.querySelectorAll('[data-magia-clear]').forEach(btn => {
@@ -4061,6 +4099,20 @@ function otworzZakleciePicker(atomId, znaneTradycje, moc, tradycjaOgraniczenie) 
   renderMagicPickerBody();
 }
 
+/**
+ * Otwiera popup wyboru DARMOWEGO zaklęcia kręgu 0 danej tradycji, przyznanego
+ * automatycznie przy jej poznaniu ("Poznawanie tradycji", PG) - kafelki
+ * ograniczone wyłącznie do kręgu 0 tej jednej, konkretnej tradycji.
+ */
+function otworzDarmoweZakleciePicker(atomId, tradycjaId) {
+  magiaPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '' };
+  const title = document.getElementById('magic-picker-title');
+  if (title) title.textContent = 'Wybierz zaklęcie kręgu 0';
+  const overlay = document.getElementById('magic-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderMagicPickerBody();
+}
+
 /** Zamyka popup wyboru magii bez dokonywania wyboru. */
 function zamknijMagicPicker() {
   const overlay = document.getElementById('magic-picker-overlay');
@@ -4076,7 +4128,9 @@ function zamknijMagicPicker() {
 function renderMagicPickerBody() {
   const body = document.getElementById('magic-picker-body');
   if (!body || !magiaPicker) return;
-  const placeholder = magiaPicker.kind === 'tradycja' ? 'Szukaj tradycji...' : 'Szukaj zaklęcia po nazwie lub opisie...';
+  const placeholder = magiaPicker.kind === 'tradycja'
+    ? 'Szukaj tradycji...'
+    : (magiaPicker.kind === 'darmowe_zaklecie' ? 'Szukaj zaklęcia kręgu 0...' : 'Szukaj zaklęcia po nazwie lub opisie...');
   body.innerHTML = `
     <input type="text" class="picker-search" id="picker-search-input" placeholder="${placeholder}">
     <div id="picker-dynamic"></div>
@@ -4095,7 +4149,9 @@ function renderMagicPickerBody() {
 function rerenderPickerDynamic() {
   const el = document.getElementById('picker-dynamic');
   if (!el || !magiaPicker) return;
-  el.innerHTML = magiaPicker.kind === 'tradycja' ? renderTradycjaPickerDynamicHtml() : renderZakleciePickerDynamicHtml();
+  if (magiaPicker.kind === 'tradycja') el.innerHTML = renderTradycjaPickerDynamicHtml();
+  else if (magiaPicker.kind === 'darmowe_zaklecie') el.innerHTML = renderDarmoweZakleciePickerDynamicHtml();
+  else el.innerHTML = renderZakleciePickerDynamicHtml();
   podlaczObslugePickerDynamic(el);
 }
 
@@ -4125,11 +4181,13 @@ function renderTradycjaPickerDynamicHtml() {
  */
 function pobierzZajeteZaklecia(wylaczAtomId) {
   const { rozwiazania } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
-  return new Set(
-    rozwiazania
-      .filter(r => r.mode === 'zaklecie' && r.spellId && r.atom.id !== wylaczAtomId)
-      .map(r => r.spellId)
-  );
+  const zajete = new Set();
+  rozwiazania.forEach(r => {
+    if (r.atom.id === wylaczAtomId) return;
+    if (r.mode === 'zaklecie' && r.spellId) zajete.add(r.spellId);
+    if (r.mode === 'tradycja' && r.darmowyZaklecieId) zajete.add(r.darmowyZaklecieId);
+  });
+  return zajete;
 }
 
 /** Renderuje kafelki zaklęć dostępnych do nauki w popupie, po zastosowaniu wyszukiwania i chipów filtrów. */
@@ -4187,6 +4245,42 @@ function renderZakleciePickerDynamicHtml() {
   `;
 }
 
+/**
+ * Renderuje kafelki zaklęć kręgu 0 danej tradycji w popupie wyboru
+ * darmowego zaklęcia ("Poznawanie tradycji", PG) - bez chipów filtrów, bo
+ * krąg jest już z definicji ograniczony do 0, a tradycja jest ustalona.
+ */
+function renderDarmoweZakleciePickerDynamicHtml() {
+  const { tradycjaId, search } = magiaPicker;
+  const wszystkie = pobierzZakleciaKregu0(tradycjaId);
+  const searchLower = search.trim().toLowerCase();
+  const wynik = searchLower ? wszystkie.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower)) : wszystkie;
+
+  const zajete = pobierzZajeteZaklecia(magiaPicker.atomId);
+  const tiles = wynik
+    .slice()
+    .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'))
+    .map(s => {
+      const jestZajete = zajete.has(s.id);
+      return `
+      <button type="button" class="picker-tile ${jestZajete ? 'disabled' : ''}" ${jestZajete ? 'disabled' : ''} data-pick-darmowe-zaklecie="${s.id}">
+        <div class="picker-tile-header">
+          <span>${s.nazwa}</span>
+          ${renderujZnacznikZrodla(s.zrodlo)}
+        </div>
+        <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg 0 · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
+        <p class="picker-tile-opis">${s.opis}</p>
+        ${jestZajete ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
+      </button>
+    `;
+    }).join('') || '<p class="hint">Brak zaklęć kręgu 0 spełniających kryteria wyszukiwania.</p>';
+
+  return `
+    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${wszystkie.length} zaklęć kręgu 0</p>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+}
+
 /** Podłącza obsługę chipów filtrów i kafelków w dynamicznym obszarze popupu. */
 function podlaczObslugePickerDynamic(container) {
   container.querySelectorAll('[data-filter-krag]').forEach(btn => {
@@ -4216,14 +4310,32 @@ function podlaczObslugePickerDynamic(container) {
   container.querySelectorAll('[data-pick-zaklecie]').forEach(btn => {
     btn.addEventListener('click', () => wybierzZaklecieZPickera(btn.dataset.pickZaklecie));
   });
+  container.querySelectorAll('[data-pick-darmowe-zaklecie]').forEach(btn => {
+    btn.addEventListener('click', () => wybierzDarmoweZaklecieZPickera(btn.dataset.pickDarmoweZaklecie));
+  });
 }
 
-/** Zatwierdza wybór tradycji dokonany w popupie, zamyka go i przerenderowuje Krok 4.5. */
+/**
+ * Zatwierdza wybór tradycji dokonany w popupie. Poznanie tradycji przyznaje
+ * automatycznie jedno jej zaklęcie kręgu 0 ("Poznawanie tradycji", PG), więc
+ * zamiast zamykać popup, przechodzi wprost do wyboru tego darmowego
+ * zaklęcia - albo, gdy tradycja ma tylko jedno zaklęcie kręgu 0, wybiera je
+ * automatycznie, bez dodatkowego kliknięcia.
+ */
 function wybierzTradycjaZPickera(tradycjaId) {
   const atomId = magiaPicker.atomId;
   const wybor = magiaWybory[atomId] || {};
-  magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId };
-  zamknijMagicPicker();
+  magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId, darmowyZaklecieId: null };
+
+  const kregZero = pobierzZakleciaKregu0(tradycjaId);
+  if (kregZero.length === 1) {
+    magiaWybory[atomId].darmowyZaklecieId = kregZero[0].id;
+    zamknijMagicPicker();
+  } else if (kregZero.length > 1) {
+    otworzDarmoweZakleciePicker(atomId, tradycjaId);
+  } else {
+    zamknijMagicPicker();
+  }
   renderSpellsSection();
 }
 
@@ -4233,6 +4345,15 @@ function wybierzZaklecieZPickera(spellId) {
   const wybor = magiaWybory[atomId] || {};
   magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'zaklecie', spellId };
   delete magiaRyzykoWyniki[atomId];
+  zamknijMagicPicker();
+  renderSpellsSection();
+}
+
+/** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 4.5. */
+function wybierzDarmoweZaklecieZPickera(spellId) {
+  const atomId = magiaPicker.atomId;
+  const wybor = magiaWybory[atomId] || {};
+  magiaWybory[atomId] = { ...wybor, darmowyZaklecieId: spellId };
   zamknijMagicPicker();
   renderSpellsSection();
 }
