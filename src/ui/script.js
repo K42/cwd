@@ -379,8 +379,8 @@ function renderPathBenefitsList(path, poziomWyboru) {
   const pkt = (path.korzysci && path.korzysci[poziomWyboru]) || {};
   const talenty = (pkt.talenty || []).map(t => `<li><strong>Talent:</strong> ${t.nazwa || t} – ${t.opis || ''}</li>`).join('');
   const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Magia:</strong> ${z.opis || z.nazwa || z}</li>`).join('');
-  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
-  const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${ETYKIETY_ATRYBUTOW[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const atrybutyGlowne = pkt.atrybuty_glowne
     ? `<li><strong>Atrybuty:</strong> Zwiększ ${pkt.atrybuty_glowne.ilosc} dowolne o ${pkt.atrybuty_glowne.wartosc} (Krok 3.5)</li>`
     : '';
@@ -981,7 +981,7 @@ function generujKafelkiPochodzen(pochodzenia) {
                         <div class="cultural-info">
                             <div class="cultural-item">
                                 <span class="cultural-label">Języki:</span>
-                                <span class="cultural-value">${pochodzenie.jezyki.join(', ')}</span>
+                                <span class="cultural-value">${formatujJezykiPochodzenia(pochodzenie.jezyki)}</span>
                             </div>
                             <div class="cultural-item">
                                 <span class="cultural-label">Profesje:</span>
@@ -1533,7 +1533,7 @@ function aktualizujPodsumowaniePochodzenia() {
         <h4>${pochodzenie.nazwa}</h4>
         <p><strong>Opis:</strong> ${pochodzenie.opis}</p>
         <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
-        <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
+        <p><strong>Języki:</strong> ${formatujJezykiPochodzenia(pochodzenie.jezyki)}</p>
         <p><strong>Modyfikatory atrybutów:</strong> 
             Siła ${pochodzenie.atrybuty_bazowe.sila - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.sila - 10}, 
             Zręczność ${pochodzenie.atrybuty_bazowe.zrecznosc - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.zrecznosc - 10}, 
@@ -1836,6 +1836,11 @@ function wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie) {
 /** Etykiety atrybutów głównych używane w Kroku 3.5. */
 const ETYKIETY_ATRYBUTOW = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
 
+/** Etykiety atrybutów drugorzędnych - używane przy formatowaniu modyfikatorów ścieżek na kafelkach (Krok 3). */
+const ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH = {
+  zdrowie: 'Zdrowie', moc: 'Moc', obrona: 'Obrona', predkosc: 'Prędkość', splugawienie: 'Splugawienie'
+};
+
 /**
  * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 3.5) ma kompletną
  * odpowiedź: dokładnie `ilosc` różnych atrybutów wybranych.
@@ -2118,6 +2123,17 @@ function pobierzKluczoweCechy(cechySpecjalne) {
 }
 
 /**
+ * Formatuje listę języków pochodzenia (kluczy z origins.js, np. 'mroczna_mowa')
+ * do czytelnych nazw z JEZYKI (np. 'Mroczna mowa') - inaczej wieloczłonowe
+ * klucze wyciekałyby do UI jako surowy tekst ze znakiem podkreślenia.
+ * @param {string[]} jezyki
+ * @returns {string}
+ */
+function formatujJezykiPochodzenia(jezyki) {
+  return (jezyki || []).map(j => JEZYKI[j] || j).join(', ');
+}
+
+/**
  * Formatuje opis bonusu profesyjnego/językowego pochodzenia (do wyświetlenia
  * poza Krokiem 4, np. na rozwiniętym kafelku pochodzenia lub w podglądzie).
  * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
@@ -2274,6 +2290,16 @@ function pokazKomunikatWyboru(originId) {
 }
 
 /**
+ * Zamienia klucz w formacie snake_case (np. "znienawidzone_stworzenia") na
+ * czytelny tekst ("Znienawidzone stworzenia") - wyłącznie awaryjny fallback,
+ * gdy dla klucza brakuje właściwej, poprawnie sformatowanej nazwy w danych.
+ */
+function humanizujKluczTabeli(klucz) {
+  const tekst = klucz.replace(/_/g, ' ');
+  return tekst.charAt(0).toUpperCase() + tekst.slice(1);
+}
+
+/**
  * Generuje sekcję z wynikami tabel losowych
  * @param {string} originId - ID pochodzenia
  * @returns {string} HTML sekcji z wynikami tabel
@@ -2288,23 +2314,14 @@ function generujSekcjeWynikowTabel(originId) {
     return '';
   }
   
-  // Mapowanie nazw tabel na polskie nazwy
-  const nazwyTabel = {
-    przeszlosc: 'Przeszłość',
-    osobowosc: 'Osobowość', 
-    religia: 'Religia',
-    wiek: 'Wiek',
-    budowa_ciala: 'Budowa Ciała',
-    wyglad: 'Wygląd',
-    funkcja: 'Funkcja',
-    forma: 'Forma'
-  };
-  
   let html = '<div class="preview-section">';
   html += '<h5>🎲 Wyniki Tabel Losowych</h5>';
-  
+
   Object.entries(wynikiTabel[originId]).forEach(([tableName, result]) => {
-    const nazwaTabeli = nazwyTabel[tableName] || tableName;
+    // Nazwa tabeli pochodzi bezpośrednio z jej definicji (pochodzenie.tabele),
+    // a nie z osobno utrzymywanej listy - inaczej brakujący wpis pokazywałby
+    // surowy klucz (np. "znienawidzone_stworzenia") zamiast czytelnej nazwy.
+    const nazwaTabeli = pochodzenie.tabele[tableName]?.nazwa || humanizujKluczTabeli(tableName);
     const ikona = result.typ === 'wybór' ? '🎯' : '🎲';
     const typTekst = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
     
@@ -2352,7 +2369,7 @@ function renderKartaPochodzeniaSection(pochodzenie) {
       <h5>${pochodzenie.nazwa}</h5>
       <p>${pochodzenie.opis}</p>
       <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość bazowa:</strong> ${pochodzenie.predkosc}</p>
-      <p><strong>Języki:</strong> ${pochodzenie.jezyki.join(', ')}</p>
+      <p><strong>Języki:</strong> ${formatujJezykiPochodzenia(pochodzenie.jezyki)}</p>
       <p><strong>Profesja/język z pochodzenia:</strong> ${formatujBonusProfesjiPochodzenia(pochodzenie)}</p>
       ${cechy ? `
         <div class="trait-list">
