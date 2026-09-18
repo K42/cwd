@@ -353,7 +353,7 @@ function renderPathTile(path, poziomWyboru) {
     <div class="tile-header">
       <div>
         <div class="tile-title">${path.nazwa}</div>
-        <small>${path.zrodlo || 'PG'} • Poziom wyboru ${poziomWyboru}</small>
+        <small>${renderujZnacznikZrodla(path.zrodlo || 'PG')} Poziom wyboru ${poziomWyboru}</small>
       </div>
     </div>
     <div class="tile-body">
@@ -895,7 +895,7 @@ function generujKafelkiPochodzen(pochodzenia) {
             <div class="tile-header">
                 <div class="badges-container">
                     <div class="feature-desc">rozmiar:</div><div class="size-badge">${pochodzenie.rozmiar}</div>
-                    ${pochodzenie.zrodlo ? `<div class="source-badge">${pochodzenie.zrodlo}</div>` : ''}
+                    ${pochodzenie.zrodlo ? `<div class="source-badge" title="${PELNE_NAZWY_ZRODEL[pochodzenie.zrodlo] || pochodzenie.zrodlo}">${pochodzenie.zrodlo}</div>` : ''}
                 </div>
                 <h4>${pochodzenie.nazwa}</h4>
             </div>

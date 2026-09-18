@@ -823,6 +823,7 @@ button:active {
     font-weight: normal;
     border: 1px solid rgba(176, 141, 58, 0.3);
     letter-spacing: 0.5px;
+    cursor: help;
 }
 
 /* Nowe style dla sekcji kafelków */
