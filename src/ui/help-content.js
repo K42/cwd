@@ -53,22 +53,30 @@ function getStartContent() {
     <div class="help-step">
       <div class="help-step-header">
         <span class="help-step-number">3</span>
-        <h5>Ścieżki i Rozwój Atrybutów</h5>
+        <h5>Ścieżki</h5>
       </div>
-      <p>Na poziomach 1, 3 i 7 wybierasz ścieżkę (Krok 3). Niektóre ścieżki dodatkowo pozwalają zwiększyć atrybuty (Krok 3.5):</p>
-      <ul>
-        <li><strong>Ścieżki eksperckie</strong> (poziom 3) dają zawsze 2 punkty, <strong>mistrzowskie</strong> (poziom 7) - 3 punkty</li>
-        <li>Punkty możesz rozłożyć na różne atrybuty albo połączyć na jednym (np. +2 do Siły z jednej ścieżki)</li>
-        <li>Krok 3.5 pojawia się zawsze, ale jeśli żadna wybrana ścieżka nie daje punktów, wystarczy kliknąć "Dalej"</li>
-      </ul>
+      <p>Na poziomach 1, 3 i 7 wybierasz ścieżkę - kolejne sekcje (Nowicjusza, Ekspercka, Mistrzowska) odblokowują się w miarę zwiększania poziomu w Kroku 2.</p>
     </div>
 
     <div class="help-step">
       <div class="help-step-header">
         <span class="help-step-number">4</span>
+        <h5>Rozwój Atrybutów</h5>
+      </div>
+      <p>Niektóre wybrane ścieżki pozwalają dodatkowo zwiększyć atrybuty:</p>
+      <ul>
+        <li><strong>Ścieżki eksperckie</strong> (poziom 3) dają zawsze 2 punkty, <strong>mistrzowskie</strong> (poziom 7) - 3 punkty</li>
+        <li>Punkty możesz rozłożyć na różne atrybuty albo połączyć na jednym (np. +2 do Siły z jednej ścieżki)</li>
+        <li>Ten krok pojawia się zawsze, ale jeśli żadna wybrana ścieżka nie daje punktów, wystarczy kliknąć "Dalej"</li>
+      </ul>
+    </div>
+
+    <div class="help-step">
+      <div class="help-step-header">
+        <span class="help-step-number">5</span>
         <h5>Profesje, Języki i Kurioza</h5>
       </div>
-      <p>W Kroku 4 rozdzielasz sloty przyznane przez pochodzenie i ścieżki - każdy pokazuje w nawiasie, z jakiego wyboru pochodzi (np. "Ścieżka: Łotr (poziom 1)"). Zależnie od slotu możesz wybrać profesję z określonej kategorii, nowy język do mówienia albo pismo w już znanym języku.</p>
+      <p>Rozdzielasz sloty przyznane przez pochodzenie i ścieżki - każdy pokazuje w nawiasie, z jakiego wyboru pochodzi (np. "Ścieżka: Łotr (poziom 1)"). Zależnie od slotu możesz wybrać profesję z określonej kategorii, nowy język do mówienia albo pismo w już znanym języku.</p>
       <ul>
         <li><strong>🎲 Losuj pozostałe</strong> - losuje tylko nierozdane sloty; jeśli już wybrałeś tryb (np. "Nowy język") bez wskazania wartości, losowanie dobierze wartość w tym trybie, nie zmieni go</li>
         <li><strong>Wyczyść</strong> - mały przycisk przy każdej karcie/sekcji czyści tylko jej wybór, nie wpływając na resztę</li>
@@ -77,27 +85,27 @@ function getStartContent() {
 
     <div class="help-step">
       <div class="help-step-header">
-        <span class="help-step-number">4.5</span>
-        <h5>Zaklęcia (opcjonalnie)</h5>
+        <span class="help-step-number">6</span>
+        <h5>Magia - tradycje i zaklęcia (opcjonalnie)</h5>
       </div>
-      <p>Jeśli twoja postać potrafi rzucać zaklęcia, w Kroku 4.5 możesz przeszukać całą bibliotekę zaklęć z podręcznika głównego i oznaczyć te, które twoja postać zna.</p>
+      <p>Jeśli twoje pochodzenie lub wybrane ścieżki przyznają magię, ten krok pokazuje wyłącznie te korzyści, na które faktycznie zasługuje twoja postać - każda karta to jeden wybór (nowa tradycja i/lub zaklęcie), zgodny z zasadami podręcznika.</p>
       <ul>
         <li>Ten krok jest <strong>całkowicie opcjonalny</strong> - "Dalej" nigdy nie jest zablokowane, więc postać bez magii może go pominąć bez wybierania niczego</li>
-        <li><strong>Wyszukiwanie i filtry</strong> - szukaj po nazwie lub treści opisu, albo filtruj po tradycji, kręgu (0-10) i kategorii (atak/użytkowe)</li>
-        <li>Podpowiedź na górze kroku pokazuje, jaką magię przyznały już twoje wybrane ścieżki - to tylko informacja, nie ogranicza wyboru</li>
-        <li>Każde zaklęcie ma etykietę źródła (np. "PG" - Podręcznik Główny)</li>
+        <li>Przyciski <strong>"Wybierz tradycję"</strong>/<strong>"Wybierz zaklęcie"</strong> otwierają popup z wyszukiwaniem i kafelkami do wyboru, ograniczonymi do tego, co faktycznie dostępne (znane tradycje, krąg nie wyższy niż Moc)</li>
+        <li>Poznanie nowej tradycji pozwala też wybrać jej darmowe zaklęcie kręgu 0</li>
+        <li>Każde zaklęcie ma etykietę źródła (np. "PG" - Podręcznik Główny) z podpowiedzią pełnej nazwy podręcznika po najechaniu</li>
       </ul>
     </div>
 
     <div class="help-step">
       <div class="help-step-header">
-        <span class="help-step-number">5</span>
-        <h5>Podsumowanie i Eksport</h5>
+        <span class="help-step-number">7</span>
+        <h5>Podgląd i Eksport</h5>
       </div>
-      <p>Sprawdź podgląd postaci i zatwierdź:</p>
+      <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
       <ul>
-        <li>Kliknij <strong>"🎲 Utwórz Postać"</strong> aby wygenerować kartę</li>
-        <li>Kliknij <strong>"💾 Eksportuj JSON"</strong> aby zapisać postać na dysku</li>
+        <li>Podgląd aktualizuje się na bieżąco - nie trzeba niczego "zatwierdzać"</li>
+        <li>Kliknij <strong>"📄 Eksportuj do JSON"</strong> aby zapisać postać na dysku</li>
       </ul>
     </div>
   `;
@@ -288,21 +296,21 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Czy mogę zapisać postać w trakcie tworzenia?</div>
         <div class="faq-answer">
-          Nie, musisz dokończyć wszystkie kroki. Jednak proces jest szybki (2-3 minuty).
+          Musisz najpierw dotrzeć do Kroku 7 (co wymaga ukończenia wymaganych wyborów po drodze), ale stamtąd możesz w każdej chwili wyeksportować postać do pliku JSON - podgląd aktualizuje się na bieżąco, bez osobnego "zatwierdzania". Zapisany plik możesz później wczytać przyciskiem "📂 Importuj postać" w Kroku 1, żeby kontynuować od tego samego miejsca.
         </div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question">Czy mogę edytować postać po utworzeniu?</div>
         <div class="faq-answer">
-          Obecnie nie. Edycja będzie dostępna w przyszłych wersjach. Możesz jednak stworzyć nową postać.
+          Tak - wyeksportuj postać do JSON (Krok 7), a następnie zaimportuj ją ponownie przyciskiem "📂 Importuj postać" w Kroku 1. Wszystkie wybory zostaną odtworzone i możesz przejść przez dowolny krok, żeby je zmienić.
         </div>
       </div>
 
       <div class="faq-item">
-        <div class="faq-question">Muszę wybrać zaklęcia w Kroku 4.5?</div>
+        <div class="faq-question">Muszę wybrać magię w Kroku 6?</div>
         <div class="faq-answer">
-          Nie. Krok 4.5 jest w pełni opcjonalny - możesz kliknąć "Dalej" bez wybierania żadnego zaklęcia, niezależnie od tego, czy twoja postać posługuje się magią. Wybrane zaklęcia trafiają do Karty Postaci jako lista informacyjna.
+          Nie. Krok 6 jest w pełni opcjonalny - możesz kliknąć "Dalej" bez rozwiązania żadnej karty, niezależnie od tego, czy twoja postać posługuje się magią. Wybrane tradycje i zaklęcia trafiają do Karty Postaci jako lista informacyjna.
         </div>
       </div>
     </div>
@@ -368,7 +376,7 @@ function getFAQContent() {
       </div>
 
       <div class="faq-item">
-        <div class="faq-question">Skąd biorą się dodatkowe punkty do atrybutów w Kroku 3.5?</div>
+        <div class="faq-question">Skąd biorą się dodatkowe punkty do atrybutów w Kroku 4?</div>
         <div class="faq-answer">
           Z wybranych ścieżek: każda ścieżka ekspercka (poziom 3) daje 2 punkty, a każda mistrzowska (poziom 7) - 3 punkty (ścieżki nowicjusza Mag i Wojownik dają 2, Kleryk i Łotr - żadnego). Punkty można rozdzielić na różne atrybuty albo połączyć wszystkie na jednym.
         </div>
@@ -420,7 +428,7 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Czy mogę importować zapisane postacie?</div>
         <div class="faq-answer">
-          Jeszcze nie, ale funkcja importu jest planowana w wersji 1.1.
+          Tak. Kliknij <strong>"📂 Importuj postać"</strong> obok przycisku losowania w Kroku 1 i wskaż plik JSON wyeksportowany wcześniej z tego kreatora. Jeśli plik jest uszkodzony, ma złą strukturę albo odwołuje się do pochodzeń/ścieżek/zaklęć, których nie ma w bieżącej bazie danych, zobaczysz czytelny komunikat z listą konkretnych problemów zamiast cichego niepowodzenia.
         </div>
       </div>
 

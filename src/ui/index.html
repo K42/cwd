@@ -25,12 +25,13 @@
         <div class="breadcrumb-item active" data-step="1">1. Pochodzenie</div>
         <div class="breadcrumb-item" data-step="2">2. Poziom i Atrybuty</div>
         <div class="breadcrumb-item" data-step="3">3. Ścieżki</div>
-        <div class="breadcrumb-item" data-step="3.5">3.5 Atrybuty</div>
-        <div class="breadcrumb-item" data-step="4">4. Profesje i Kurioza</div>
-        <div class="breadcrumb-item" data-step="4.5">4.5 Zaklęcia</div>
-        <div class="breadcrumb-item" data-step="5">5. Podgląd</div>
-        <div class="breadcrumb-item" data-step="6">6. Podsumowanie i Eksport</div>
+        <div class="breadcrumb-item" data-step="4">4. Rozwój Atrybutów</div>
+        <div class="breadcrumb-item" data-step="5">5. Profesje i Kurioza</div>
+        <div class="breadcrumb-item" data-step="6">6. Magia</div>
+        <div class="breadcrumb-item" data-step="7">7. Podgląd i Eksport</div>
     </nav>
+
+    <div id="error" class="error" style="display: none;"></div>
 
     <!-- Krok 1: Wybór Pochodzenia -->
     <div id="step-1" class="step active">
@@ -310,17 +311,6 @@
             </div>
         </div>
 
-        <!-- Sekcja Korzyści z Pochodzenia -->
-        <div id="origin-benefits-section" class="level-benefits-section" style="display: none;">
-            <h4>🏛️ Korzyści z Pochodzenia</h4>
-            <div class="benefit-category">
-                <p>Na poziomie 4 zyskujesz korzyści wynikające z twojego pochodzenia.</p>
-                <div id="origin-benefits-content">
-                    <!-- Korzyści będą wyświetlane dynamicznie -->
-                </div>
-            </div>
-        </div>
-
         <div id="calculated-attributes" class="calculated-attributes">
             <h4>Obliczone atrybuty (z modyfikatorami pochodzenia):</h4>
             <div class="attributes-grid">
@@ -395,20 +385,6 @@
                 <div id="path-summary-7" class="inline-summary"></div>
             </div>
 
-            <!-- Sekcja zasobów (złoto i kurioza) -->
-            <div id="wealth-section" class="level-benefits-section" style="display: none;">
-                <h4>💰 Zasoby na wyższym poziomie</h4>
-                <div class="benefit-category">
-                    <p>Za każdy poziom powyżej 0: 2k6 srebrników.</p>
-                    <p>Poziomy wyboru ścieżek (1, 3, 7): dodatkowe kurioza.</p>
-                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                        <button id="btn-roll-wealth" class="btn-secondary">🎲 Losuj srebrniki</button>
-                        <span id="wealth-summary">Srebrniki: 0 (nie wylosowano)</span>
-                        <span id="curios-summary" style="margin-left:10px;">Kurioza: 0</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(3)">
                     ← Wstecz
@@ -420,10 +396,10 @@
         </div>
     </div>
 
-    <!-- Krok 3.5: Rozwój Atrybutów -->
-    <div id="step-3.5" class="step">
+    <!-- Krok 4: Rozwój Atrybutów -->
+    <div id="step-4" class="step">
         <div class="section">
-            <h3>💪 Krok 3.5: Rozwój Atrybutów</h3>
+            <h3>💪 Krok 4: Rozwój Atrybutów</h3>
             <p>Niektóre ścieżki przy wyborze pozwalają zwiększyć wartości atrybutów. Rozdaj poniższe punkty zgodnie z opisanymi opcjami.</p>
 
             <div id="attribute-slots" class="slots-container">
@@ -431,20 +407,20 @@
             </div>
 
             <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(3.5)">
+                <button class="btn-secondary" onclick="prevStep(4)">
                     ← Wstecz
                 </button>
-                <button id="btn-next-3-5" class="btn-primary" onclick="nextStep(3.5)" disabled>
+                <button id="btn-next-4" class="btn-primary" onclick="nextStep(4)" disabled>
                     Dalej →
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Krok 4: Profesje i Kurioza -->
-    <div id="step-4" class="step">
+    <!-- Krok 5: Profesje i Kurioza -->
+    <div id="step-5" class="step">
         <div class="section">
-            <h3>🎭 Krok 4: Profesje i Kurioza</h3>
+            <h3>🎭 Krok 5: Profesje i Kurioza</h3>
             <p>Wybierz profesje i kurioza dla swojej postaci zgodnie z dostępnymi opcjami.</p>
 
             <!-- Sekcja Profesji -->
@@ -495,20 +471,20 @@
             </div>
 
             <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(4)">
+                <button class="btn-secondary" onclick="prevStep(5)">
                     ← Wstecz
                 </button>
-                <button id="btn-next-4" class="btn-primary" onclick="nextStep(4)" disabled>
+                <button id="btn-next-5" class="btn-primary" onclick="nextStep(5)" disabled>
                     Dalej →
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Krok 4.5: Magia - tradycje i zaklęcia (opcjonalnie) -->
-    <div id="step-4.5" class="step">
+    <!-- Krok 6: Magia - tradycje i zaklęcia (opcjonalnie) -->
+    <div id="step-6" class="step">
         <div class="section">
-            <h3>✨ Krok 4.5: Magia - tradycje i zaklęcia (opcjonalnie)</h3>
+            <h3>✨ Krok 6: Magia - tradycje i zaklęcia (opcjonalnie)</h3>
             <p>Poniżej znajdują się wyłącznie korzyści magiczne faktycznie przyznane przez twoje pochodzenie i wybrane ścieżki na obecnym poziomie postaci, zgodnie z zasadami podręcznika. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez rozwiązania wszystkich kart.</p>
 
             <div class="flex-row-between">
@@ -519,17 +495,17 @@
             <div id="magic-slots-container"></div>
 
             <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(4.5)">
+                <button class="btn-secondary" onclick="prevStep(6)">
                     ← Wstecz
                 </button>
-                <button id="btn-next-4-5" class="btn-primary" onclick="nextStep(4.5)">
+                <button id="btn-next-6" class="btn-primary" onclick="nextStep(6)">
                     Dalej →
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Popup wyboru tradycji/zaklęcia (Krok 4.5) -->
+    <!-- Popup wyboru tradycji/zaklęcia (Krok 6) -->
     <div id="magic-picker-overlay" class="modal-overlay" hidden>
         <div class="modal-box">
             <div class="modal-header">
@@ -540,65 +516,29 @@
         </div>
     </div>
 
-    <!-- Krok 5: Podsumowanie Postaci -->
-    <div id="step-5" class="step">
+    <!-- Krok 7: Podgląd i Eksport -->
+    <div id="step-7" class="step">
         <div class="section">
-            <h3>📜 Krok 5: Podsumowanie Postaci</h3>
-            <p>Przejrzyj swoją postać i wszystkie wybrane opcje.</p>
+            <h3>📜 Krok 7: Podgląd i Eksport</h3>
+            <p>Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
 
             <div id="character-preview" class="character-preview">
                 <!-- Podgląd postaci -->
             </div>
 
-            <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(4.5)">
-                    ← Wstecz
-                </button>
-                <button id="btn-create" class="btn-primary" onclick="utworzPostac()">
-                    🎲 Utwórz Postać
-                </button>
-            </div>
-
-            <div id="loading" class="loading" style="display: none;">
-                Tworzenie postaci...
-            </div>
-            <div id="error" class="error" style="display: none;"></div>
-        </div>
-    </div>
-
-    <!-- Krok 6: Podsumowanie i Eksport -->
-    <div id="step-6" class="step">
-        <div class="section">
-            <h3>🎯 Krok 6: Podsumowanie i Eksport</h3>
-            <p>Kompletna postać z progresją poziomów i opcjami eksportu.</p>
-
-            <div id="complete-character-summary">
-                <!-- Kompletne podsumowanie postaci -->
-            </div>
-
             <div class="export-section">
                 <h4>Eksport Postaci</h4>
-                <div class="export-options">
-                    <button id="btn-export-json" class="btn-export">
-                        📄 Eksportuj do JSON
-                    </button>
-                    <button id="btn-export-pdf" class="btn-export" disabled>
-                        📋 Eksportuj do PDF (Wkrótce)
-                    </button>
-                </div>
+                <button id="btn-export-json" class="btn-export" onclick="exportJSON()">
+                    📄 Eksportuj do JSON
+                </button>
             </div>
 
-            <div class="navigation-buttons">
-                <button id="btn-prev-5" class="btn-secondary">Wstecz</button>
-                <button id="btn-new-character" class="btn-primary">Nowa Postać</button>
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(7)">
+                    ← Wstecz
+                </button>
             </div>
         </div>
-    </div>
-
-    <div id="character-sheet" class="character-sheet">
-        <h3>📜 Karta Postaci</h3>
-        <div id="character-content"></div>
-        <button onclick="exportJSON()" style="margin-top: 15px;">💾 Eksportuj JSON</button>
     </div>
 
     <!-- Lightbox Pomocy -->

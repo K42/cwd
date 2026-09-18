@@ -382,7 +382,7 @@ function renderPathBenefitsList(path, poziomWyboru) {
   const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${ETYKIETY_ATRYBUTOW[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const atrybutyGlowne = pkt.atrybuty_glowne
-    ? `<li><strong>Atrybuty:</strong> Zwiększ ${pkt.atrybuty_glowne.ilosc} dowolne o ${pkt.atrybuty_glowne.wartosc} (Krok 3.5)</li>`
+    ? `<li><strong>Atrybuty:</strong> Zwiększ ${pkt.atrybuty_glowne.ilosc} dowolne o ${pkt.atrybuty_glowne.wartosc} (Krok 4)</li>`
     : '';
   const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Języki i profesje:</strong> ${b}</li>`).join('');
   const sprz = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
@@ -1266,8 +1266,12 @@ async function losujPochodzenieICechy() {
 /**
  * Wybiera pochodzenie
  * @param {string} originId - ID pochodzenia do wyboru
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.autoScroll=true] - Czy przewinąć do przycisku "Dalej"
+ *   po wyborze. Wyłączane przy imporcie postaci (zob. zaimportujPostac()), żeby
+ *   nie odciągać strony od komunikatu importu, zanim użytkownik zdąży go przeczytać.
  */
-function wybierzPochodzenie(originId) {
+function wybierzPochodzenie(originId, { autoScroll = true } = {}) {
   // Resetuj stan i UI dla poprzedniego wyboru
   resetujStanPoZmianiePochodzenia();
 
@@ -1306,9 +1310,11 @@ function wybierzPochodzenie(originId) {
   pokazKomunikatWyboru(originId);
 
   // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
-  requestAnimationFrame(() => {
-    nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  });
+  if (autoScroll) {
+    requestAnimationFrame(() => {
+      nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+  }
 }
 
 /**
@@ -1399,17 +1405,17 @@ function nextStep(currentStep) {
     pokazKrok(3);
     aktualizujPodgladPostaci();
   } else if (currentStep === 3) {
-    pokazKrok(3.5);
-    renderAtrybutySlotySection();
-  } else if (currentStep === 3.5) {
     pokazKrok(4);
+    renderAtrybutySlotySection();
+  } else if (currentStep === 4) {
+    pokazKrok(5);
     renderProfessionsSection();
     renderCuriosSection();
-  } else if (currentStep === 4) {
-    pokazKrok(4.5);
+  } else if (currentStep === 5) {
+    pokazKrok(6);
     renderSpellsSection();
-  } else if (currentStep === 4.5) {
-    pokazKrok(5);
+  } else if (currentStep === 6) {
+    pokazKrok(7);
     aktualizujPodgladPostaci();
   }
 }
@@ -1423,16 +1429,14 @@ function prevStep(currentStep) {
     pokazKrok(1);
   } else if (currentStep === 3) {
     pokazKrok(2);
-  } else if (currentStep === 3.5) {
-    pokazKrok(3);
   } else if (currentStep === 4) {
-    pokazKrok(3.5);
-  } else if (currentStep === 4.5) {
-    pokazKrok(4);
+    pokazKrok(3);
   } else if (currentStep === 5) {
-    pokazKrok(4.5);
+    pokazKrok(4);
   } else if (currentStep === 6) {
     pokazKrok(5);
+  } else if (currentStep === 7) {
+    pokazKrok(6);
   }
 }
 
@@ -1460,7 +1464,7 @@ function goToStep(stepNumber) {
   if (stepNumber === 3) {
     if (!wybranePochodzenie) return;
   }
-  if (stepNumber === 3.5) {
+  if (stepNumber === 4) {
     // Dla poziomu 0 nie wymagaj żadnych ścieżek
     if (wybranyPoziom === 0) return;
 
@@ -1471,8 +1475,8 @@ function goToStep(stepNumber) {
     if (needExpert && !wybraneSciezki.ekspert) return;
     if (needMaster && !wybraneSciezki.mistrz) return;
   }
-  if (stepNumber === 4) {
-    // Wymagane rozdanie punktów zwiększenia atrybutów (Krok 3.5)
+  if (stepNumber === 5) {
+    // Wymagane rozdanie punktów zwiększenia atrybutów (Krok 4)
     const slotyAtr = obliczSlotyAtrybutow({
       sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
       sciezkaEksperckaId: wybraneSciezki.ekspert || null,
@@ -1480,9 +1484,9 @@ function goToStep(stepNumber) {
     });
     if (!slotyAtr.every(slotAtrybutowKompletny)) return;
   }
-  if (stepNumber === 4.5 || stepNumber === 5) {
-    // Wymagane profesje/języki i kurioza (Krok 4.5 jest opcjonalny, ale wciąż wymaga,
-    // że Krok 4 zostanie zakończony, tak jak wcześniej wymagał tego Krok 5)
+  if (stepNumber === 6 || stepNumber === 7) {
+    // Wymagane profesje/języki i kurioza (Krok 6 jest opcjonalny, ale wciąż wymaga,
+    // że Krok 5 zostanie zakończony, tak jak wcześniej wymagał tego Krok 7)
     const { kurioza } = obliczIloscWyborow();
     const { sloty } = obliczSlotyPostaci();
     if (!sloty.every(slot => slotOdpowiedzKompletna(slot))) return;
@@ -1496,17 +1500,17 @@ function goToStep(stepNumber) {
     renderPathSection(7);
     updateStep3NextButton();
   }
-  if (stepNumber === 3.5) {
+  if (stepNumber === 4) {
     renderAtrybutySlotySection();
   }
-  if (stepNumber === 4) {
+  if (stepNumber === 5) {
     renderProfessionsSection();
     renderCuriosSection();
   }
-  if (stepNumber === 4.5) {
+  if (stepNumber === 6) {
     renderSpellsSection();
   }
-  if (stepNumber === 5) {
+  if (stepNumber === 7) {
     aktualizujPodgladPostaci();
   }
 }
@@ -1747,16 +1751,16 @@ function resetujSciezke(tier) {
 }
 
 /**
- * Czyści wszystkie wybrane kurioza (Krok 4).
+ * Czyści wszystkie wybrane kurioza (Krok 5).
  */
 function resetujKurioza() {
   wybraneKurioza = [];
   renderCuriosSection();
-  updateStep4NextButton();
+  updateStep5NextButton();
 }
 
 /**
- * Czyści wszystkie sloty profesji i języków (Krok 4), by umożliwić
+ * Czyści wszystkie sloty profesji i języków (Krok 5), by umożliwić
  * ponowny wybór od zera - w przeciwieństwie do lokalnego "Wyczyść" na
  * pojedynczej karcie, ten przycisk resetuje całą sekcję Profesje/Języki.
  */
@@ -1802,8 +1806,7 @@ function aktualizujObliczoneAtrybuty() {
     atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtrybuty);
   }
 
-  // Zsynchronizuj ukryte pola (odczytywane przez starszy, niezależny
-  // przepływ "Utwórz Postać" w Kroku 5)
+  // Zsynchronizuj ukryte pola z finalnymi wartościami atrybutów głównych
   ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {
     const input = document.getElementById(`${atr}-base`);
     if (input) input.value = atrybutyFinalne[atr];
@@ -1833,7 +1836,7 @@ function wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie) {
   document.getElementById('btn-next-2').disabled = false;
 }
 
-/** Etykiety atrybutów głównych używane w Kroku 3.5. */
+/** Etykiety atrybutów głównych używane w Kroku 4. */
 const ETYKIETY_ATRYBUTOW = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
 
 /** Etykiety atrybutów drugorzędnych - używane przy formatowaniu modyfikatorów ścieżek na kafelkach (Krok 3). */
@@ -1842,7 +1845,7 @@ const ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH = {
 };
 
 /**
- * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 3.5) ma kompletną
+ * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 4) ma kompletną
  * odpowiedź: dokładnie `ilosc` różnych atrybutów wybranych.
  */
 function slotAtrybutowKompletny(slot) {
@@ -1851,7 +1854,7 @@ function slotAtrybutowKompletny(slot) {
 }
 
 /**
- * Oblicza atrybuty główne postaci PRZED uwzględnieniem slotów Kroku 3.5:
+ * Oblicza atrybuty główne postaci PRZED uwzględnieniem slotów Kroku 4:
  * pochodzenie + jednorazowa zamiana wartości z Kroku 2.
  */
 function obliczBazoweAtrybutyPrzedSciezkami() {
@@ -1863,7 +1866,7 @@ function obliczBazoweAtrybutyPrzedSciezkami() {
 }
 
 /**
- * Renderuje Krok 3.5: sloty zwiększenia atrybutów przyznane przez wybrane
+ * Renderuje Krok 4: sloty zwiększenia atrybutów przyznane przez wybrane
  * ścieżki (PG: "Zwiększ dwa/trzy dowolne o 1" przy wyborze ścieżki).
  * Przelicza i zapisuje finalne atrybuty główne (bazowe + bonusy ze
  * wszystkich slotów) do #sila-final itd., by kolejne kroki widziały
@@ -1946,7 +1949,7 @@ function renderAtrybutySlotySection() {
     wyswietlAtrybutyGlowne(finalne, pochodzenie);
   }
 
-  const btn = document.getElementById('btn-next-3-5');
+  const btn = document.getElementById('btn-next-4');
   if (btn) btn.disabled = !sloty.every(slotAtrybutowKompletny);
 }
 
@@ -2055,7 +2058,7 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
 
 /**
  * Przelicza atrybuty drugorzędne od nowa (np. po zmianie wyboru magii w
- * Kroku 4.5, gdy poznanie/nauka czarnej magii zmienia Splugawienie) na
+ * Kroku 6, gdy poznanie/nauka czarnej magii zmienia Splugawienie) na
  * podstawie atrybutów głównych aktualnie wyświetlonych w Kroku 2.
  */
 function odswiezAtrybutyDrugorzedne() {
@@ -2145,7 +2148,7 @@ function formatujBonusProfesjiPochodzenia(pochodzenie) {
   }
   const kategorie = pochodzenie.profesje.join(', ');
   return pochodzenie.bonus_jezyk_lub_profesja
-    ? `${kategorie} (albo nowy język - wybór w Kroku 4)`
+    ? `${kategorie} (albo nowy język - wybór w Kroku 5)`
     : `${kategorie} (gwarantowana)`;
 }
 
@@ -2509,7 +2512,7 @@ function renderKartaZasobySection() {
 
 /**
  * Renderuje sekcję znanych tradycji i zaklęć wybranych opcjonalnie
- * w Kroku 4.5, na podstawie rozwiązanych atomowych wyborów magii.
+ * w Kroku 6, na podstawie rozwiązanych atomowych wyborów magii.
  */
 function renderKartaZakleciaSection() {
   const atomy = pobierzAktualneAtomyMagii();
@@ -2546,7 +2549,7 @@ function renderKartaZakleciaSection() {
  * Buduje kompletną, czytelną Kartę Postaci ze wszystkich informacji
  * zebranych w kreatorze: pochodzenia, atrybutów, ścieżek z talentami,
  * profesji/języków/kuriozów, zaklęć, zasobów i wyników tabel losowych.
- * Używana zarówno przez live podgląd w Kroku 5, jak i finalną Kartę
+ * Używana zarówno przez live podgląd w Kroku 7, jak i finalną Kartę
  * Postaci po kliknięciu "Utwórz Postać".
  * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
  */
@@ -2572,7 +2575,7 @@ function generujKartePostaciHTML() {
 }
 
 /**
- * Aktualizuje podgląd postaci (Krok 5) - żywa, aktualizowana na bieżąco
+ * Aktualizuje podgląd postaci (Krok 7) - żywa, aktualizowana na bieżąco
  * wersja Karty Postaci, zanim użytkownik kliknie "Utwórz Postać".
  */
 function aktualizujPodgladPostaci() {
@@ -2580,46 +2583,6 @@ function aktualizujPodgladPostaci() {
   const container = document.getElementById('character-preview');
   if (!container) return;
   container.innerHTML = `<h4>📜 Podgląd Postaci</h4>${generujKartePostaciHTML()}`;
-}
-
-/**
- * Tworzy nową postać - zamraża wszystkie wybory dokonane w kreatorze
- * (zob. zbudujDaneEksportu()) do biezacaPostac, używanej przez eksport
- * JSON i finalną Kartę Postaci.
- */
-// eslint-disable-next-line no-unused-vars
-async function utworzPostac() {
-  if (!wybranePochodzenie) {
-    pokazBlad('Wybierz pochodzenie postaci!');
-    return;
-  }
-
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('error').style.display = 'none';
-  document.getElementById('btn-create').disabled = true;
-
-  try {
-    biezacaPostac = zbudujDaneEksportu();
-    wyswietlPostac();
-  } catch (error) {
-    pokazBlad(`Błąd tworzenia postaci: ${  error.message}`);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('btn-create').disabled = false;
-  }
-}
-
-/**
- * Wyświetla finalną Kartę Postaci (po kliknięciu "Utwórz Postać") -
- * ta sama kompletna karta co żywy podgląd w Kroku 5, patrz
- * generujKartePostaciHTML().
- */
-function wyswietlPostac() {
-  const content = document.getElementById('character-content');
-  content.innerHTML = generujKartePostaciHTML();
-
-  document.getElementById('character-sheet').style.display = 'block';
-  document.getElementById('character-sheet').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -3060,7 +3023,11 @@ function pokazBlad(wiadomosc) {
 /**
  * Pokazuje w Kroku 1 wynik importu postaci - pojedynczą wiadomość sukcesu
  * albo nagłówek błędu wraz z listą konkretnych problemów znalezionych
- * w pliku (zob. walidujDaneImportu()).
+ * w pliku (zob. walidujDaneImportu()). Celowo NIE przewija strony - użytkownik
+ * kliknął import z górnej części Kroku 1, więc komunikat (tuż pod przyciskiem)
+ * jest już w jego polu widzenia; import nie powinien same z siebie przesuwać
+ * widoku (w przeciwieństwie do ręcznego wyboru pochodzenia/poziomu itd.),
+ * żeby użytkownik zdążył przeczytać komunikat i sam zdecydował, co dalej.
  */
 function pokazKomunikatImportu(typ, wiadomosc, listaBledow = []) {
   const box = document.getElementById('import-feedback');
@@ -3071,7 +3038,6 @@ function pokazKomunikatImportu(typ, wiadomosc, listaBledow = []) {
     : '';
   box.innerHTML = `${wiadomosc}${listaHtml}`;
   box.style.display = 'block';
-  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 /**
@@ -3227,7 +3193,7 @@ async function zaimportujPostac(dane) {
   const w = dane.wybory;
 
   // 1. Pochodzenie
-  wybierzPochodzenie(w.pochodzenie);
+  wybierzPochodzenie(w.pochodzenie, { autoScroll: false });
 
   // 2. Wyniki tabel pochodzenia (wybierzPochodzenie zeruje wynikiTabel - nadpisz PO)
   wynikiTabel[w.pochodzenie] = JSON.parse(JSON.stringify(w.wynikiTabelPochodzenia || {}));
@@ -3284,27 +3250,27 @@ async function zaimportujPostac(dane) {
     document.querySelector(`button[data-path-id="${sciezkaId}"][data-pick-level="${poziomWyboru}"]`)?.click();
   });
 
-  // 8. Sloty zwiększenia atrybutów (Krok 3.5)
+  // 8. Sloty zwiększenia atrybutów (Krok 4)
   wybraneAtrybutySlotow = JSON.parse(JSON.stringify(w.atrybutySloty || {}));
   renderAtrybutySlotySection();
 
-  // 9. Profesje i języki (Krok 4)
+  // 9. Profesje i języki (Krok 5)
   odpowiedziSlotow = JSON.parse(JSON.stringify(w.profesjeJezykiSloty || {}));
   renderProfessionsSection();
 
-  // 10. Kurioza (Krok 4)
+  // 10. Kurioza (Krok 5)
   wybraneKurioza = [...(w.kurioza || [])];
   renderCuriosSection();
-  updateStep4NextButton();
+  updateStep5NextButton();
 
-  // 11. Srebrniki (Krok 4) - tylko suma jest zapisywana, pojedyncze rzuty są ulotne
+  // 11. Srebrniki (Krok 5) - tylko suma jest zapisywana, pojedyncze rzuty są ulotne
   wylosowaneSrebrniki = (typeof w.srebrniki === 'number') ? w.srebrniki : null;
   const wealthSpan = document.getElementById('wealth-summary');
   if (wealthSpan && wylosowaneSrebrniki != null) {
     wealthSpan.textContent = `Srebrniki: ${wylosowaneSrebrniki} (zaimportowano)`;
   }
 
-  // 12. Magia: tradycje i zaklęcia (Krok 4.5)
+  // 12. Magia: tradycje i zaklęcia (Krok 6)
   magiaWybory = JSON.parse(JSON.stringify(w.magia?.wybory || {}));
   magiaRyzykoWyniki = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
   renderSpellsSection();
@@ -3339,7 +3305,7 @@ function obslozImportPliku(plik) {
 
     try {
       await zaimportujPostac(dane);
-      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 5 z górnego menu), by zweryfikować wynik.');
+      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 7 z górnego menu), by zweryfikować wynik.');
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);
@@ -3813,7 +3779,7 @@ function renderSlotCard(slot) {
 }
 
 /**
- * Renderuje sekcję profesji (sloty) i sekcję znanych języków w Kroku 4.
+ * Renderuje sekcję profesji (sloty) i sekcję znanych języków w Kroku 5.
  */
 function renderProfessionsSection() {
   const container = document.getElementById('professions-slots');
@@ -3845,7 +3811,7 @@ function renderProfessionsSection() {
   synchronizujWybraneProfesje();
   updateSelectedProfessions();
   renderLanguagesSummary();
-  updateStep4NextButton();
+  updateStep5NextButton();
 }
 
 /**
@@ -3879,7 +3845,7 @@ const PELNE_NAZWY_ZRODEL = {
 };
 
 /**
- * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 4.
+ * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 5.
  */
 /**
  * Renderuje małą, czerwoną etykietę ze źródłem danego wyboru (np.
@@ -4047,7 +4013,7 @@ function toggleCurio(curioId) {
   }
   
   renderCuriosSection();
-  updateStep4NextButton();
+  updateStep5NextButton();
 }
 
 /**
@@ -4062,7 +4028,7 @@ function _randomizeCurio() {
     const randomCurio = available[Math.floor(Math.random() * available.length)];
     wybraneKurioza.push(randomCurio.id);
     renderCuriosSection();
-    updateStep4NextButton();
+    updateStep5NextButton();
   }
 }
 
@@ -4157,7 +4123,7 @@ function losujKuriozaCentralnie() {
     wybraneKurioza.push(pick.id);
   }
   renderCuriosSection();
-  updateStep4NextButton();
+  updateStep5NextButton();
 }
 
 /**
@@ -4187,14 +4153,14 @@ function updateSelectedCurios() {
 function removeCurio(curioId) {
   wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
   renderCuriosSection();
-  updateStep4NextButton();
+  updateStep5NextButton();
 }
 
 /**
- * Aktualizuje przycisk "Dalej" w Kroku 4
+ * Aktualizuje przycisk "Dalej" w Kroku 5
  */
-function updateStep4NextButton() {
-  const btn = document.getElementById('btn-next-4');
+function updateStep5NextButton() {
+  const btn = document.getElementById('btn-next-5');
   if (!btn) return;
 
   const { kurioza } = obliczIloscWyborow();
@@ -4239,7 +4205,7 @@ function pobierzAktualnaMoc() {
 }
 
 /**
- * Renderuje Krok 4.5: jedną kartę na każdy atomowy wybór magii faktycznie
+ * Renderuje Krok 6: jedną kartę na każdy atomowy wybór magii faktycznie
  * przyznany przez pochodzenie/ścieżki na obecnym poziomie postaci (zamiast
  * swobodnie przeglądanej biblioteki) - w pełni zgodne z zasadami nauki
  * tradycji i zaklęć z podręcznika (zob. logic/magia.js).
@@ -4488,7 +4454,7 @@ function podlaczObslugeKartMagii(container) {
 }
 
 /**
- * Stan aktualnie otwartego popupu wyboru magii (Krok 4.5) - `null` gdy
+ * Stan aktualnie otwartego popupu wyboru magii (Krok 6) - `null` gdy
  * popup jest zamknięty. Patrz otworzTradycjaPicker()/otworzZakleciePicker().
  */
 let magiaPicker = null;
@@ -4759,7 +4725,7 @@ function wybierzTradycjaZPickera(tradycjaId) {
   renderSpellsSection();
 }
 
-/** Zatwierdza wybór zaklęcia dokonany w popupie, zamyka go i przerenderowuje Krok 4.5. */
+/** Zatwierdza wybór zaklęcia dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
 function wybierzZaklecieZPickera(spellId) {
   const atomId = magiaPicker.atomId;
   const wybor = magiaWybory[atomId] || {};
@@ -4769,7 +4735,7 @@ function wybierzZaklecieZPickera(spellId) {
   renderSpellsSection();
 }
 
-/** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 4.5. */
+/** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
 function wybierzDarmoweZaklecieZPickera(spellId) {
   const atomId = magiaPicker.atomId;
   const wybor = magiaWybory[atomId] || {};
@@ -4778,7 +4744,7 @@ function wybierzDarmoweZaklecieZPickera(spellId) {
   renderSpellsSection();
 }
 
-/** Czyści wszystkie wybory magii dokonane w Kroku 4.5. */
+/** Czyści wszystkie wybory magii dokonane w Kroku 6. */
 function resetujMagie() {
   magiaWybory = {};
   magiaRyzykoWyniki = {};
@@ -4791,7 +4757,6 @@ function resetujMagie() {
 // do poniższych funkcji przez atrybuty onclick, więc trzeba je udostępnić na window.
 window.nextStep = nextStep;
 window.prevStep = prevStep;
-window.utworzPostac = utworzPostac;
 window.exportJSON = exportJSON;
 window.closeHelp = closeHelp;
 window.switchHelpTab = switchHelpTab;
