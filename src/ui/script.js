@@ -2583,11 +2583,40 @@ function renderKartaZakleciaSection() {
 }
 
 /**
+ * Renderuje sekcję ekwipunku (Krok 7): przedmioty posiadane przez postać
+ * (wyposażenie startowe pozostałe po sprzedaży + zakupy w sklepie) wraz
+ * z dostępną gotówką. Pomija Zamożność bez wybranego poziomu.
+ */
+function renderKartaEkwipunekSection() {
+  const stan = obliczStanEkwipunku();
+  if (!stan) return '';
+
+  const pozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje];
+  if (pozycje.length === 0) return '';
+
+  const pozycjeHtml = pozycje.map(p => {
+    const nazwa = p.zwojZaklecie
+      ? `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const przedmiot = p.itemId ? pobierzPrzedmiot(p.itemId) : null;
+    const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
+    return `<div class="trait-item">${nazwa}${ilosc}${przedmiot ? ` ${renderujZnacznikZrodla(przedmiot.zrodlo)}` : ''}</div>`;
+  }).join('');
+
+  return `
+    <div class="preview-section">
+      <h5>Ekwipunek (Zamożność: ${stan.zam.nazwa})</h5>
+      <div class="trait-list">${pozycjeHtml}</div>
+      <p><strong>Gotówka:</strong> ${formatujOkrawki(stan.gotowkaOkrawki)}</p>
+    </div>
+  `;
+}
+
+/**
  * Buduje kompletną, czytelną Kartę Postaci ze wszystkich informacji
  * zebranych w kreatorze: pochodzenia, atrybutów, ścieżek z talentami,
- * profesji/języków/kuriozów, zaklęć, zasobów i wyników tabel losowych.
- * Używana zarówno przez live podgląd w Kroku 7, jak i finalną Kartę
- * Postaci po kliknięciu "Utwórz Postać".
+ * profesji/języków/kuriozów, zaklęć, ekwipunku, zasobów i wyników tabel
+ * losowych. Używana jako żywy podgląd w Kroku 8.
  * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
  */
 function generujKartePostaciHTML() {
@@ -2606,6 +2635,7 @@ function generujKartePostaciHTML() {
     ${renderKartaSciezkiSection()}
     ${renderProfessionsAndCuriosSummary()}
     ${renderKartaZakleciaSection()}
+    ${renderKartaEkwipunekSection()}
     ${renderKartaZasobySection()}
     ${generujSekcjeWynikowTabel(pochodzenie.id)}
   `;
@@ -2923,7 +2953,7 @@ function aktualizujPrzyciskiAtrybutow() {
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
-const WERSJA_EKSPORTU = 1;
+const WERSJA_EKSPORTU = 2; // v2: dodano sekcję ekwipunku (Krok 7 - Zamożność, wyposażenie startowe, sklep)
 
 /**
  * Buduje kompletny, wersjonowany obiekt zawierający WSZYSTKIE wybory dokonane
@@ -2985,7 +3015,15 @@ function zbudujDaneEksportu() {
         wybory: JSON.parse(JSON.stringify(magiaWybory)),
         ryzykoWyniki: JSON.parse(JSON.stringify(magiaRyzykoWyniki))
       },
-      srebrniki: wylosowaneSrebrniki
+      srebrniki: wylosowaneSrebrniki,
+      ekwipunek: {
+        zamoznoscId: ekwipunekZamoznoscId,
+        zamoznoscWynik: ekwipunekZamoznoscWynik,
+        gotowkaPoczatkowaWynik: ekwipunekGotowkaPoczatkowaWynik,
+        wybory: JSON.parse(JSON.stringify(ekwipunekWybory)),
+        sprzedane: [...ekwipunekSprzedane],
+        zakupione: JSON.parse(JSON.stringify(ekwipunekZakupione))
+      }
     },
     // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
     // jest odczytywane przy imporcie.
@@ -3018,7 +3056,20 @@ function zbudujDaneEksportu() {
       kurioza: wybraneKurioza.map(id => dostepneKurioza.find(c => c.id === id)?.nazwa || id),
       tradycje: [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl')),
       zaklecia: zaklecia.map(s => s.nazwa),
-      srebrniki: wylosowaneSrebrniki
+      srebrniki: wylosowaneSrebrniki,
+      ekwipunek: (() => {
+        const stan = obliczStanEkwipunku();
+        if (!stan) return null;
+        const pozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje].map(p => {
+          if (p.zwojZaklecie) {
+            const spell = p.zwojZaklecie.spellId ? SPELLS.find(s => s.id === p.zwojZaklecie.spellId) : null;
+            return `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${spell ? `: ${spell.nazwa}` : ''})`;
+          }
+          const nazwa = p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst;
+          return p.ilosc > 1 ? `${nazwa} ×${p.ilosc}` : nazwa;
+        });
+        return { zamoznosc: stan.zam.nazwa, przedmioty: pozycje, gotowka: formatujOkrawki(stan.gotowkaOkrawki) };
+      })()
     }
   };
 }
@@ -3192,6 +3243,36 @@ function walidujDaneImportu(dane) {
     bledy.push(`Nieprawidłowa wartość srebrników: "${w.srebrniki}" (oczekiwano liczby albo null).`);
   }
 
+  if (w.ekwipunek && typeof w.ekwipunek === 'object') {
+    const ek = w.ekwipunek;
+    if (ek.zamoznoscId && !ZAMOZNOSC[ek.zamoznoscId]) {
+      bledy.push(`Nieznany poziom zamożności: "${ek.zamoznoscId}" nie istnieje w aktualnej bazie danych.`);
+    }
+    if (ek.wybory && typeof ek.wybory === 'object') {
+      Object.entries(ek.wybory).forEach(([atomId, wybor]) => {
+        if (!wybor || typeof wybor !== 'object') return;
+        if (wybor.itemId && !pobierzPrzedmiot(wybor.itemId)) {
+          bledy.push(`Nieznany przedmiot ekwipunku: "${wybor.itemId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+        }
+        if (wybor.typ === 'zwoj_zaklecie') {
+          if (wybor.tradycjaId && !TRADYCJE[wybor.tradycjaId]) {
+            bledy.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+          }
+          if (wybor.spellId && !SPELLS.some(s => s.id === wybor.spellId)) {
+            bledy.push(`Nieznane zaklęcie: "${wybor.spellId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+          }
+        }
+      });
+    }
+    if (Array.isArray(ek.zakupione)) {
+      ek.zakupione.forEach(z => {
+        if (z && z.itemId && !pobierzPrzedmiot(z.itemId)) {
+          bledy.push(`Nieznany przedmiot ekwipunku: "${z.itemId}" (zakupiony) nie istnieje w aktualnej bazie danych.`);
+        }
+      });
+    }
+  }
+
   return bledy;
 }
 
@@ -3312,6 +3393,15 @@ async function zaimportujPostac(dane) {
   magiaRyzykoWyniki = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
   renderSpellsSection();
 
+  // 13. Ekwipunek: zamożność, startowe wyposażenie i sklep (Krok 7)
+  ekwipunekZamoznoscId = w.ekwipunek?.zamoznoscId || null;
+  ekwipunekZamoznoscWynik = (typeof w.ekwipunek?.zamoznoscWynik === 'number') ? w.ekwipunek.zamoznoscWynik : null;
+  ekwipunekGotowkaPoczatkowaWynik = (typeof w.ekwipunek?.gotowkaPoczatkowaWynik === 'number') ? w.ekwipunek.gotowkaPoczatkowaWynik : null;
+  ekwipunekWybory = JSON.parse(JSON.stringify(w.ekwipunek?.wybory || {}));
+  ekwipunekSprzedane = [...(w.ekwipunek?.sprzedane || [])];
+  ekwipunekZakupione = JSON.parse(JSON.stringify(w.ekwipunek?.zakupione || []));
+  renderEkwipunekSection();
+
   aktualizujPodgladPostaci();
 }
 
@@ -3342,7 +3432,7 @@ function obslozImportPliku(plik) {
 
     try {
       await zaimportujPostac(dane);
-      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 7 z górnego menu), by zweryfikować wynik.');
+      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);
