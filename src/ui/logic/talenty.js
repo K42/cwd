@@ -23,7 +23,9 @@ const TALENT_DESCRIPTIONS = {
   'Wprawna charakteryzacja': 'Jeśli masz zestaw do charakteryzacji, możesz wykorzystać akcję i jedno użycie zestawu, by zmienić swój wygląd.',
   'Czujność': 'Zyskujesz 1 ułatwienie we wszystkich testach Percepcji. Dodatkowo nie możesz zostać zaskoczony, o ile tylko jesteś przytomny.',
   'Przednia straż': 'Gdy wykonujesz test, by się ukryć lub skradać, i znajdujesz się dalej niż w bliskim zasięgu od reszty drużyny, zyskujesz 1 ułatwienie.',
-  'Bez śladu': 'Poruszając się po twardym podłożu, nie zostawiasz śladów, jeśli nie chcesz.'
+  'Bez śladu': 'Poruszając się po twardym podłożu, nie zostawiasz śladów, jeśli nie chcesz.',
+  'Potęga zagnana w kozi róg':'Kiedy fomor jest przestraszony, jego ataki z użyciem broni zadają dodatkowe 1k6 obrażeń.',
+  'Niedźwiedzi uścisk': 'Niedźwiedzidło może w swojej turze wykorzystać reakcję, aby pochwycić stworzenie w swoim bezpośrednim zasięgu.'
 };
 
 /**
