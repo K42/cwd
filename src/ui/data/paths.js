@@ -201,6 +201,14 @@ const PATHS = {
         zdrowie: '+6',
         talenty: ['Berserk', 'Żelazna skóra']
       },
+      poziom_6: {
+        zdrowie: '+6',
+        talenty: ['Dziki szał', 'Przerażający szał']
+      },
+      poziom_9: {
+        zdrowie: '+6',
+        talenty: ['Uderzenie na oślep']
+      },
       strona_zrodlowa: 64
     },
 
@@ -222,6 +230,11 @@ const PATHS = {
       },
       poziom_6: {
         magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 }
+      },
+      poziom_9: {
+        zdrowie: '+2', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Mistrz kradzieży zaklęć', 'Przesunięcie']
       },
       strona_zrodlowa: 65
     },
@@ -245,6 +258,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+2', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Mistrzostwo w magii']
+      },
       strona_zrodlowa: 66
     },
 
@@ -261,6 +279,11 @@ const PATHS = {
       },
       poziom_6: {
         magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 }
+      },
+      poziom_9: {
+        zdrowie: '+2', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Wyzwolenie mocy']
       },
       strona_zrodlowa: 67
     },
@@ -284,6 +307,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'zaklecie', ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+4', moc: '+1',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Odporność na żywioły']
+      },
       strona_zrodlowa: 68
     },
 
@@ -306,6 +334,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'zaklecie', ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+4', moc: '+1',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Boska moc']
+      },
       strona_zrodlowa: 69
     },
 
@@ -324,6 +357,14 @@ const PATHS = {
         },
         talenty: ['Czujność', 'Polowanie', 'Tajniki natury']
       },
+      poziom_6: {
+        zdrowie: '+4',
+        talenty: ['Wprawny przewodnik', 'Wprawny tropiciel']
+      },
+      poziom_9: {
+        zdrowie: '+4',
+        talenty: ['Niezrównany myśliwy', 'Nieubłagany pościg']
+      },
       strona_zrodlowa: 70
     },
 
@@ -341,6 +382,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'zaklecie', ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+4', moc: '+1',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Święty blask']
+      },
       strona_zrodlowa: 71
     },
 
@@ -353,6 +399,14 @@ const PATHS = {
         percepcja: '+1', zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['pospolite', 'przestepcze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję pospolitą lub przestępczą.' },
         talenty: ['Skrytobójstwo', 'Wprawna charakteryzacja', 'Dobry refleks']
+      },
+      poziom_6: {
+        zdrowie: '+3',
+        talenty: ['Przygotowanie trucizny']
+      },
+      poziom_9: {
+        zdrowie: '+3',
+        talenty: ['Oko zabójcy']
       },
       strona_zrodlowa: 72
     },
@@ -376,6 +430,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+2', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Trwała więź']
+      },
       strona_zrodlowa: 73
     },
 
@@ -397,6 +456,11 @@ const PATHS = {
       },
       poziom_6: {
         magia: { typ: 'zaklecie', ilosc: 1 }
+      },
+      poziom_9: {
+        zdrowie: '+2', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Mechaniczni słudzy']
       },
       strona_zrodlowa: 74
     },
@@ -420,6 +484,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'zaklecie', ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+3', moc: '+1',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Awatar']
+      },
       strona_zrodlowa: 75
     },
 
@@ -437,6 +506,11 @@ const PATHS = {
       poziom_6: {
         magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 }
       },
+      poziom_9: {
+        zdrowie: '+3', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], kategoria: ['dowolna'], ilosc: 1 },
+        talenty: ['Magiczna broń', 'Poświęcenie']
+      },
       strona_zrodlowa: 76
     },
 
@@ -453,6 +527,14 @@ const PATHS = {
           opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.'
         },
         talenty: ['Wszystko jest bronią', 'Talent zbrojnego']
+      },
+      poziom_6: {
+        zdrowie: '+5',
+        talenty: ['Wytrzymałość', 'Talent zbrojnego']
+      },
+      poziom_9: {
+        obrona: '+1', zdrowie: '+5',
+        talenty: ['Zahartowany', 'Mistrz oręża', 'Siarczyste uderzenie', 'Precyzyjny atak', 'Sprawne przeładowanie', 'Szybkostrzelność', 'Grzmotnięcie tarczą', 'Uderzenie trzonkiem', 'Walka dwiema broniami']
       },
       strona_zrodlowa: 77
     },
@@ -472,6 +554,14 @@ const PATHS = {
         },
         talenty: ['Dobry refleks', 'Złodziejski talent']
       },
+      poziom_6: {
+        percepcja: '+1', zdrowie: '+3',
+        talenty: ['Unik', 'Złodziejski talent']
+      },
+      poziom_9: {
+        zdrowie: '+3',
+        talenty: ['Oportunizm', 'Złodziejski talent', 'Bezszelestny ruch', 'Kradzież kieszonkowa', 'Mistrz ucieczek', 'Otwieranie zamków', 'Ukrycie w cieniu', 'Wykrycie pułapek', 'Wyostrzone zmysły', 'Zręczna wspinaczka']
+      },
       strona_zrodlowa: 78
     },
 
@@ -490,6 +580,13 @@ const PATHS = {
           opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.'
         },
         talenty: ['Czujność', 'Przednia straż', 'Dobry refleks', 'Bez śladu']
+      },
+      poziom_6: {
+        zdrowie: '+3',
+        talenty: ['Słaby punkt']
+      },
+      poziom_9: {
+        talenty: ['Cios poniżej pasa']
       },
       strona_zrodlowa: 79
     }
@@ -522,6 +619,10 @@ const PATHS = {
         zdrowie: '+3', predkosc: '+2',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Akrobatyka']
+      },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Mobilność']
       },
       strona_zrodlowa: 82
     },
@@ -586,6 +687,10 @@ const PATHS = {
         zdrowie: '+6',
         talenty: ['Stygmaty', 'Dar języków']
       },
+      poziom_10: {
+        zdrowie: '+6',
+        talenty: ['Czynienie cudów']
+      },
       strona_zrodlowa: 84
     },
     czempion: {
@@ -597,6 +702,10 @@ const PATHS = {
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Postawa bojowa']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Wytrwałość czempiona']
       },
       strona_zrodlowa: 85
     },
@@ -610,6 +719,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Oburęczność', 'Oburęczna obrona']
       },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Mistrzostwo w dwóch broniach']
+      },
       strona_zrodlowa: 85
     },
     dyplomata: {
@@ -622,6 +735,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Mistrz dyplomacji', 'Litość']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Kojące słowa', 'Nieoczekiwany sojusznik']
+      },
       strona_zrodlowa: 85
     },
     egzekutor: {
@@ -633,6 +750,10 @@ const PATHS = {
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Egzekucja']
+      },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Wyćwiczony atak']
       },
       strona_zrodlowa: 85
     },
@@ -647,6 +768,10 @@ const PATHS = {
         magia: 'Zaklęcie egzorcyzm',
         talenty: ['Magia egzorcysty']
       },
+      poziom_10: {
+        zdrowie: '+4',
+        talenty: ['Na pohybel nieczystym', 'Żelazna wola']
+      },
       strona_zrodlowa: 86
     },
     fechtmistrz: {
@@ -658,6 +783,9 @@ const PATHS = {
         zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Wyzwanie', 'Riposta']
+      },
+      poziom_10: {
+        zdrowie: '+4'
       },
       strona_zrodlowa: 86
     },
@@ -686,6 +814,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Nieczysta walka', 'Za wszelką cenę']
       },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Decydujący cios']
+      },
       strona_zrodlowa: 87
     },
     goliat: {
@@ -696,6 +828,10 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+8',
         talenty: ['Krzepa']
+      },
+      poziom_10: {
+        zdrowie: '+8',
+        talenty: ['Potężne muskuły']
       },
       strona_zrodlowa: 87
     },
@@ -740,6 +876,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['przestepcze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję przestępczą.' },
         talenty: ['Bez twarzy']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Zdradziecki cios', 'Gra pozorów']
+      },
       strona_zrodlowa: 88
     },
     inkwizytor: {
@@ -752,6 +892,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Straszliwa groźba', 'Mistrz tortur', 'Lustracja']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Wyrok inkwizytora']
+      },
       strona_zrodlowa: 88
     },
     inzynier: {
@@ -763,6 +907,10 @@ const PATHS = {
         zdrowie: '+3',
         jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
         talenty: ['Eidolon']
+      },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Kokpit', 'Potężny eidolon']
       },
       strona_zrodlowa: 89
     },
@@ -792,6 +940,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne', 'religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną lub religijną.' },
         talenty: ['Hymn bitewny']
       },
+      poziom_10: {
+        zdrowie: '+4',
+        talenty: ['Zagrzewająca pieśń', 'Sukurs']
+      },
       strona_zrodlowa: 90
     },
     kawalerzysta: {
@@ -803,6 +955,10 @@ const PATHS = {
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['pospolite', 'wojenne', 'koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję pospolitą, wojenną lub koczowniczą.' },
         talenty: ['Jeździectwo bojowe']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Niszczycielska szarża', 'Mistrz jeździectwa']
       },
       strona_zrodlowa: 90
     },
@@ -862,6 +1018,10 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+5', predkosc: '+2',
         talenty: ['Potężna szarża']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Żądza krwi', 'Siła z bólu']
       },
       strona_zrodlowa: 91
     },
@@ -939,6 +1099,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Ulubiona broń']
       },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Specjalizacja w broni']
+      },
       strona_zrodlowa: 92
     },
     mistrz_przemian: {
@@ -999,6 +1163,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Przysięga zemsty']
       },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Gniew mściciela']
+      },
       strona_zrodlowa: 94
     },
     myrmidon: {
@@ -1010,6 +1178,10 @@ const PATHS = {
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Odepchnięcie tarczą', 'Blok tarczą']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Mistrz tarczy']
       },
       strona_zrodlowa: 94
     },
@@ -1070,6 +1242,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Krwotok']
       },
+      poziom_10: {
+        zdrowie: '+4',
+        talenty: ['Szybkie cięcie']
+      },
       strona_zrodlowa: 95
     },
     obronca: {
@@ -1080,6 +1256,10 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         zdrowie: '+6',
         talenty: ['Asekuracja']
+      },
+      poziom_10: {
+        zdrowie: '+6',
+        talenty: ['Cios wyprzedzający', 'Odwet']
       },
       strona_zrodlowa: 95
     },
@@ -1093,6 +1273,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['koczownicze'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję koczowniczą.' },
         talenty: ['Nadludzkie zmysły', 'Niezłomność', 'Wytchnienie']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Zawziętość']
+      },
       strona_zrodlowa: 96
     },
     pancerniak: {
@@ -1104,6 +1288,10 @@ const PATHS = {
         zdrowie: '+5',
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Zakuty w stal', 'Niewzruszony']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Odporność na broń']
       },
       strona_zrodlowa: 96
     },
@@ -1164,6 +1352,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Sześciostrzałowiec']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Sokole oko', 'Szybkoładowarka']
+      },
       strona_zrodlowa: 97
     },
     strzelec_wyborowy: {
@@ -1175,6 +1367,10 @@ const PATHS = {
         percepcja: '+1', zdrowie: '+4',
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Przycelowanie']
+      },
+      poziom_10: {
+        zdrowie: '+4',
+        talenty: ['Perfekcyjny strzał']
       },
       strona_zrodlowa: 97
     },
@@ -1191,6 +1387,10 @@ const PATHS = {
           opis: 'Uczysz się mówić nowym językiem, a także zyskujesz profesję.'
         },
         talenty: ['Biegłość', 'Elastyczne kwalifikacje', 'Magiczne olśnienie']
+      },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Cudowne dziecko', 'Niezwykła sprawność']
       },
       strona_zrodlowa: 98
     },
@@ -1236,6 +1436,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         talenty: ['Bastion wiary']
       },
+      poziom_10: {
+        zdrowie: '+4',
+        talenty: ['Strażnik świątyni']
+      },
       strona_zrodlowa: 99
     },
     tenebrysta: {
@@ -1280,6 +1484,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
         talenty: ['Mistrz trucizn']
       },
+      poziom_10: {
+        zdrowie: '+3',
+        talenty: ['Zatruty dotyk']
+      },
       strona_zrodlowa: 100
     },
     uzdrowiciel: {
@@ -1305,6 +1513,10 @@ const PATHS = {
         atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
         percepcja: '+1', zdrowie: '+5',
         talenty: ['Świadomość otoczenia']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Warta']
       },
       strona_zrodlowa: 100
     },
@@ -1349,6 +1561,10 @@ const PATHS = {
         zdrowie: '+6',
         talenty: ['Brutalny zamach']
       },
+      poziom_10: {
+        zdrowie: '+6',
+        talenty: ['Góra trupów']
+      },
       strona_zrodlowa: 101
     },
     zdobywca: {
@@ -1361,6 +1577,10 @@ const PATHS = {
         jezyki_profesje: { typ: 'wybor', kategorie: ['wojenne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję wojenną.' },
         talenty: ['Rozkaz ataku', 'Manewr taktyczny']
       },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Dowodzenie bitwą']
+      },
       strona_zrodlowa: 101
     },
     zelota: {
@@ -1372,6 +1592,10 @@ const PATHS = {
         zdrowie: '+6',
         jezyki_profesje: { typ: 'wybor', kategorie: ['religijne'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję religijną.' },
         talenty: ['Żarliwość', 'Niepohamowany obłęd']
+      },
+      poziom_10: {
+        zdrowie: '+6',
+        talenty: ['Boska potęga']
       },
       strona_zrodlowa: 102
     },
