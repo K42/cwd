@@ -28,7 +28,8 @@
         <div class="breadcrumb-item" data-step="4">4. Rozwój Atrybutów</div>
         <div class="breadcrumb-item" data-step="5">5. Profesje i Kurioza</div>
         <div class="breadcrumb-item" data-step="6">6. Magia</div>
-        <div class="breadcrumb-item" data-step="7">7. Podgląd i Eksport</div>
+        <div class="breadcrumb-item" data-step="7">7. Ekwipunek</div>
+        <div class="breadcrumb-item" data-step="8">8. Podgląd i Eksport</div>
     </nav>
 
     <div id="error" class="error" style="display: none;"></div>
@@ -516,10 +517,53 @@
         </div>
     </div>
 
-    <!-- Krok 7: Podgląd i Eksport -->
+    <!-- Krok 7: Ekwipunek -->
     <div id="step-7" class="step">
         <div class="section">
-            <h3>📜 Krok 7: Podgląd i Eksport</h3>
+            <h3>🎒 Krok 7: Ekwipunek</h3>
+            <p>Ustal początkowe wyposażenie swojej postaci na podstawie Zamożności (PG, "Początkowe wyposażenie"), a następnie odwiedź sklep, by sprzedać zbędne przedmioty za połowę ceny i kupić inne z pełnego katalogu. Kurioza są ustalane osobno w Kroku 5.</p>
+
+            <div class="flex-row-between">
+                <h4>💰 Zamożność</h4>
+                <div class="list-controls">
+                    <button type="button" class="btn-primary small" id="btn-losuj-zamoznosc">🎲 Losuj (3k6)</button>
+                    <button type="button" class="section-reset-btn" id="btn-reset-zamoznosc" title="Wyczyść wybraną zamożność i ekwipunek">Wyczyść</button>
+                </div>
+            </div>
+            <p class="hint">Wybierz zamożność ręcznie, klikając kafelek, albo wylosuj ją rzutem 3k6 zgodnie z zasadami podręcznika.</p>
+            <p id="zamoznosc-wynik" class="hint"></p>
+            <div id="zamoznosc-grid" class="tiles-container"></div>
+
+            <div id="wyposazenie-startowe-section"></div>
+
+            <div id="sklep-section"></div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(7)">
+                    ← Wstecz
+                </button>
+                <button id="btn-next-7" class="btn-primary" onclick="nextStep(7)">
+                    Dalej →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup katalogu sklepu (Krok 7: Ekwipunek) -->
+    <div id="equipment-picker-overlay" class="modal-overlay" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4 id="equipment-picker-title">Katalog przedmiotów</h4>
+                <button type="button" class="modal-close-btn" id="equipment-picker-close" title="Zamknij">✕</button>
+            </div>
+            <div class="modal-body" id="equipment-picker-body"></div>
+        </div>
+    </div>
+
+    <!-- Krok 8: Podgląd i Eksport -->
+    <div id="step-8" class="step">
+        <div class="section">
+            <h3>📜 Krok 8: Podgląd i Eksport</h3>
             <p>Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
 
             <div id="character-preview" class="character-preview">
@@ -534,7 +578,7 @@
             </div>
 
             <div class="step-navigation">
-                <button class="btn-secondary" onclick="prevStep(7)">
+                <button class="btn-secondary" onclick="prevStep(8)">
                     ← Wstecz
                 </button>
             </div>

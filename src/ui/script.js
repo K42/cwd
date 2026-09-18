@@ -12,6 +12,13 @@ import { TRADYCJE } from './data/tradycje.js';
 import { rollTable } from './data/table_utils.js';
 import DANE_GRY from './data/dane-gry.js';
 import SPELLS from './data/spells.js';
+import EQUIPMENT from './data/equipment.js';
+import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/zamoznosc.js';
+import {
+  RZADKOSC_ETYKIETY, KATEGORIA_ETYKIETY, pobierzPrzedmiot, cenaNaOkrawki, formatujCene,
+  formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
+  PRZELICZNIK_NA_OKRAWKI
+} from './logic/ekwipunek.js';
 
 let biezacaPostac = null;
 let wybranePochodzenie = null;
@@ -31,6 +38,14 @@ let dostepneProfesje = [];
 let dostepneKurioza = [];
 let wylosowaneSrebrniki = null; // 2k6 za każdy poziom powyżej 0
 let liczbaKuriozow = 0; // Po 1 za poziomy wyboru ścieżek: 1, 3, 7
+
+// --- Krok 7: Ekwipunek ---
+let ekwipunekZamoznoscWynik = null; // wynik rzutu 3k6 (albo null, gdy zamożność wybrano ręcznie bez losowania)
+let ekwipunekZamoznoscId = null; // klucz z ZAMOZNOSC (np. 'komfort')
+let ekwipunekGotowkaPoczatkowaWynik = null; // wylosowana suma kostek startowej sakiewki (w jednostce danego poziomu zamożności)
+let ekwipunekWybory = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:'zwoj_zaklecie', tradycjaId, spellId } / { typ:'przedmiot', itemId } (wybor_dodatkowy)
+let ekwipunekSprzedane = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
+let ekwipunekZakupione = []; // { itemId, ilosc } kupione w sklepie
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -125,8 +140,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('magic-picker-overlay')?.addEventListener('click', (e) => {
     if (e.target.id === 'magic-picker-overlay') zamknijMagicPicker();
   });
+  document.getElementById('btn-losuj-zamoznosc')?.addEventListener('click', losujZamoznosc);
+  document.getElementById('btn-reset-zamoznosc')?.addEventListener('click', resetujZamoznosc);
+  document.getElementById('equipment-picker-close')?.addEventListener('click', zamknijEkwipunekPicker);
+  document.getElementById('equipment-picker-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'equipment-picker-overlay') zamknijEkwipunekPicker();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && magiaPicker) zamknijMagicPicker();
+    if (e.key === 'Escape' && ekwipunekPicker) zamknijEkwipunekPicker();
   });
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1336,6 +1358,12 @@ function resetujStanPoZmianiePochodzenia() {
   wylosowaneSrebrniki = null;
   liczbaKuriozow = 0;
   wynikiTabel = {};
+  ekwipunekZamoznoscWynik = null;
+  ekwipunekZamoznoscId = null;
+  ekwipunekGotowkaPoczatkowaWynik = null;
+  ekwipunekWybory = {};
+  ekwipunekSprzedane = [];
+  ekwipunekZakupione = [];
 
   // Reset selektorów poziomu
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
@@ -1416,6 +1444,9 @@ function nextStep(currentStep) {
     renderSpellsSection();
   } else if (currentStep === 6) {
     pokazKrok(7);
+    renderEkwipunekSection();
+  } else if (currentStep === 7) {
+    pokazKrok(8);
     aktualizujPodgladPostaci();
   }
 }
@@ -1437,6 +1468,8 @@ function prevStep(currentStep) {
     pokazKrok(5);
   } else if (currentStep === 7) {
     pokazKrok(6);
+  } else if (currentStep === 8) {
+    pokazKrok(7);
   }
 }
 
@@ -1484,9 +1517,10 @@ function goToStep(stepNumber) {
     });
     if (!slotyAtr.every(slotAtrybutowKompletny)) return;
   }
-  if (stepNumber === 6 || stepNumber === 7) {
-    // Wymagane profesje/języki i kurioza (Krok 6 jest opcjonalny, ale wciąż wymaga,
-    // że Krok 5 zostanie zakończony, tak jak wcześniej wymagał tego Krok 7)
+  if (stepNumber === 6 || stepNumber === 7 || stepNumber === 8) {
+    // Wymagane profesje/języki i kurioza (Kroki 6 i 7 są opcjonalne, ale
+    // wciąż wymagają, że Krok 5 zostanie zakończony, tak jak wcześniej
+    // wymagał tego Krok 8)
     const { kurioza } = obliczIloscWyborow();
     const { sloty } = obliczSlotyPostaci();
     if (!sloty.every(slot => slotOdpowiedzKompletna(slot))) return;
@@ -1511,6 +1545,9 @@ function goToStep(stepNumber) {
     renderSpellsSection();
   }
   if (stepNumber === 7) {
+    renderEkwipunekSection();
+  }
+  if (stepNumber === 8) {
     aktualizujPodgladPostaci();
   }
 }
@@ -4459,9 +4496,15 @@ function podlaczObslugeKartMagii(container) {
  */
 let magiaPicker = null;
 
-/** Otwiera popup wyboru nowej tradycji (kafelki, bez dropdownów) dla danego atomu. */
-function otworzTradycjaPicker(atomId, kategoria, znaneTradycje) {
-  magiaPicker = { atomId, kind: 'tradycja', kategoria, znaneTradycje, search: '' };
+/**
+ * Otwiera popup wyboru nowej tradycji (kafelki, bez dropdownów) dla danego atomu.
+ * `docelowy` ('magia' domyślnie, albo 'ekwipunek') decyduje, do którego stanu
+ * trafi wynik wyboru - zob. wybierzTradycjaZPickera(). Ten sam popup obsługuje
+ * więc zarówno poznawanie tradycji w Kroku 6, jak i "zwój z zaklęciem kręgu 0"
+ * w Kroku Ekwipunek.
+ */
+function otworzTradycjaPicker(atomId, kategoria, znaneTradycje, docelowy = 'magia') {
+  magiaPicker = { atomId, kind: 'tradycja', kategoria, znaneTradycje, search: '', docelowy };
   const title = document.getElementById('magic-picker-title');
   if (title) title.textContent = 'Wybierz tradycję';
   // Odkryj popup PRZED renderowaniem treści - fokus na polu wyszukiwania
@@ -4490,8 +4533,8 @@ function otworzZakleciePicker(atomId, znaneTradycje, moc, tradycjaOgraniczenie) 
  * automatycznie przy jej poznaniu ("Poznawanie tradycji", PG) - kafelki
  * ograniczone wyłącznie do kręgu 0 tej jednej, konkretnej tradycji.
  */
-function otworzDarmoweZakleciePicker(atomId, tradycjaId) {
-  magiaPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '' };
+function otworzDarmoweZakleciePicker(atomId, tradycjaId, docelowy = 'magia') {
+  magiaPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '', docelowy };
   const title = document.getElementById('magic-picker-title');
   if (title) title.textContent = 'Wybierz zaklęcie kręgu 0';
   const overlay = document.getElementById('magic-picker-overlay');
@@ -4710,6 +4753,24 @@ function podlaczObslugePickerDynamic(container) {
  */
 function wybierzTradycjaZPickera(tradycjaId) {
   const atomId = magiaPicker.atomId;
+  const docelowy = magiaPicker.docelowy || 'magia';
+
+  if (docelowy === 'ekwipunek') {
+    const wybor = ekwipunekWybory[atomId] || {};
+    ekwipunekWybory[atomId] = { ...wybor, typ: 'zwoj_zaklecie', tradycjaId, spellId: null };
+    const kregZero = pobierzZakleciaKregu0(tradycjaId);
+    if (kregZero.length === 1) {
+      ekwipunekWybory[atomId].spellId = kregZero[0].id;
+      zamknijMagicPicker();
+    } else if (kregZero.length > 1) {
+      otworzDarmoweZakleciePicker(atomId, tradycjaId, 'ekwipunek');
+    } else {
+      zamknijMagicPicker();
+    }
+    renderEkwipunekSection();
+    return;
+  }
+
   const wybor = magiaWybory[atomId] || {};
   magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId, darmowyZaklecieId: null };
 
@@ -4738,6 +4799,16 @@ function wybierzZaklecieZPickera(spellId) {
 /** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
 function wybierzDarmoweZaklecieZPickera(spellId) {
   const atomId = magiaPicker.atomId;
+  const docelowy = magiaPicker.docelowy || 'magia';
+
+  if (docelowy === 'ekwipunek') {
+    const wybor = ekwipunekWybory[atomId] || {};
+    ekwipunekWybory[atomId] = { ...wybor, spellId };
+    zamknijMagicPicker();
+    renderEkwipunekSection();
+    return;
+  }
+
   const wybor = magiaWybory[atomId] || {};
   magiaWybory[atomId] = { ...wybor, darmowyZaklecieId: spellId };
   zamknijMagicPicker();
@@ -4750,6 +4821,436 @@ function resetujMagie() {
   magiaRyzykoWyniki = {};
   magiaCzarnaMagiaZaTradycje = new Set();
   renderSpellsSection();
+}
+
+// ========== KROK 7: EKWIPUNEK (Zamożność, wyposażenie startowe, sklep) ==========
+
+/** Rzuca podaną liczbą kostek k6 (zapis "NkM", tylko k6 używane w tabelach zamożności) i zwraca sumę oczek. */
+function rzucKostki(zapis) {
+  const [iloscKostekTxt, scianTxt] = zapis.split('k');
+  const iloscKostek = parseInt(iloscKostekTxt, 10) || 1;
+  const scian = parseInt(scianTxt, 10) || 6;
+  let suma = 0;
+  for (let i = 0; i < iloscKostek; i++) suma += Math.floor(Math.random() * scian) + 1;
+  return suma;
+}
+
+/** Renderuje całą sekcję Kroku 7 (Zamożność, wyposażenie startowe, sklep). */
+function renderEkwipunekSection() {
+  renderZamoznoscGrid();
+  renderWyposazenieStartowe();
+  renderSklepSection();
+}
+
+/** Renderuje kafelki wyboru Zamożności wraz z ewentualnym wynikiem rzutu 3k6. */
+function renderZamoznoscGrid() {
+  const grid = document.getElementById('zamoznosc-grid');
+  const wynikEl = document.getElementById('zamoznosc-wynik');
+  if (!grid) return;
+
+  if (wynikEl) {
+    wynikEl.textContent = ekwipunekZamoznoscWynik != null
+      ? `Wynik rzutu 3k6: ${ekwipunekZamoznoscWynik}`
+      : '';
+  }
+
+  grid.innerHTML = Object.values(ZAMOZNOSC).map(z => {
+    const zakres = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
+    const selected = ekwipunekZamoznoscId === z.id;
+    return `
+      <div class="tile path-tile ${selected ? 'selected' : ''}">
+        <div class="tile-header">
+          <div>
+            <div class="tile-title">${z.nazwa}</div>
+            <small>3k6: ${zakres}</small>
+          </div>
+        </div>
+        <div class="tile-body"><p>${z.opis}</p></div>
+        <div class="tile-footer">
+          <button type="button" class="btn-primary" data-wybierz-zamoznosc="${z.id}">${selected ? 'Wybrano' : 'Wybierz'}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-wybierz-zamoznosc]').forEach(btn => {
+    btn.addEventListener('click', () => wybierzZamoznosc(btn.dataset.wybierzZamoznosc, null));
+  });
+}
+
+/** Losuje Zamożność rzutem 3k6 i wybiera odpowiedni poziom z tabeli. */
+function losujZamoznosc() {
+  const wynik = rzucKostki('3k6');
+  const zam = pobierzZamoznoscDlaRzutu(wynik);
+  if (zam) wybierzZamoznosc(zam.id, wynik);
+}
+
+/**
+ * Ustawia poziom Zamożności (ręcznie klikniętej albo wylosowanej) i losuje
+ * startową gotówkę (PG: "sakiewka z NkM ..."). Czyści wybory wyposażenia
+ * startowego i sklepu, bo należą do poprzedniego poziomu zamożności.
+ */
+function wybierzZamoznosc(zamoznoscId, wynikRzutu) {
+  const zam = ZAMOZNOSC[zamoznoscId];
+  if (!zam) return;
+  ekwipunekZamoznoscId = zamoznoscId;
+  ekwipunekZamoznoscWynik = wynikRzutu;
+  ekwipunekGotowkaPoczatkowaWynik = rzucKostki(zam.pieniadze.kosci);
+  ekwipunekWybory = {};
+  ekwipunekSprzedane = [];
+  ekwipunekZakupione = [];
+  renderEkwipunekSection();
+}
+
+/** Czyści wybraną Zamożność i cały zależny od niej stan ekwipunku. */
+function resetujZamoznosc() {
+  ekwipunekZamoznoscId = null;
+  ekwipunekZamoznoscWynik = null;
+  ekwipunekGotowkaPoczatkowaWynik = null;
+  ekwipunekWybory = {};
+  ekwipunekSprzedane = [];
+  ekwipunekZakupione = [];
+  renderEkwipunekSection();
+}
+
+/**
+ * Oblicza pełny, aktualny stan ekwipunku: rozwiązane pozycje startowe
+ * (gwarantowane + wybrane), sprzedane pozycje, zakupione pozycje i
+ * dostępną gotówkę (startowa sakiewka + wpływy ze sprzedaży + wylosowane
+ * srebrniki z Kroku 2, jeśli postać ma poziom > 0 - PG: "Wyposażenie na
+ * wyższych poziomach" - minus wydatki na zakupy). Zwraca `null`, gdy
+ * Zamożność nie została jeszcze wybrana.
+ */
+function obliczStanEkwipunku() {
+  if (!ekwipunekZamoznoscId) return null;
+  const zam = ZAMOZNOSC[ekwipunekZamoznoscId];
+  const gwarantowane = pobierzGwarantowanePozycje(ekwipunekZamoznoscId);
+  const atomy = obliczAtomyWyposazenia(ekwipunekZamoznoscId);
+
+  const startowePozycje = [];
+  gwarantowane.forEach((p, idx) => {
+    startowePozycje.push({ klucz: `g${idx}`, itemId: p.id || null, tekst: p.tekst || null, ilosc: p.ilosc || 1 });
+  });
+  atomy.forEach(atom => {
+    const wybor = ekwipunekWybory[atom.id];
+    if (!wybor) return;
+    if (wybor.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
+      startowePozycje.push({
+        klucz: atom.id, itemId: null, ilosc: 1, atomId: atom.id, sprzedawalny: false,
+        zwojZaklecie: { tradycjaId: wybor.tradycjaId, spellId: wybor.spellId || null }
+      });
+    } else if (wybor.itemId) {
+      startowePozycje.push({ klucz: atom.id, itemId: wybor.itemId, ilosc: 1, atomId: atom.id });
+    }
+  });
+
+  const sprzedaneSet = new Set(ekwipunekSprzedane);
+  const posiadaneStartowe = startowePozycje.filter(p => !sprzedaneSet.has(p.klucz));
+  const sprzedaneStartowe = startowePozycje.filter(p => sprzedaneSet.has(p.klucz));
+
+  const jednostkaGotowki = zam.pieniadze.jednostka;
+  const startowaGotowkaOkrawki = ekwipunekGotowkaPoczatkowaWynik != null
+    ? ekwipunekGotowkaPoczatkowaWynik * PRZELICZNIK_NA_OKRAWKI[jednostkaGotowki]
+    : 0;
+  const zeSprzedazyOkrawki = sprzedaneStartowe.reduce((suma, p) => {
+    if (!p.itemId) return suma;
+    return suma + cenaSkupuOkrawki(pobierzPrzedmiot(p.itemId)?.cena) * p.ilosc;
+  }, 0);
+  const zaZakupyOkrawki = ekwipunekZakupione.reduce((suma, z) => {
+    return suma + cenaNaOkrawki(pobierzPrzedmiot(z.itemId)?.cena) * z.ilosc;
+  }, 0);
+  const zeSrebrnikowPoziomu = (wylosowaneSrebrniki || 0) * PRZELICZNIK_NA_OKRAWKI.sr;
+
+  const gotowkaOkrawki = startowaGotowkaOkrawki + zeSprzedazyOkrawki + zeSrebrnikowPoziomu - zaZakupyOkrawki;
+
+  const zakupionePozycje = ekwipunekZakupione.map((z, idx) => ({ klucz: `z${idx}`, itemId: z.itemId, ilosc: z.ilosc }));
+
+  return {
+    zam, atomy, gwarantowane,
+    posiadaneStartowe, sprzedaneStartowe, zakupionePozycje,
+    startowaGotowkaOkrawki, zeSprzedazyOkrawki, zaZakupyOkrawki, zeSrebrnikowPoziomu,
+    gotowkaOkrawki
+  };
+}
+
+/** Renderuje sekcję wyposażenia startowego: gwarantowane pozycje i karty wyboru (jedna karta = jeden atom). */
+function renderWyposazenieStartowe() {
+  const container = document.getElementById('wyposazenie-startowe-section');
+  if (!container) return;
+
+  if (!ekwipunekZamoznoscId) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const stan = obliczStanEkwipunku();
+  const gwarantowaneHtml = stan.gwarantowane.map(p => {
+    const nazwa = p.id ? (pobierzPrzedmiot(p.id)?.nazwa || p.id) : p.tekst;
+    const ilosc = p.ilosc && p.ilosc > 1 ? ` (${p.ilosc}×)` : '';
+    return `<li>${nazwa}${ilosc}</li>`;
+  }).join('');
+
+  const atomyHtml = stan.atomy.map(atom => renderujKarteWyposazenia(atom)).join('');
+
+  container.innerHTML = `
+    <h4>🎒 Wyposażenie startowe (${stan.zam.nazwa})</h4>
+    <p class="hint">Gwarantowane: <ul class="gwarantowane-lista">${gwarantowaneHtml}</ul></p>
+    ${atomyHtml}
+    <p class="hint">Startowa gotówka: <strong>${formatujOkrawki(stan.startowaGotowkaOkrawki)}</strong> (sakiewka z ${stan.zam.pieniadze.kosci} ${stan.zam.pieniadze.jednostka === 'okr' ? 'okrawków' : stan.zam.pieniadze.jednostka === 'md' ? 'miedziaków' : 'srebrników'})</p>
+    ${stan.zam.dodatkowyOpis ? `<p class="hint">${stan.zam.dodatkowyOpis}</p>` : ''}
+  `;
+
+  container.querySelectorAll('[data-wybierz-startowy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wybierzPrzedmiotStartowy(btn.dataset.wybierzStartowy, btn.dataset.itemId);
+    });
+  });
+  container.querySelectorAll('[data-otworz-zwoj]').forEach(btn => {
+    btn.addEventListener('click', () => otworzTradycjaPicker(btn.dataset.otworzZwoj, ['dowolna'], new Set(), 'ekwipunek'));
+  });
+}
+
+/** Renderuje jedną kartę wyboru wyposażenia startowego (wybor_przedmiotu albo wybor_dodatkowy). */
+function renderujKarteWyposazenia(atom) {
+  const wybor = ekwipunekWybory[atom.id];
+
+  if (atom.rodzaj === 'wybor_przedmiotu') {
+    const kafelki = atom.opcje.map(itemId => {
+      const przedmiot = pobierzPrzedmiot(itemId);
+      const aktywny = wybor?.itemId === itemId;
+      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}">${przedmiot?.nazwa || itemId}</button>`;
+    }).join('');
+    return `
+      <div class="magic-slot-card ${wybor?.itemId ? 'complete' : ''}">
+        <p class="magic-slot-desc">Wybierz jedno: ${atom.opcje.map(id => pobierzPrzedmiot(id)?.nazwa || id).join(' / ')}${atom.opisWyboru ? ` (${atom.opisWyboru})` : ''}</p>
+        <div class="magic-slot-mode-toggle">${kafelki}</div>
+      </div>
+    `;
+  }
+
+  // wybor_dodatkowy
+  const kafelki = atom.opcje.map(opcja => {
+    const aktywny = opcja.typ === 'zwoj_zaklecie' ? wybor?.typ === 'zwoj_zaklecie' : (wybor?.typ === 'przedmiot' && wybor?.itemId === opcja.id);
+    if (opcja.typ === 'zwoj_zaklecie') {
+      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-otworz-zwoj="${atom.id}">${opcja.etykieta}</button>`;
+    }
+    return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}">${opcja.etykieta}</button>`;
+  }).join('');
+
+  let opisWyniku = '';
+  if (wybor?.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
+    const nazwaTr = TRADYCJE[wybor.tradycjaId]?.nazwa || wybor.tradycjaId;
+    const spell = wybor.spellId ? SPELLS.find(s => s.id === wybor.spellId) : null;
+    opisWyniku = `<p class="magic-slot-status ok">Wybrano: ${nazwaTr}${spell ? ` - ${spell.nazwa}` : ' (wybierz zaklęcie kręgu 0)'}</p>`;
+  }
+
+  return `
+    <div class="magic-slot-card ${wybor ? 'complete' : ''}">
+      <p class="magic-slot-desc">${atom.opis}</p>
+      <div class="magic-slot-mode-toggle">${kafelki}</div>
+      ${opisWyniku}
+    </div>
+  `;
+}
+
+/** Zatwierdza wybór w karcie "wybór jednego przedmiotu" (np. pałka/proca) wyposażenia startowego. */
+function wybierzPrzedmiotStartowy(atomId, itemId) {
+  ekwipunekWybory[atomId] = { typ: 'przedmiot', itemId };
+  renderEkwipunekSection();
+}
+
+/** Renderuje sekcję sklepu: aktualna gotówka, posiadane przedmioty (z opcją sprzedaży) i katalog zakupów. */
+function renderSklepSection() {
+  const container = document.getElementById('sklep-section');
+  if (!container) return;
+
+  if (!ekwipunekZamoznoscId) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const stan = obliczStanEkwipunku();
+
+  const renderujPozycje = (pozycje, zrodlo) => pozycje.map(p => {
+    const nazwa = p.zwojZaklecie
+      ? `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const przedmiot = p.itemId ? pobierzPrzedmiot(p.itemId) : null;
+    const mozeSprzedac = zrodlo === 'startowe' ? (przedmiot && przedmiot.cena) : true;
+    const cenaSkupu = przedmiot ? formatujOkrawki(cenaSkupuOkrawki(przedmiot.cena) * p.ilosc) : null;
+    const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
+    return `
+      <div class="selected-item">
+        <span>${nazwa}${ilosc}${przedmiot ? ` <em>(${formatujCene(przedmiot.cena)})</em>` : ''}</span>
+        ${mozeSprzedac ? `<button type="button" class="btn-secondary small" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${cenaSkupu}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? `Sprzedaj (${cenaSkupu})` : 'Zwróć'}</button>` : ''}
+      </div>
+    `;
+  }).join('') || '<p class="hint">Brak przedmiotów.</p>';
+
+  container.innerHTML = `
+    <div class="flex-row-between">
+      <h4>🏪 Sklep</h4>
+      <span id="gotowka-summary" class="inline-summary"><strong>Gotówka: ${formatujOkrawki(stan.gotowkaOkrawki)}</strong></span>
+    </div>
+    ${stan.zeSrebrnikowPoziomu > 0 ? `<p class="hint">Zawiera ${wylosowaneSrebrniki} wylosowanych srebrników z Kroku 2 (poziom ${wybranyPoziom}).</p>` : ''}
+
+    <div class="flex-row-between">
+      <h5>Twoje przedmioty</h5>
+    </div>
+    <div id="ekwipunek-posiadane-list" class="known-spells-list">
+      ${renderujPozycje(stan.posiadaneStartowe, 'startowe')}
+      ${renderujPozycje(stan.zakupionePozycje, 'kupione')}
+    </div>
+
+    ${stan.sprzedaneStartowe.length ? `
+      <div class="flex-row-between"><h5>Sprzedane</h5></div>
+      <div class="known-spells-list">${stan.sprzedaneStartowe.map(p => `<div class="selected-item"><span>${p.itemId ? pobierzPrzedmiot(p.itemId)?.nazwa : p.tekst}</span></div>`).join('')}</div>
+    ` : ''}
+
+    <div class="flex-row-between">
+      <h5>Katalog przedmiotów</h5>
+      <button type="button" class="btn-primary small" id="btn-otworz-sklep">🛒 Przeglądaj katalog</button>
+    </div>
+  `;
+
+  container.querySelectorAll('[data-sprzedaj]').forEach(btn => {
+    btn.addEventListener('click', () => sprzedajPozycje(btn.dataset.sprzedaj, btn.dataset.zrodlo));
+  });
+  document.getElementById('btn-otworz-sklep')?.addEventListener('click', () => otworzEkwipunekPicker());
+}
+
+/** Sprzedaje (pozycja startowa, za połowę ceny) albo zwraca (pozycja kupiona, pełny zwrot) daną pozycję ekwipunku. */
+function sprzedajPozycje(klucz, zrodlo) {
+  if (zrodlo === 'startowe') {
+    if (!ekwipunekSprzedane.includes(klucz)) ekwipunekSprzedane.push(klucz);
+  } else if (zrodlo === 'kupione') {
+    const idx = parseInt(klucz.replace('z', ''), 10);
+    const zakup = ekwipunekZakupione[idx];
+    if (zakup) {
+      if (zakup.ilosc > 1) zakup.ilosc -= 1;
+      else ekwipunekZakupione.splice(idx, 1);
+    }
+  }
+  renderEkwipunekSection();
+}
+
+/**
+ * Stan aktualnie otwartego popupu katalogu sklepu (Krok 7) - `null`, gdy
+ * popup jest zamknięty.
+ */
+let ekwipunekPicker = null;
+
+/** Otwiera popup katalogu przedmiotów do kupienia (kafelki z wyszukiwaniem i filtrami kategorii/rzadkości). */
+function otworzEkwipunekPicker() {
+  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null };
+  const overlay = document.getElementById('equipment-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderEkwipunekPickerBody();
+}
+
+/** Zamyka popup katalogu sklepu. */
+function zamknijEkwipunekPicker() {
+  const overlay = document.getElementById('equipment-picker-overlay');
+  if (overlay) overlay.hidden = true;
+  ekwipunekPicker = null;
+}
+
+/** Renderuje zawartość popupu katalogu: statyczne pole wyszukiwania + dynamiczny obszar z chipami i kafelkami. */
+function renderEkwipunekPickerBody() {
+  const body = document.getElementById('equipment-picker-body');
+  if (!body || !ekwipunekPicker) return;
+  body.innerHTML = `
+    <input type="text" class="picker-search" id="equipment-picker-search-input" placeholder="Szukaj przedmiotu...">
+    <div id="equipment-picker-dynamic"></div>
+  `;
+  const input = document.getElementById('equipment-picker-search-input');
+  input.value = ekwipunekPicker.search;
+  input.addEventListener('input', () => {
+    ekwipunekPicker.search = input.value;
+    rerenderEkwipunekPickerDynamic();
+  });
+  input.focus();
+  rerenderEkwipunekPickerDynamic();
+}
+
+/** Przerenderowuje chipy filtrów i siatkę kafelków katalogu (pole wyszukiwania zostaje niezmienione). */
+function rerenderEkwipunekPickerDynamic() {
+  const el = document.getElementById('equipment-picker-dynamic');
+  if (!el || !ekwipunekPicker) return;
+
+  const { search, filterKategoria, filterRzadkosc } = ekwipunekPicker;
+  let wynik = EQUIPMENT.filter(i => i.cena);
+  if (filterKategoria) wynik = wynik.filter(i => i.kategoria === filterKategoria);
+  if (filterRzadkosc) wynik = wynik.filter(i => i.rzadkosc === filterRzadkosc);
+  const searchLower = search.trim().toLowerCase();
+  if (searchLower) wynik = wynik.filter(i => `${i.nazwa} ${i.opis || ''}`.toLowerCase().includes(searchLower));
+
+  const kategorieChipy = Object.keys(KATEGORIA_ETYKIETY)
+    .filter(k => EQUIPMENT.some(i => i.kategoria === k && i.cena))
+    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-kategoria="${k}">${KATEGORIA_ETYKIETY[k]}</button>`)
+    .join('');
+  const rzadkoscChipy = Object.keys(RZADKOSC_ETYKIETY)
+    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rzadkosc="${r}">${RZADKOSC_ETYKIETY[r]}</button>`)
+    .join('');
+
+  const stan = obliczStanEkwipunku();
+  const tiles = wynik
+    .slice()
+    .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'))
+    .map(i => {
+      const staczyna = stan && stan.gotowkaOkrawki >= cenaNaOkrawki(i.cena);
+      return `
+      <button type="button" class="picker-tile ${staczyna ? '' : 'disabled'}" ${staczyna ? '' : 'disabled'} data-kup="${i.id}">
+        <div class="picker-tile-header">
+          <span>${i.nazwa}</span>
+          ${renderujZnacznikZrodla(i.zrodlo)}
+        </div>
+        <div class="picker-tile-meta">${KATEGORIA_ETYKIETY[i.kategoria] || i.kategoria} · ${RZADKOSC_ETYKIETY[i.rzadkosc] || '—'} · ${formatujCene(i.cena)}</div>
+        ${i.opis ? `<p class="picker-tile-opis">${i.opis}</p>` : ''}
+        ${!staczyna ? '<div class="picker-tile-taken">Za mało gotówki</div>' : ''}
+      </button>
+    `;
+    }).join('') || '<p class="hint">Brak przedmiotów spełniających kryteria wyszukiwania.</p>';
+
+  el.innerHTML = `
+    <div class="picker-filter-chips">${kategorieChipy}</div>
+    <div class="picker-filter-chips">${rzadkoscChipy}</div>
+    <p class="picker-results-count hint">Znaleziono ${wynik.length} przedmiotów</p>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+
+  el.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterKategoria;
+      ekwipunekPicker.filterKategoria = ekwipunekPicker.filterKategoria === val ? null : val;
+      rerenderEkwipunekPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-filter-rzadkosc]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterRzadkosc;
+      ekwipunekPicker.filterRzadkosc = ekwipunekPicker.filterRzadkosc === val ? null : val;
+      rerenderEkwipunekPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-kup]').forEach(btn => {
+    btn.addEventListener('click', () => kupPrzedmiotZSklepu(btn.dataset.kup));
+  });
+}
+
+/** Kupuje przedmiot z katalogu (jeśli starcza gotówki) i przerenderowuje sklep + katalog. */
+function kupPrzedmiotZSklepu(itemId) {
+  const przedmiot = pobierzPrzedmiot(itemId);
+  if (!przedmiot) return;
+  const stan = obliczStanEkwipunku();
+  if (!stan || stan.gotowkaOkrawki < cenaNaOkrawki(przedmiot.cena)) return;
+
+  const istniejacy = ekwipunekZakupione.find(z => z.itemId === itemId);
+  if (istniejacy) istniejacy.ilosc += 1;
+  else ekwipunekZakupione.push({ itemId, ilosc: 1 });
+
+  renderSklepSection();
+  rerenderEkwipunekPickerDynamic();
 }
 
 // Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje

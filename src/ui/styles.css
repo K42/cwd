@@ -2302,3 +2302,24 @@ kbd {
     color: var(--ink-mute);
     font-style: italic;
 }
+
+/* Krok 7: Ekwipunek */
+.gwarantowane-lista {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gwarantowane-lista li {
+    display: inline;
+}
+
+.gwarantowane-lista li:not(:last-child)::after {
+    content: ", ";
+}
+
+#gotowka-summary {
+    color: var(--gold-bright);
+    font-size: 1.1em;
+}
