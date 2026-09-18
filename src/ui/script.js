@@ -106,13 +106,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Toggle własnych atrybutów
-  document.getElementById('domyslne-atrybuty').addEventListener('change', (e) => {
+  document.getElementById('default-attributes').addEventListener('change', (e) => {
     const customDiv = document.getElementById('custom-attributes');
     customDiv.style.display = e.target.checked ? 'none' : 'block';
     if (e.target.checked) {
       // Wyczyść zamianę i użyj domyślnych wartości bazujących na pochodzeniu
-      document.getElementById('atrybut-zmniejszony').value = '';
-      document.getElementById('atrybut-zwiekszony').value = '';
+      document.getElementById('attribute-decreased').value = '';
+      document.getElementById('attribute-increased').value = '';
       aktualizujDomyślneAtrybuty();
     } else {
       updateCalculatedAttributes();
@@ -120,33 +120,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Jednorazowa zamiana wartości atrybutów (-1/+1)
-  ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
+  ['attribute-decreased', 'attribute-increased'].forEach(id => {
     document.getElementById(id).addEventListener('change', updateCalculatedAttributes);
   });
 
   // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
-  document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetChoiceOrigin);
-  document.getElementById('btn-losuj-krok-1')?.addEventListener('click', randomizeOriginAndTraits);
-  document.getElementById('btn-import-postac')?.addEventListener('click', () => {
-    document.getElementById('import-postac-file')?.click();
+  document.getElementById('btn-reset-origin')?.addEventListener('click', resetChoiceOrigin);
+  document.getElementById('btn-randomize-step-1')?.addEventListener('click', randomizeOriginAndTraits);
+  document.getElementById('btn-import-character')?.addEventListener('click', () => {
+    document.getElementById('import-character-file')?.click();
   });
-  document.getElementById('import-postac-file')?.addEventListener('change', (e) => {
+  document.getElementById('import-character-file')?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
     if (file) handleFileImport(file);
     e.target.value = ''; // pozwala ponownie wybrać ten sam plik po błędzie
   });
-  document.getElementById('btn-reset-poziom')?.addEventListener('click', resetLevel);
+  document.getElementById('btn-reset-level')?.addEventListener('click', resetLevel);
   document.getElementById('btn-reset-swap')?.addEventListener('click', resetSwapAttributes);
   document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetChoiceAttributeOrigin);
-  document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetCurios);
+  document.getElementById('btn-reset-curios')?.addEventListener('click', resetCurios);
   document.getElementById('btn-reset-professions')?.addEventListener('click', resetAllProfessionsAndLanguages);
-  document.getElementById('btn-reset-magia')?.addEventListener('click', resetMagic);
+  document.getElementById('btn-reset-magic')?.addEventListener('click', resetMagic);
   document.getElementById('magic-picker-close')?.addEventListener('click', closeMagicPicker);
   document.getElementById('magic-picker-overlay')?.addEventListener('click', (e) => {
     if (e.target.id === 'magic-picker-overlay') closeMagicPicker();
   });
-  document.getElementById('btn-losuj-zamoznosc')?.addEventListener('click', randomizeWealth);
-  document.getElementById('btn-reset-zamoznosc')?.addEventListener('click', resetWealth);
+  document.getElementById('btn-randomize-wealth')?.addEventListener('click', randomizeWealth);
+  document.getElementById('btn-reset-wealth')?.addEventListener('click', resetWealth);
   document.getElementById('equipment-picker-close')?.addEventListener('click', closeEquipmentPicker);
   document.getElementById('equipment-picker-overlay')?.addEventListener('click', (e) => {
     if (e.target.id === 'equipment-picker-overlay') closeEquipmentPicker();
@@ -156,21 +156,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape' && equipmentPicker) closeEquipmentPicker();
     if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) closeLoadCharacterPopup();
   });
-  document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
+  document.querySelectorAll('[data-reset-path]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
       // nie pozwól, by kliknięcie przycisku Wyczyść też przełączało akordeon.
       e.stopPropagation();
-      resetPath(btn.dataset.resetSciezka);
+      resetPath(btn.dataset.resetPath);
     });
   });
 
   // Boczne menu (nowa/wczytaj/wylosuj postać) + podpowiedzi zbudowane w JS
-  document.getElementById('btn-nowa-postac')?.addEventListener('click', () => {
+  document.getElementById('btn-new-character')?.addEventListener('click', () => {
     if (confirm('Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.')) newCharacter();
   });
-  document.getElementById('btn-wczytaj-postac')?.addEventListener('click', openLoadCharacterPopup);
-  document.getElementById('btn-wylosuj-postac')?.addEventListener('click', () => randomizeWholeCharacter());
+  document.getElementById('btn-load-character')?.addEventListener('click', openLoadCharacterPopup);
+  document.getElementById('btn-randomize-character')?.addEventListener('click', () => randomizeWholeCharacter());
   document.getElementById('load-character-close')?.addEventListener('click', closeLoadCharacterPopup);
   document.getElementById('load-character-overlay')?.addEventListener('click', (e) => {
     if (e.target.id === 'load-character-overlay') closeLoadCharacterPopup();
@@ -521,7 +521,7 @@ function renderPathSummary(levelChoice, sciezka) {
 function addBenefits(pkt) {
   // Modyfikatory atrybutów podstawowych
   if (pkt.mod_atrybuty) {
-    const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
+    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
     Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
       const el = document.getElementById(map[k]);
       if (el) el.textContent = (parseInt(el.textContent)||0) + v;
@@ -531,10 +531,10 @@ function addBenefits(pkt) {
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
     const atrybuty = {
-      sila: parseInt(document.getElementById('sila-final').textContent),
-      zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
-      intelekt: parseInt(document.getElementById('intelekt-final').textContent),
-      wola: parseInt(document.getElementById('wola-final').textContent)
+      sila: parseInt(document.getElementById('strength-final').textContent),
+      zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+      intelekt: parseInt(document.getElementById('intellect-final').textContent),
+      wola: parseInt(document.getElementById('will-final').textContent)
     };
     updateAttributesSecondary(atrybuty, pochodzenie);
   }
@@ -543,7 +543,7 @@ function addBenefits(pkt) {
 function subtractBenefits(prev) {
   const pkt = prev.pkt || {};
   if (pkt.mod_atrybuty) {
-    const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
+    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
     Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
       const el = document.getElementById(map[k]);
       if (el) el.textContent = (parseInt(el.textContent)||0) - v;
@@ -552,10 +552,10 @@ function subtractBenefits(prev) {
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
     const atrybuty = {
-      sila: parseInt(document.getElementById('sila-final').textContent),
-      zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
-      intelekt: parseInt(document.getElementById('intelekt-final').textContent),
-      wola: parseInt(document.getElementById('wola-final').textContent)
+      sila: parseInt(document.getElementById('strength-final').textContent),
+      zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+      intelekt: parseInt(document.getElementById('intellect-final').textContent),
+      wola: parseInt(document.getElementById('will-final').textContent)
     };
     updateAttributesSecondary(atrybuty, pochodzenie);
   }
@@ -576,9 +576,9 @@ async function updatePathsLevel(_level) {
  */
 /* eslint-disable-next-line no-unused-vars */
 function updatePathsFallback(_level) {
-  const selNovice = document.getElementById('sciezka-nowicjusza');
-  const selExpert = document.getElementById('sciezka-eksperta');
-  const selMaster = document.getElementById('sciezka-mistrza');
+  const selNovice = document.getElementById('path-novice');
+  const selExpert = document.getElementById('path-expert');
+  const selMaster = document.getElementById('path-master');
   if (selNovice) selNovice.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
   if (selExpert) selExpert.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
   if (selMaster) selMaster.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
@@ -823,10 +823,10 @@ function updateAttributesWithLevel4() {
   
   // Pobierz aktualne atrybuty
   const atrybuty = {
-    sila: parseInt(document.getElementById('sila-final').textContent),
-    zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
-    intelekt: parseInt(document.getElementById('intelekt-final').textContent),
-    wola: parseInt(document.getElementById('wola-final').textContent)
+    sila: parseInt(document.getElementById('strength-final').textContent),
+    zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+    intelekt: parseInt(document.getElementById('intellect-final').textContent),
+    wola: parseInt(document.getElementById('will-final').textContent)
   };
   
   // Dodaj bonus do zdrowia
@@ -897,9 +897,9 @@ function generateTilesOrigins(pochodzenia) {
     throw new Error('pochodzenia musi być tablicą');
   }
     
-  const container = document.getElementById('pochodzenie-tiles');
+  const container = document.getElementById('origin-tiles');
   if (!container) {
-    throw new Error('Element #pochodzenie-tiles nie został znaleziony');
+    throw new Error('Element #origin-tiles nie został znaleziony');
   }
     
   container.innerHTML = '';
@@ -1408,15 +1408,15 @@ function resetStateAfterOriginChange() {
   if (summary7) summary7.innerHTML = '';
 
   // Reset atrybutów własnych i przełączenie na domyślne
-  const chkDefault = document.getElementById('domyslne-atrybuty');
+  const chkDefault = document.getElementById('default-attributes');
   if (chkDefault) chkDefault.checked = true;
   const customDiv = document.getElementById('custom-attributes');
   if (customDiv) customDiv.style.display = 'none';
-  ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
+  ['attribute-decreased', 'attribute-increased'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['sila-base','zrecznosc-base','intelekt-base','wola-base'].forEach(id => {
+  ['strength-base','agility-base','intellect-base','will-base'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = 10;
   });
@@ -1738,9 +1738,9 @@ function resetChoiceAttributeOrigin() {
  * odświeża informację o puli atrybutów.
  */
 function refreshAttributeSwapSelects(pochodzenie) {
-  const selDecreased = document.getElementById('atrybut-zmniejszony');
-  const selIncreased = document.getElementById('atrybut-zwiekszony');
-  const info = document.getElementById('pula-atrybutow-info');
+  const selDecreased = document.getElementById('attribute-decreased');
+  const selIncreased = document.getElementById('attribute-increased');
+  const info = document.getElementById('attribute-pool-info');
   if (!selDecreased || !selIncreased) return;
 
   const valueDecreased = selDecreased.value;
@@ -1790,8 +1790,8 @@ function resetLevel() {
  * Czyści jednorazową zamianę wartości atrybutów (Krok 2).
  */
 function resetSwapAttributes() {
-  const selDecreased = document.getElementById('atrybut-zmniejszony');
-  const selIncreased = document.getElementById('atrybut-zwiekszony');
+  const selDecreased = document.getElementById('attribute-decreased');
+  const selIncreased = document.getElementById('attribute-increased');
   if (selDecreased) selDecreased.value = '';
   if (selIncreased) selIncreased.value = '';
   updateCalculatedAttributes();
@@ -1872,11 +1872,11 @@ function updateCalculatedAttributes() {
   const bonusAttributes = getSelectedAttributesBonus();
 
   let attributesFinal;
-  if (document.getElementById('domyslne-atrybuty').checked) {
+  if (document.getElementById('default-attributes').checked) {
     attributesFinal = calculateAttributesMain(pochodzenie, undefined, undefined, bonusAttributes);
   } else {
-    const zmniejszony = document.getElementById('atrybut-zmniejszony').value;
-    const zwiekszony = document.getElementById('atrybut-zwiekszony').value;
+    const zmniejszony = document.getElementById('attribute-decreased').value;
+    const zwiekszony = document.getElementById('attribute-increased').value;
     attributesFinal = calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes);
   }
 
@@ -1893,16 +1893,16 @@ function updateCalculatedAttributes() {
  * Wyświetla finalne atrybuty główne i przelicza atrybuty drugorzędne.
  */
 function displayAttributesMain(attributesFinal, pochodzenie) {
-  document.getElementById('sila-final').textContent = attributesFinal.sila;
-  document.getElementById('zrecznosc-final').textContent = attributesFinal.zrecznosc;
-  document.getElementById('intelekt-final').textContent = attributesFinal.intelekt;
-  document.getElementById('wola-final').textContent = attributesFinal.wola;
+  document.getElementById('strength-final').textContent = attributesFinal.sila;
+  document.getElementById('agility-final').textContent = attributesFinal.zrecznosc;
+  document.getElementById('intellect-final').textContent = attributesFinal.intelekt;
+  document.getElementById('will-final').textContent = attributesFinal.wola;
 
   // Modyfikator = wartość - 10 (przeciętna wartość atrybutu w PG)
-  document.getElementById('sila-mod').textContent = formatModifier(attributesFinal.sila - 10);
-  document.getElementById('zrecznosc-mod').textContent = formatModifier(attributesFinal.zrecznosc - 10);
-  document.getElementById('intelekt-mod').textContent = formatModifier(attributesFinal.intelekt - 10);
-  document.getElementById('wola-mod').textContent = formatModifier(attributesFinal.wola - 10);
+  document.getElementById('strength-mod').textContent = formatModifier(attributesFinal.sila - 10);
+  document.getElementById('agility-mod').textContent = formatModifier(attributesFinal.zrecznosc - 10);
+  document.getElementById('intellect-mod').textContent = formatModifier(attributesFinal.intelekt - 10);
+  document.getElementById('will-mod').textContent = formatModifier(attributesFinal.wola - 10);
 
   updateAttributesSecondary(attributesFinal, pochodzenie);
 
@@ -1934,8 +1934,8 @@ function slotAttributesComplete(slot) {
 function calculateBaseAttributesBeforePaths() {
   const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return null;
-  const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
-  const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
+  const zmniejszony = document.getElementById('attribute-decreased')?.value;
+  const zwiekszony = document.getElementById('attribute-increased')?.value;
   return calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony);
 }
 
@@ -1943,7 +1943,7 @@ function calculateBaseAttributesBeforePaths() {
  * Renderuje Krok 4: sloty zwiększenia atrybutów przyznane przez wybrane
  * ścieżki (PG: "Zwiększ dwa/trzy dowolne o 1" przy wyborze ścieżki).
  * Przelicza i zapisuje finalne atrybuty główne (bazowe + bonusy ze
- * wszystkich slotów) do #sila-final itd., by kolejne kroki widziały
+ * wszystkich slotów) do #strength-final itd., by kolejne kroki widziały
  * poprawne wartości.
  */
 function renderAttributesSlotsSection() {
@@ -1979,7 +1979,7 @@ function renderAttributesSlotsSection() {
             ${slot.source}
             <button type="button" class="section-reset-btn" data-reset-attribute-slot="${slot.id}" title="Wyczyść wybór dla tej ścieżki">Wyczyść</button>
           </div>
-          <div class="slot-opis">Rozdaj ${slot.ilosc} punkty(ów) zwiększenia o ${slot.wartosc} - można je łączyć na jednym atrybucie (przypisano ${selected.length}/${slot.ilosc})</div>
+          <div class="slot-description">Rozdaj ${slot.ilosc} punkty(ów) zwiększenia o ${slot.wartosc} - można je łączyć na jednym atrybucie (przypisano ${selected.length}/${slot.ilosc})</div>
           <div class="attribute-choice-list">${opcje}</div>
         </div>
       `;
@@ -2088,44 +2088,44 @@ function updateAttributesSecondary(atrybuty, pochodzenie) {
         <div class="attributes-grid">
           <div class="attribute-display">
             <label>Percepcja:</label>
-            <span id="percepcja-final">${attributesSecondary.percepcja}</span>
+            <span id="perception-final">${attributesSecondary.percepcja}</span>
           </div>
           <div class="attribute-display">
             <label>Obrona:</label>
-            <span id="obrona-final">${attributesSecondary.obrona}</span>
+            <span id="defense-final">${attributesSecondary.obrona}</span>
           </div>
           <div class="attribute-display">
             <label>Zdrowie:</label>
-            <span id="zdrowie-final">${attributesSecondary.zdrowie}</span>
+            <span id="health-final">${attributesSecondary.zdrowie}</span>
           </div>
           <div class="attribute-display">
             <label>Szybkość Zdrowienia:</label>
-            <span id="szybkosc-zdrowienia-final">${attributesSecondary.szybkosc_zdrowienia}</span>
+            <span id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
           </div>
           <div class="attribute-display">
             <label>Prędkość:</label>
-            <span id="predkosc-final">${attributesSecondary.predkosc}</span>
+            <span id="speed-final">${attributesSecondary.predkosc}</span>
           </div>
           <div class="attribute-display">
             <label>Moc:</label>
-            <span id="moc-final">${attributesSecondary.moc}</span>
+            <span id="power-final">${attributesSecondary.moc}</span>
           </div>
           <div class="attribute-display">
             <label>Splugawienie:</label>
-            <span id="splugawienie-final">${attributesSecondary.splugawienie}</span>
+            <span id="corruption-final">${attributesSecondary.splugawienie}</span>
           </div>
         </div>
       `;
       container.appendChild(secondaryDiv);
     } else {
       // Aktualizuj istniejące wartości
-      document.getElementById('percepcja-final').textContent = attributesSecondary.percepcja;
-      document.getElementById('obrona-final').textContent = attributesSecondary.obrona;
-      document.getElementById('zdrowie-final').textContent = attributesSecondary.zdrowie;
-      document.getElementById('szybkosc-zdrowienia-final').textContent = attributesSecondary.szybkosc_zdrowienia;
-      document.getElementById('predkosc-final').textContent = attributesSecondary.predkosc;
-      document.getElementById('moc-final').textContent = attributesSecondary.moc;
-      document.getElementById('splugawienie-final').textContent = attributesSecondary.splugawienie;
+      document.getElementById('perception-final').textContent = attributesSecondary.percepcja;
+      document.getElementById('defense-final').textContent = attributesSecondary.obrona;
+      document.getElementById('health-final').textContent = attributesSecondary.zdrowie;
+      document.getElementById('healing-rate-final').textContent = attributesSecondary.szybkosc_zdrowienia;
+      document.getElementById('speed-final').textContent = attributesSecondary.predkosc;
+      document.getElementById('power-final').textContent = attributesSecondary.moc;
+      document.getElementById('corruption-final').textContent = attributesSecondary.splugawienie;
     }
   }
 }
@@ -2140,10 +2140,10 @@ function refreshAttributesSecondary() {
   const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return;
   const atrybuty = {
-    sila: parseInt(document.getElementById('sila-final')?.textContent, 10) || 0,
-    zrecznosc: parseInt(document.getElementById('zrecznosc-final')?.textContent, 10) || 0,
-    intelekt: parseInt(document.getElementById('intelekt-final')?.textContent, 10) || 0,
-    wola: parseInt(document.getElementById('wola-final')?.textContent, 10) || 0
+    sila: parseInt(document.getElementById('strength-final')?.textContent, 10) || 0,
+    zrecznosc: parseInt(document.getElementById('agility-final')?.textContent, 10) || 0,
+    intelekt: parseInt(document.getElementById('intellect-final')?.textContent, 10) || 0,
+    wola: parseInt(document.getElementById('will-final')?.textContent, 10) || 0
   };
   updateAttributesSecondary(atrybuty, pochodzenie);
 }
@@ -2464,17 +2464,17 @@ function renderCardOriginSection(pochodzenie) {
  */
 function renderCardAttributesBasicSection(pochodzenie) {
   const atrybuty = {
-    sila: parseInt(document.getElementById('sila-final').textContent),
-    zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
-    intelekt: parseInt(document.getElementById('intelekt-final').textContent),
-    wola: parseInt(document.getElementById('wola-final').textContent)
+    sila: parseInt(document.getElementById('strength-final').textContent),
+    zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+    intelekt: parseInt(document.getElementById('intellect-final').textContent),
+    wola: parseInt(document.getElementById('will-final').textContent)
   };
 
   const notes = [];
-  const defaultAttributes = document.getElementById('domyslne-atrybuty');
+  const defaultAttributes = document.getElementById('default-attributes');
   if (defaultAttributes && !defaultAttributes.checked) {
-    const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
-    const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
+    const zmniejszony = document.getElementById('attribute-decreased')?.value;
+    const zwiekszony = document.getElementById('attribute-increased')?.value;
     if (zmniejszony && zwiekszony) {
       notes.push(`Zamiana wartości: −1 ${ATTRIBUTE_LABELS[zmniejszony]}, +1 ${ATTRIBUTE_LABELS[zwiekszony]}.`);
     }
@@ -2510,13 +2510,13 @@ function renderCardAttributesSecondarySection() {
     <div class="preview-section">
       <h5>Atrybuty Drugorzędne</h5>
       <div class="attributes-grid">
-        <div class="attribute-box"><strong>Percepcja</strong><br>${read('percepcja-final')}</div>
-        <div class="attribute-box"><strong>Obrona</strong><br>${read('obrona-final')}</div>
-        <div class="attribute-box"><strong>Zdrowie</strong><br>${read('zdrowie-final')}</div>
-        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${read('szybkosc-zdrowienia-final', '1')}</div>
-        <div class="attribute-box"><strong>Prędkość</strong><br>${read('predkosc-final')}</div>
-        <div class="attribute-box"><strong>Moc</strong><br>${read('moc-final')}</div>
-        <div class="attribute-box"><strong>Splugawienie</strong><br>${read('splugawienie-final')}</div>
+        <div class="attribute-box"><strong>Percepcja</strong><br>${read('perception-final')}</div>
+        <div class="attribute-box"><strong>Obrona</strong><br>${read('defense-final')}</div>
+        <div class="attribute-box"><strong>Zdrowie</strong><br>${read('health-final')}</div>
+        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${read('healing-rate-final', '1')}</div>
+        <div class="attribute-box"><strong>Prędkość</strong><br>${read('speed-final')}</div>
+        <div class="attribute-box"><strong>Moc</strong><br>${read('power-final')}</div>
+        <div class="attribute-box"><strong>Splugawienie</strong><br>${read('corruption-final')}</div>
       </div>
     </div>
   `;
@@ -3041,9 +3041,9 @@ function buildExportData() {
       wynikiTabelPochodzenia: JSON.parse(JSON.stringify(resultsTables[selectedOrigin] || {})),
       poziom: selectedLevel,
       atrybutyGlowne: {
-        domyslne: document.getElementById('domyslne-atrybuty')?.checked ?? true,
-        zmniejszony: document.getElementById('atrybut-zmniejszony')?.value || '',
-        zwiekszony: document.getElementById('atrybut-zwiekszony')?.value || ''
+        domyslne: document.getElementById('default-attributes')?.checked ?? true,
+        zmniejszony: document.getElementById('attribute-decreased')?.value || '',
+        zwiekszony: document.getElementById('attribute-increased')?.value || ''
       },
       sciezki: { ...selectedPaths },
       atrybutySloty: JSON.parse(JSON.stringify(selectedAttributesSlots)),
@@ -3070,19 +3070,19 @@ function buildExportData() {
       poziom: selectedLevel,
       poziomNazwa: nameTierLevel(selectedLevel),
       atrybutyGlowne: {
-        sila: readText('sila-final'),
-        zrecznosc: readText('zrecznosc-final'),
-        intelekt: readText('intelekt-final'),
-        wola: readText('wola-final')
+        sila: readText('strength-final'),
+        zrecznosc: readText('agility-final'),
+        intelekt: readText('intellect-final'),
+        wola: readText('will-final')
       },
       attributesSecondary: {
-        percepcja: readText('percepcja-final'),
-        obrona: readText('obrona-final'),
-        zdrowie: readText('zdrowie-final'),
-        szybkoscZdrowienia: readText('szybkosc-zdrowienia-final', '1'),
-        predkosc: readText('predkosc-final'),
-        moc: readText('moc-final'),
-        splugawienie: readText('splugawienie-final')
+        percepcja: readText('perception-final'),
+        obrona: readText('defense-final'),
+        zdrowie: readText('health-final'),
+        szybkoscZdrowienia: readText('healing-rate-final', '1'),
+        predkosc: readText('speed-final'),
+        moc: readText('power-final'),
+        splugawienie: readText('corruption-final')
       },
       sciezki: {
         nowicjusz: namePaths(1, selectedPaths.nowicjusz),
@@ -3390,13 +3390,13 @@ async function importCharacter(data) {
   }
 
   // 6. Atrybuty główne: domyślne albo jednorazowa zamiana -1/+1 (Krok 2)
-  const chkDefault = document.getElementById('domyslne-atrybuty');
+  const chkDefault = document.getElementById('default-attributes');
   chkDefault.checked = w.atrybutyGlowne?.domyslne ?? true;
   const customDiv = document.getElementById('custom-attributes');
   if (customDiv) customDiv.style.display = chkDefault.checked ? 'none' : 'block';
   if (!chkDefault.checked) {
-    document.getElementById('atrybut-zmniejszony').value = w.atrybutyGlowne?.zmniejszony || '';
-    document.getElementById('atrybut-zwiekszony').value = w.atrybutyGlowne?.zwiekszony || '';
+    document.getElementById('attribute-decreased').value = w.atrybutyGlowne?.zmniejszony || '';
+    document.getElementById('attribute-increased').value = w.atrybutyGlowne?.zwiekszony || '';
   }
   updateCalculatedAttributes();
 
@@ -3941,7 +3941,7 @@ function renderSlotCard(slot) {
         ${slot.source}
         <button type="button" class="section-reset-btn" data-reset-jp-slot="${slot.id}" title="Wyczyść wybór dla tego slotu">Wyczyść</button>
       </div>
-      ${slot.opis ? `<div class="slot-opis">${slot.opis}</div>` : ''}
+      ${slot.opis ? `<div class="slot-description">${slot.opis}</div>` : ''}
       ${modesHtml}
       ${pickerHtml}
     </div>
@@ -4371,7 +4371,7 @@ function getCurrentAtomsMagic() {
 
 /** Odczytuje aktualną Moc postaci - limit kręgu zaklęć dostępnych do nauki. */
 function getCurrentPower() {
-  return parseInt(document.getElementById('moc-final')?.textContent, 10) || 0;
+  return parseInt(document.getElementById('power-final')?.textContent, 10) || 0;
 }
 
 /**
@@ -4455,8 +4455,8 @@ function renderCardMagic(resolution) {
   } else if (atom.rodzaj === 'wybor') {
     bodyHtml = `
       <div class="magic-slot-mode-toggle">
-        <button type="button" class="btn-secondary small ${mode === 'tradycja' ? 'active' : ''}" data-magia-mode="${atom.id}" data-mode-value="tradycja">Nowa tradycja</button>
-        <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magia-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
+        <button type="button" class="btn-secondary small ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">Nowa tradycja</button>
+        <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
       </div>
     `;
     if (mode === 'tradycja') {
@@ -4492,10 +4492,10 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
     <div class="magic-slot-picker">
       ${nazwa ? `
         <div class="magic-picked-chip">${nazwa}${black ? ' ⚠️' : ''}
-          <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">✕</button>
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">✕</button>
         </div>
       ` : ''}
-      <button type="button" class="btn-secondary small" data-open-tradycja-picker="${atomId}" data-kategoria="${(kategoria || ['dowolna']).join(',')}">${nazwa ? 'Zmień tradycję' : 'Wybierz tradycję'}</button>
+      <button type="button" class="btn-secondary small" data-open-tradition-picker="${atomId}" data-category="${(kategoria || ['dowolna']).join(',')}">${nazwa ? 'Zmień tradycję' : 'Wybierz tradycję'}</button>
     </div>
   `;
 }
@@ -4513,10 +4513,10 @@ function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) 
     <div class="magic-slot-picker">
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ' ⚠️' : ''}
-          <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">✕</button>
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">✕</button>
         </div>
       ` : ''}
-      <button type="button" class="btn-secondary small" data-open-zaklecie-picker="${atomId}" data-tradycja-ograniczenie="${tradycjaOgraniczenie || ''}">${spell ? 'Zmień zaklęcie' : 'Wybierz zaklęcie'}</button>
+      <button type="button" class="btn-secondary small" data-open-spell-picker="${atomId}" data-tradition-restriction="${tradycjaOgraniczenie || ''}">${spell ? 'Zmień zaklęcie' : 'Wybierz zaklęcie'}</button>
     </div>
   `;
 }
@@ -4534,10 +4534,10 @@ function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
     <div class="magic-slot-picker magic-slot-picker-secondary">
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (krąg 0)
-          <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">✕</button>
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">✕</button>
         </div>
       ` : ''}
-      <button type="button" class="btn-secondary small" data-open-darmowe-zaklecie-picker="${atomId}" data-tradycja-darmowa="${tradycjaId}">${spell ? 'Zmień darmowe zaklęcie' : 'Wybierz zaklęcie kręgu 0'}</button>
+      <button type="button" class="btn-secondary small" data-open-free-spell-picker="${atomId}" data-tradition-free="${tradycjaId}">${spell ? 'Zmień darmowe zaklęcie' : 'Wybierz zaklęcie kręgu 0'}</button>
     </div>
   `;
 }
@@ -4560,7 +4560,7 @@ function renderBlackMagicWarning(resolution) {
     return `
       <div class="black-magic-warning">
         ⚠️ Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${blackMagicRisk.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
-        <button type="button" class="btn-secondary small" data-magia-rzut="${atom.id}" data-rzut-spell="${spellId}" data-rzut-limit="${blackMagicRisk.liczbaZnanychPrzed}">Rzuć k6</button>
+        <button type="button" class="btn-secondary small" data-magic-roll="${atom.id}" data-roll-spell="${spellId}" data-roll-limit="${blackMagicRisk.liczbaZnanychPrzed}">Rzuć k6</button>
       </div>
     `;
   }
@@ -4569,9 +4569,9 @@ function renderBlackMagicWarning(resolution) {
 
 /** Podłącza obsługę zdarzeń dla wszystkich kart magii w kontenerze (delegacja przez ponowny render). */
 function attachHandleCardsMagic(container) {
-  container.querySelectorAll('[data-magia-mode]').forEach(btn => {
+  container.querySelectorAll('[data-magic-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const atomId = btn.dataset.magiaMode;
+      const atomId = btn.dataset.magicMode;
       const mode = btn.dataset.modeValue;
       if ((magicChoices[atomId] || {}).mode === mode) return;
       magicChoices[atomId] = { mode };
@@ -4579,31 +4579,31 @@ function attachHandleCardsMagic(container) {
       renderSpellsSection();
     });
   });
-  container.querySelectorAll('[data-open-tradycja-picker]').forEach(btn => {
+  container.querySelectorAll('[data-open-tradition-picker]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const atomId = btn.dataset.openTradycjaPicker;
-      const kategoria = btn.dataset.kategoria.split(',').filter(Boolean);
+      const atomId = btn.dataset.openTraditionPicker;
+      const kategoria = btn.dataset.category.split(',').filter(Boolean);
       const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
       openTraditionPicker(atomId, kategoria, knownTraditions);
     });
   });
-  container.querySelectorAll('[data-open-zaklecie-picker]').forEach(btn => {
+  container.querySelectorAll('[data-open-spell-picker]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const atomId = btn.dataset.openZakleciePicker;
-      const tradycjaOgraniczenie = btn.dataset.tradycjaOgraniczenie || null;
+      const atomId = btn.dataset.openSpellPicker;
+      const tradycjaOgraniczenie = btn.dataset.traditionRestriction || null;
       const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
       openSpellPicker(atomId, knownTraditions, getCurrentPower(), tradycjaOgraniczenie);
     });
   });
-  container.querySelectorAll('[data-open-darmowe-zaklecie-picker]').forEach(btn => {
+  container.querySelectorAll('[data-open-free-spell-picker]').forEach(btn => {
     btn.addEventListener('click', () => {
-      openFreeSpellPicker(btn.dataset.openDarmoweZakleciePicker, btn.dataset.tradycjaDarmowa);
+      openFreeSpellPicker(btn.dataset.openFreeSpellPicker, btn.dataset.traditionFree);
     });
   });
-  container.querySelectorAll('[data-magia-clear]').forEach(btn => {
+  container.querySelectorAll('[data-magic-clear]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const atomId = btn.dataset.magiaClear;
+      const atomId = btn.dataset.magicClear;
       const wybor = { ...(magicChoices[atomId] || {}) };
       delete wybor[btn.dataset.clearField];
       magicChoices[atomId] = wybor;
@@ -4611,11 +4611,11 @@ function attachHandleCardsMagic(container) {
       renderSpellsSection();
     });
   });
-  container.querySelectorAll('[data-magia-rzut]').forEach(btn => {
+  container.querySelectorAll('[data-magic-roll]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const atomId = btn.dataset.magiaRzut;
-      const spellId = btn.dataset.rzutSpell;
-      const limit = parseInt(btn.dataset.rzutLimit, 10);
+      const atomId = btn.dataset.magicRoll;
+      const spellId = btn.dataset.rollSpell;
+      const limit = parseInt(btn.dataset.rollLimit, 10);
       const rzut = Math.floor(Math.random() * 6) + 1;
       magicRiskResults[atomId] = { spellId, rzut, przyznane: rzut < limit };
       renderSpellsSection();
@@ -4724,7 +4724,7 @@ function renderTraditionPickerDynamicHtml() {
   const wynik = search ? all.filter(t => t.nazwa.toLowerCase().includes(search)) : all;
 
   const tiles = wynik.map(t => `
-    <button type="button" class="picker-tile" data-pick-tradycja="${t.id}">
+    <button type="button" class="picker-tile" data-pick-tradition="${t.id}">
       <div class="picker-tile-header"><span>${t.nazwa}</span></div>
       ${t.czarnaMagia ? '<div class="picker-tile-warning">⚠️ Czarna magia - poznanie przyznaje 1 Splugawienie</div>' : ''}
     </button>
@@ -4769,13 +4769,13 @@ function renderSpellPickerDynamicHtml() {
   if (searchLower) wynik = wynik.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower));
 
   const traditionChips = traditionsInSet.length > 1
-    ? traditionsInSet.map(([id, nazwa]) => `<button type="button" class="picker-filter-chip ${filterTradycja === id ? 'active' : ''}" data-filter-tradycja="${id}">${nazwa}</button>`).join('')
+    ? traditionsInSet.map(([id, nazwa]) => `<button type="button" class="picker-filter-chip ${filterTradycja === id ? 'active' : ''}" data-filter-tradition="${id}">${nazwa}</button>`).join('')
     : '';
   const circleChips = circles.length > 1
-    ? circles.map(k => `<button type="button" class="picker-filter-chip ${filterKrag === k ? 'active' : ''}" data-filter-krag="${k}">Krąg ${k}</button>`).join('')
+    ? circles.map(k => `<button type="button" class="picker-filter-chip ${filterKrag === k ? 'active' : ''}" data-filter-circle="${k}">Krąg ${k}</button>`).join('')
     : '';
   const catChips = [['atak', 'Atak'], ['uzytkowe', 'Użytkowe']]
-    .map(([id, etykieta]) => `<button type="button" class="picker-filter-chip ${filterKategoria === id ? 'active' : ''}" data-filter-kategoria="${id}">${etykieta}</button>`).join('');
+    .map(([id, etykieta]) => `<button type="button" class="picker-filter-chip ${filterKategoria === id ? 'active' : ''}" data-filter-category="${id}">${etykieta}</button>`).join('');
   const chipsHtml = (traditionChips || circleChips || catChips)
     ? `<div class="picker-filter-chips">${traditionChips}${circleChips}${catChips}</div>`
     : '';
@@ -4787,13 +4787,13 @@ function renderSpellPickerDynamicHtml() {
     .map(s => {
       const isTaken = taken.has(s.id);
       return `
-      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-zaklecie="${s.id}">
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-spell="${s.id}">
         <div class="picker-tile-header">
           <span>${s.nazwa}</span>
           ${renderSourceTag(s.zrodlo)}
         </div>
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
-        <p class="picker-tile-opis">${s.opis}</p>
+        <p class="picker-tile-description">${s.opis}</p>
         ${isTaken ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
         ${!isTaken && isBlackMagic(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
       </button>
@@ -4825,13 +4825,13 @@ function renderFreeSpellPickerDynamicHtml() {
     .map(s => {
       const isTaken = taken.has(s.id);
       return `
-      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-darmowe-zaklecie="${s.id}">
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-free-spell="${s.id}">
         <div class="picker-tile-header">
           <span>${s.nazwa}</span>
           ${renderSourceTag(s.zrodlo)}
         </div>
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg 0 · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
-        <p class="picker-tile-opis">${s.opis}</p>
+        <p class="picker-tile-description">${s.opis}</p>
         ${isTaken ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
       </button>
     `;
@@ -4845,35 +4845,35 @@ function renderFreeSpellPickerDynamicHtml() {
 
 /** Podłącza obsługę chipów filtrów i kafelków w dynamicznym obszarze popupu. */
 function attachHandlePickerDynamic(container) {
-  container.querySelectorAll('[data-filter-krag]').forEach(btn => {
+  container.querySelectorAll('[data-filter-circle]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = parseInt(btn.dataset.filterKrag, 10);
+      const val = parseInt(btn.dataset.filterCircle, 10);
       magicPicker.filterKrag = magicPicker.filterKrag === val ? null : val;
       rerenderPickerDynamic();
     });
   });
-  container.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
+  container.querySelectorAll('[data-filter-category]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = btn.dataset.filterKategoria;
+      const val = btn.dataset.filterCategory;
       magicPicker.filterKategoria = magicPicker.filterKategoria === val ? null : val;
       rerenderPickerDynamic();
     });
   });
-  container.querySelectorAll('[data-filter-tradycja]').forEach(btn => {
+  container.querySelectorAll('[data-filter-tradition]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = btn.dataset.filterTradycja;
+      const val = btn.dataset.filterTradition;
       magicPicker.filterTradycja = magicPicker.filterTradycja === val ? null : val;
       rerenderPickerDynamic();
     });
   });
-  container.querySelectorAll('[data-pick-tradycja]').forEach(btn => {
-    btn.addEventListener('click', () => selectTraditionWithPicker(btn.dataset.pickTradycja));
+  container.querySelectorAll('[data-pick-tradition]').forEach(btn => {
+    btn.addEventListener('click', () => selectTraditionWithPicker(btn.dataset.pickTradition));
   });
-  container.querySelectorAll('[data-pick-zaklecie]').forEach(btn => {
-    btn.addEventListener('click', () => selectSpellWithPicker(btn.dataset.pickZaklecie));
+  container.querySelectorAll('[data-pick-spell]').forEach(btn => {
+    btn.addEventListener('click', () => selectSpellWithPicker(btn.dataset.pickSpell));
   });
-  container.querySelectorAll('[data-pick-darmowe-zaklecie]').forEach(btn => {
-    btn.addEventListener('click', () => selectFreeSpellWithPicker(btn.dataset.pickDarmoweZaklecie));
+  container.querySelectorAll('[data-pick-free-spell]').forEach(btn => {
+    btn.addEventListener('click', () => selectFreeSpellWithPicker(btn.dataset.pickFreeSpell));
   });
 }
 
@@ -4977,8 +4977,8 @@ function renderEquipmentSection() {
 
 /** Renderuje kafelki wyboru Zamożności wraz z ewentualnym wynikiem rzutu 3k6. */
 function renderWealthGrid() {
-  const grid = document.getElementById('zamoznosc-grid');
-  const resultEl = document.getElementById('zamoznosc-wynik');
+  const grid = document.getElementById('wealth-grid');
+  const resultEl = document.getElementById('wealth-roll');
   if (!grid) return;
 
   if (resultEl) {
@@ -4991,19 +4991,19 @@ function renderWealthGrid() {
     const range = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
     const selected = equipmentWealthId === z.id;
     return `
-      <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-wybierz-zamoznosc="${z.id}">
+      <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-select-wealth="${z.id}">
         <div class="picker-tile-header">
           <span>${z.nazwa}</span>
-          ${selected ? '<span class="zamoznosc-badge">✓ Wybrano</span>' : ''}
+          ${selected ? '<span class="wealth-badge">✓ Wybrano</span>' : ''}
         </div>
         <div class="picker-tile-meta">3k6: ${range}</div>
-        <p class="picker-tile-opis">${z.opis}</p>
+        <p class="picker-tile-description">${z.opis}</p>
       </button>
     `;
   }).join('');
 
-  grid.querySelectorAll('[data-wybierz-zamoznosc]').forEach(btn => {
-    btn.addEventListener('click', () => wybierzZamoznosc(btn.dataset.wybierzZamoznosc, null));
+  grid.querySelectorAll('[data-select-wealth]').forEach(btn => {
+    btn.addEventListener('click', () => wybierzZamoznosc(btn.dataset.selectWealth, null));
   });
 }
 
@@ -5106,7 +5106,7 @@ function calculateStateEquipment() {
 
 /** Renderuje sekcję wyposażenia startowego: gwarantowane pozycje i karty wyboru (jedna karta = jeden atom). */
 function renderGearStarting() {
-  const container = document.getElementById('wyposazenie-startowe-section');
+  const container = document.getElementById('starting-gear-section');
   if (!container) return;
 
   if (!equipmentWealthId) {
@@ -5127,19 +5127,19 @@ function renderGearStarting() {
 
   container.innerHTML = `
     <h4>🎒 Wyposażenie startowe (${state.wealthentry.nazwa})</h4>
-    <p class="hint">Gwarantowane: <ul class="gwarantowane-lista">${guaranteedHtml}</ul></p>
+    <p class="hint">Gwarantowane: <ul class="guaranteed-list">${guaranteedHtml}</ul></p>
     ${atomsHtml}
     <p class="hint">Startowa gotówka: <strong>${formatCopperbits(state.startingCashCopperbits)}</strong> (sakiewka z ${state.wealthentry.pieniadze.kosci} ${state.wealthentry.pieniadze.jednostka === 'okr' ? 'okrawków' : state.wealthentry.pieniadze.jednostka === 'md' ? 'miedziaków' : 'srebrników'})</p>
     ${state.wealthentry.dodatkowyOpis ? `<p class="hint">${state.wealthentry.dodatkowyOpis}</p>` : ''}
   `;
 
-  container.querySelectorAll('[data-wybierz-startowy]').forEach(btn => {
+  container.querySelectorAll('[data-select-starting]').forEach(btn => {
     btn.addEventListener('click', () => {
-      selectItemStarting(btn.dataset.wybierzStartowy, btn.dataset.itemId);
+      selectItemStarting(btn.dataset.selectStarting, btn.dataset.itemId);
     });
   });
-  container.querySelectorAll('[data-otworz-zwoj]').forEach(btn => {
-    btn.addEventListener('click', () => openTraditionPicker(btn.dataset.otworzZwoj, ['dowolna'], new Set(), 'ekwipunek'));
+  container.querySelectorAll('[data-open-scroll]').forEach(btn => {
+    btn.addEventListener('click', () => openTraditionPicker(btn.dataset.openScroll, ['dowolna'], new Set(), 'ekwipunek'));
   });
 }
 
@@ -5152,7 +5152,7 @@ function renderCardGear(atom) {
       const item = getItem(itemId);
       const active = wybor?.itemId === itemId;
       const stats = formatStatsItem(item);
-      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}"${stats ? ` title="${stats}"` : ''}>${item?.nazwa || itemId}</button>`;
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-select-starting="${atom.id}" data-item-id="${itemId}"${stats ? ` title="${stats}"` : ''}>${item?.nazwa || itemId}</button>`;
     }).join('');
     const selectedItem = wybor?.itemId ? getItem(wybor.itemId) : null;
     const statsSelected = selectedItem ? formatStatsItem(selectedItem) : null;
@@ -5169,10 +5169,10 @@ function renderCardGear(atom) {
   const tiles = atom.opcje.map(opcja => {
     const active = opcja.typ === 'zwoj_zaklecie' ? wybor?.typ === 'zwoj_zaklecie' : (wybor?.typ === 'przedmiot' && wybor?.itemId === opcja.id);
     if (opcja.typ === 'zwoj_zaklecie') {
-      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-otworz-zwoj="${atom.id}">${opcja.etykieta}</button>`;
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-open-scroll="${atom.id}">${opcja.etykieta}</button>`;
     }
     const stats = formatStatsItem(getItem(opcja.id));
-    return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}"${stats ? ` title="${stats}"` : ''}>${opcja.etykieta}</button>`;
+    return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-select-starting="${atom.id}" data-item-id="${opcja.id}"${stats ? ` title="${stats}"` : ''}>${opcja.etykieta}</button>`;
   }).join('');
 
   let descriptionResult = '';
@@ -5203,7 +5203,7 @@ function selectItemStarting(atomId, itemId) {
 
 /** Renderuje sekcję sklepu: aktualna gotówka, posiadane przedmioty (z opcją sprzedaży) i katalog zakupów. */
 function renderShopSection() {
-  const container = document.getElementById('sklep-section');
+  const container = document.getElementById('shop-section');
   if (!container) return;
 
   if (!equipmentWealthId) {
@@ -5231,7 +5231,7 @@ function renderShopSection() {
         <td>${item ? formatPrice(item.cena) : '—'}</td>
         <td class="equipment-table-actions">
           ${hasDescription ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">ℹ️</button>` : ''}
-          ${canSell ? `<button type="button" class="icon-btn" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
+          ${canSell ? `<button type="button" class="icon-btn" data-sell="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
         </td>
       </tr>
     `;
@@ -5273,12 +5273,12 @@ function renderShopSection() {
 
     <div class="flex-row-between">
       <h5>Katalog przedmiotów</h5>
-      <button type="button" class="btn-primary small" id="btn-otworz-sklep">🛒 Przeglądaj katalog</button>
+      <button type="button" class="btn-primary small" id="btn-open-shop">🛒 Przeglądaj katalog</button>
     </div>
   `;
 
-  container.querySelectorAll('[data-sprzedaj]').forEach(btn => {
-    btn.addEventListener('click', () => sellEntries(btn.dataset.sprzedaj, btn.dataset.zrodlo));
+  container.querySelectorAll('[data-sell]').forEach(btn => {
+    btn.addEventListener('click', () => sellEntries(btn.dataset.sell, btn.dataset.zrodlo));
   });
   container.querySelectorAll('[data-info]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -5288,7 +5288,7 @@ function renderShopSection() {
       renderShopSection();
     });
   });
-  document.getElementById('btn-otworz-sklep')?.addEventListener('click', () => openEquipmentPicker());
+  document.getElementById('btn-open-shop')?.addEventListener('click', () => openEquipmentPicker());
 }
 
 /** Sprzedaje (pozycja startowa, za połowę ceny) albo zwraca (pozycja kupiona, pełny zwrot) daną pozycję ekwipunku. */
@@ -5359,10 +5359,10 @@ function rerenderEquipmentPickerDynamic() {
 
   const categoriesChips = Object.keys(CATEGORY_LABELS_EQ)
     .filter(k => EQUIPMENT.some(i => i.kategoria === k && i.cena))
-    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-kategoria="${k}">${CATEGORY_LABELS_EQ[k]}</button>`)
+    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-category="${k}">${CATEGORY_LABELS_EQ[k]}</button>`)
     .join('');
   const rarityChips = Object.keys(RARITY_LABELS)
-    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rzadkosc="${r}">${RARITY_LABELS[r]}</button>`)
+    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rarity="${r}">${RARITY_LABELS[r]}</button>`)
     .join('');
   const sortChips = Object.keys(SORT_LABELS)
     .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORT_LABELS[s]}${sortBy === s ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}</button>`)
@@ -5386,14 +5386,14 @@ function rerenderEquipmentPickerDynamic() {
       const stats = formatStatsItem(i);
       const reason = owned ? 'Już posiadane' : (tooExpensive ? 'Za mało gotówki' : '');
       return `
-      <button type="button" class="picker-tile ${niedostepny ? 'disabled' : ''}" ${niedostepny ? 'disabled' : ''} data-kup="${i.id}">
+      <button type="button" class="picker-tile ${niedostepny ? 'disabled' : ''}" ${niedostepny ? 'disabled' : ''} data-buy="${i.id}">
         <div class="picker-tile-header">
           <span>${i.nazwa}</span>
           ${renderSourceTag(i.zrodlo)}
         </div>
         <div class="picker-tile-meta">${CATEGORY_LABELS_EQ[i.kategoria] || i.kategoria} · ${RARITY_LABELS[i.rzadkosc] || '—'} · ${formatPrice(i.cena)}</div>
         ${stats ? `<div class="picker-tile-stats">${stats}</div>` : ''}
-        ${i.opis ? `<p class="picker-tile-opis">${i.opis}</p>` : ''}
+        ${i.opis ? `<p class="picker-tile-description">${i.opis}</p>` : ''}
         ${reason ? `<div class="picker-tile-taken">${reason}</div>` : ''}
       </button>
     `;
@@ -5418,16 +5418,16 @@ function rerenderEquipmentPickerDynamic() {
     rerenderEquipmentPickerDynamic();
   });
 
-  el.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
+  el.querySelectorAll('[data-filter-category]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = btn.dataset.filterKategoria;
+      const val = btn.dataset.filterCategory;
       equipmentPicker.filterKategoria = equipmentPicker.filterKategoria === val ? null : val;
       rerenderEquipmentPickerDynamic();
     });
   });
-  el.querySelectorAll('[data-filter-rzadkosc]').forEach(btn => {
+  el.querySelectorAll('[data-filter-rarity]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const val = btn.dataset.filterRzadkosc;
+      const val = btn.dataset.filterRarity;
       equipmentPicker.filterRzadkosc = equipmentPicker.filterRzadkosc === val ? null : val;
       rerenderEquipmentPickerDynamic();
     });
@@ -5444,8 +5444,8 @@ function rerenderEquipmentPickerDynamic() {
       rerenderEquipmentPickerDynamic();
     });
   });
-  el.querySelectorAll('[data-kup]').forEach(btn => {
-    btn.addEventListener('click', () => buyItemFromShop(btn.dataset.kup));
+  el.querySelectorAll('[data-buy]').forEach(btn => {
+    btn.addEventListener('click', () => buyItemFromShop(btn.dataset.buy));
   });
 }
 
@@ -5584,15 +5584,15 @@ function renderLoadCharacterList() {
     return `
           <div class="selected-item">
             <span>${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
-            <button type="button" class="btn-secondary small" data-wczytaj-postac="${entry.id}">Wczytaj</button>
+            <button type="button" class="btn-secondary small" data-load-character="${entry.id}">Wczytaj</button>
           </div>
         `;
   }).join('')}
     </div>
   `;
 
-  body.querySelectorAll('[data-wczytaj-postac]').forEach(btn => {
-    btn.addEventListener('click', () => loadCharacterWithCache(btn.dataset.wczytajPostac));
+  body.querySelectorAll('[data-load-character]').forEach(btn => {
+    btn.addEventListener('click', () => loadCharacterWithCache(btn.dataset.loadCharacter));
   });
 }
 

@@ -11,9 +11,9 @@
 <body>
     <!-- Boczne menu: nowa postać / wczytaj postać / wylosuj postać -->
     <nav class="side-menu" id="side-menu" aria-label="Menu postaci">
-        <button type="button" class="side-menu-btn" id="btn-nowa-postac" data-tooltip="Nowa postać — resetuje wszystkie ustawienia i wraca do Kroku 1, by stworzyć zupełnie nową postać" aria-label="Nowa postać">🆕</button>
-        <button type="button" class="side-menu-btn" id="btn-wczytaj-postac" data-tooltip="Wczytaj postać — pokazuje listę postaci zapisanych w pamięci tej przeglądarki" aria-label="Wczytaj postać">📂</button>
-        <button type="button" class="side-menu-btn" id="btn-wylosuj-postac" data-tooltip="Wylosuj postać — losuje całą postać (wszystkie kroki) i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać">🎲</button>
+        <button type="button" class="side-menu-btn" id="btn-new-character" data-tooltip="Nowa postać — resetuje wszystkie ustawienia i wraca do Kroku 1, by stworzyć zupełnie nową postać" aria-label="Nowa postać">🆕</button>
+        <button type="button" class="side-menu-btn" id="btn-load-character" data-tooltip="Wczytaj postać — pokazuje listę postaci zapisanych w pamięci tej przeglądarki" aria-label="Wczytaj postać">📂</button>
+        <button type="button" class="side-menu-btn" id="btn-randomize-character" data-tooltip="Wylosuj postać — losuje całą postać (wszystkie kroki) i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać">🎲</button>
     </nav>
 
     <div class="header">
@@ -46,13 +46,13 @@
         <div class="section">
             <div class="quick-random-fill">
                 <div class="quick-fill-actions">
-                    <button type="button" class="btn-primary" id="btn-losuj-krok-1">
+                    <button type="button" class="btn-primary" id="btn-randomize-step-1">
                         🎲 Losuj postać
                     </button>
-                    <button type="button" class="btn-secondary" id="btn-import-postac">
+                    <button type="button" class="btn-secondary" id="btn-import-character">
                         📂 Importuj postać
                     </button>
-                    <input type="file" id="import-postac-file" accept="application/json,.json" hidden>
+                    <input type="file" id="import-character-file" accept="application/json,.json" hidden>
                 </div>
                 <p class="hint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem, albo zaimportuje wcześniej wyeksportowaną postać z pliku JSON.</p>
                 <div id="import-feedback" class="import-feedback" style="display: none;"></div>
@@ -61,10 +61,10 @@
             <h3>🎭 Krok 1: Wybór Pochodzenia</h3>
             <div class="flex-row-between">
                 <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
-                <button type="button" class="section-reset-btn" id="btn-reset-pochodzenie" title="Wyczyść wybór pochodzenia">Wyczyść wybór</button>
+                <button type="button" class="section-reset-btn" id="btn-reset-origin" title="Wyczyść wybór pochodzenia">Wyczyść wybór</button>
             </div>
 
-            <div id="pochodzenie-tiles" class="tiles-container">
+            <div id="origin-tiles" class="tiles-container">
                 <!-- Kafelki będą generowane przez JavaScript -->
             </div>
 
@@ -93,7 +93,7 @@
             <div class="level-section">
                 <div class="flex-row-between">
                     <h4>Poziom Postaci (0-10)</h4>
-                    <button type="button" class="section-reset-btn" id="btn-reset-poziom" title="Wróć do poziomu 0">Wyczyść wybór</button>
+                    <button type="button" class="section-reset-btn" id="btn-reset-level" title="Wróć do poziomu 0">Wyczyść wybór</button>
                 </div>
                 <div class="level-selector">
                     <!-- Poziom 0 -->
@@ -253,7 +253,7 @@
 
         <div class="form-group attribute-mode-toggle">
             <label>
-                <input type="checkbox" id="domyslne-atrybuty" checked>
+                <input type="checkbox" id="default-attributes" checked>
                 <span>Użyj domyślnych wartości atrybutów (bazujących na pochodzeniu)</span>
             </label>
         </div>
@@ -266,8 +266,8 @@
             <p class="hint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
             <div class="attribute-swap-row">
                 <div class="form-group">
-                    <label for="atrybut-zmniejszony">Obniż o 1:</label>
-                    <select id="atrybut-zmniejszony">
+                    <label for="attribute-decreased">Obniż o 1:</label>
+                    <select id="attribute-decreased">
                         <option value="">-- brak zmiany --</option>
                         <option value="sila">Siła</option>
                         <option value="zrecznosc">Zręczność</option>
@@ -276,8 +276,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="atrybut-zwiekszony">Podnieś o 1:</label>
-                    <select id="atrybut-zwiekszony">
+                    <label for="attribute-increased">Podnieś o 1:</label>
+                    <select id="attribute-increased">
                         <option value="">-- brak zmiany --</option>
                         <option value="sila">Siła</option>
                         <option value="zrecznosc">Zręczność</option>
@@ -286,11 +286,11 @@
                     </select>
                 </div>
             </div>
-            <p id="pula-atrybutow-info" class="hint"></p>
-            <input type="hidden" id="sila-base" value="10">
-            <input type="hidden" id="zrecznosc-base" value="10">
-            <input type="hidden" id="intelekt-base" value="10">
-            <input type="hidden" id="wola-base" value="10">
+            <p id="attribute-pool-info" class="hint"></p>
+            <input type="hidden" id="strength-base" value="10">
+            <input type="hidden" id="agility-base" value="10">
+            <input type="hidden" id="intellect-base" value="10">
+            <input type="hidden" id="will-base" value="10">
         </div>
 
         <!-- Sekcja bonusu do atrybutu z pochodzenia (np. Człowiek, Elf) -->
@@ -324,23 +324,23 @@
             <div class="attributes-grid">
                 <div class="attribute-display">
                     <label>Siła:</label>
-                    <span id="sila-final">10</span>
-                    <span class="modifier" id="sila-mod">+0</span>
+                    <span id="strength-final">10</span>
+                    <span class="modifier" id="strength-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Zręczność:</label>
-                    <span id="zrecznosc-final">10</span>
-                    <span class="modifier" id="zrecznosc-mod">+0</span>
+                    <span id="agility-final">10</span>
+                    <span class="modifier" id="agility-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Intelekt:</label>
-                    <span id="intelekt-final">10</span>
-                    <span class="modifier" id="intelekt-mod">+0</span>
+                    <span id="intellect-final">10</span>
+                    <span class="modifier" id="intellect-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Wola:</label>
-                    <span id="wola-final">10</span>
-                    <span class="modifier" id="wola-mod">+0</span>
+                    <span id="will-final">10</span>
+                    <span class="modifier" id="will-mod">+0</span>
                 </div>
             </div>
         </div>
@@ -366,7 +366,7 @@
             <div class="path-section" id="path-section-1" data-path-level="1">
                 <div class="path-section-header">
                     <h4>Ścieżka Nowicjusza (poziom 1)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-sciezka="nowicjusz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <button type="button" class="section-reset-btn" data-reset-path="nowicjusz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-1" class="tiles-container"></div>
@@ -376,7 +376,7 @@
             <div class="path-section" id="path-section-3" data-path-level="3">
                 <div class="path-section-header">
                     <h4>Ścieżka Ekspercka (poziom 3)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-sciezka="ekspert" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <button type="button" class="section-reset-btn" data-reset-path="ekspert" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-3" class="tiles-container"></div>
@@ -386,7 +386,7 @@
             <div class="path-section" id="path-section-7" data-path-level="7">
                 <div class="path-section-header">
                     <h4>Ścieżka Mistrzowska (poziom 7)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-sciezka="mistrz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <button type="button" class="section-reset-btn" data-reset-path="mistrz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
                     <span class="path-section-toggle-icon">▾</span>
                 </div>
                 <div id="path-grid-7" class="tiles-container"></div>
@@ -466,7 +466,7 @@
                     <div class="list-controls">
                         <button id="btn-randomize-curios" class="btn-primary small">🎲 Losuj</button>
                         <button id="btn-toggle-curios" class="btn-secondary small" data-expanded="false">Rozwiń</button>
-                        <button type="button" class="section-reset-btn" id="btn-reset-kurioza" title="Wyczyść wybrane kurioza">Wyczyść</button>
+                        <button type="button" class="section-reset-btn" id="btn-reset-curios" title="Wyczyść wybrane kurioza">Wyczyść</button>
                     </div>
                 </div>
                 <div class="curios-grid" id="curios-grid" style="display: none;">
@@ -497,7 +497,7 @@
 
             <div class="flex-row-between">
                 <div id="known-traditions-hint" class="hint"></div>
-                <button type="button" class="section-reset-btn" id="btn-reset-magia" title="Wyczyść wszystkie wybory magii">Wyczyść</button>
+                <button type="button" class="section-reset-btn" id="btn-reset-magic" title="Wyczyść wszystkie wybory magii">Wyczyść</button>
             </div>
 
             <div id="magic-slots-container"></div>
@@ -533,17 +533,17 @@
             <div class="flex-row-between">
                 <h4>💰 Zamożność</h4>
                 <div class="list-controls">
-                    <button type="button" class="btn-primary small" id="btn-losuj-zamoznosc">🎲 Losuj (3k6)</button>
-                    <button type="button" class="section-reset-btn" id="btn-reset-zamoznosc" title="Wyczyść wybraną zamożność i ekwipunek">Wyczyść</button>
+                    <button type="button" class="btn-primary small" id="btn-randomize-wealth">🎲 Losuj (3k6)</button>
+                    <button type="button" class="section-reset-btn" id="btn-reset-wealth" title="Wyczyść wybraną zamożność i ekwipunek">Wyczyść</button>
                 </div>
             </div>
             <p class="hint">Wybierz zamożność ręcznie, klikając kafelek, albo wylosuj ją rzutem 3k6 zgodnie z zasadami podręcznika.</p>
-            <p id="zamoznosc-wynik" class="hint"></p>
-            <div id="zamoznosc-grid" class="picker-tile-grid"></div>
+            <p id="wealth-roll" class="hint"></p>
+            <div id="wealth-grid" class="picker-tile-grid"></div>
 
-            <div id="wyposazenie-startowe-section"></div>
+            <div id="starting-gear-section"></div>
 
-            <div id="sklep-section"></div>
+            <div id="shop-section"></div>
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(7)">

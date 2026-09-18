@@ -1651,7 +1651,7 @@ kbd {
     font-size: 13px;
 }
 
-.slot-opis {
+.slot-description {
     font-size: 12px;
     color: var(--ink-dim);
     font-style: italic;
@@ -2295,7 +2295,7 @@ kbd {
     color: var(--ink-dim);
 }
 
-.picker-tile-opis {
+.picker-tile-description {
     font-size: 0.85em;
     color: var(--ink-dim);
     margin: 0;
@@ -2330,18 +2330,18 @@ kbd {
 }
 
 /* Krok 7: Ekwipunek */
-.gwarantowane-lista {
+.guaranteed-list {
     display: inline;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.gwarantowane-lista li {
+.guaranteed-list li {
     display: inline;
 }
 
-.gwarantowane-lista li:not(:last-child)::after {
+.guaranteed-list li:not(:last-child)::after {
     content: ", ";
 }
 
@@ -2354,7 +2354,7 @@ kbd {
     width: 100%;
 }
 
-.zamoznosc-badge {
+.wealth-badge {
     font-size: 0.75em;
     color: var(--gold-bright);
     font-weight: 700;
