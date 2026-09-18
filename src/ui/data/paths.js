@@ -30,12 +30,12 @@
  *   N-krotny (powtarzalny) wybór między poznaniem nowej tradycji z
  *   `kategoria` a nauczeniem się jednego zaklęcia z już znanej tradycji.
  * - { typ: 'wybor', opcje: ['tradycja','zaklecie'], tradycjaNazwa: 'x', ilosc: 1 }:
- *   wybór ograniczony do JEDNEJ konkretnej tradycji (id z tradycje.js) -
+ *   wybór ograniczony do JEDNEJ konkretnej tradycji (id z traditions.js) -
  *   w praktyce deterministyczny: gdy nieznana, poznajesz ją; gdy już
  *   znana, uczysz się z niej dodatkowego zaklęcia.
  * - { typ: 'zaklecie', ilosc: N }: nauka N kolejnych zaklęć z tradycji już
  *   znanych, bez opcji poznania nowej tradycji.
- * Kategorie tradycji i lista tradycji religijnych: zob. `tradycje.js`.
+ * Kategorie tradycji i lista tradycji religijnych: zob. `traditions.js`.
  */
 
 const PATHS = {

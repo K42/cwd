@@ -4,8 +4,8 @@
  */
 
 import PATHS from '../data/paths.js';
-import { getTalentDescription } from './talenty.js';
-import { opisMagii } from './magia.js';
+import { getTalentDescription } from './talents.js';
+import { opisMagii } from './magic.js';
 
 /**
  * Zwraca grupę ścieżek (obiekt id -> ścieżka) z danych PATHS odpowiadającą

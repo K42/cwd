@@ -4,7 +4,7 @@
  * zamiast przez endpointy /api/build, /api/build-complete i /api/calculate-level-benefits.
  */
 
-import DANE_GRY from '../data/dane-gry.js';
+import DANE_GRY from '../data/game-data.js';
 
 /**
  * Buduje postać na podstawie specyfikacji zgodnie z zasadami z PDF

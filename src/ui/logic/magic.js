@@ -8,7 +8,7 @@
  *   której to zaklęcie pochodzi, a jego krąg nie może przekraczać Mocy
  *   postaci.
  * - "Czarna magia" (Klątwy, Sztuki Zakazane, Nekromancja i best-effort
- *   klasyfikowane tradycje z suplementów - zob. `tradycje.js`): poznanie
+ *   klasyfikowane tradycje z suplementów - zob. `traditions.js`): poznanie
  *   takiej tradycji przyznaje od razu 1 punkt Splugawienia; każde kolejne
  *   nauczone z niej zaklęcie niesie ryzyko +1 Splugawienia (rzut k6 <
  *   liczba już znanych zaklęć czarnej magii).
@@ -22,7 +22,7 @@
 
 import PATHS from '../data/paths.js';
 import SPELLS from '../data/spells.js';
-import { TRADYCJE, TRADYCJE_RELIGIJNE, pobierzListePoznawalnychTradycji } from '../data/tradycje.js';
+import { TRADYCJE, TRADYCJE_RELIGIJNE, pobierzListePoznawalnychTradycji } from '../data/traditions.js';
 
 /** Minimalny poziom postaci wymagany do odblokowania danego klucza korzyści ścieżki. */
 const WYMAGANY_POZIOM = {

@@ -2,24 +2,24 @@
  * Frontend JavaScript dla kreatora postaci
  */
 
-import { budujPostac, obliczKorzysciPoziomu } from './logic/postac.js';
-import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/sciezki.js';
+import { budujPostac, obliczKorzysciPoziomu } from './logic/character.js';
+import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/paths.js';
 import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
-import { getProfesjeUI, getKuriozaUI } from './logic/profesje-kurioza.js';
-import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/jezyki-profesje.js';
-import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, pobierzZakleciaKregu0, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magia.js';
-import { TRADYCJE } from './data/tradycje.js';
+import { getProfesjeUI, getKuriozaUI } from './logic/professions-curios.js';
+import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/languages-professions.js';
+import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, pobierzZakleciaKregu0, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magic.js';
+import { TRADYCJE } from './data/traditions.js';
 import { rollTable } from './data/table_utils.js';
-import DANE_GRY from './data/dane-gry.js';
+import DANE_GRY from './data/game-data.js';
 import SPELLS from './data/spells.js';
 import EQUIPMENT from './data/equipment.js';
-import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/zamoznosc.js';
+import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/wealth.js';
 import {
   RZADKOSC_ETYKIETY, KATEGORIA_ETYKIETY, pobierzPrzedmiot, cenaNaOkrawki, formatujCene,
   formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
   formatujStatystykiPrzedmiotu, SORTOWANIE_ETYKIETY, sortujPrzedmioty, PRZELICZNIK_NA_OKRAWKI
-} from './logic/ekwipunek.js';
-import { pobierzZapisanePostacie, zapiszPostacDoCache, generujIdZapisu } from './logic/zapisy.js';
+} from './logic/equipment.js';
+import { pobierzZapisanePostacie, zapiszPostacDoCache, generujIdZapisu } from './logic/saves.js';
 
 let biezacaPostac = null;
 let wybranePochodzenie = null;
@@ -3789,7 +3789,7 @@ function obliczIloscWyborow() {
 
 /**
  * Oblicza wszystkie sloty językowo-profesyjne przyznane postaci na podstawie
- * wybranego pochodzenia i ścieżek (patrz logic/jezyki-profesje.js).
+ * wybranego pochodzenia i ścieżek (patrz logic/languages-professions.js).
  */
 function obliczSlotyPostaci() {
   const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie) || null;
@@ -4378,7 +4378,7 @@ function pobierzAktualnaMoc() {
  * Renderuje Krok 6: jedną kartę na każdy atomowy wybór magii faktycznie
  * przyznany przez pochodzenie/ścieżki na obecnym poziomie postaci (zamiast
  * swobodnie przeglądanej biblioteki) - w pełni zgodne z zasadami nauki
- * tradycji i zaklęć z podręcznika (zob. logic/magia.js).
+ * tradycji i zaklęć z podręcznika (zob. logic/magic.js).
  */
 function renderSpellsSection() {
   const atomy = pobierzAktualneAtomyMagii();

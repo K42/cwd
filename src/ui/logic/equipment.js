@@ -13,7 +13,7 @@
  */
 
 import EQUIPMENT from '../data/equipment.js';
-import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from '../data/zamoznosc.js';
+import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from '../data/wealth.js';
 
 const PRZELICZNIK_NA_OKRAWKI = { okr: 1, md: 10, sr: 100, zk: 1000 };
 const NOMINALY_OD_NAJWIEKSZEGO = ['zk', 'sr', 'md', 'okr'];
@@ -91,7 +91,7 @@ function cenaSkupuOkrawki(cena) {
 /**
  * Rozwija listę przedmiotów danego poziomu zamożności na atomowe wybory
  * gracza (jedna karta UI = jeden atom) - analogicznie do rozwinJednostke()
- * w logic/magia.js. Gwarantowane pozycje (bez wyboru) nie generują atomu.
+ * w logic/magic.js. Gwarantowane pozycje (bez wyboru) nie generują atomu.
  */
 function obliczAtomyWyposazenia(zamoznoscId) {
   const zam = ZAMOZNOSC[zamoznoscId];
