@@ -386,26 +386,24 @@ function renderPathTile(path, levelChoice) {
   const canPick = selectedLevel >= levelChoice;
   const selectedId = levelChoice === 1 ? selectedPaths.nowicjusz : (levelChoice === 3 ? selectedPaths.ekspert : selectedPaths.mistrz);
   const isSelected = selectedId === path.id;
-  const tile = document.createElement('div');
-  tile.className = `tile path-tile${  isSelected ? ' selected' : ''}`;
-  tile.style.opacity = canPick ? '1' : '0.5';
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.className = `picker-tile path-tile${isSelected ? ' selected' : ''}${canPick ? '' : ' disabled'}`;
+  if (!canPick) tile.disabled = true;
+  tile.dataset.pathId = path.id;
+  tile.dataset.pickLevel = levelChoice;
   tile.innerHTML = `
-    <div class="tile-header">
-      <div>
-        <div class="tile-title">${path.nazwa}</div>
-        <small>${renderSourceTag(path.zrodlo || 'PG')} Poziom wyboru ${levelChoice}</small>
-      </div>
+    <div class="picker-tile-header">
+      <span>${path.nazwa}</span>
+      ${isSelected ? '<span class="wealth-badge">✓ Wybrano</span>' : ''}
     </div>
+    <div class="picker-tile-meta">${renderSourceTag(path.zrodlo || 'PG')} Poziom wyboru ${levelChoice}</div>
     <div class="tile-body">
       ${renderPathBenefitsList(path, levelChoice)}
     </div>
-    <div class="tile-footer">
-      <button class="btn-primary" ${canPick ? '' : 'disabled'} data-path-id="${path.id}" data-pick-level="${levelChoice}">${isSelected ? 'Wybrano' : 'Wybierz tę ścieżkę'}</button>
-    </div>
   `;
-  const btn = tile.querySelector('button');
-  if (btn && canPick) {
-    btn.addEventListener('click', (e) => {
+  if (canPick) {
+    tile.addEventListener('click', (e) => {
       e.preventDefault();
       applyPathBenefits({ levelChoice, sciezka: path });
       // Po wyborze prze-renderuj sekcję, aby podświetlić kafel
