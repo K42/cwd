@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && magiaPicker) zamknijMagicPicker();
     if (e.key === 'Escape' && ekwipunekPicker) zamknijEkwipunekPicker();
+    if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) zamknijWczytajPostacPopup();
   });
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -163,6 +164,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       resetujSciezke(btn.dataset.resetSciezka);
     });
   });
+
+  // Boczne menu (nowa/wczytaj/wylosuj postać) + podpowiedzi zbudowane w JS
+  document.getElementById('btn-nowa-postac')?.addEventListener('click', () => {
+    if (confirm('Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.')) nowaPostac();
+  });
+  document.getElementById('btn-wczytaj-postac')?.addEventListener('click', otworzWczytajPostacPopup);
+  document.getElementById('btn-wylosuj-postac')?.addEventListener('click', () => losujCalaPostac());
+  document.getElementById('load-character-close')?.addEventListener('click', zamknijWczytajPostacPopup);
+  document.getElementById('load-character-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'load-character-overlay') zamknijWczytajPostacPopup();
+  });
+  inicjalizujTooltipy();
 });
 
 /**
@@ -5449,6 +5462,269 @@ function kupPrzedmiotZSklepu(itemId) {
 
   renderSklepSection();
   rerenderEkwipunekPickerDynamic();
+}
+
+// ========== BOCZNE MENU (nowa/wczytaj/wylosuj postać) ==========
+
+/**
+ * Jeden współdzielony element podpowiedzi (tooltip) dla ikon bocznego menu -
+ * budowany w JS zamiast natywnego atrybutu `title`, żeby mieć pełną kontrolę
+ * nad wyglądem i pozycją (natywne podpowiedzi przeglądarki bywają wolne,
+ * obcięte albo słabo czytelne na ciemnym tle aplikacji).
+ */
+let tooltipEl = null;
+
+/** Tworzy (jednorazowo) pływający element podpowiedzi i dopina obsługę hover/focus do elementów z atrybutem `data-tooltip`. */
+function inicjalizujTooltipy() {
+  if (!tooltipEl) {
+    tooltipEl = document.createElement('div');
+    tooltipEl.className = 'js-tooltip';
+    tooltipEl.setAttribute('role', 'tooltip');
+    document.body.appendChild(tooltipEl);
+  }
+  document.querySelectorAll('[data-tooltip]').forEach(el => {
+    if (el.dataset.tooltipBound) return;
+    el.dataset.tooltipBound = 'true';
+    el.addEventListener('mouseenter', () => pokazTooltip(el));
+    el.addEventListener('mouseleave', ukryjTooltip);
+    el.addEventListener('focus', () => pokazTooltip(el));
+    el.addEventListener('blur', ukryjTooltip);
+  });
+}
+
+/** Pokazuje podpowiedź obok wskazanego elementu, dobierając stronę (prawo/lewo/góra), żeby zmieścić się w oknie. */
+function pokazTooltip(el) {
+  const tekst = el.dataset.tooltip;
+  if (!tooltipEl || !tekst) return;
+  tooltipEl.textContent = tekst;
+  tooltipEl.classList.add('visible');
+
+  const rect = el.getBoundingClientRect();
+  const preferGora = window.matchMedia('(max-width: 860px)').matches;
+
+  requestAnimationFrame(() => {
+    const tw = tooltipEl.offsetWidth;
+    const th = tooltipEl.offsetHeight;
+    let left; let top;
+    if (preferGora) {
+      // Boczne menu jest poziomym paskiem u dołu ekranu - podpowiedź nad ikoną.
+      left = rect.left + rect.width / 2 - tw / 2;
+      top = rect.top - th - 10;
+    } else {
+      // Boczne menu jest pionową listwą - podpowiedź z prawej strony ikony.
+      left = rect.right + 10;
+      top = rect.top + rect.height / 2 - th / 2;
+      if (left + tw > window.innerWidth - 8) left = rect.left - tw - 10;
+    }
+    left = Math.min(Math.max(8, left), window.innerWidth - tw - 8);
+    top = Math.min(Math.max(8, top), window.innerHeight - th - 8);
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
+  });
+}
+
+/** Ukrywa aktualnie widoczną podpowiedź. */
+function ukryjTooltip() {
+  tooltipEl?.classList.remove('visible');
+}
+
+/**
+ * Resetuje kreator do stanu początkowego i wraca do Kroku 1. W przeciwieństwie
+ * do zwykłego "Wyczyść" w Kroku 1 (resetujWyborPochodzenia()), zeruje też
+ * dalsze kroki (profesje, kurioza, magia, ekwipunek) i odrywa bieżącą pracę
+ * od dotychczasowego zapisu w cache, żeby kolejny zapis (po dotarciu do
+ * Kroku 8) trafił do nowego wpisu zamiast nadpisać poprzednią postać.
+ */
+function nowaPostac() {
+  resetujWyborPochodzenia();
+  renderProfessionsSection();
+  renderCuriosSection();
+  renderSpellsSection();
+  renderEkwipunekSection();
+  const importFeedback = document.getElementById('import-feedback');
+  if (importFeedback) importFeedback.innerHTML = '';
+  biezacyZapisCacheId = null;
+  pokazKrok(1);
+  aktualizujPodgladPostaci();
+}
+
+/** Otwiera popup z listą postaci zapisanych w cache przeglądarki (localStorage). */
+function otworzWczytajPostacPopup() {
+  const overlay = document.getElementById('load-character-overlay');
+  if (!overlay) return;
+  overlay.hidden = false;
+  renderWczytajPostacListe();
+}
+
+/** Zamyka popup listy zapisanych postaci. */
+function zamknijWczytajPostacPopup() {
+  const overlay = document.getElementById('load-character-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/** Renderuje listę zapisanych postaci (najnowsze na górze) w popupie "Wczytaj postać". */
+function renderWczytajPostacListe() {
+  const body = document.getElementById('load-character-body');
+  if (!body) return;
+
+  const wszystkie = Object.values(pobierzZapisanePostacie()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+
+  if (wszystkie.length === 0) {
+    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisuje się automatycznie, gdy dotrzesz do Kroku 8 (Podgląd), oraz przy imporcie z pliku JSON.</p>';
+    return;
+  }
+
+  body.innerHTML = `
+    <div class="known-spells-list">
+      ${wszystkie.map(wpis => {
+    const pochodzenieId = wpis.dane?.wybory?.pochodzenie;
+    const pochodzenie = dostepnePochodzenia.find(p => p.id === pochodzenieId)?.nazwa || pochodzenieId || 'Nieznane pochodzenie';
+    const poziom = wpis.dane?.wybory?.poziom ?? '?';
+    const data = wpis.savedAt ? new Date(wpis.savedAt).toLocaleString('pl-PL') : '';
+    return `
+          <div class="selected-item">
+            <span>${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
+            <button type="button" class="btn-secondary small" data-wczytaj-postac="${wpis.id}">Wczytaj</button>
+          </div>
+        `;
+  }).join('')}
+    </div>
+  `;
+
+  body.querySelectorAll('[data-wczytaj-postac]').forEach(btn => {
+    btn.addEventListener('click', () => wczytajPostacZCache(btn.dataset.wczytajPostac));
+  });
+}
+
+/** Wczytuje wybraną zapisaną postać z cache i podpina jej id, żeby dalsze zmiany nadpisywały ten sam wpis. */
+async function wczytajPostacZCache(id) {
+  const wpis = pobierzZapisanePostacie()[id];
+  if (!wpis) return;
+  zamknijWczytajPostacPopup();
+  biezacyZapisCacheId = id;
+  try {
+    await zaimportujPostac(wpis.dane);
+    pokazKomunikatImportu('success', '✓ Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Błąd wczytywania postaci z cache:', err);
+    pokazKomunikatImportu('error', `Wystąpił nieoczekiwany błąd podczas wczytywania postaci: ${err.message}`);
+  }
+}
+
+/**
+ * Losuje absolutnie wszystkie elementy kreatora - pochodzenie i jego tabele,
+ * bonusowe atrybuty, poziom, ścieżki (nowicjusza/eksperckiej/mistrzowskiej),
+ * sloty zwiększenia atrybutów, profesje i języki, kurioza, srebrniki oraz
+ * Zamożność wraz z wynikającym z niej wyposażeniem startowym - i od razu
+ * przechodzi do Kroku 8 z podsumowaniem. Krok 6 (Magia) pozostaje
+ * nierozwiązany, tak jak przy zwykłym pominięciu go przez gracza - to krok
+ * w pełni opcjonalny. Sklep w Kroku 7 też pozostaje nietknięty (żadnych
+ * dodatkowych zakupów/sprzedaży) - losowana jest wyłącznie Zamożność i
+ * gwarantowane/wybieralne pozycje startowego wyposażenia, zgodnie z zasadami
+ * podręcznika; opcja "zwój z zaklęciem" (wymagająca ręcznego wyboru
+ * tradycji/zaklęcia) jest pomijana na rzecz pozostałych dostępnych opcji.
+ */
+async function losujCalaPostac() {
+  nowaPostac();
+
+  // 1. Pochodzenie + jego tabele (istniejący, przetestowany losowacz z Kroku 1)
+  await losujPochodzenieICechy();
+
+  // 2. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
+  document.querySelectorAll('.origin-attr-choice-select').forEach(select => {
+    const opcje = Array.from(select.options).filter(o => o.value);
+    if (!opcje.length) return;
+    select.value = opcje[Math.floor(Math.random() * opcje.length)].value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // 3. Poziom (0-10) - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
+  wybranyPoziom = Math.floor(Math.random() * 11);
+  const poziomInput = document.querySelector(`input[name="poziom"][value="${wybranyPoziom}"]`);
+  if (poziomInput) poziomInput.checked = true;
+  aktualizujWidocznoscSciezek(wybranyPoziom);
+  await aktualizujSciezkiPoziomu(wybranyPoziom);
+  aktualizujTytulSekcjiSciezek(wybranyPoziom);
+  aktualizujWealthSection(wybranyPoziom);
+  aktualizujOriginBenefits(wybranyPoziom);
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+  await zaladujKorzysciPoziomu(wybranyPoziom);
+
+  // 4. Opcja poziomu 4 z pochodzenia (np. "1 zaklęcie"), jeśli dostępna
+  if (wybranyPoziom >= 4) {
+    const radios = Array.from(document.querySelectorAll(`input[name="origin-option-${wybranePochodzenie}"]`));
+    if (radios.length) {
+      const radio = radios[Math.floor(Math.random() * radios.length)];
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // 5. Ścieżki (Krok 3) - losowa dostępna ścieżka na każdym odblokowanym progu
+  [[1, 'path-grid-1'], [3, 'path-grid-3'], [7, 'path-grid-7']].forEach(([poziomWyboru, gridId]) => {
+    if (wybranyPoziom < poziomWyboru) return;
+    const buttons = Array.from(document.getElementById(gridId)?.querySelectorAll('button[data-path-id]') || []);
+    if (!buttons.length) return;
+    buttons[Math.floor(Math.random() * buttons.length)].click();
+  });
+
+  // 6. Sloty zwiększenia atrybutów (Krok 4) - losowy rozdział punktów
+  const slotyAtr = obliczSlotyAtrybutow({
+    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
+    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
+    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+  });
+  slotyAtr.forEach(slot => {
+    const wybrane = [];
+    for (let i = 0; i < slot.ilosc; i++) {
+      wybrane.push(slot.dostepne[Math.floor(Math.random() * slot.dostepne.length)]);
+    }
+    wybraneAtrybutySlotow[slot.id] = wybrane;
+  });
+  renderAtrybutySlotySection();
+
+  // 7. Profesje/języki i kurioza (Krok 5) - istniejące centralne losowacze
+  renderProfessionsSection();
+  renderCuriosSection();
+  losujProfesjeCentralnie();
+  losujKuriozaCentralnie();
+
+  // 8. Srebrniki (Krok 5) - 2k6 za każdy poziom powyżej 0, jak przycisk "Losuj srebrniki"
+  if (wybranyPoziom > 0) {
+    let suma = 0;
+    const rzuty = [];
+    for (let i = 0; i < wybranyPoziom * 2; i++) {
+      const r = Math.floor(Math.random() * 6) + 1;
+      rzuty.push(r);
+      suma += r;
+    }
+    wylosowaneSrebrniki = suma;
+    aktualizujWealthUI(rzuty, suma);
+  }
+
+  // 9. Ekwipunek (Krok 7): Zamożność + wyposażenie startowe - BEZ sklepu
+  //    (żadnych dodatkowych zakupów/sprzedaży) i bez opcji "zwój z zaklęciem"
+  //    (wymagałaby ręcznego wyboru tradycji/zaklęcia w popupie).
+  losujZamoznosc();
+  obliczAtomyWyposazenia(ekwipunekZamoznoscId).forEach(atom => {
+    if (atom.rodzaj === 'wybor_przedmiotu') {
+      const itemId = atom.opcje[Math.floor(Math.random() * atom.opcje.length)];
+      wybierzPrzedmiotStartowy(atom.id, itemId);
+    } else if (atom.rodzaj === 'wybor_dodatkowy') {
+      const opcjePrzedmiotow = atom.opcje.filter(o => o.typ === 'przedmiot');
+      if (!opcjePrzedmiotow.length) return;
+      const opcja = opcjePrzedmiotow[Math.floor(Math.random() * opcjePrzedmiotow.length)];
+      wybierzPrzedmiotStartowy(atom.id, opcja.id);
+    }
+  });
+
+  // 10. Krok 8: podsumowanie (zapisuje się automatycznie w cache w pokazKrok())
+  pokazKrok(8);
+  aktualizujPodgladPostaci();
 }
 
 // Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje

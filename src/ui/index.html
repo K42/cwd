@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Boczne menu: nowa postać / wczytaj postać / wylosuj postać -->
+    <nav class="side-menu" id="side-menu" aria-label="Menu postaci">
+        <button type="button" class="side-menu-btn" id="btn-nowa-postac" data-tooltip="Nowa postać — resetuje wszystkie ustawienia i wraca do Kroku 1, by stworzyć zupełnie nową postać" aria-label="Nowa postać">🆕</button>
+        <button type="button" class="side-menu-btn" id="btn-wczytaj-postac" data-tooltip="Wczytaj postać — pokazuje listę postaci zapisanych w pamięci tej przeglądarki" aria-label="Wczytaj postać">📂</button>
+        <button type="button" class="side-menu-btn" id="btn-wylosuj-postac" data-tooltip="Wylosuj postać — losuje całą postać (wszystkie kroki) i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać">🎲</button>
+    </nav>
+
     <div class="header">
         <h1>⚔️ Kreator Postaci</h1>
         <h2>Cień Władcy Demonów</h2>
@@ -557,6 +564,17 @@
                 <button type="button" class="modal-close-btn" id="equipment-picker-close" title="Zamknij">✕</button>
             </div>
             <div class="modal-body" id="equipment-picker-body"></div>
+        </div>
+    </div>
+
+    <!-- Popup listy postaci zapisanych w cache przeglądarki (boczne menu) -->
+    <div id="load-character-overlay" class="modal-overlay" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4>Wczytaj postać</h4>
+                <button type="button" class="modal-close-btn" id="load-character-close" title="Zamknij">✕</button>
+            </div>
+            <div class="modal-body" id="load-character-body"></div>
         </div>
     </div>
 

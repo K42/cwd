@@ -2465,3 +2465,91 @@ kbd {
     cursor: pointer;
 }
 
+/* Boczne menu (nowa/wczytaj/wylosuj postać) */
+.side-menu {
+    position: fixed;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 500;
+}
+
+.side-menu-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    font-size: 1.25em;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.1s;
+    padding: 0;
+}
+
+.side-menu-btn:hover, .side-menu-btn:focus-visible {
+    border-color: var(--gold);
+    transform: scale(1.08);
+}
+
+@media (max-width: 860px) {
+    .side-menu {
+        left: 50%;
+        top: auto;
+        bottom: 14px;
+        transform: translateX(-50%);
+        flex-direction: row;
+        background: var(--bg-1);
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        padding: 6px;
+        box-shadow: var(--shadow);
+    }
+
+    .side-menu-btn {
+        box-shadow: none;
+        border: none;
+        background: none;
+    }
+
+    .side-menu-btn:hover, .side-menu-btn:focus-visible {
+        background: var(--bg-3);
+    }
+
+    /* Zostaw miejsce nad zmieszczonym na stałe, poziomym bocznym menu, żeby
+       nie zasłaniało przycisków "Wstecz"/"Dalej" na dole każdego kroku. */
+    .step-navigation {
+        margin-bottom: 70px;
+    }
+}
+
+/* Podpowiedzi (tooltipy) zbudowane w JS - zob. inicjalizujTooltipy() w script.js */
+.js-tooltip {
+    position: fixed;
+    z-index: 2000;
+    background: var(--bg-2);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--ink);
+    font-size: 0.85em;
+    line-height: 1.4;
+    max-width: 240px;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+
+.js-tooltip.visible {
+    opacity: 1;
+}
+
