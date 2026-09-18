@@ -9,7 +9,7 @@
  */
 function getStartContent() {
   return `
-    <h4>🚀 Jak utworzyć postać?</h4>
+    <h4><svg class="icon"><use href="#icon-torch"></use></svg> Jak utworzyć postać?</h4>
     
     <div class="help-step">
       <div class="help-step-header">
@@ -21,13 +21,13 @@ function getStartContent() {
         <li><strong>Przeglądaj kafelki</strong> - Kliknij dowolny kafelek aby zobaczyć szczegóły</li>
         <li><strong>Czytaj opisy</strong> - Każde pochodzenie ma unikalny opis, atrybuty i cechy specjalne</li>
         <li><strong>Wybierz</strong> - Kliknij przycisk "Wybierz [Nazwa]" na rozwiniętym kafelku</li>
-        <li><strong>Idź dalej</strong> - Kliknij "Dalej →" na dole strony</li>
+        <li><strong>Idź dalej</strong> - Kliknij "Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>" na dole strony</li>
       </ul>
       <div class="help-tip">
-        <strong>💡 Rekomendacje dla początkujących:</strong><br>
-        👤 <strong>Człowiek</strong> - Wszechstronny, bez skomplikowanych zasad<br>
-        ⚔️ <strong>Krasnolud</strong> - Odporny, świetny dla wojowników<br>
-        ✨ <strong>Elf</strong> - Magiczny, dobry dla magów i łuczników
+        <strong><svg class="icon"><use href="#icon-tip"></use></svg> Rekomendacje dla początkujących:</strong><br>
+        <svg class="icon"><use href="#icon-person"></use></svg> <strong>Człowiek</strong> - Wszechstronny, bez skomplikowanych zasad<br>
+        <svg class="icon"><use href="#icon-swords"></use></svg> <strong>Krasnolud</strong> - Odporny, świetny dla wojowników<br>
+        <svg class="icon"><use href="#icon-sparkle"></use></svg> <strong>Elf</strong> - Magiczny, dobry dla magów i łuczników
       </div>
     </div>
 
@@ -78,7 +78,7 @@ function getStartContent() {
       </div>
       <p>Rozdzielasz sloty przyznane przez pochodzenie i ścieżki - każdy pokazuje w nawiasie, z jakiego wyboru pochodzi (np. "Ścieżka: Łotr (poziom 1)"). Zależnie od slotu możesz wybrać profesję z określonej kategorii, nowy język do mówienia albo pismo w już znanym języku.</p>
       <ul>
-        <li><strong>🎲 Losuj pozostałe</strong> - losuje tylko nierozdane sloty; jeśli już wybrałeś tryb (np. "Nowy język") bez wskazania wartości, losowanie dobierze wartość w tym trybie, nie zmieni go</li>
+        <li><strong><svg class="icon"><use href="#icon-dice"></use></svg> Losuj pozostałe</strong> - losuje tylko nierozdane sloty; jeśli już wybrałeś tryb (np. "Nowy język") bez wskazania wartości, losowanie dobierze wartość w tym trybie, nie zmieni go</li>
         <li><strong>Wyczyść</strong> - mały przycisk przy każdej karcie/sekcji czyści tylko jej wybór, nie wpływając na resztę</li>
       </ul>
     </div>
@@ -104,9 +104,9 @@ function getStartContent() {
       </div>
       <p>Ustalasz początkowe wyposażenie postaci zgodnie z zasadami podręcznika głównego (kurioza są ustalane osobno, w Kroku 5):</p>
       <ul>
-        <li><strong>Zamożność</strong> - wybierz kafelek ręcznie albo kliknij <strong>"🎲 Losuj (3k6)"</strong>, by wylosować ją zgodnie z tabelą z podręcznika. Każdy poziom Zamożności przyznaje inny zestaw sprzętu i losową startową gotówkę</li>
+        <li><strong>Zamożność</strong> - wybierz kafelek ręcznie albo kliknij <strong>"<svg class="icon"><use href="#icon-dice"></use></svg> Losuj (3k6)"</strong>, by wylosować ją zgodnie z tabelą z podręcznika. Każdy poziom Zamożności przyznaje inny zestaw sprzętu i losową startową gotówkę</li>
         <li><strong>Wyposażenie startowe</strong> - gwarantowane pozycje pojawiają się automatycznie; tam, gdzie podręcznik daje wybór (np. kostur / pałka / proca), klikasz jedną z kafelkowych opcji. Jedna z opcji wyższych poziomów Zamożności to zwój z zaklęciem kręgu 0 - otwiera ten sam popup wyboru tradycji/zaklęcia co Krok 6</li>
-        <li><strong>Sklep</strong> - po otrzymaniu wyposażenia startowego możesz sprzedać dowolną pozycję za połowę jej ceny bazowej albo kliknąć <strong>"🛒 Przeglądaj katalog"</strong>, by kupić cokolwiek innego z pełnej listy przedmiotów (z filtrami na kategorię i rzadkość). Gotówka uwzględnia startową sakiewkę, wpływy ze sprzedaży oraz srebrniki wylosowane w Kroku 2 (jeśli poziom postaci jest wyższy niż 0)</li>
+        <li><strong>Sklep</strong> - po otrzymaniu wyposażenia startowego możesz sprzedać dowolną pozycję za połowę jej ceny bazowej albo kliknąć <strong>"<svg class="icon"><use href="#icon-cart"></use></svg> Przeglądaj katalog"</strong>, by kupić cokolwiek innego z pełnej listy przedmiotów (z filtrami na kategorię i rzadkość). Gotówka uwzględnia startową sakiewkę, wpływy ze sprzedaży oraz srebrniki wylosowane w Kroku 2 (jeśli poziom postaci jest wyższy niż 0)</li>
         <li>Zakupione przedmioty można w każdej chwili zwrócić za pełną cenę przyciskiem "Zwróć"</li>
       </ul>
     </div>
@@ -119,7 +119,7 @@ function getStartContent() {
       <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
       <ul>
         <li>Podgląd aktualizuje się na bieżąco - nie trzeba niczego "zatwierdzać"</li>
-        <li>Kliknij <strong>"📄 Eksportuj do JSON"</strong> aby zapisać postać na dysku</li>
+        <li>Kliknij <strong>"<svg class="icon"><use href="#icon-page"></use></svg> Eksportuj do JSON"</strong> aby zapisać postać na dysku</li>
       </ul>
     </div>
   `;
@@ -131,7 +131,7 @@ function getStartContent() {
  */
 function getGlossaryContent() {
   return `
-    <h4>📖 Słownik Pojęć</h4>
+    <h4><svg class="icon"><use href="#icon-book"></use></svg> Słownik Pojęć</h4>
 
     <div class="glossary-section">
       <h5>Atrybuty Podstawowe</h5>
@@ -192,7 +192,7 @@ function getGlossaryContent() {
       <h5>Atrybuty Drugorzędne</h5>
       
       <div class="glossary-item">
-        <div class="glossary-term">❤️ Zdrowie</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-heart"></use></svg> Zdrowie</div>
         <div class="glossary-def">
           <p><strong>Wzór:</strong> Siła + bonusy ze ścieżek</p>
           <p><strong>Co to znaczy:</strong> Ile obrażeń możesz przyjąć zanim upadniesz</p>
@@ -201,7 +201,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">🛡️ Obrona</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-shield"></use></svg> Obrona</div>
         <div class="glossary-def">
           <p><strong>Wzór:</strong> Zręczność</p>
           <p><strong>Co to znaczy:</strong> Jak trudno Cię trafić w walce (cel dla rzutów ataku)</p>
@@ -210,7 +210,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">👁️ Percepcja</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-eye"></use></svg> Percepcja</div>
         <div class="glossary-def">
           <p><strong>Wzór:</strong> Intelekt</p>
           <p><strong>Co to znaczy:</strong> Jak dobrze zauważasz ukryte rzeczy</p>
@@ -219,7 +219,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">💚 Szybkość Zdrowienia</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-pulse"></use></svg> Szybkość Zdrowienia</div>
         <div class="glossary-def">
           <p><strong>Wzór:</strong> Siła ÷ 4 (zaokrąglone w dół, minimum 1)</p>
           <p><strong>Co to znaczy:</strong> Ile punktów zdrowia odzyskujesz po odpoczynku</p>
@@ -228,7 +228,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">🏃 Prędkość</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-speed"></use></svg> Prędkość</div>
         <div class="glossary-def">
           <p><strong>Źródło:</strong> Pochodzenie (zwykle 10)</p>
           <p><strong>Co to znaczy:</strong> Ile metrów możesz przejść w jednej rundzie (6 sekund)</p>
@@ -237,7 +237,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">📏 Rozmiar</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-ruler"></use></svg> Rozmiar</div>
         <div class="glossary-def">
           <p><strong>Opcje:</strong> 1/4 (malutki), 1/2 (mały), 1 (normalny), 2 (duży)</p>
           <p><strong>Co to znaczy:</strong> Fizyczny rozmiar postaci</p>
@@ -246,7 +246,7 @@ function getGlossaryContent() {
       </div>
 
       <div class="glossary-item">
-        <div class="glossary-term">✨ Moc</div>
+        <div class="glossary-term"><svg class="icon"><use href="#icon-sparkle"></use></svg> Moc</div>
         <div class="glossary-def">
           <p><strong>Źródło:</strong> Ścieżki magiczne</p>
           <p><strong>Co to znaczy:</strong> Punkty magii do rzucania zaklęć</p>
@@ -288,7 +288,7 @@ function getGlossaryContent() {
  */
 function getFAQContent() {
   return `
-    <h4>❓ Często Zadawane Pytania</h4>
+    <h4><svg class="icon"><use href="#icon-question"></use></svg> Często Zadawane Pytania</h4>
 
     <div class="faq-section">
       <h5>Podstawy</h5>
@@ -296,7 +296,7 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Jak zmienić wybrane pochodzenie?</div>
         <div class="faq-answer">
-          Kliknij przycisk <strong>"← Wstecz"</strong> na dole strony aby wrócić do kroku 1, albo skorzystaj z małego przycisku <strong>"Wyczyść wybór"</strong> nad kafelkami pochodzenia.
+          Kliknij przycisk <strong>"<svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz"</strong> na dole strony aby wrócić do kroku 1, albo skorzystaj z małego przycisku <strong>"Wyczyść wybór"</strong> nad kafelkami pochodzenia.
         </div>
       </div>
 
@@ -310,14 +310,14 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Czy mogę zapisać postać w trakcie tworzenia?</div>
         <div class="faq-answer">
-          Musisz najpierw dotrzeć do Kroku 8 (co wymaga ukończenia wymaganych wyborów po drodze), ale stamtąd możesz w każdej chwili wyeksportować postać do pliku JSON - podgląd aktualizuje się na bieżąco, bez osobnego "zatwierdzania". Zapisany plik możesz później wczytać przyciskiem "📂 Importuj postać" w Kroku 1, żeby kontynuować od tego samego miejsca.
+          Musisz najpierw dotrzeć do Kroku 8 (co wymaga ukończenia wymaganych wyborów po drodze), ale stamtąd możesz w każdej chwili wyeksportować postać do pliku JSON - podgląd aktualizuje się na bieżąco, bez osobnego "zatwierdzania". Zapisany plik możesz później wczytać przyciskiem "<svg class="icon"><use href="#icon-folder"></use></svg> Importuj postać" w Kroku 1, żeby kontynuować od tego samego miejsca.
         </div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question">Czy mogę edytować postać po utworzeniu?</div>
         <div class="faq-answer">
-          Tak - wyeksportuj postać do JSON (Krok 8), a następnie zaimportuj ją ponownie przyciskiem "📂 Importuj postać" w Kroku 1. Wszystkie wybory zostaną odtworzone i możesz przejść przez dowolny krok, żeby je zmienić.
+          Tak - wyeksportuj postać do JSON (Krok 8), a następnie zaimportuj ją ponownie przyciskiem "<svg class="icon"><use href="#icon-folder"></use></svg> Importuj postać" w Kroku 1. Wszystkie wybory zostaną odtworzone i możesz przejść przez dowolny krok, żeby je zmienić.
         </div>
       </div>
 
@@ -435,14 +435,14 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Jak działa eksport postaci?</div>
         <div class="faq-answer">
-          Po kliknięciu "💾 Eksportuj JSON" pobierze się plik tekstowy (JSON) z wszystkimi danymi postaci. Możesz go otworzyć w notatniku, zachować jako backup lub udostępnić Mistrzowi Gry.
+          Po kliknięciu "<svg class="icon"><use href="#icon-page"></use></svg> Eksportuj JSON" pobierze się plik tekstowy (JSON) z wszystkimi danymi postaci. Możesz go otworzyć w notatniku, zachować jako backup lub udostępnić Mistrzowi Gry.
         </div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question">Czy mogę importować zapisane postacie?</div>
         <div class="faq-answer">
-          Tak. Kliknij <strong>"📂 Importuj postać"</strong> obok przycisku losowania w Kroku 1 i wskaż plik JSON wyeksportowany wcześniej z tego kreatora. Jeśli plik jest uszkodzony, ma złą strukturę albo odwołuje się do pochodzeń/ścieżek/zaklęć, których nie ma w bieżącej bazie danych, zobaczysz czytelny komunikat z listą konkretnych problemów zamiast cichego niepowodzenia.
+          Tak. Kliknij <strong>"<svg class="icon"><use href="#icon-folder"></use></svg> Importuj postać"</strong> obok przycisku losowania w Kroku 1 i wskaż plik JSON wyeksportowany wcześniej z tego kreatora. Jeśli plik jest uszkodzony, ma złą strukturę albo odwołuje się do pochodzeń/ścieżek/zaklęć, których nie ma w bieżącej bazie danych, zobaczysz czytelny komunikat z listą konkretnych problemów zamiast cichego niepowodzenia.
         </div>
       </div>
 
@@ -462,7 +462,7 @@ function getFAQContent() {
  */
 function getShortcutsContent() {
   return `
-    <h4>⌨️ Skróty Klawiszowe</h4>
+    <h4><svg class="icon"><use href="#icon-keyboard"></use></svg> Skróty Klawiszowe</h4>
 
     <div class="shortcuts-intro">
       <p>Możesz używać klawiatury do szybszej nawigacji w kreatorze:</p>
@@ -508,7 +508,7 @@ function getShortcutsContent() {
           <td>Gdy przycisk ma focus</td>
         </tr>
         <tr>
-          <td><kbd>↑</kbd> <kbd>↓</kbd></td>
+          <td><kbd><svg class="icon"><use href="#icon-chevron-up"></use></svg></kbd> <kbd><svg class="icon"><use href="#icon-chevron-down"></use></svg></kbd></td>
           <td>Przewiń listę</td>
           <td>Listy rozwijane</td>
         </tr>
@@ -516,13 +516,13 @@ function getShortcutsContent() {
     </table>
 
     <div class="help-tip" style="margin-top: 20px;">
-      <strong>💡 Wskazówka:</strong> Użyj <kbd>Tab</kbd> do nawigacji między polami formularza - to szybsze niż klikanie myszką!
+      <strong><svg class="icon"><use href="#icon-tip"></use></svg> Wskazówka:</strong> Użyj <kbd>Tab</kbd> do nawigacji między polami formularza - to szybsze niż klikanie myszką!
     </div>
 
     <div class="shortcuts-section">
       <h5>Nawigacja między Krokami</h5>
       <ul>
-        <li>Użyj przycisków <strong>"Dalej →"</strong> i <strong>"← Wstecz"</strong> na dole każdego kroku</li>
+        <li>Użyj przycisków <strong>"Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>"</strong> i <strong>"<svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz"</strong> na dole każdego kroku</li>
         <li>Możesz cofnąć się w dowolnym momencie bez utraty danych</li>
       </ul>
     </div>

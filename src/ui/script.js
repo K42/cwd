@@ -19,7 +19,12 @@ import {
   formatCopperbits, priceBuybackCopperbits, calculateAtomsGear, getGuaranteedEntries,
   formatStatsItem, SORT_LABELS, sortItems, CONVERTER_TO_COPPERBITS
 } from './logic/equipment.js';
-import { getSavedCharacters, saveCharacterToCache, generateSaveId } from './logic/saves.js';
+import { getSavedCharacters, saveCharacterToCache, generateSaveId, clearSavedCharacters } from './logic/saves.js';
+
+/** Zwraca znacznik `<svg>` odwołujący się do ikony (linia, bez wypełnienia) zdefiniowanej w sprite w index.html. */
+function icon(name) {
+  return `<svg class="icon"><use href="#icon-${name}"></use></svg>`;
+}
 
 let currentCharacter = null;
 let selectedOrigin = null;
@@ -51,6 +56,9 @@ let equipmentDescriptionExpanded = new Set(); // klucze pozycji "Twoje przedmiot
 
 // --- Zapis w pamięci przeglądarki (localStorage) ---
 let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
+
+// --- Popup "Wylosuj postać" (boczne menu) ---
+let randomizeCharacterLevel = 0; // poziom wybrany w popupie - jedyna rzecz, którą wybiera użytkownik, reszta jest losowana
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -155,6 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape' && magicPicker) closeMagicPicker();
     if (e.key === 'Escape' && equipmentPicker) closeEquipmentPicker();
     if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) closeLoadCharacterPopup();
+    if (e.key === 'Escape' && !document.getElementById('randomize-character-overlay')?.hidden) closeRandomizeCharacterPopup();
   });
   document.querySelectorAll('[data-reset-path]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -170,10 +179,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (confirm('Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.')) newCharacter();
   });
   document.getElementById('btn-load-character')?.addEventListener('click', openLoadCharacterPopup);
-  document.getElementById('btn-randomize-character')?.addEventListener('click', () => randomizeWholeCharacter());
+  document.getElementById('btn-randomize-character')?.addEventListener('click', openRandomizeCharacterPopup);
   document.getElementById('load-character-close')?.addEventListener('click', closeLoadCharacterPopup);
   document.getElementById('load-character-overlay')?.addEventListener('click', (e) => {
     if (e.target.id === 'load-character-overlay') closeLoadCharacterPopup();
+  });
+  document.getElementById('randomize-character-close')?.addEventListener('click', closeRandomizeCharacterPopup);
+  document.getElementById('randomize-character-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'randomize-character-overlay') closeRandomizeCharacterPopup();
+  });
+  document.getElementById('btn-randomize-character-confirm')?.addEventListener('click', () => {
+    closeRandomizeCharacterPopup();
+    randomizeWholeCharacter(randomizeCharacterLevel);
   });
   initializeTooltips();
 });
@@ -395,7 +412,7 @@ function renderPathTile(path, levelChoice) {
   tile.innerHTML = `
     <div class="picker-tile-header">
       <span>${path.nazwa}</span>
-      ${isSelected ? '<span class="wealth-badge">✓ Wybrano</span>' : ''}
+      ${isSelected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
     </div>
     <div class="picker-tile-meta">${renderSourceTag(path.zrodlo || 'PG')} Poziom wyboru ${levelChoice}</div>
     <div class="tile-body">
@@ -723,13 +740,13 @@ function updateOriginBenefitsContent() {
       <div class="origin-benefits-details">
         ${parseInt(benefits.zdrowie.replace('+', '')) > 0 ? `
         <div class="health-bonus">
-          <h6>🏥 Bonus do Zdrowia</h6>
+          <h6>${icon('heart')} Bonus do Zdrowia</h6>
           <p><strong>Zdrowie:</strong> +${benefits.zdrowie.replace('+', '')}</p>
         </div>
         ` : ''}
 
         <div class="options-selection">
-          <h6>⚡ Wybierz Opcję</h6>
+          <h6>${icon('bolt')} Wybierz Opcję</h6>
           <p>Wybierz jedną z poniższych opcji:</p>
           <div class="options-list">
             ${benefits.opcje.map(opcja => `
@@ -742,7 +759,7 @@ function updateOriginBenefitsContent() {
         </div>
         
         <div class="talent-descriptions">
-          <h6>📖 Opisy Talentów</h6>
+          <h6>${icon('book')} Opisy Talentów</h6>
           ${generateTalentDescriptions(benefits.opcje)}
         </div>
       </div>
@@ -971,7 +988,7 @@ function generateTilesOrigins(pochodzenia) {
                 
                 <div class="tile-sections">
                     <div class="tile-section attributes-section">
-                        <h5>⚔️ Atrybuty</h5>
+                        <h5>${icon('swords')} Atrybuty</h5>
                         <div class="attributes-grid">
                             <div class="attribute-item">
                                 <span class="attr-name">Siła</span>
@@ -997,7 +1014,7 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                     
                     <div class="tile-section mechanics-section">
-                        <h5>🎲 Mechanika</h5>
+                        <h5>${icon('dice')} Mechanika</h5>
                         <div class="mechanics-grid">
                             <div class="mechanics-item">
                                 <span class="mech-label">Obrona:</span>
@@ -1015,7 +1032,7 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                     
                     <div class="tile-section cultural-section">
-                        <h5>🌍 Kulturowe</h5>
+                        <h5>${icon('compass')} Kulturowe</h5>
                         <div class="cultural-info">
                             <div class="cultural-item">
                                 <span class="cultural-label">Języki:</span>
@@ -1030,7 +1047,7 @@ function generateTilesOrigins(pochodzenia) {
                     
                     ${allTraits ? `
                     <div class="tile-section features-section">
-                        <h5>✨ Cechy Specjalne</h5>
+                        <h5>${icon('sparkle')} Cechy Specjalne</h5>
                         <div class="features-list">
                             ${allTraits.map(cecha => `
                                 <div class="feature-item">
@@ -1044,7 +1061,7 @@ function generateTilesOrigins(pochodzenia) {
                     
                     ${pochodzenie.tabele && Object.keys(pochodzenie.tabele).length > 0 ? `
                     <div class="tile-section tables-section">
-                        <h5>🎲 Tabele Losowania</h5>
+                        <h5>${icon('dice')} Tabele Losowania</h5>
                         <div class="tables-grid">
                             ${Object.entries(pochodzenie.tabele).map(([nameTable, tabela]) => `
                                 <div class="table-item">
@@ -1067,10 +1084,10 @@ function generateTilesOrigins(pochodzenia) {
                                         
                                         <div class="table-buttons">
                                             <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
-                                                🎲 Losuj
+                                                ${icon('dice')} Losuj
                                             </button>
                                             <button class="apply-selection-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}" style="display: none;">
-                                                ✅ Zastosuj wybór
+                                                ${icon('check')} Zastosuj wybór
                                             </button>
                                         </div>
                                     </div>
@@ -1263,7 +1280,7 @@ function collectResultsTables(originId) {
             const rollMatch = rollDice.textContent.match(/(\d+)/);
             const rzut = rollMatch ? rollMatch[1] : '?';
             const wynik = rollOutcome.textContent;
-            const typ = rollDice.textContent.includes('🎯') ? 'wybór' : 'losowanie';
+            const typ = rollDice.textContent.includes('Wybór') ? 'wybór' : 'losowanie';
             
             // Zapisz wynik
             if (!resultsTables[originId]) {
@@ -2338,7 +2355,7 @@ function showMessageChoice(originId) {
   message.className = 'selection-message';
   message.innerHTML = `
         <div class="message-content">
-            <span class="message-icon">✓</span>
+            <span class="message-icon">${icon('check')}</span>
             <span class="message-text">Wybrano pochodzenie: <strong>${pochodzenie.nazwa}</strong></span>
         </div>
     `;
@@ -2390,20 +2407,20 @@ function generateSectionsResultsTables(originId) {
   }
   
   let html = '<div class="preview-section">';
-  html += '<h5>🎲 Wyniki Tabel Losowych</h5>';
+  html += `<h5>${icon('dice')} Wyniki Tabel Losowych</h5>`;
 
   Object.entries(resultsTables[originId]).forEach(([tableName, result]) => {
     // Nazwa tabeli pochodzi bezpośrednio z jej definicji (pochodzenie.tabele),
     // a nie z osobno utrzymywanej listy - inaczej brakujący wpis pokazywałby
     // surowy klucz (np. "znienawidzone_stworzenia") zamiast czytelnej nazwy.
     const nameTable = pochodzenie.tabele[tableName]?.nazwa || humanizeKeyTable(tableName);
-    const icon = result.typ === 'wybór' ? '🎯' : '🎲';
+    const resultIcon = result.typ === 'wybór' ? icon('target') : icon('dice');
     const typeText = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
-    
+
     html += '<div class="table-result-item">';
     html += '<div class="table-result-header">';
     html += `<span class="table-result-name">${nameTable}</span>`;
-    html += `<span class="table-result-type">${icon} ${typeText}</span>`;
+    html += `<span class="table-result-type">${resultIcon} ${typeText}</span>`;
     html += '</div>';
     html += '<div class="table-result-content">';
     html += `<div class="table-result-roll">Rzut: ${result.rzut}</div>`;
@@ -2685,7 +2702,7 @@ function updatePreviewCharacter() {
   if (!selectedOrigin) return;
   const container = document.getElementById('character-preview');
   if (!container) return;
-  container.innerHTML = `<h4>📜 Podgląd Postaci</h4>${generateCardCharacterHtml()}`;
+  container.innerHTML = `<h4>${icon('scroll')} Podgląd Postaci</h4>${generateCardCharacterHtml()}`;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -3323,7 +3340,7 @@ function restoreTableResultsToDom(originId) {
   Object.entries(wyniki).forEach(([tableName, wynik]) => {
     const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
     if (!resultDiv) return;
-    const typeLabel = wynik.typ === 'wybór' ? '🎯 Wybór' : '🎲 Rzut';
+    const typeLabel = wynik.typ === 'wybór' ? `${icon('target')} Wybór` : `${icon('dice')} Rzut`;
     const efekt = wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${wynik.efekt}` : '';
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
@@ -3473,7 +3490,7 @@ function handleFileImport(file) {
       // ten sam zapis (zob. zapiszAktualnaPostacDoCache()).
       currentSaveCacheId = generateSaveId();
       saveCharacterToCache(currentSaveCacheId, data);
-      showImportMessage('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
+      showImportMessage('success', `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);
@@ -3654,7 +3671,7 @@ function applySelectedOptions(originId, tableName) {
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = `
     <div class="roll-result-content">
-      <div class="roll-dice">🎯 Wybór: ${rzut}</div>
+      <div class="roll-dice">${icon('target')} Wybór: ${rzut}</div>
       <div class="roll-outcome">${wynik}</div>
     </div>
   `;
@@ -3679,7 +3696,7 @@ async function randomizeWithTableUi(originId, tableName) {
     const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
     if (resultDiv) {
       resultDiv.style.display = 'block';
-      resultDiv.innerHTML = '<div class="loading">🎲 Losowanie...</div>';
+      resultDiv.innerHTML = `<div class="loading">${icon('dice')} Losowanie...</div>`;
     }
     
     // Wykonaj losowanie
@@ -3701,7 +3718,7 @@ async function randomizeWithTableUi(originId, tableName) {
       const efekt = wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${wynik.efekt}` : '';
       resultDiv.innerHTML = `
         <div class="roll-result-content">
-          <div class="roll-dice">🎲 Rzut: ${wynik.rzut}</div>
+          <div class="roll-dice">${icon('dice')} Rzut: ${wynik.rzut}</div>
           <div class="roll-outcome">${wynik.wynik}</div>
           ${efekt}
         </div>
@@ -3713,7 +3730,7 @@ async function randomizeWithTableUi(originId, tableName) {
     console.error('Błąd losowania z tabeli:', error);
     const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
     if (resultDiv) {
-      resultDiv.innerHTML = `<div class="error">❌ Błąd: ${error.message}</div>`;
+      resultDiv.innerHTML = `<div class="error">${icon('x')} Błąd: ${error.message}</div>`;
     }
   }
 }
@@ -4473,7 +4490,7 @@ function renderCardMagic(resolution) {
       <p class="magic-slot-desc">${atomDescription(atom)}</p>
       ${bodyHtml}
       ${renderBlackMagicWarning(resolution)}
-      <p class="magic-slot-status ${complete ? 'ok' : ''}">${complete ? '✓ Rozwiązano' : 'Nierozwiązane (opcjonalne)'}</p>
+      <p class="magic-slot-status ${complete ? 'ok' : ''}">${complete ? `${icon('check')} Rozwiązano` : 'Nierozwiązane (opcjonalne)'}</p>
     </div>
   `;
 }
@@ -4489,8 +4506,8 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
   return `
     <div class="magic-slot-picker">
       ${nazwa ? `
-        <div class="magic-picked-chip">${nazwa}${black ? ' ⚠️' : ''}
-          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">✕</button>
+        <div class="magic-picked-chip">${nazwa}${black ? ` ${icon('warning')}` : ''}
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">${icon('x')}</button>
         </div>
       ` : ''}
       <button type="button" class="btn-secondary small" data-open-tradition-picker="${atomId}" data-category="${(kategoria || ['dowolna']).join(',')}">${nazwa ? 'Zmień tradycję' : 'Wybierz tradycję'}</button>
@@ -4510,8 +4527,8 @@ function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) 
   return `
     <div class="magic-slot-picker">
       ${spell ? `
-        <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ' ⚠️' : ''}
-          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">✕</button>
+        <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ` ${icon('warning')}` : ''}
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">${icon('x')}</button>
         </div>
       ` : ''}
       <button type="button" class="btn-secondary small" data-open-spell-picker="${atomId}" data-tradition-restriction="${tradycjaOgraniczenie || ''}">${spell ? 'Zmień zaklęcie' : 'Wybierz zaklęcie'}</button>
@@ -4532,7 +4549,7 @@ function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
     <div class="magic-slot-picker magic-slot-picker-secondary">
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (krąg 0)
-          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">✕</button>
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">${icon('x')}</button>
         </div>
       ` : ''}
       <button type="button" class="btn-secondary small" data-open-free-spell-picker="${atomId}" data-tradition-free="${tradycjaId}">${spell ? 'Zmień darmowe zaklęcie' : 'Wybierz zaklęcie kręgu 0'}</button>
@@ -4548,16 +4565,16 @@ function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
 function renderBlackMagicWarning(resolution) {
   const { atom, mode, tradycjaId, spellId, blackMagicRisk } = resolution;
   if (mode === 'tradycja' && tradycjaId && isBlackMagic(tradycjaId)) {
-    return `<div class="black-magic-warning">⚠️ ${TRADITIONS[tradycjaId]?.nazwa || tradycjaId} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;
+    return `<div class="black-magic-warning">${icon('warning')} ${TRADITIONS[tradycjaId]?.nazwa || tradycjaId} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;
   }
   if (blackMagicRisk) {
     const wynik = magicRiskResults[atom.id];
     if (wynik && wynik.spellId === spellId) {
-      return `<div class="black-magic-warning">⚠️ Zaklęcie czarnej magii. Rzut ryzyka: <span class="black-magic-roll-result">k6 = ${wynik.rzut}</span> ${wynik.przyznane ? '→ +1 Splugawienie' : '→ bez efektu'}.</div>`;
+      return `<div class="black-magic-warning">${icon('warning')} Zaklęcie czarnej magii. Rzut ryzyka: <span class="black-magic-roll-result">k6 = ${wynik.rzut}</span> ${wynik.przyznane ? '→ +1 Splugawienie' : '→ bez efektu'}.</div>`;
     }
     return `
       <div class="black-magic-warning">
-        ⚠️ Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${blackMagicRisk.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
+        ${icon('warning')} Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${blackMagicRisk.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
         <button type="button" class="btn-secondary small" data-magic-roll="${atom.id}" data-roll-spell="${spellId}" data-roll-limit="${blackMagicRisk.liczbaZnanychPrzed}">Rzuć k6</button>
       </div>
     `;
@@ -4724,7 +4741,7 @@ function renderTraditionPickerDynamicHtml() {
   const tiles = wynik.map(t => `
     <button type="button" class="picker-tile" data-pick-tradition="${t.id}">
       <div class="picker-tile-header"><span>${t.nazwa}</span></div>
-      ${t.czarnaMagia ? '<div class="picker-tile-warning">⚠️ Czarna magia - poznanie przyznaje 1 Splugawienie</div>' : ''}
+      ${t.czarnaMagia ? `<div class="picker-tile-warning">${icon('warning')} Czarna magia - poznanie przyznaje 1 Splugawienie</div>` : ''}
     </button>
   `).join('') || '<p class="hint">Brak tradycji spełniających kryteria wyszukiwania.</p>';
 
@@ -4793,7 +4810,7 @@ function renderSpellPickerDynamicHtml() {
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
         <p class="picker-tile-description">${s.opis}</p>
         ${isTaken ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
-        ${!isTaken && isBlackMagic(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
+        ${!isTaken && isBlackMagic(s.tradycja) ? `<div class="picker-tile-warning">${icon('warning')} Czarna magia</div>` : ''}
       </button>
     `;
     }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
@@ -4992,7 +5009,7 @@ function renderWealthGrid() {
       <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-select-wealth="${z.id}">
         <div class="picker-tile-header">
           <span>${z.nazwa}</span>
-          ${selected ? '<span class="wealth-badge">✓ Wybrano</span>' : ''}
+          ${selected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
         </div>
         <div class="picker-tile-meta">3k6: ${range}</div>
         <p class="picker-tile-description">${z.opis}</p>
@@ -5124,7 +5141,7 @@ function renderGearStarting() {
   const atomsHtml = state.atoms.map(atom => renderCardGear(atom)).join('');
 
   container.innerHTML = `
-    <h4>🎒 Wyposażenie startowe (${state.wealthentry.nazwa})</h4>
+    <h4>${icon('backpack')} Wyposażenie startowe (${state.wealthentry.nazwa})</h4>
     <p class="hint">Gwarantowane: <ul class="guaranteed-list">${guaranteedHtml}</ul></p>
     ${atomsHtml}
     <p class="hint">Startowa gotówka: <strong>${formatCopperbits(state.startingCashCopperbits)}</strong> (sakiewka z ${state.wealthentry.pieniadze.kosci} ${state.wealthentry.pieniadze.jednostka === 'okr' ? 'okrawków' : state.wealthentry.pieniadze.jednostka === 'md' ? 'miedziaków' : 'srebrników'})</p>
@@ -5228,8 +5245,8 @@ function renderShopSection() {
         <td>${stats || '—'}</td>
         <td>${item ? formatPrice(item.cena) : '—'}</td>
         <td class="equipment-table-actions">
-          ${hasDescription ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">ℹ️</button>` : ''}
-          ${canSell ? `<button type="button" class="icon-btn" data-sell="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
+          ${hasDescription ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">${icon('info')}</button>` : ''}
+          ${canSell ? `<button type="button" class="icon-btn" data-sell="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? icon('purse') : icon('undo')}</button>` : ''}
         </td>
       </tr>
     `;
@@ -5254,7 +5271,7 @@ function renderShopSection() {
 
   container.innerHTML = `
     <div class="flex-row-between">
-      <h4>🏪 Sklep</h4>
+      <h4>${icon('stall')} Sklep</h4>
       <span id="gotowka-summary" class="inline-summary"><strong>Gotówka: ${formatCopperbits(state.cashCopperbits)}</strong></span>
     </div>
     ${state.withSilverLevel > 0 ? `<p class="hint">Zawiera ${randomizedSilver} wylosowanych srebrników z Kroku 2 (poziom ${selectedLevel}).</p>` : ''}
@@ -5271,7 +5288,7 @@ function renderShopSection() {
 
     <div class="flex-row-between">
       <h5>Katalog przedmiotów</h5>
-      <button type="button" class="btn-primary small" id="btn-open-shop">🛒 Przeglądaj katalog</button>
+      <button type="button" class="btn-primary small" id="btn-open-shop">${icon('cart')} Przeglądaj katalog</button>
     </div>
   `;
 
@@ -5363,7 +5380,7 @@ function rerenderEquipmentPickerDynamic() {
     .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rarity="${r}">${RARITY_LABELS[r]}</button>`)
     .join('');
   const sortChips = Object.keys(SORT_LABELS)
-    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORT_LABELS[s]}${sortBy === s ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}</button>`)
+    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORT_LABELS[s]}${sortBy === s ? ` ${sortDir === 'desc' ? icon('chevron-down') : icon('chevron-up')}` : ''}</button>`)
     .join('');
 
   const state = calculateStateEquipment();
@@ -5573,6 +5590,10 @@ function renderLoadCharacterList() {
   }
 
   body.innerHTML = `
+    <div class="flex-row-between">
+      <p class="hint">${all.length} ${all.length === 1 ? 'postać zapisana' : 'postaci zapisanych'} w tej przeglądarce.</p>
+      <button type="button" class="section-reset-btn" id="btn-clear-saved-characters" title="Usuń wszystkie postacie zapisane w pamięci tej przeglądarki">Wyczyść pamięć przeglądarki</button>
+    </div>
     <div class="known-spells-list">
       ${all.map(entry => {
     const originId = entry.data?.wybory?.pochodzenie;
@@ -5592,6 +5613,14 @@ function renderLoadCharacterList() {
   body.querySelectorAll('[data-load-character]').forEach(btn => {
     btn.addEventListener('click', () => loadCharacterWithCache(btn.dataset.loadCharacter));
   });
+  document.getElementById('btn-clear-saved-characters')?.addEventListener('click', clearSavedCharactersWithConfirm);
+}
+
+/** Czyści (po potwierdzeniu) wszystkie postacie zapisane w pamięci przeglądarki i odświeża listę w popupie. */
+function clearSavedCharactersWithConfirm() {
+  if (!confirm('Usunąć wszystkie postacie zapisane w pamięci tej przeglądarki? Tej operacji nie można odwrócić.')) return;
+  clearSavedCharacters();
+  renderLoadCharacterList();
 }
 
 /** Wczytuje wybraną zapisaną postać z cache i podpina jej id, żeby dalsze zmiany nadpisywały ten sam wpis. */
@@ -5602,7 +5631,7 @@ async function loadCharacterWithCache(id) {
   currentSaveCacheId = id;
   try {
     await importCharacter(entry.data);
-    showImportMessage('success', '✓ Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
+    showImportMessage('success', `${icon('check')} Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Błąd wczytywania postaci z cache:', err);
@@ -5610,20 +5639,62 @@ async function loadCharacterWithCache(id) {
   }
 }
 
+/** Otwiera popup wyboru poziomu przed losowaniem całej postaci (jedyna rzecz, którą wybiera użytkownik). */
+function openRandomizeCharacterPopup() {
+  const overlay = document.getElementById('randomize-character-overlay');
+  if (!overlay) return;
+  overlay.hidden = false;
+  renderRandomizeLevelGrid();
+}
+
+/** Zamyka popup wyboru poziomu przed losowaniem całej postaci. */
+function closeRandomizeCharacterPopup() {
+  const overlay = document.getElementById('randomize-character-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/** Renderuje kafelki wyboru poziomu (0-10) w popupie "Wylosuj postać". */
+function renderRandomizeLevelGrid() {
+  const grid = document.getElementById('randomize-level-grid');
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: 11 }, (_, poziom) => {
+    const selected = randomizeCharacterLevel === poziom;
+    return `
+      <button type="button" class="picker-tile ${selected ? 'selected' : ''}" data-select-randomize-level="${poziom}">
+        <div class="picker-tile-header">
+          <span>Poziom ${poziom}</span>
+          ${selected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
+        </div>
+        <div class="picker-tile-meta">${nameTierLevel(poziom)}</div>
+      </button>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-select-randomize-level]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      randomizeCharacterLevel = parseInt(btn.dataset.selectRandomizeLevel, 10);
+      renderRandomizeLevelGrid();
+    });
+  });
+}
+
 /**
  * Losuje absolutnie wszystkie elementy kreatora - pochodzenie i jego tabele,
- * bonusowe atrybuty, poziom, ścieżki (nowicjusza/eksperckiej/mistrzowskiej),
- * sloty zwiększenia atrybutów, profesje i języki, kurioza, srebrniki oraz
+ * bonusowe atrybuty, ścieżki (nowicjusza/eksperckiej/mistrzowskiej), sloty
+ * zwiększenia atrybutów, profesje i języki, kurioza, srebrniki oraz
  * Zamożność wraz z wynikającym z niej wyposażeniem startowym - i od razu
- * przechodzi do Kroku 8 z podsumowaniem. Krok 6 (Magia) pozostaje
- * nierozwiązany, tak jak przy zwykłym pominięciu go przez gracza - to krok
- * w pełni opcjonalny. Sklep w Kroku 7 też pozostaje nietknięty (żadnych
- * dodatkowych zakupów/sprzedaży) - losowana jest wyłącznie Zamożność i
- * gwarantowane/wybieralne pozycje startowego wyposażenia, zgodnie z zasadami
- * podręcznika; opcja "zwój z zaklęciem" (wymagająca ręcznego wyboru
- * tradycji/zaklęcia) jest pomijana na rzecz pozostałych dostępnych opcji.
+ * przechodzi do Kroku 8 z podsumowaniem. Jedyny element, którego NIE losuje,
+ * to poziom postaci - decyduje o nim użytkownik w popupie otwieranym przed
+ * wywołaniem tej funkcji (zob. otwórzPopupWylosujPostać()). Krok 6 (Magia)
+ * pozostaje nierozwiązany, tak jak przy zwykłym pominięciu go przez gracza -
+ * to krok w pełni opcjonalny. Sklep w Kroku 7 też pozostaje nietknięty
+ * (żadnych dodatkowych zakupów/sprzedaży) - losowana jest wyłącznie
+ * Zamożność i gwarantowane/wybieralne pozycje startowego wyposażenia,
+ * zgodnie z zasadami podręcznika; opcja "zwój z zaklęciem" (wymagająca
+ * ręcznego wyboru tradycji/zaklęcia) jest pomijana na rzecz pozostałych
+ * dostępnych opcji.
  */
-async function randomizeWholeCharacter() {
+async function randomizeWholeCharacter(poziom) {
   newCharacter();
 
   // 1. Pochodzenie + jego tabele (istniejący, przetestowany losowacz z Kroku 1)
@@ -5637,8 +5708,10 @@ async function randomizeWholeCharacter() {
     select.dispatchEvent(new Event('change', { bubbles: true }));
   });
 
-  // 3. Poziom (0-10) - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
-  selectedLevel = Math.floor(Math.random() * 11);
+  // 3. Poziom (0-10) - jedyna wartość niewylosowana, wybrana przez użytkownika
+  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama sekwencja co
+  //    listener zmiany radiobuttona (Krok 2)
+  selectedLevel = poziom;
   const levelInput = document.querySelector(`input[name="poziom"][value="${selectedLevel}"]`);
   if (levelInput) levelInput.checked = true;
   updatePathsVisibility(selectedLevel);

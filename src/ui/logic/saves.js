@@ -37,4 +37,14 @@ function generateSaveId() {
   return `postac-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export { LOCALSTORAGE_KEY, getSavedCharacters, saveCharacterToCache, generateSaveId };
+/** Usuwa wszystkie postacie zapisane w pamięci przeglądarki. Zwraca true przy sukcesie. */
+function clearSavedCharacters() {
+  try {
+    localStorage.removeItem(LOCALSTORAGE_KEY);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export { LOCALSTORAGE_KEY, getSavedCharacters, saveCharacterToCache, generateSaveId, clearSavedCharacters };
