@@ -3462,15 +3462,31 @@ function synchronizujWybraneProfesje() {
     .map(odp => odp.profesjaId);
 }
 
+/** Pełne nazwy podręczników odpowiadające skrótom używanym w polu `zrodlo`. */
+const PELNE_NAZWY_ZRODEL = {
+  PG: 'Podręcznik Główny',
+  SUP: 'Suplement Władcy Demonów',
+  NW: 'Niepewna Wiara',
+  RA: 'Rozkoszna Agonia',
+  SP: 'Straszliwe Piękno',
+  GP: 'Głód w Pustce',
+  GWP: 'Grobowce Pustkowia',
+  CS: 'Chwalebna Śmierć'
+};
+
 /**
  * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 4.
  */
 /**
  * Renderuje małą, czerwoną etykietę ze źródłem danego wyboru (np.
- * "Pochodzenie: Człowiek" albo "Ścieżka: Łotr (poziom 1)").
+ * "Pochodzenie: Człowiek" albo "Ścieżka: Łotr (poziom 1)"). Etykieta ma
+ * atrybut title z pełną nazwą podręcznika, widoczny jako tooltip po
+ * najechaniu wskaźnikiem myszy.
  */
 function renderujZnacznikZrodla(source) {
-  return source ? `<span class="source-tag">(${source})</span>` : '';
+  if (!source) return '';
+  const pelnaNazwa = PELNE_NAZWY_ZRODEL[source] || source;
+  return `<span class="source-tag" title="${pelnaNazwa}">(${source})</span>`;
 }
 
 function renderLanguagesSummary() {

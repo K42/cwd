@@ -1814,6 +1814,7 @@ kbd {
     font-weight: normal;
     padding: 1px 7px;
     white-space: nowrap;
+    cursor: help;
 }
 
 .profession-tile, .curio-tile {
