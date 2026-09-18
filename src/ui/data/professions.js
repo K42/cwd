@@ -51,4 +51,4 @@ const PROFESSIONS = {
   }
 };
 
-module.exports = PROFESSIONS;
+export default PROFESSIONS;

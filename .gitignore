@@ -154,3 +154,7 @@ build/
 
 # PDF Sources
 sources/
+dodatki/
+
+# Prywatne notatki robocze (nie wersjonowane)
+.claude/TODO.md

@@ -3,22 +3,22 @@
  * Testy struktury danych, walidacji i funkcji losowania
  */
 
-const { EXTENDED_ORIGINS, CZLOWIEK_EXTENDED, walidujPochodzenie, losujZTabeli } = require('../src/data/origins_extended');
+import { EXTENDED_ORIGINS, HUMAN_EXTENDED, validateOrigin, rollFromTable } from '../src/ui/data/origins_extended.js';
 
 describe('Rozszerzone Pochodzenia - Sprint 2', () => {
   
   describe('Struktura danych Człowieka', () => {
     test('powinien mieć wszystkie wymagane pola główne', () => {
-      expect(CZLOWIEK_EXTENDED.id).toBe('czlowiek');
-      expect(CZLOWIEK_EXTENDED.nazwa).toBe('Człowiek');
-      expect(CZLOWIEK_EXTENDED.zrodlo).toBe('PG');
-      expect(CZLOWIEK_EXTENDED.opis).toBeDefined();
-      expect(CZLOWIEK_EXTENDED.opis_pelny).toBeDefined();
-      expect(CZLOWIEK_EXTENDED.przykladowe_imiona).toBeInstanceOf(Array);
+      expect(HUMAN_EXTENDED.id).toBe('czlowiek');
+      expect(HUMAN_EXTENDED.nazwa).toBe('Człowiek');
+      expect(HUMAN_EXTENDED.zrodlo).toBe('PG');
+      expect(HUMAN_EXTENDED.opis).toBeDefined();
+      expect(HUMAN_EXTENDED.opis_pelny).toBeDefined();
+      expect(HUMAN_EXTENDED.przykladowe_imiona).toBeInstanceOf(Array);
     });
 
     test('powinien mieć sekcję tworzenie_postaci z wszystkimi polami', () => {
-      const tp = CZLOWIEK_EXTENDED.tworzenie_postaci;
+      const tp = HUMAN_EXTENDED.tworzenie_postaci;
       
       expect(tp.atrybuty_bazowe).toEqual({
         sila: 10,
@@ -48,7 +48,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     });
 
     test('powinien mieć sekcję poziom_4 z korzyściami', () => {
-      const p4 = CZLOWIEK_EXTENDED.poziom_4;
+      const p4 = HUMAN_EXTENDED.poziom_4;
       
       expect(p4.zdrowie_bonus).toBe(5);
       expect(p4.opcje).toHaveLength(2);
@@ -58,7 +58,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     });
 
     test('powinien mieć wszystkie wymagane tabele', () => {
-      const tabele = CZLOWIEK_EXTENDED.tabele;
+      const tabele = HUMAN_EXTENDED.tabele;
       
       expect(tabele.wiek).toBeDefined();
       expect(tabele.budowa_ciala).toBeDefined();
@@ -69,15 +69,15 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     });
 
     test('powinien mieć metadane', () => {
-      expect(CZLOWIEK_EXTENDED.strona_zrodlowa).toBe(11);
-      expect(CZLOWIEK_EXTENDED.linie_zrodlowe).toBe('740-861');
-      expect(CZLOWIEK_EXTENDED.status).toBe('kompletne');
+      expect(HUMAN_EXTENDED.strona_zrodlowa).toBe(11);
+      expect(HUMAN_EXTENDED.linie_zrodlowe).toBe('740-861');
+      expect(HUMAN_EXTENDED.status).toBe('kompletne');
     });
   });
 
   describe('Walidacja pochodzenia', () => {
     test('powinien zwrócić poprawne dla prawidłowego pochodzenia', () => {
-      const wynik = walidujPochodzenie(CZLOWIEK_EXTENDED);
+      const wynik = validateOrigin(HUMAN_EXTENDED);
       
       expect(wynik.poprawne).toBe(true);
       expect(wynik.bledy).toHaveLength(0);
@@ -85,7 +85,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
 
     test('powinien wykryć brakujące wymagane pola', () => {
       const nieprawidlowe = { id: 'test' };
-      const wynik = walidujPochodzenie(nieprawidlowe);
+      const wynik = validateOrigin(nieprawidlowe);
       
       expect(wynik.poprawne).toBe(false);
       expect(wynik.bledy.length).toBeGreaterThan(0);
@@ -99,7 +99,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
         tworzenie_postaci: { atrybuty_bazowe: {} },
         tabele: {}
       };
-      const wynik = walidujPochodzenie(nieprawidlowe);
+      const wynik = validateOrigin(nieprawidlowe);
       
       expect(wynik.poprawne).toBe(false);
       expect(wynik.bledy.some(b => b.includes('percepcja'))).toBe(true);
@@ -120,7 +120,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     };
 
     test('powinien zwrócić prawidłowy wynik dla k20', () => {
-      const wynik = losujZTabeli('k20', tabelaTestowa);
+      const wynik = rollFromTable('k20', tabelaTestowa);
       
       expect(wynik).toHaveProperty('rzut');
       expect(wynik).toHaveProperty('wynik');
@@ -139,7 +139,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
       ];
 
       testy.forEach(test => {
-        const wynik = losujZTabeli(test.typ, tabelaTestowa);
+        const wynik = rollFromTable(test.typ, tabelaTestowa);
         expect(wynik.wartosc_rzutu).toBeGreaterThanOrEqual(test.min);
         expect(wynik.wartosc_rzutu).toBeLessThanOrEqual(test.max);
       });
@@ -147,20 +147,20 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
 
     test('powinien rzucić błąd dla nieznanego typu rzutu', () => {
       expect(() => {
-        losujZTabeli('k100', tabelaTestowa);
+        rollFromTable('k100', tabelaTestowa);
       }).toThrow('Nieznany typ rzutu: k100');
     });
 
     test('powinien rzucić błąd dla nieprawidłowej tabeli', () => {
       expect(() => {
-        losujZTabeli('k20', null);
+        rollFromTable('k20', null);
       }).toThrow('Nieprawidłowa tabela');
     });
   });
 
   describe('Tabele Człowieka - pokrycie zakresów', () => {
     test('tabela wiek powinna pokrywać wszystkie wyniki 3k6 (3-18)', () => {
-      const tabela = CZLOWIEK_EXTENDED.tabele.wiek;
+      const tabela = HUMAN_EXTENDED.tabele.wiek;
       const opcje = tabela.opcje;
       
       // Sprawdź czy wszystkie zakresy są pokryte
@@ -174,7 +174,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     });
 
     test('tabela przeszłość powinna pokrywać wszystkie wyniki k20 (1-20)', () => {
-      const tabela = CZLOWIEK_EXTENDED.tabele.przeszlosc;
+      const tabela = HUMAN_EXTENDED.tabele.przeszlosc;
       const opcje = tabela.opcje;
       
       // Sprawdź czy wszystkie wyniki 1-20 są pokryte
@@ -192,7 +192,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
     });
 
     test('tabela osobowość powinna mieć efekty mechaniczne', () => {
-      const tabela = CZLOWIEK_EXTENDED.tabele.osobowosc;
+      const tabela = HUMAN_EXTENDED.tabele.osobowosc;
       const opcje = tabela.opcje;
       
       // Sprawdź czy wszystkie opcje mają prawidłowe wyniki
@@ -206,7 +206,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
 
   describe('Efekty mechaniczne w tabelach', () => {
     test('tabela przeszłość powinna mieć efekty dla niektórych opcji', () => {
-      const tabela = CZLOWIEK_EXTENDED.tabele.przeszlosc;
+      const tabela = HUMAN_EXTENDED.tabele.przeszlosc;
       const opcjeZEfektami = tabela.opcje.filter(opcja => opcja.efekt);
       
       expect(opcjeZEfektami.length).toBeGreaterThan(0);
@@ -223,7 +223,7 @@ describe('Rozszerzone Pochodzenia - Sprint 2', () => {
   describe('Integracja z EXTENDED_ORIGINS', () => {
     test('powinien eksportować Człowieka w EXTENDED_ORIGINS', () => {
       expect(EXTENDED_ORIGINS.czlowiek).toBeDefined();
-      expect(EXTENDED_ORIGINS.czlowiek).toBe(CZLOWIEK_EXTENDED);
+      expect(EXTENDED_ORIGINS.czlowiek).toBe(HUMAN_EXTENDED);
     });
 
     test('powinien mieć strukturę gotową do rozszerzenia', () => {

@@ -102,4 +102,4 @@ const LEVELS = {
   }
 };
 
-module.exports = LEVELS;
+export default LEVELS;

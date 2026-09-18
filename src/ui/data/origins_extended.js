@@ -8,7 +8,7 @@
  * Prototyp: Człowiek - pełna struktura danych
  * Źródło: PG str. 11-13, linie 740-861
  */
-const CZLOWIEK_EXTENDED = {
+const HUMAN_EXTENDED = {
   id: 'czlowiek',
   nazwa: 'Człowiek',
   zrodlo: 'PG',
@@ -283,7 +283,7 @@ const CZLOWIEK_EXTENDED = {
  * TODO: Migracja pozostałych 5 pochodzeń
  */
 const EXTENDED_ORIGINS = {
-  czlowiek: CZLOWIEK_EXTENDED,
+  czlowiek: HUMAN_EXTENDED,
   // TODO: automaton, goblin, krasnolud, odmieniec, ork
 };
 
@@ -292,7 +292,7 @@ const EXTENDED_ORIGINS = {
  * @param {Object} origin - Obiekt pochodzenia do walidacji
  * @returns {Object} Wynik walidacji z błędami i ostrzeżeniami
  */
-function walidujPochodzenie(origin) {
+function validateOrigin(origin) {
   const bledy = [];
   const ostrzezenia = [];
   
@@ -337,7 +337,7 @@ function walidujPochodzenie(origin) {
  * @param {Object} tabela - Obiekt tabeli z opcjami
  * @returns {Object} Wynik losowania z rzutem i opisem
  */
-function losujZTabeli(typRzutu, tabela) {
+function rollFromTable(typRzutu, tabela) {
   if (!tabela || !tabela.opcje) {
     throw new Error('Nieprawidłowa tabela');
   }
@@ -383,10 +383,10 @@ function losujZTabeli(typRzutu, tabela) {
   };
 }
 
-module.exports = {
+export {
   EXTENDED_ORIGINS,
-  CZLOWIEK_EXTENDED,
-  walidujPochodzenie,
-  losujZTabeli
+  HUMAN_EXTENDED,
+  validateOrigin,
+  rollFromTable
 };
 

@@ -4,14 +4,14 @@
  */
 
 // Import wszystkich modułów danych
-const ORIGINS = require('./data/origins');
-const LEVELS = require('./data/levels');
-const PATHS = require('./data/paths');
-const ITEMS = require('./data/items');
-const SPELLS = require('./data/spells');
-const PROGRESSION = require('./data/progression');
+import ORIGINS from './origins.js';
+import LEVELS from './levels.js';
+import PATHS from './paths.js';
+import ITEMS from './items.js';
+import SPELLS from './spells.js';
+import PROGRESSION from './progression.js';
 
-const DANE_GRY = {
+const GAME_DATA = {
   // Poziomy postaci - system progresji
   poziomy: LEVELS,
 
@@ -74,19 +74,51 @@ const DANE_GRY = {
     },
 
     /**
+     * Rzuca wskazaną kością pomocniczą używaną przez losowe atrybuty bazowe
+     * @param {string} kostka - Typ kości ('k3' lub 'k6')
+     * @returns {number} Wynik rzutu
+     */
+    rzucKostkaAtrybutu(kostka) {
+      if (kostka === 'k3') return Math.floor(Math.random() * 3) + 1;
+      if (kostka === 'k6') return Math.floor(Math.random() * 6) + 1;
+      throw new Error(`Nieznana kostka atrybutu bazowego: ${kostka}`);
+    },
+
+    /**
      * Oblicza atrybuty postaci zgodnie z zasadami tworzenia
+     *
+     * Niektóre pochodzenia (np. zwierzoludzie z Głodu w Pustce) mają w źródle
+     * losowe atrybuty bazowe w postaci "1kX + modyfikator" zamiast stałych
+     * liczb. Taka konfiguracja jest opisana w `pochodzenie.atrybuty_bazowe_losowe`
+     * (obiekt {kostka, modyfikator} per atrybut) i ma pierwszeństwo przed
+     * stałymi wartościami w `atrybuty_bazowe` - te ostatnie w takim przypadku
+     * pozostają jako reprezentatywna wartość średnia, używana wyłącznie do
+     * podglądu kafelka pochodzenia przed rzeczywistym utworzeniem postaci.
      * @param {Object} pochodzenie - Dane pochodzenia
-     * @param {Object} wybor_atrybutu - Wybór gracza (+1 do wybranego atrybutu)
+     * @param {string|string[]} wybor_atrybutu - Atrybut(y) wybrane przez gracza jako
+     *   bonus z pochodzenia (np. Człowiek: 1 atrybut, Elf: 2 atrybuty); wartość
+     *   bonusu do każdego brana jest z pochodzenie.wybor_atrybutu.wartosc (domyślnie 1)
      * @returns {Object} Finalne atrybuty postaci
      */
     oblicz_atrybuty_poczatkowe(pochodzenie, wybor_atrybutu) {
-      const atrybuty = { ...pochodzenie.atrybuty_bazowe };
-      
-      // Dodaj wybór gracza (+1 do wybranego atrybutu)
-      if (wybor_atrybutu && atrybuty[wybor_atrybutu]) {
-        atrybuty[wybor_atrybutu] += 1;
+      let atrybuty;
+
+      if (pochodzenie.atrybuty_bazowe_losowe) {
+        atrybuty = {};
+        for (const [klucz, formula] of Object.entries(pochodzenie.atrybuty_bazowe_losowe)) {
+          atrybuty[klucz] = this.rzucKostkaAtrybutu(formula.kostka) + formula.modyfikator;
+        }
+      } else {
+        atrybuty = { ...pochodzenie.atrybuty_bazowe };
       }
-      
+
+      // Dodaj wybór gracza (bonus z pochodzenia do wybranego atrybutu/atrybutów)
+      const wartosc = (pochodzenie.wybor_atrybutu && pochodzenie.wybor_atrybutu.wartosc) || 1;
+      const wybraneAtrybuty = Array.isArray(wybor_atrybutu) ? wybor_atrybutu : (wybor_atrybutu ? [wybor_atrybutu] : []);
+      wybraneAtrybuty.forEach(atr => {
+        if (atr && atrybuty[atr] !== undefined) atrybuty[atr] += wartosc;
+      });
+
       return atrybuty;
     },
 
@@ -165,4 +197,4 @@ const DANE_GRY = {
   }
 };
 
-module.exports = DANE_GRY;
+export default GAME_DATA;

@@ -2,7 +2,7 @@
  * Testy jednostkowe dla tabel losowania pochodzeń
  */
 
-const { rollTable, getAvailableTables, getTableDetails, hasTables, getOriginsWithTables } = require('../src/data/table_utils');
+import { rollTable, getAvailableTables, getTableDetails, hasTables, getOriginsWithTables } from '../src/ui/data/table_utils.js';
 
 describe('Tabele losowania pochodzeń', () => {
   
