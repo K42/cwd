@@ -17,7 +17,7 @@ import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/zamoznosc.js';
 import {
   RZADKOSC_ETYKIETY, KATEGORIA_ETYKIETY, pobierzPrzedmiot, cenaNaOkrawki, formatujCene,
   formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
-  PRZELICZNIK_NA_OKRAWKI
+  formatujStatystykiPrzedmiotu, PRZELICZNIK_NA_OKRAWKI
 } from './logic/ekwipunek.js';
 
 let biezacaPostac = null;
@@ -2600,7 +2600,8 @@ function renderKartaEkwipunekSection() {
       : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
     const przedmiot = p.itemId ? pobierzPrzedmiot(p.itemId) : null;
     const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
-    return `<div class="trait-item">${nazwa}${ilosc}${przedmiot ? ` ${renderujZnacznikZrodla(przedmiot.zrodlo)}` : ''}</div>`;
+    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
+    return `<div class="trait-item">${nazwa}${ilosc}${przedmiot ? ` ${renderujZnacznikZrodla(przedmiot.zrodlo)}` : ''}${statystyki ? `<br><small>${statystyki}</small>` : ''}</div>`;
   }).join('');
 
   return `
@@ -5075,9 +5076,11 @@ function renderWyposazenieStartowe() {
 
   const stan = obliczStanEkwipunku();
   const gwarantowaneHtml = stan.gwarantowane.map(p => {
-    const nazwa = p.id ? (pobierzPrzedmiot(p.id)?.nazwa || p.id) : p.tekst;
+    const przedmiot = p.id ? pobierzPrzedmiot(p.id) : null;
+    const nazwa = przedmiot?.nazwa || p.id || p.tekst;
     const ilosc = p.ilosc && p.ilosc > 1 ? ` (${p.ilosc}×)` : '';
-    return `<li>${nazwa}${ilosc}</li>`;
+    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
+    return `<li${statystyki ? ` title="${statystyki}"` : ''}>${nazwa}${ilosc}</li>`;
   }).join('');
 
   const atomyHtml = stan.atomy.map(atom => renderujKarteWyposazenia(atom)).join('');
@@ -5108,12 +5111,16 @@ function renderujKarteWyposazenia(atom) {
     const kafelki = atom.opcje.map(itemId => {
       const przedmiot = pobierzPrzedmiot(itemId);
       const aktywny = wybor?.itemId === itemId;
-      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}">${przedmiot?.nazwa || itemId}</button>`;
+      const statystyki = formatujStatystykiPrzedmiotu(przedmiot);
+      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}"${statystyki ? ` title="${statystyki}"` : ''}>${przedmiot?.nazwa || itemId}</button>`;
     }).join('');
+    const wybranyPrzedmiot = wybor?.itemId ? pobierzPrzedmiot(wybor.itemId) : null;
+    const statystykiWybranego = wybranyPrzedmiot ? formatujStatystykiPrzedmiotu(wybranyPrzedmiot) : null;
     return `
       <div class="magic-slot-card ${wybor?.itemId ? 'complete' : ''}">
         <p class="magic-slot-desc">Wybierz jedno: ${atom.opcje.map(id => pobierzPrzedmiot(id)?.nazwa || id).join(' / ')}${atom.opisWyboru ? ` (${atom.opisWyboru})` : ''}</p>
         <div class="magic-slot-mode-toggle">${kafelki}</div>
+        ${statystykiWybranego ? `<p class="magic-slot-status ok">${wybranyPrzedmiot.nazwa}: ${statystykiWybranego}</p>` : ''}
       </div>
     `;
   }
@@ -5124,7 +5131,8 @@ function renderujKarteWyposazenia(atom) {
     if (opcja.typ === 'zwoj_zaklecie') {
       return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-otworz-zwoj="${atom.id}">${opcja.etykieta}</button>`;
     }
-    return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}">${opcja.etykieta}</button>`;
+    const statystyki = formatujStatystykiPrzedmiotu(pobierzPrzedmiot(opcja.id));
+    return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}"${statystyki ? ` title="${statystyki}"` : ''}>${opcja.etykieta}</button>`;
   }).join('');
 
   let opisWyniku = '';
@@ -5132,6 +5140,10 @@ function renderujKarteWyposazenia(atom) {
     const nazwaTr = TRADYCJE[wybor.tradycjaId]?.nazwa || wybor.tradycjaId;
     const spell = wybor.spellId ? SPELLS.find(s => s.id === wybor.spellId) : null;
     opisWyniku = `<p class="magic-slot-status ok">Wybrano: ${nazwaTr}${spell ? ` - ${spell.nazwa}` : ' (wybierz zaklęcie kręgu 0)'}</p>`;
+  } else if (wybor?.typ === 'przedmiot' && wybor.itemId) {
+    const wybranyPrzedmiot = pobierzPrzedmiot(wybor.itemId);
+    const statystykiWybranego = wybranyPrzedmiot ? formatujStatystykiPrzedmiotu(wybranyPrzedmiot) : null;
+    if (statystykiWybranego) opisWyniku = `<p class="magic-slot-status ok">${wybranyPrzedmiot.nazwa}: ${statystykiWybranego}</p>`;
   }
 
   return `
@@ -5169,9 +5181,10 @@ function renderSklepSection() {
     const mozeSprzedac = zrodlo === 'startowe' ? (przedmiot && przedmiot.cena) : true;
     const cenaSkupu = przedmiot ? formatujOkrawki(cenaSkupuOkrawki(przedmiot.cena) * p.ilosc) : null;
     const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
+    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
     return `
       <div class="selected-item">
-        <span>${nazwa}${ilosc}${przedmiot ? ` <em>(${formatujCene(przedmiot.cena)})</em>` : ''}</span>
+        <span${statystyki ? ` title="${statystyki}"` : ''}>${nazwa}${ilosc}${przedmiot ? ` <em>(${formatujCene(przedmiot.cena)})</em>` : ''}</span>
         ${mozeSprzedac ? `<button type="button" class="btn-secondary small" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${cenaSkupu}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? `Sprzedaj (${cenaSkupu})` : 'Zwróć'}</button>` : ''}
       </div>
     `;
@@ -5289,6 +5302,7 @@ function rerenderEkwipunekPickerDynamic() {
     .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'))
     .map(i => {
       const staczyna = stan && stan.gotowkaOkrawki >= cenaNaOkrawki(i.cena);
+      const statystyki = formatujStatystykiPrzedmiotu(i);
       return `
       <button type="button" class="picker-tile ${staczyna ? '' : 'disabled'}" ${staczyna ? '' : 'disabled'} data-kup="${i.id}">
         <div class="picker-tile-header">
@@ -5296,6 +5310,7 @@ function rerenderEkwipunekPickerDynamic() {
           ${renderujZnacznikZrodla(i.zrodlo)}
         </div>
         <div class="picker-tile-meta">${KATEGORIA_ETYKIETY[i.kategoria] || i.kategoria} · ${RZADKOSC_ETYKIETY[i.rzadkosc] || '—'} · ${formatujCene(i.cena)}</div>
+        ${statystyki ? `<div class="picker-tile-stats">${statystyki}</div>` : ''}
         ${i.opis ? `<p class="picker-tile-opis">${i.opis}</p>` : ''}
         ${!staczyna ? '<div class="picker-tile-taken">Za mało gotówki</div>' : ''}
       </button>

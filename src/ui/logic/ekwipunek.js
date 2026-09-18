@@ -119,6 +119,33 @@ function pobierzGwarantowanePozycje(zamoznoscId) {
   return zam.przedmioty.filter(p => !p.wybor);
 }
 
+const KATEGORIE_BRONI = ['bron_biala', 'bron_dystansowa', 'tarcze'];
+
+/**
+ * Formatuje statystyki i właściwości przedmiotu (broń/tarcza: obrażenia,
+ * chwyt, właściwości, wymagania; zbroja: obrona, wymagania) do jednej
+ * czytelnej linijki tekstu. Zwraca `null` dla przedmiotów bez takich pól
+ * (np. wyposażenie ogólne, jedzenie).
+ */
+function formatujStatystykiPrzedmiotu(item) {
+  if (!item) return null;
+  if (KATEGORIE_BRONI.includes(item.kategoria)) {
+    const czesci = [];
+    if (item.obrazenia) czesci.push(`Obrażenia ${item.obrazenia}`);
+    if (item.chwyt) czesci.push(`Chwyt: ${item.chwyt}`);
+    if (item.wlasciwosci) czesci.push(`Właściwości: ${item.wlasciwosci}`);
+    if (item.wymagania) czesci.push(`Wymagania: ${item.wymagania}`);
+    return czesci.length ? czesci.join(' · ') : null;
+  }
+  if (item.kategoria === 'zbroje') {
+    const czesci = [];
+    if (item.obrona) czesci.push(`Obrona: ${item.obrona}`);
+    if (item.wymagania) czesci.push(`Wymagania: ${item.wymagania}`);
+    return czesci.length ? czesci.join(' · ') : null;
+  }
+  return null;
+}
+
 export {
   PRZELICZNIK_NA_OKRAWKI,
   STAWKA_SKUPU,
@@ -131,5 +158,6 @@ export {
   cenaSkupuOkrawki,
   obliczAtomyWyposazenia,
   pobierzGwarantowanePozycje,
+  formatujStatystykiPrzedmiotu,
   pobierzZamoznoscDlaRzutu
 };

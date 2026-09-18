@@ -2281,6 +2281,12 @@ kbd {
     margin: 0;
 }
 
+.picker-tile-stats {
+    font-size: 0.85em;
+    color: var(--ink);
+    margin: 2px 0 0;
+}
+
 .picker-tile-warning {
     font-size: 0.8em;
     color: var(--blood-bright);
