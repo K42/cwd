@@ -36,10 +36,17 @@
     <div id="step-1" class="step active">
         <div class="section">
             <div class="quick-random-fill">
-                <button type="button" class="btn-primary" id="btn-losuj-krok-1">
-                    🎲 Losuj postać
-                </button>
-                <p class="hint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem.</p>
+                <div class="quick-fill-actions">
+                    <button type="button" class="btn-primary" id="btn-losuj-krok-1">
+                        🎲 Losuj postać
+                    </button>
+                    <button type="button" class="btn-secondary" id="btn-import-postac">
+                        📂 Importuj postać
+                    </button>
+                    <input type="file" id="import-postac-file" accept="application/json,.json" hidden>
+                </div>
+                <p class="hint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem, albo zaimportuje wcześniej wyeksportowaną postać z pliku JSON.</p>
+                <div id="import-feedback" class="import-feedback" style="display: none;"></div>
             </div>
 
             <h3>🎭 Krok 1: Wybór Pochodzenia</h3>

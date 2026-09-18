@@ -107,6 +107,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
   document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetujWyborPochodzenia);
   document.getElementById('btn-losuj-krok-1')?.addEventListener('click', losujPochodzenieICechy);
+  document.getElementById('btn-import-postac')?.addEventListener('click', () => {
+    document.getElementById('import-postac-file')?.click();
+  });
+  document.getElementById('import-postac-file')?.addEventListener('change', (e) => {
+    const plik = e.target.files?.[0];
+    if (plik) obslozImportPliku(plik);
+    e.target.value = ''; // pozwala ponownie wybrać ten sam plik po błędzie
+  });
   document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
   document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
   document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
@@ -2558,7 +2566,9 @@ function aktualizujPodgladPostaci() {
 }
 
 /**
- * Tworzy nową postać
+ * Tworzy nową postać - zamraża wszystkie wybory dokonane w kreatorze
+ * (zob. zbudujDaneEksportu()) do biezacaPostac, używanej przez eksport
+ * JSON i finalną Kartę Postaci.
  */
 // eslint-disable-next-line no-unused-vars
 async function utworzPostac() {
@@ -2567,39 +2577,13 @@ async function utworzPostac() {
     return;
   }
 
-  // Przygotowanie specyfikacji
-  const sciezkaSelect = document.getElementById('sciezka');
-  const spec = {
-    pochodzenie: wybranePochodzenie,
-    sciezka: (sciezkaSelect && sciezkaSelect.value) || undefined
-  };
-
-  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
-  if (bonusoweAtrybuty.length > 0) {
-    spec.wybor_atrybutu = bonusoweAtrybuty;
-  }
-
-  // Własne atrybuty jeśli nie domyślne
-  if (!document.getElementById('domyslne-atrybuty').checked) {
-    spec.atrybuty = {
-      sila: parseInt(document.getElementById('sila-base').value),
-      zrecznosc: parseInt(document.getElementById('zrecznosc-base').value),
-      intelekt: parseInt(document.getElementById('intelekt-base').value),
-      wola: parseInt(document.getElementById('wola-base').value)
-    };
-  }
-
-  // Pokazanie loadingu
   document.getElementById('loading').style.display = 'block';
   document.getElementById('error').style.display = 'none';
   document.getElementById('btn-create').disabled = true;
 
   try {
-    const postac = budujPostac(spec);
-    biezacaPostac = postac;
-
+    biezacaPostac = zbudujDaneEksportu();
     wyswietlPostac();
-
   } catch (error) {
     pokazBlad(`Błąd tworzenia postaci: ${  error.message}`);
   } finally {
@@ -2921,17 +2905,123 @@ function aktualizujPrzyciskiAtrybutow() {
   });
 }
 
+/** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
+const WERSJA_EKSPORTU = 1;
+
 /**
- * Eksportuje postać jako JSON
+ * Buduje kompletny, wersjonowany obiekt zawierający WSZYSTKIE wybory dokonane
+ * przez gracza w kreatorze (sekcja `wybory` - jedyne źródło potrzebne do
+ * wiernego odtworzenia postaci przy imporcie) oraz czytelne podsumowanie
+ * nazw i wartości (sekcja `podsumowanie` - dla kogoś otwierającego plik
+ * ręcznie). Zwraca `null`, gdy nie wybrano jeszcze pochodzenia.
+ */
+function zbudujDaneEksportu() {
+  if (!wybranePochodzenie) return null;
+  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  if (!pochodzenie) return null;
+
+  const odczytajTekst = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+
+  const atomyMagii = pobierzAktualneAtomyMagii();
+  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomyMagii, magiaWybory);
+  const zaklecia = rozwiazania
+    .flatMap(r => {
+      if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
+      if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
+      return [];
+    })
+    .map(id => SPELLS.find(s => s.id === id))
+    .filter(Boolean);
+
+  const pismo = new Set(pobierzJezykiZPismem());
+  const jezyki = pobierzMowioneJezyki().map(k => {
+    const nazwa = JEZYKI[k] || k;
+    return pismo.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  });
+
+  const nazwaSciezki = (poziomWyboru, sciezkaId) => {
+    if (!sciezkaId) return null;
+    const lista = getPathsForLevel(poziomWyboru);
+    return lista.find(p => p.id === sciezkaId)?.nazwa || sciezkaId;
+  };
+
+  return {
+    wersjaEksportu: WERSJA_EKSPORTU,
+    utworzono: new Date().toISOString(),
+    // Surowe wybory gracza - jedyna sekcja odczytywana przy imporcie.
+    wybory: {
+      pochodzenie: wybranePochodzenie,
+      bonusoweAtrybutyPochodzenia: pobierzWybraneAtrybutyBonusowe(),
+      opcjaPoziom4: pobierzWybranaOpcjaPoziom4Aktualna(),
+      wynikiTabelPochodzenia: JSON.parse(JSON.stringify(wynikiTabel[wybranePochodzenie] || {})),
+      poziom: wybranyPoziom,
+      atrybutyGlowne: {
+        domyslne: document.getElementById('domyslne-atrybuty')?.checked ?? true,
+        zmniejszony: document.getElementById('atrybut-zmniejszony')?.value || '',
+        zwiekszony: document.getElementById('atrybut-zwiekszony')?.value || ''
+      },
+      sciezki: { ...wybraneSciezki },
+      atrybutySloty: JSON.parse(JSON.stringify(wybraneAtrybutySlotow)),
+      profesjeJezykiSloty: JSON.parse(JSON.stringify(odpowiedziSlotow)),
+      kurioza: [...wybraneKurioza],
+      magia: {
+        wybory: JSON.parse(JSON.stringify(magiaWybory)),
+        ryzykoWyniki: JSON.parse(JSON.stringify(magiaRyzykoWyniki))
+      },
+      srebrniki: wylosowaneSrebrniki
+    },
+    // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
+    // jest odczytywane przy imporcie.
+    podsumowanie: {
+      pochodzenie: pochodzenie.nazwa,
+      poziom: wybranyPoziom,
+      poziomNazwa: nazwaTieruPoziomu(wybranyPoziom),
+      atrybutyGlowne: {
+        sila: odczytajTekst('sila-final'),
+        zrecznosc: odczytajTekst('zrecznosc-final'),
+        intelekt: odczytajTekst('intelekt-final'),
+        wola: odczytajTekst('wola-final')
+      },
+      atrybutyDrugorzedne: {
+        percepcja: odczytajTekst('percepcja-final'),
+        obrona: odczytajTekst('obrona-final'),
+        zdrowie: odczytajTekst('zdrowie-final'),
+        szybkoscZdrowienia: odczytajTekst('szybkosc-zdrowienia-final', '1'),
+        predkosc: odczytajTekst('predkosc-final'),
+        moc: odczytajTekst('moc-final'),
+        splugawienie: odczytajTekst('splugawienie-final')
+      },
+      sciezki: {
+        nowicjusz: nazwaSciezki(1, wybraneSciezki.nowicjusz),
+        ekspert: nazwaSciezki(3, wybraneSciezki.ekspert),
+        mistrz: nazwaSciezki(7, wybraneSciezki.mistrz)
+      },
+      profesje: wybraneProfesje.map(id => dostepneProfesje.find(p => p.id === id)?.nazwa || id),
+      jezyki,
+      kurioza: wybraneKurioza.map(id => dostepneKurioza.find(c => c.id === id)?.nazwa || id),
+      tradycje: [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl')),
+      zaklecia: zaklecia.map(s => s.nazwa),
+      srebrniki: wylosowaneSrebrniki
+    }
+  };
+}
+
+/**
+ * Eksportuje postać jako JSON - pełny, wersjonowany zrzut wszystkich
+ * wyborów dokonanych w kreatorze (zob. zbudujDaneEksportu()).
  */
 // eslint-disable-next-line no-unused-vars
 function exportJSON() {
-  if (!biezacaPostac) return;
+  biezacaPostac = zbudujDaneEksportu();
+  if (!biezacaPostac) {
+    pokazBlad('Wybierz pochodzenie postaci, zanim wyeksportujesz kartę!');
+    return;
+  }
 
   const dataStr = JSON.stringify(biezacaPostac, null, 2);
   const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
 
-  const exportFileDefaultName = `postac-${biezacaPostac.pochodzenie.id}-${new Date().toISOString().split('T')[0]}.json`;
+  const exportFileDefaultName = `postac-${biezacaPostac.wybory.pochodzenie}-${new Date().toISOString().split('T')[0]}.json`;
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
@@ -2946,6 +3036,303 @@ function pokazBlad(wiadomosc) {
   const errorDiv = document.getElementById('error');
   errorDiv.textContent = wiadomosc;
   errorDiv.style.display = 'block';
+}
+
+// ========== IMPORT POSTACI Z PLIKU JSON (Krok 1) ==========
+
+/**
+ * Pokazuje w Kroku 1 wynik importu postaci - pojedynczą wiadomość sukcesu
+ * albo nagłówek błędu wraz z listą konkretnych problemów znalezionych
+ * w pliku (zob. walidujDaneImportu()).
+ */
+function pokazKomunikatImportu(typ, wiadomosc, listaBledow = []) {
+  const box = document.getElementById('import-feedback');
+  if (!box) return;
+  box.className = `import-feedback ${typ}`;
+  const listaHtml = listaBledow.length
+    ? `<ul>${listaBledow.map(b => `<li>${b}</li>`).join('')}</ul>`
+    : '';
+  box.innerHTML = `${wiadomosc}${listaHtml}`;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/**
+ * Waliduje strukturę i zawartość pliku importu postaci: sprawdza obecność
+ * wymaganych pól oraz to, czy wszystkie odwołania do danych gry
+ * (pochodzenie, ścieżki, profesje, języki, kurioza, tradycje magiczne,
+ * zaklęcia) istnieją w AKTUALNEJ bazie danych aplikacji - plik mógł
+ * zostać wyeksportowany z innej, starszej wersji kreatora. Zwraca tablicę
+ * czytelnych komunikatów błędów po polsku; pusta tablica oznacza, że plik
+ * jest poprawny i bezpieczny do zaimportowania.
+ */
+function walidujDaneImportu(dane) {
+  if (!dane || typeof dane !== 'object' || Array.isArray(dane)) {
+    return ['Plik nie zawiera poprawnego obiektu JSON (oczekiwano danych postaci wyeksportowanych z tego kreatora).'];
+  }
+
+  const bledy = [];
+  if (dane.wersjaEksportu !== WERSJA_EKSPORTU) {
+    bledy.push(`Nieobsługiwana wersja pliku (${dane.wersjaEksportu ?? 'brak'}) - ten kreator obsługuje wersję ${WERSJA_EKSPORTU}.`);
+  }
+
+  const w = dane.wybory;
+  if (!w || typeof w !== 'object' || Array.isArray(w)) {
+    bledy.push('Plik nie zawiera wymaganej sekcji "wybory".');
+    return bledy;
+  }
+
+  if (!w.pochodzenie || typeof w.pochodzenie !== 'string') {
+    bledy.push('Brak pochodzenia postaci w pliku.');
+  } else if (!dostepnePochodzenia.some(p => p.id === w.pochodzenie)) {
+    bledy.push(`Nieznane pochodzenie: "${w.pochodzenie}" nie istnieje w aktualnej bazie danych.`);
+  }
+
+  if (typeof w.poziom !== 'number' || !Number.isInteger(w.poziom) || w.poziom < 0 || w.poziom > 10) {
+    bledy.push(`Nieprawidłowy poziom postaci: "${w.poziom}" (oczekiwano liczby całkowitej 0-10).`);
+  }
+
+  const NAZWY_ATRYBUTOW = ['sila', 'zrecznosc', 'intelekt', 'wola'];
+  if (w.atrybutyGlowne && typeof w.atrybutyGlowne === 'object') {
+    ['zmniejszony', 'zwiekszony'].forEach(pole => {
+      const wartosc = w.atrybutyGlowne[pole];
+      if (wartosc && !NAZWY_ATRYBUTOW.includes(wartosc)) {
+        bledy.push(`Nieznany atrybut w polu "atrybutyGlowne.${pole}": "${wartosc}".`);
+      }
+    });
+  }
+  if (Array.isArray(w.bonusoweAtrybutyPochodzenia)) {
+    w.bonusoweAtrybutyPochodzenia.forEach(atr => {
+      if (atr && !NAZWY_ATRYBUTOW.includes(atr)) {
+        bledy.push(`Nieznany bonusowy atrybut pochodzenia: "${atr}".`);
+      }
+    });
+  }
+
+  if (w.sciezki && typeof w.sciezki === 'object') {
+    const grupy = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+    Object.entries(grupy).forEach(([klucz, poziomWyboru]) => {
+      const sciezkaId = w.sciezki[klucz];
+      if (!sciezkaId) return;
+      if (!getPathsForLevel(poziomWyboru).some(p => p.id === sciezkaId)) {
+        bledy.push(`Nieznana ścieżka (${klucz}): "${sciezkaId}" nie istnieje w aktualnej bazie danych.`);
+      }
+    });
+  }
+
+  if (w.atrybutySloty && typeof w.atrybutySloty === 'object') {
+    Object.entries(w.atrybutySloty).forEach(([slotId, wartosci]) => {
+      if (!Array.isArray(wartosci)) {
+        bledy.push(`Nieprawidłowa struktura slotu atrybutów "${slotId}" (oczekiwano tablicy).`);
+        return;
+      }
+      wartosci.forEach(atr => {
+        if (!NAZWY_ATRYBUTOW.includes(atr)) {
+          bledy.push(`Nieznany atrybut "${atr}" w slocie zwiększenia "${slotId}".`);
+        }
+      });
+    });
+  }
+
+  if (w.profesjeJezykiSloty && typeof w.profesjeJezykiSloty === 'object') {
+    Object.entries(w.profesjeJezykiSloty).forEach(([slotId, odp]) => {
+      if (!odp || typeof odp !== 'object') return;
+      if (odp.mode === 'profesja' && odp.profesjaId && !dostepneProfesje.some(p => p.id === odp.profesjaId)) {
+        bledy.push(`Nieznana profesja: "${odp.profesjaId}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
+      } else if ((odp.mode === 'jezyk_nowy' || odp.mode === 'jezyk_pismo') && odp.jezyk && !JEZYKI[odp.jezyk]) {
+        bledy.push(`Nieznany język: "${odp.jezyk}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
+      }
+    });
+  }
+
+  if (Array.isArray(w.kurioza)) {
+    w.kurioza.forEach(id => {
+      if (!dostepneKurioza.some(c => c.id === id)) {
+        bledy.push(`Nieznane kurioza: "${id}" nie istnieje w aktualnej bazie danych.`);
+      }
+    });
+  }
+
+  if (w.magia && w.magia.wybory && typeof w.magia.wybory === 'object') {
+    Object.entries(w.magia.wybory).forEach(([atomId, wybor]) => {
+      if (!wybor || typeof wybor !== 'object') return;
+      if (wybor.tradycjaId && !TRADYCJE[wybor.tradycjaId]) {
+        bledy.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+      }
+      ['spellId', 'darmowyZaklecieId'].forEach(pole => {
+        const spellId = wybor[pole];
+        if (spellId && !SPELLS.some(s => s.id === spellId)) {
+          bledy.push(`Nieznane zaklęcie: "${spellId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+        }
+      });
+    });
+  }
+
+  if (w.srebrniki !== null && w.srebrniki !== undefined && typeof w.srebrniki !== 'number') {
+    bledy.push(`Nieprawidłowa wartość srebrników: "${w.srebrniki}" (oczekiwano liczby albo null).`);
+  }
+
+  return bledy;
+}
+
+/**
+ * Odtwarza w widocznym kafelku pochodzenia (Krok 1) zapisane wyniki tabel
+ * losowych, dokładnie w tym samym formacie, w jakim wyświetla je losowanie
+ * na żywo (zob. losujZTabeliUI()/zastosujWybranaOpcje()) - używane po
+ * imporcie, żeby kafelek pokazywał te same wyniki co zapisany stan.
+ */
+function przywrocWynikiTabelDoDom(originId) {
+  const wyniki = wynikiTabel[originId] || {};
+  Object.entries(wyniki).forEach(([tableName, wynik]) => {
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (!resultDiv) return;
+    const etykietaTypu = wynik.typ === 'wybór' ? '🎯 Wybór' : '🎲 Rzut';
+    const efekt = wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${wynik.efekt}` : '';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div class="roll-result-content">
+        <div class="roll-dice">${etykietaTypu}: ${wynik.rzut}</div>
+        <div class="roll-outcome">${wynik.wynik}</div>
+        ${efekt}
+      </div>
+    `;
+  });
+}
+
+/**
+ * Odtwarza w kreatorze WSZYSTKIE wybory z zaimportowanego, już zwalidowanego
+ * pliku (zob. zbudujDaneEksportu()) - dla każdego kroku wywołuje dokładnie
+ * te same funkcje i interakcje (kliknięcia, zdarzenia change), które
+ * wykonałby użytkownik ręcznie, dzięki czemu korzysta z tej samej logiki
+ * co normalny przepływ kreatora zamiast duplikować ją osobno.
+ */
+async function zaimportujPostac(dane) {
+  const w = dane.wybory;
+
+  // 1. Pochodzenie
+  wybierzPochodzenie(w.pochodzenie);
+
+  // 2. Wyniki tabel pochodzenia (wybierzPochodzenie zeruje wynikiTabel - nadpisz PO)
+  wynikiTabel[w.pochodzenie] = JSON.parse(JSON.stringify(w.wynikiTabelPochodzenia || {}));
+  przywrocWynikiTabelDoDom(w.pochodzenie);
+
+  // 3. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
+  const bonusSelects = document.querySelectorAll('.origin-attr-choice-select');
+  (w.bonusoweAtrybutyPochodzenia || []).forEach((wartosc, i) => {
+    if (bonusSelects[i] && wartosc) {
+      bonusSelects[i].value = wartosc;
+      bonusSelects[i].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+  // 4. Poziom - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
+  wybranyPoziom = w.poziom;
+  const poziomInput = document.querySelector(`input[name="poziom"][value="${w.poziom}"]`);
+  if (poziomInput) poziomInput.checked = true;
+  aktualizujWidocznoscSciezek(wybranyPoziom);
+  await aktualizujSciezkiPoziomu(wybranyPoziom);
+  aktualizujTytulSekcjiSciezek(wybranyPoziom);
+  aktualizujWealthSection(wybranyPoziom);
+  aktualizujOriginBenefits(wybranyPoziom);
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+  await zaladujKorzysciPoziomu(wybranyPoziom);
+
+  // 5. Wybrana opcja korzyści z pochodzenia na poziomie 4 (np. "1 zaklęcie")
+  if (w.opcjaPoziom4) {
+    const radio = Array.from(document.querySelectorAll(`input[name="origin-option-${w.pochodzenie}"]`))
+      .find(r => r.value === w.opcjaPoziom4);
+    if (radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // 6. Atrybuty główne: domyślne albo jednorazowa zamiana -1/+1 (Krok 2)
+  const chkDomyslne = document.getElementById('domyslne-atrybuty');
+  chkDomyslne.checked = w.atrybutyGlowne?.domyslne ?? true;
+  const customDiv = document.getElementById('custom-attributes');
+  if (customDiv) customDiv.style.display = chkDomyslne.checked ? 'none' : 'block';
+  if (!chkDomyslne.checked) {
+    document.getElementById('atrybut-zmniejszony').value = w.atrybutyGlowne?.zmniejszony || '';
+    document.getElementById('atrybut-zwiekszony').value = w.atrybutyGlowne?.zwiekszony || '';
+  }
+  aktualizujObliczoneAtrybuty();
+
+  // 7. Ścieżki (Krok 3) - kliknij przyciski wyboru tak, jak zrobiłby użytkownik
+  [[1, w.sciezki?.nowicjusz], [3, w.sciezki?.ekspert], [7, w.sciezki?.mistrz]].forEach(([poziomWyboru, sciezkaId]) => {
+    if (!sciezkaId) return;
+    document.querySelector(`button[data-path-id="${sciezkaId}"][data-pick-level="${poziomWyboru}"]`)?.click();
+  });
+
+  // 8. Sloty zwiększenia atrybutów (Krok 3.5)
+  wybraneAtrybutySlotow = JSON.parse(JSON.stringify(w.atrybutySloty || {}));
+  renderAtrybutySlotySection();
+
+  // 9. Profesje i języki (Krok 4)
+  odpowiedziSlotow = JSON.parse(JSON.stringify(w.profesjeJezykiSloty || {}));
+  renderProfessionsSection();
+
+  // 10. Kurioza (Krok 4)
+  wybraneKurioza = [...(w.kurioza || [])];
+  renderCuriosSection();
+  updateStep4NextButton();
+
+  // 11. Srebrniki (Krok 4) - tylko suma jest zapisywana, pojedyncze rzuty są ulotne
+  wylosowaneSrebrniki = (typeof w.srebrniki === 'number') ? w.srebrniki : null;
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan && wylosowaneSrebrniki != null) {
+    wealthSpan.textContent = `Srebrniki: ${wylosowaneSrebrniki} (zaimportowano)`;
+  }
+
+  // 12. Magia: tradycje i zaklęcia (Krok 4.5)
+  magiaWybory = JSON.parse(JSON.stringify(w.magia?.wybory || {}));
+  magiaRyzykoWyniki = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
+  renderSpellsSection();
+
+  aktualizujPodgladPostaci();
+}
+
+/**
+ * Obsługuje wybrany plik importu: odczytuje go, parsuje jako JSON, waliduje
+ * (zob. walidujDaneImportu()) i - jeśli poprawny - odtwarza całą postać
+ * w kreatorze (zob. zaimportujPostac()). Pokazuje czytelne komunikaty
+ * błędów w Kroku 1, gdy plik jest uszkodzony, ma złą strukturę albo
+ * odwołuje się do pochodzeń/ścieżek/profesji/kuriozów/tradycji/zaklęć,
+ * które nie istnieją w aktualnej bazie danych aplikacji.
+ */
+function obslozImportPliku(plik) {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    let dane;
+    try {
+      dane = JSON.parse(e.target.result);
+    } catch (err) {
+      pokazKomunikatImportu('error', 'Nie udało się odczytać pliku - to nie jest poprawny plik JSON.');
+      return;
+    }
+
+    const bledy = walidujDaneImportu(dane);
+    if (bledy.length > 0) {
+      pokazKomunikatImportu('error', 'Nie udało się zaimportować postaci - plik zawiera błędy:', bledy);
+      return;
+    }
+
+    try {
+      await zaimportujPostac(dane);
+      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 5 z górnego menu), by zweryfikować wynik.');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Błąd importu postaci:', err);
+      pokazKomunikatImportu('error', `Wystąpił nieoczekiwany błąd podczas importu: ${err.message}`);
+    }
+  };
+  reader.onerror = () => {
+    pokazKomunikatImportu('error', 'Nie udało się odczytać wybranego pliku.');
+  };
+  reader.readAsText(plik);
 }
 
 // ========== SYSTEM POMOCY (LIGHTBOX) ==========
