@@ -2055,12 +2055,14 @@ kbd {
 
 .magic-slot-mode-toggle {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 10px;
 }
 
 .magic-slot-mode-toggle button {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 100px;
 }
 
 .magic-slot-mode-toggle button.active {
@@ -2235,11 +2237,20 @@ kbd {
 
 .picker-sort-row {
     align-items: center;
+    border: 2px solid var(--blood-bright);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    margin-bottom: 12px;
 }
 
 .picker-sort-label {
     font-size: 0.82em;
     color: var(--ink-dim);
+    font-weight: 600;
+}
+
+.picker-sort-row .picker-filter-chip {
+    border-radius: 0;
 }
 
 .picker-tile-grid {
@@ -2338,3 +2349,119 @@ kbd {
     color: var(--gold-bright);
     font-size: 1.1em;
 }
+
+.zamoznosc-tile {
+    width: 100%;
+}
+
+.zamoznosc-badge {
+    font-size: 0.75em;
+    color: var(--gold-bright);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.equipment-table-wrap {
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.equipment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.equipment-table th {
+    text-align: left;
+    color: var(--ink-dim);
+    font-weight: 600;
+    font-size: 0.85em;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+}
+
+.equipment-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.equipment-table tbody tr:last-child > td {
+    border-bottom: none;
+}
+
+.equipment-table-desc-row td {
+    color: var(--ink-dim);
+    font-size: 0.92em;
+    padding-top: 0;
+    background: var(--bg-2);
+}
+
+.equipment-table-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--ink-dim);
+    cursor: pointer;
+    padding: 3px 7px;
+    font-size: 0.95em;
+    line-height: 1.4;
+    margin-left: 4px;
+}
+
+.icon-btn:hover {
+    border-color: var(--gold);
+    color: var(--ink);
+}
+
+.equipment-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+}
+
+.equipment-tag {
+    display: inline-block;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.82em;
+    color: var(--ink-mute);
+}
+
+.equipment-tag.sold {
+    text-decoration: line-through;
+}
+
+.modal-box-large {
+    width: min(1100px, 96vw);
+    max-height: min(90vh, 960px);
+}
+
+.picker-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 12px;
+}
+
+.picker-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    color: var(--ink-dim);
+    cursor: pointer;
+}
+

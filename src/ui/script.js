@@ -46,6 +46,7 @@ let ekwipunekGotowkaPoczatkowaWynik = null; // wylosowana suma kostek startowej 
 let ekwipunekWybory = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:'zwoj_zaklecie', tradycjaId, spellId } / { typ:'przedmiot', itemId } (wybor_dodatkowy)
 let ekwipunekSprzedane = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
 let ekwipunekZakupione = []; // { itemId, ilosc } kupione w sklepie
+let ekwipunekOpisRozwiniete = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1364,6 +1365,7 @@ function resetujStanPoZmianiePochodzenia() {
   ekwipunekWybory = {};
   ekwipunekSprzedane = [];
   ekwipunekZakupione = [];
+  ekwipunekOpisRozwiniete = new Set();
 
   // Reset selektorów poziomu
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
@@ -4949,18 +4951,14 @@ function renderZamoznoscGrid() {
     const zakres = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
     const selected = ekwipunekZamoznoscId === z.id;
     return `
-      <div class="tile path-tile ${selected ? 'selected' : ''}">
-        <div class="tile-header">
-          <div>
-            <div class="tile-title">${z.nazwa}</div>
-            <small>3k6: ${zakres}</small>
-          </div>
+      <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-wybierz-zamoznosc="${z.id}">
+        <div class="picker-tile-header">
+          <span>${z.nazwa}</span>
+          ${selected ? '<span class="zamoznosc-badge">✓ Wybrano</span>' : ''}
         </div>
-        <div class="tile-body"><p>${z.opis}</p></div>
-        <div class="tile-footer">
-          <button type="button" class="btn-primary" data-wybierz-zamoznosc="${z.id}">${selected ? 'Wybrano' : 'Wybierz'}</button>
-        </div>
-      </div>
+        <div class="picker-tile-meta">3k6: ${zakres}</div>
+        <p class="picker-tile-opis">${z.opis}</p>
+      </button>
     `;
   }).join('');
 
@@ -4990,6 +4988,7 @@ function wybierzZamoznosc(zamoznoscId, wynikRzutu) {
   ekwipunekWybory = {};
   ekwipunekSprzedane = [];
   ekwipunekZakupione = [];
+  ekwipunekOpisRozwiniete = new Set();
   renderEkwipunekSection();
 }
 
@@ -5001,6 +5000,7 @@ function resetujZamoznosc() {
   ekwipunekWybory = {};
   ekwipunekSprzedane = [];
   ekwipunekZakupione = [];
+  ekwipunekOpisRozwiniete = new Set();
   renderEkwipunekSection();
 }
 
@@ -5173,7 +5173,7 @@ function renderSklepSection() {
 
   const stan = obliczStanEkwipunku();
 
-  const renderujPozycje = (pozycje, zrodlo) => pozycje.map(p => {
+  const renderujWiersze = (pozycje, zrodlo) => pozycje.map(p => {
     const nazwa = p.zwojZaklecie
       ? `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
       : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
@@ -5182,13 +5182,37 @@ function renderSklepSection() {
     const cenaSkupu = przedmiot ? formatujOkrawki(cenaSkupuOkrawki(przedmiot.cena) * p.ilosc) : null;
     const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
     const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
-    return `
-      <div class="selected-item">
-        <span${statystyki ? ` title="${statystyki}"` : ''}>${nazwa}${ilosc}${przedmiot ? ` <em>(${formatujCene(przedmiot.cena)})</em>` : ''}</span>
-        ${mozeSprzedac ? `<button type="button" class="btn-secondary small" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${cenaSkupu}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? `Sprzedaj (${cenaSkupu})` : 'Zwróć'}</button>` : ''}
-      </div>
+    const maOpis = !!przedmiot?.opis;
+    const rozwiniety = ekwipunekOpisRozwiniete.has(p.klucz);
+    const wiersz = `
+      <tr>
+        <td>${nazwa}${ilosc} ${przedmiot ? renderujZnacznikZrodla(przedmiot.zrodlo) : ''}</td>
+        <td>${statystyki || '—'}</td>
+        <td>${przedmiot ? formatujCene(przedmiot.cena) : '—'}</td>
+        <td class="equipment-table-actions">
+          ${maOpis ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">ℹ️</button>` : ''}
+          ${mozeSprzedac ? `<button type="button" class="icon-btn" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${cenaSkupu}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
+        </td>
+      </tr>
     `;
-  }).join('') || '<p class="hint">Brak przedmiotów.</p>';
+    const wierszOpis = maOpis
+      ? `<tr class="equipment-table-desc-row" ${rozwiniety ? '' : 'hidden'}><td colspan="4">${przedmiot.opis}</td></tr>`
+      : '';
+    return wiersz + wierszOpis;
+  }).join('');
+
+  const wszystkiePozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje];
+  const tabelaHtml = wszystkiePozycje.length ? `
+    <div class="equipment-table-wrap">
+      <table class="equipment-table">
+        <thead><tr><th>Przedmiot</th><th>Statystyki</th><th>Cena</th><th></th></tr></thead>
+        <tbody id="ekwipunek-posiadane-list">
+          ${renderujWiersze(stan.posiadaneStartowe, 'startowe')}
+          ${renderujWiersze(stan.zakupionePozycje, 'kupione')}
+        </tbody>
+      </table>
+    </div>
+  ` : '<p class="hint">Brak przedmiotów.</p>';
 
   container.innerHTML = `
     <div class="flex-row-between">
@@ -5200,14 +5224,11 @@ function renderSklepSection() {
     <div class="flex-row-between">
       <h5>Twoje przedmioty</h5>
     </div>
-    <div id="ekwipunek-posiadane-list" class="known-spells-list">
-      ${renderujPozycje(stan.posiadaneStartowe, 'startowe')}
-      ${renderujPozycje(stan.zakupionePozycje, 'kupione')}
-    </div>
+    ${tabelaHtml}
 
     ${stan.sprzedaneStartowe.length ? `
       <div class="flex-row-between"><h5>Sprzedane</h5></div>
-      <div class="known-spells-list">${stan.sprzedaneStartowe.map(p => `<div class="selected-item"><span>${p.itemId ? pobierzPrzedmiot(p.itemId)?.nazwa : p.tekst}</span></div>`).join('')}</div>
+      <div class="equipment-tag-list">${stan.sprzedaneStartowe.map(p => `<span class="equipment-tag sold">${p.itemId ? pobierzPrzedmiot(p.itemId)?.nazwa : p.tekst}</span>`).join('')}</div>
     ` : ''}
 
     <div class="flex-row-between">
@@ -5218,6 +5239,14 @@ function renderSklepSection() {
 
   container.querySelectorAll('[data-sprzedaj]').forEach(btn => {
     btn.addEventListener('click', () => sprzedajPozycje(btn.dataset.sprzedaj, btn.dataset.zrodlo));
+  });
+  container.querySelectorAll('[data-info]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const klucz = btn.dataset.info;
+      if (ekwipunekOpisRozwiniete.has(klucz)) ekwipunekOpisRozwiniete.delete(klucz);
+      else ekwipunekOpisRozwiniete.add(klucz);
+      renderSklepSection();
+    });
   });
   document.getElementById('btn-otworz-sklep')?.addEventListener('click', () => otworzEkwipunekPicker());
 }
@@ -5245,7 +5274,7 @@ let ekwipunekPicker = null;
 
 /** Otwiera popup katalogu przedmiotów do kupienia (kafelki z wyszukiwaniem i filtrami kategorii/rzadkości). */
 function otworzEkwipunekPicker() {
-  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc' };
+  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc', ukryjNiedostepne: true };
   const overlay = document.getElementById('equipment-picker-overlay');
   if (overlay) overlay.hidden = false;
   renderEkwipunekPickerBody();
@@ -5281,7 +5310,7 @@ function rerenderEkwipunekPickerDynamic() {
   const el = document.getElementById('equipment-picker-dynamic');
   if (!el || !ekwipunekPicker) return;
 
-  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir } = ekwipunekPicker;
+  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir, ukryjNiedostepne } = ekwipunekPicker;
   let wynik = EQUIPMENT.filter(i => i.cena);
   if (filterKategoria) wynik = wynik.filter(i => i.kategoria === filterKategoria);
   if (filterRzadkosc) wynik = wynik.filter(i => i.rzadkosc === filterRzadkosc);
@@ -5300,12 +5329,24 @@ function rerenderEkwipunekPickerDynamic() {
     .join('');
 
   const stan = obliczStanEkwipunku();
-  const tiles = sortujPrzedmioty(wynik, sortBy, sortDir)
-    .map(i => {
-      const staczyna = stan && stan.gotowkaOkrawki >= cenaNaOkrawki(i.cena);
+  const posiadaneIds = stan
+    ? new Set([...stan.posiadaneStartowe, ...stan.zakupionePozycje].filter(p => p.itemId).map(p => p.itemId))
+    : new Set();
+
+  let wynikDoWyswietlenia = sortujPrzedmioty(wynik, sortBy, sortDir).map(i => {
+    const zaDrogi = !stan || stan.gotowkaOkrawki < cenaNaOkrawki(i.cena);
+    const posiadany = posiadaneIds.has(i.id);
+    return { i, zaDrogi, posiadany, niedostepny: zaDrogi || posiadany };
+  });
+  const wszystkichPasujacych = wynikDoWyswietlenia.length;
+  if (ukryjNiedostepne) wynikDoWyswietlenia = wynikDoWyswietlenia.filter(w => !w.niedostepny);
+
+  const tiles = wynikDoWyswietlenia
+    .map(({ i, zaDrogi, posiadany, niedostepny }) => {
       const statystyki = formatujStatystykiPrzedmiotu(i);
+      const powod = posiadany ? 'Już posiadane' : (zaDrogi ? 'Za mało gotówki' : '');
       return `
-      <button type="button" class="picker-tile ${staczyna ? '' : 'disabled'}" ${staczyna ? '' : 'disabled'} data-kup="${i.id}">
+      <button type="button" class="picker-tile ${niedostepny ? 'disabled' : ''}" ${niedostepny ? 'disabled' : ''} data-kup="${i.id}">
         <div class="picker-tile-header">
           <span>${i.nazwa}</span>
           ${renderujZnacznikZrodla(i.zrodlo)}
@@ -5313,7 +5354,7 @@ function rerenderEkwipunekPickerDynamic() {
         <div class="picker-tile-meta">${KATEGORIA_ETYKIETY[i.kategoria] || i.kategoria} · ${RZADKOSC_ETYKIETY[i.rzadkosc] || '—'} · ${formatujCene(i.cena)}</div>
         ${statystyki ? `<div class="picker-tile-stats">${statystyki}</div>` : ''}
         ${i.opis ? `<p class="picker-tile-opis">${i.opis}</p>` : ''}
-        ${!staczyna ? '<div class="picker-tile-taken">Za mało gotówki</div>' : ''}
+        ${powod ? `<div class="picker-tile-taken">${powod}</div>` : ''}
       </button>
     `;
     }).join('') || '<p class="hint">Brak przedmiotów spełniających kryteria wyszukiwania.</p>';
@@ -5322,9 +5363,20 @@ function rerenderEkwipunekPickerDynamic() {
     <div class="picker-filter-chips">${kategorieChipy}</div>
     <div class="picker-filter-chips">${rzadkoscChipy}</div>
     <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">Sortuj:</span>${sortChipy}</div>
-    <p class="picker-results-count hint">Znaleziono ${wynik.length} przedmiotów</p>
+    <div class="picker-toolbar">
+      <p class="picker-results-count hint">Znaleziono ${wszystkichPasujacych} przedmiotów${ukryjNiedostepne && wszystkichPasujacych !== wynikDoWyswietlenia.length ? ` (${wynikDoWyswietlenia.length} dostępnych)` : ''}</p>
+      <label class="picker-toggle-label">
+        <input type="checkbox" id="equipment-picker-hide-unavailable" ${ukryjNiedostepne ? 'checked' : ''}>
+        Ukryj niedostępne (za drogie, już posiadane)
+      </label>
+    </div>
     <div class="picker-tile-grid">${tiles}</div>
   `;
+
+  document.getElementById('equipment-picker-hide-unavailable')?.addEventListener('change', (e) => {
+    ekwipunekPicker.ukryjNiedostepne = e.target.checked;
+    rerenderEkwipunekPickerDynamic();
+  });
 
   el.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
     btn.addEventListener('click', () => {
