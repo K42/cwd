@@ -585,66 +585,6 @@ async function updatePathsLevel(_level) {
   // i renderPathSection() w głównym flow
 }
 
-/**
- * Fallback do ładowania ścieżek gdy API nie działa
- * @param {number} _poziom - Wybrany poziom postaci
- */
-/* eslint-disable-next-line no-unused-vars */
-function updatePathsFallback(_level) {
-  const selNovice = document.getElementById('path-novice');
-  const selExpert = document.getElementById('path-expert');
-  const selMaster = document.getElementById('path-master');
-  if (selNovice) selNovice.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-  if (selExpert) selExpert.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-  if (selMaster) selMaster.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-
-  const nowicjusz = [
-    { id: 'kleryk', nazwa: 'Kleryk' },
-    { id: 'magik', nazwa: 'Magik' },
-    { id: 'łotr', nazwa: 'Łotr' },
-    { id: 'wojownik', nazwa: 'Wojownik' }
-  ];
-  const ekspert = [
-    { id: 'berserker', nazwa: 'Berserker' },
-    { id: 'czarnoksiężnik', nazwa: 'Czarnoksiężnik' },
-    { id: 'odkrywca', nazwa: 'Odkrywca' },
-    { id: 'pancerniak', nazwa: 'Pancerniak' },
-    { id: 'rewolwerowiec', nazwa: 'Rewolwerowiec' },
-    { id: 'strzelec_wyborowy', nazwa: 'Strzelec Wyborowy' },
-    { id: 'szelma', nazwa: 'Szelma' },
-    { id: 'taumaturg', nazwa: 'Taumaturg' },
-    { id: 'technomanta', nazwa: 'Technomanta' },
-    { id: 'templariusz', nazwa: 'Templariusz' }
-  ];
-  const mistrz = [
-    { id: 'mistrz_oręża', nazwa: 'Mistrz Oręża' },
-    { id: 'mędrzec', nazwa: 'Mędrzec' },
-    { id: 'negator', nazwa: 'Negator' },
-    { id: 'niszczyciel', nazwa: 'Niszczyciel' }
-  ];
-
-  if (selNovice) {
-    nowicjusz.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selNovice.appendChild(o);
-    });
-    if (selectedPaths.nowicjusz) selNovice.value = selectedPaths.nowicjusz;
-  }
-  if (_level >= 3 && selExpert) {
-    ekspert.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selExpert.appendChild(o);
-    });
-    if (selectedPaths.ekspert) selExpert.value = selectedPaths.ekspert;
-  }
-  if (_level >= 7 && selMaster) {
-    mistrz.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selMaster.appendChild(o);
-    });
-    if (selectedPaths.mistrz) selMaster.value = selectedPaths.mistrz;
-  }
-}
 
 /**
  * Aktualizuje tytuł sekcji ścieżek na podstawie poziomu
@@ -1226,33 +1166,6 @@ function createExtendedDescription(pochodzenie) {
   return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
-/**
- * Tworzy krótki opis pochodzenia (2 zdania) - zachowane dla kompatybilności
- */
-// eslint-disable-next-line no-unused-vars
-function createShortDescription(pochodzenie) {
-  const descriptions = {
-    'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję.',
-    'automaton': 'Mechaniczne istoty stworzone przez dawnych magów. Nie oddychają, nie śpią i są odporne na choroby.',
-    'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości. Znane z zamiłowania do mechaniki i psot.',
-    'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła. Odporni na magię i posiadający widzenie w ciemności.',
-    'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach. Posiadają częściową odporność na efekty magiczne.',
-    'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki. Mogą wpadać w szał bojowy.',
-    'faun': 'Leśne istoty o kozich nogach związane z naturą. Potrafią porozumiewać się ze zwierzętami.',
-    'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu. Posiadają naturalne szczęście i zwinność.',
-    'chochlik': 'Maleńkie istoty magiczne znane z psot. Mogą latać i mają dostęp do chaotycznych zaklęć.',
-    'elf': 'Długowieczne istoty o niezwykłej urodzie. Posiadają zdolności magiczne i widzenie w ciemności.',
-    'hobgoblin': 'Większe i bardziej wojownicze niż gobliny. Znane z dyscypliny bojowej i odporności na strach.',
-    'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie. Mogą oddychać pod wodą i mają mroczne moce.',
-    'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły. Posiadają naturalne pazury i mogą hibernować.',
-    'warg': 'Wilcze istoty o niezwykłej zwinności. Mają wyczulone zmysły i zdolności tropienia.',
-    'inkarnacja': 'Istoty wcielone z innych płaszczyzn. Posiadają zdolności płaszczyznowe i odporność na magię.',
-    'kambion': 'Potomkowie demonów o mrocznych mocach. Odporni na ogień i mogą wywołać strach u wrogów.',
-    'jotunn': 'Potężni giganci z północnych krain. Znani z siły, honoru bojowego i odporności na zimno.'
-  };
-    
-  return descriptions[pochodzenie.id] || pochodzenie.opis;
-}
 
 /**
  * Zbiera wyniki tabel z kafelka pochodzenia
@@ -2194,25 +2107,6 @@ function getAllTraits(traitsSpecial) {
   }));
 }
 
-/**
- * Pobiera kluczowe cechy specjalne (maksymalnie 2)
- * @param {Object} cechySpecjalne - Obiekt z cechami specjalnymi
- * @returns {Array|null} Tablica z maksymalnie 2 kluczowymi cechami
- */
-// eslint-disable-next-line no-unused-vars
-function getKeyTraits(traitsSpecial) {
-  if (!traitsSpecial || Object.keys(traitsSpecial).length === 0) {
-    return null;
-  }
-    
-  const cechy = Object.entries(traitsSpecial);
-  const keyTraits = cechy.slice(0, 2).map(([nazwa, opis]) => ({
-    nazwa: formatNameTraits(nazwa),
-    opis: opis.length > 60 ? `${opis.substring(0, 60)  }...` : opis
-  }));
-    
-  return keyTraits.length > 0 ? keyTraits : null;
-}
 
 /**
  * Formatuje listę języków pochodzenia (kluczy z origins.js, np. 'mroczna_mowa')
@@ -2283,13 +2177,7 @@ function toggleTileExpansion(originId) {
 function expandTile(tile) {
   tile.classList.remove('compact');
   tile.classList.add('expanded');
-    
-  // Zmień ikonę na strzałkę w górę
-  const expandIcon = tile.querySelector('.tile-expand-icon');
-  if (expandIcon) {
-    expandIcon.textContent = '↑';
-  }
-    
+
   // Pokaż rozwinięty kontent, ukryj zwinięty
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
   const expandedContent = tile.querySelector('.tile-content-expanded');
@@ -2309,13 +2197,7 @@ function expandTile(tile) {
 function collapseTile(tile) {
   tile.classList.remove('expanded');
   tile.classList.add('compact');
-    
-  // Zmień ikonę na strzałkę w dół
-  const expandIcon = tile.querySelector('.tile-expand-icon');
-  if (expandIcon) {
-    expandIcon.textContent = '↓';
-  }
-    
+
   // Pokaż zwinięty kontent, ukryj rozwinięty
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
   const expandedContent = tile.querySelector('.tile-content-expanded');
@@ -4074,13 +3956,6 @@ function renderLanguagesSummary() {
   }).join('') + (autoScriptAllKnown ? `<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach ${renderSourceTag(autoScriptAllKnownSource)}.</p>` : '');
 }
 
-/**
- * Losuje odpowiedzi dla wszystkich nierozdanych jeszcze slotów.
- */
-/* eslint-disable-next-line no-unused-vars */
-function _randomizeProfession() {
-  randomizeProfessionsCentrally();
-}
 
 /**
  * Aktualizuje listę wybranych profesji (pigułki pod slotami)
@@ -4201,21 +4076,6 @@ function toggleCurio(curioId) {
   updateStep5NextButton();
 }
 
-/**
- * Losuje kurioza
- */
-/* eslint-disable-next-line no-unused-vars */
-function _randomizeCurio() {
-  const { kurioza } = calculateChoiceCount();
-  const available = availableCurios.filter(curio => !selectedCurios.includes(curio.id));
-  
-  if (available.length > 0 && selectedCurios.length < kurioza) {
-    const randomCurio = available[Math.floor(Math.random() * available.length)];
-    selectedCurios.push(randomCurio.id);
-    renderCuriosSection();
-    updateStep5NextButton();
-  }
-}
 
 /**
  * Sprawdza, czy dany slot profesyjno-językowy ma kompletną odpowiedź.
