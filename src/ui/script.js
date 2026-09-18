@@ -19,6 +19,7 @@ import {
   formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
   formatujStatystykiPrzedmiotu, SORTOWANIE_ETYKIETY, sortujPrzedmioty, PRZELICZNIK_NA_OKRAWKI
 } from './logic/ekwipunek.js';
+import { pobierzZapisanePostacie, zapiszPostacDoCache, generujIdZapisu } from './logic/zapisy.js';
 
 let biezacaPostac = null;
 let wybranePochodzenie = null;
@@ -47,6 +48,9 @@ let ekwipunekWybory = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:
 let ekwipunekSprzedane = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
 let ekwipunekZakupione = []; // { itemId, ilosc } kupione w sklepie
 let ekwipunekOpisRozwiniete = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
+
+// --- Zapis w pamięci przeglądarki (localStorage) ---
+let biezacyZapisCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1483,11 +1487,29 @@ function pokazKrok(stepNumber) {
   document.querySelectorAll('.step').forEach(step => {
     step.classList.remove('active');
   });
-    
+
   // Pokaż wybrany krok
   document.getElementById(`step-${stepNumber}`).classList.add('active');
   // aktualnyKrok = stepNumber; // Obecnie nieużywane
   updateBreadcrumbs(stepNumber);
+
+  // Każde dotarcie do Kroku 8 (Podgląd) zapisuje/nadpisuje bieżącą postać
+  // w pamięci przeglądarki - niezależnie od tego, czy trafiono tu przyciskiem
+  // "Dalej", z górnego menu, czy programowo (zob. losujCalaPostac()).
+  if (stepNumber === 8) zapiszAktualnaPostacDoCache();
+}
+
+/**
+ * Zapisuje (albo nadpisuje, jeśli edytowana postać już ma przypisane id w
+ * cache - np. po imporcie) bieżącą postać w localStorage, w tym samym
+ * formacie co eksport do JSON. Nic nie robi, jeśli postać jest niekompletna
+ * (zbudujDaneEksportu() zwraca wtedy null).
+ */
+function zapiszAktualnaPostacDoCache() {
+  const dane = zbudujDaneEksportu();
+  if (!dane) return;
+  if (!biezacyZapisCacheId) biezacyZapisCacheId = generujIdZapisu();
+  zapiszPostacDoCache(biezacyZapisCacheId, dane);
 }
 
 /**
@@ -3435,6 +3457,11 @@ function obslozImportPliku(plik) {
 
     try {
       await zaimportujPostac(dane);
+      // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
+      // id - dalsze zmiany, aż do ponownego dotarcia do Kroku 8, nadpiszą
+      // ten sam zapis (zob. zapiszAktualnaPostacDoCache()).
+      biezacyZapisCacheId = generujIdZapisu();
+      zapiszPostacDoCache(biezacyZapisCacheId, dane);
       pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
     } catch (err) {
       // eslint-disable-next-line no-console
