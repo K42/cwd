@@ -24,6 +24,12 @@ const RZADKOSC_ETYKIETY = {
   pospolity: 'Pospolity', niepospolity: 'Niepospolity', rzadki: 'Rzadki', egzotyczny: 'Egzotyczny'
 };
 
+const RZADKOSC_RANGA = { pospolity: 0, niepospolity: 1, rzadki: 2, egzotyczny: 3 };
+
+const SORTOWANIE_ETYKIETY = {
+  nazwa: 'Nazwa', cena: 'Cena', obrazenia: 'Obrażenia', obrona: 'Obrona', rzadkosc: 'Rzadkość'
+};
+
 const KATEGORIA_ETYKIETY = {
   bron_biala: 'Broń biała',
   bron_dystansowa: 'Broń dystansowa',
@@ -146,6 +152,70 @@ function formatujStatystykiPrzedmiotu(item) {
   return null;
 }
 
+/**
+ * Przelicza zapis kości obrażeń (np. "1k6 + 1", "2k6", "1k3", albo płaskie
+ * "1") na średnią liczbową, żeby dało się sortować po obrażeniach. Zwraca
+ * `null` dla przedmiotów bez pola obrażeń (czyli nie-broni).
+ */
+function sredniaObrazen(zapis) {
+  if (!zapis) return null;
+  const kosci = zapis.match(/(\d+)\s*k\s*(\d+)/i);
+  let baza = 0;
+  if (kosci) {
+    baza = parseInt(kosci[1], 10) * (parseInt(kosci[2], 10) + 1) / 2;
+  } else {
+    const plaska = parseFloat(zapis);
+    if (Number.isNaN(plaska)) return null;
+    baza = plaska;
+  }
+  const bonus = zapis.match(/\+\s*(\d+)/);
+  if (bonus) baza += parseInt(bonus[1], 10);
+  return baza;
+}
+
+/**
+ * Wyciąga liczbową wartość Obrony (np. "17" -> 17). Zbroje, których Obrona
+ * zależy od Zręczności postaci (np. "Zręczność + 2"), nie mają stałej
+ * liczby do porównania - zwraca wtedy `null`.
+ */
+function wartoscObrony(obrona) {
+  if (obrona === null || obrona === undefined || obrona === '') return null;
+  const liczba = parseInt(obrona, 10);
+  return Number.isNaN(liczba) ? null : liczba;
+}
+
+/**
+ * Sortuje listę przedmiotów katalogu wg wybranego kryterium ('nazwa',
+ * 'cena', 'obrazenia', 'obrona' albo 'rzadkosc') i kierunku ('asc'/'desc').
+ * Przedmioty, dla których dane kryterium nie ma sensu (np. Obrażenia dla
+ * zbroi), lądują zawsze na końcu listy, niezależnie od kierunku - są
+ * wtedy dodatkowo posortowane alfabetycznie, żeby lista była stabilna.
+ */
+function sortujPrzedmioty(lista, sortBy, sortDir) {
+  const kierunek = sortDir === 'desc' ? -1 : 1;
+  const wartosc = (item) => {
+    switch (sortBy) {
+    case 'cena': return item.cena ? cenaNaOkrawki(item.cena) : null;
+    case 'obrazenia': return sredniaObrazen(item.obrazenia);
+    case 'obrona': return wartoscObrony(item.obrona);
+    case 'rzadkosc': return item.rzadkosc ? RZADKOSC_RANGA[item.rzadkosc] : null;
+    case 'nazwa':
+    default: return null;
+    }
+  };
+  return lista.slice().sort((a, b) => {
+    const av = wartosc(a);
+    const bv = wartosc(b);
+    const aBrak = av === null || av === undefined;
+    const bBrak = bv === null || bv === undefined;
+    if (aBrak && bBrak) return a.nazwa.localeCompare(b.nazwa, 'pl');
+    if (aBrak) return 1;
+    if (bBrak) return -1;
+    if (av !== bv) return (av - bv) * kierunek;
+    return a.nazwa.localeCompare(b.nazwa, 'pl');
+  });
+}
+
 export {
   PRZELICZNIK_NA_OKRAWKI,
   STAWKA_SKUPU,
@@ -159,5 +229,7 @@ export {
   obliczAtomyWyposazenia,
   pobierzGwarantowanePozycje,
   formatujStatystykiPrzedmiotu,
+  SORTOWANIE_ETYKIETY,
+  sortujPrzedmioty,
   pobierzZamoznoscDlaRzutu
 };

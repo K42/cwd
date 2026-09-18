@@ -17,7 +17,7 @@ import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/zamoznosc.js';
 import {
   RZADKOSC_ETYKIETY, KATEGORIA_ETYKIETY, pobierzPrzedmiot, cenaNaOkrawki, formatujCene,
   formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
-  formatujStatystykiPrzedmiotu, PRZELICZNIK_NA_OKRAWKI
+  formatujStatystykiPrzedmiotu, SORTOWANIE_ETYKIETY, sortujPrzedmioty, PRZELICZNIK_NA_OKRAWKI
 } from './logic/ekwipunek.js';
 
 let biezacaPostac = null;
@@ -5245,7 +5245,7 @@ let ekwipunekPicker = null;
 
 /** Otwiera popup katalogu przedmiotów do kupienia (kafelki z wyszukiwaniem i filtrami kategorii/rzadkości). */
 function otworzEkwipunekPicker() {
-  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null };
+  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc' };
   const overlay = document.getElementById('equipment-picker-overlay');
   if (overlay) overlay.hidden = false;
   renderEkwipunekPickerBody();
@@ -5281,7 +5281,7 @@ function rerenderEkwipunekPickerDynamic() {
   const el = document.getElementById('equipment-picker-dynamic');
   if (!el || !ekwipunekPicker) return;
 
-  const { search, filterKategoria, filterRzadkosc } = ekwipunekPicker;
+  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir } = ekwipunekPicker;
   let wynik = EQUIPMENT.filter(i => i.cena);
   if (filterKategoria) wynik = wynik.filter(i => i.kategoria === filterKategoria);
   if (filterRzadkosc) wynik = wynik.filter(i => i.rzadkosc === filterRzadkosc);
@@ -5295,11 +5295,12 @@ function rerenderEkwipunekPickerDynamic() {
   const rzadkoscChipy = Object.keys(RZADKOSC_ETYKIETY)
     .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rzadkosc="${r}">${RZADKOSC_ETYKIETY[r]}</button>`)
     .join('');
+  const sortChipy = Object.keys(SORTOWANIE_ETYKIETY)
+    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORTOWANIE_ETYKIETY[s]}${sortBy === s ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}</button>`)
+    .join('');
 
   const stan = obliczStanEkwipunku();
-  const tiles = wynik
-    .slice()
-    .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'))
+  const tiles = sortujPrzedmioty(wynik, sortBy, sortDir)
     .map(i => {
       const staczyna = stan && stan.gotowkaOkrawki >= cenaNaOkrawki(i.cena);
       const statystyki = formatujStatystykiPrzedmiotu(i);
@@ -5320,6 +5321,7 @@ function rerenderEkwipunekPickerDynamic() {
   el.innerHTML = `
     <div class="picker-filter-chips">${kategorieChipy}</div>
     <div class="picker-filter-chips">${rzadkoscChipy}</div>
+    <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">Sortuj:</span>${sortChipy}</div>
     <p class="picker-results-count hint">Znaleziono ${wynik.length} przedmiotów</p>
     <div class="picker-tile-grid">${tiles}</div>
   `;
@@ -5335,6 +5337,18 @@ function rerenderEkwipunekPickerDynamic() {
     btn.addEventListener('click', () => {
       const val = btn.dataset.filterRzadkosc;
       ekwipunekPicker.filterRzadkosc = ekwipunekPicker.filterRzadkosc === val ? null : val;
+      rerenderEkwipunekPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-sort-by]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.sortBy;
+      if (ekwipunekPicker.sortBy === val) {
+        ekwipunekPicker.sortDir = ekwipunekPicker.sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        ekwipunekPicker.sortBy = val;
+        ekwipunekPicker.sortDir = 'asc';
+      }
       rerenderEkwipunekPickerDynamic();
     });
   });
