@@ -3798,8 +3798,10 @@ const FULL_SOURCE_NAMES = {
   NW: 'Niepewna Wiara',
   RA: 'Rozkoszna Agonia',
   SP: 'Straszliwe Piękno',
-  GP: 'Głód w Pustce',
-  GWP: 'Grobowce Pustkowia',
+  // Uwaga na skróty: GWP to "Głód W Pustce", a GP to "Grobowce Pustkowia" -
+  // tak są oznaczone dane (zob. komentarze przy zrodlo w data/origins.js).
+  GP: 'Grobowce Pustkowia',
+  GWP: 'Głód w Pustce',
   CS: 'Chwalebna Śmierć'
 };
 
