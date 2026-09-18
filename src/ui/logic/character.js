@@ -5,6 +5,7 @@
  */
 
 import GAME_DATA from '../data/game-data.js';
+import { getBenefitKeyForLevel } from '../data/paths.js';
 
 /**
  * Buduje postać na podstawie specyfikacji zgodnie z zasadami z PDF
@@ -105,6 +106,21 @@ function calculateBenefitsLevel(poziom, spec) {
     korzyści: {}
   };
 
+  /**
+   * Wpisuje do wyniku korzyści wybranej ścieżki dla bieżącego poziomu.
+   * Klucz korzyści bierze z data/paths.js, bo dla ścieżek eksperckich i
+   * mistrzowskich pierwszy pakiet leży pod `poziom_1` (moment wyboru
+   * ścieżki), a nie pod numerem poziomu postaci.
+   */
+  const przypiszKorzysciSciezki = (groupKey, pathId) => {
+    if (!pathId) return;
+    const sciezka = GAME_DATA[groupKey] && GAME_DATA[groupKey][pathId];
+    if (!sciezka) return;
+    const klucz = getBenefitKeyForLevel(groupKey, poziom);
+    result.korzyści = (klucz && sciezka[klucz]) || {};
+    result.nazwa_sciezki = sciezka.nazwa;
+  };
+
   // Zależnie od źródła korzyści
   switch (levelData.zrodlo_korzysci) {
   case 'pochodzenie':
@@ -115,36 +131,15 @@ function calculateBenefitsLevel(poziom, spec) {
     break;
 
   case 'sciezka_nowicjusza':
-    if (spec.sciezka_nowicjusza) {
-      const sciezka = GAME_DATA.sciezki_nowicjuszy[spec.sciezka_nowicjusza];
-      if (sciezka) {
-        const klucz = `poziom_${poziom}`;
-        result.korzyści = sciezka[klucz] || {};
-        result.nazwa_sciezki = sciezka.nazwa;
-      }
-    }
+    przypiszKorzysciSciezki('sciezki_nowicjuszy', spec.sciezka_nowicjusza);
     break;
 
   case 'sciezka_ekspercka':
-    if (spec.sciezka_ekspercka) {
-      const sciezka = GAME_DATA.sciezki_ekspertow[spec.sciezka_ekspercka];
-      if (sciezka) {
-        const klucz = `poziom_${poziom}`;
-        result.korzyści = sciezka[klucz] || {};
-        result.nazwa_sciezki = sciezka.nazwa;
-      }
-    }
+    przypiszKorzysciSciezki('sciezki_ekspertow', spec.sciezka_ekspercka);
     break;
 
   case 'sciezka_mistrzowska':
-    if (spec.sciezka_mistrzowska) {
-      const sciezka = GAME_DATA.sciezki_mistrzow[spec.sciezka_mistrzowska];
-      if (sciezka) {
-        const klucz = `poziom_${poziom}`;
-        result.korzyści = sciezka[klucz] || {};
-        result.nazwa_sciezki = sciezka.nazwa;
-      }
-    }
+    przypiszKorzysciSciezki('sciezki_mistrzow', spec.sciezka_mistrzowska);
     break;
   }
 

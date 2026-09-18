@@ -20,16 +20,16 @@
  * (śledzenie znanych tradycji, filtrowanie dostępnych zaklęć wg Mocy).
  */
 
-import PATHS from '../data/paths.js';
+import PATHS, { PATH_LEVEL_KEYS } from '../data/paths.js';
 import SPELLS from '../data/spells.js';
 import { TRADITIONS, RELIGIOUS_TRADITIONS, getLearnableTraditionsList } from '../data/traditions.js';
 
-/** Minimalny poziom postaci wymagany do odblokowania danego klucza korzyści ścieżki. */
-const REQUIRED_LEVEL = {
-  sciezki_nowicjuszy: { poziom_1: 1, poziom_2: 2, poziom_5: 5, poziom_8: 8 },
-  sciezki_ekspertow: { poziom_1: 3, poziom_6: 6 },
-  sciezki_mistrzow: { poziom_1: 7, poziom_10: 10 }
-};
+/**
+ * Minimalny poziom postaci wymagany do odblokowania danego klucza korzyści
+ * ścieżki - wspólna definicja z data/paths.js, żeby nie utrzymywać dwóch
+ * rozjeżdżających się kopii tego mapowania.
+ */
+const REQUIRED_LEVEL = PATH_LEVEL_KEYS;
 
 function findPath(groupKey, id) {
   if (!id) return null;

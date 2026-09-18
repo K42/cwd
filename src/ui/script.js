@@ -2770,10 +2770,13 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
     sciezka_ekspercka: 'ścieżki eksperckiej',
     sciezka_mistrzowska: 'ścieżki mistrzowskiej'
   };
-  const missingTier = tierLabels[benefits.zrodlo_korzysci];
-  return missingTier
-    ? `<p class="hint">Korzyści tego poziomu pochodzą ze ${missingTier} - wybierz ją w Kroku 3, żeby je tutaj zobaczyć.</p>`
-    : '<p class="hint">Ten poziom nie przyznaje dodatkowych korzyści.</p>';
+  const tier = tierLabels[benefits.zrodlo_korzysci];
+  if (!tier) return '<p class="hint">Ten poziom nie przyznaje dodatkowych korzyści.</p>';
+  // Nazwa ścieżki jest ustawiona tylko wtedy, gdy ścieżka faktycznie została
+  // wybrana - inaczej brak korzyści znaczy po prostu "nie ma jeszcze z czego".
+  return benefits.nazwa_sciezki
+    ? `<p class="hint">Dla ${tier} <strong>${benefits.nazwa_sciezki}</strong> nie mamy jeszcze zapisanych korzyści na tym poziomie.</p>`
+    : `<p class="hint">Korzyści tego poziomu pochodzą ze ${tier} - wybierz ją w Kroku 3, żeby je tutaj zobaczyć.</p>`;
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
