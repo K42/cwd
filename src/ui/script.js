@@ -688,35 +688,26 @@ function updateOriginBenefitsContent() {
 }
 
 /**
- * Generuje opisy talentów na podstawie opcji
+ * Generuje opisy opcji korzyści z pochodzenia na poziomie 4. Opisy talentów
+ * pochodzą z logic/talents.js - jedynego miejsca, w którym są utrzymywane.
  */
 function generateTalentDescriptions(opcje) {
-  const talentDescriptions = {
-    'talent Determinacja': 'Gdy wyrzucisz 1 na kości ułatwienia, możesz rzucić ponownie i wybrać, którego wyniku użyć.',
-    'talent Wysokie obroty': 'Możesz wykonać dodatkową akcję w swojej turze. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
-    'talent Odskok': 'Gdy stworzenie, które widzisz, chybi, atakując twoją Obronę lub Zręczność, możesz użyć reakcji, by wykonać odwrót.',
-    'talent Nie do zdarcia': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia, a także pozbyć się jednego z następujących stanów: wyczerpanie, osłabienie lub zatrucie. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
-    'talent Prymat sobowtóra': 'W trakcie swojej tury możesz użyć Kradzieży tożsamości jako reakcji. Ponadto gdy skradniesz tożsamość jakiejś istoty, to dopóki naśladujesz jej wygląd, wszelkie ataki przeciw niej wykonujesz z 1 ułatwieniem.',
-    'talent Furia': 'Gdy twoje Zdrowie spadnie poniżej połowy maksymalnej wartości, wszystkie twoje ataki zadają dodatkowe obrażenia równe twojej Sile.',
-    'talent Kontrolowany szał': 'Możesz wpaść w szał bojowy jako akcję. W szał bojowy otrzymujesz +2 do ataków, ale -2 do Obrony. Szał trwa do końca walki lub do momentu, gdy zdecydujesz się go zakończyć jako akcję.'
-  };
-  
   return opcje.map(opcja => {
     if (opcja.startsWith('talent ')) {
-      const talentName = opcja;
-      const opis = talentDescriptions[talentName] || 'Opis talentu nie jest dostępny.';
       return `
         <div class="talent-description">
-          <strong>${talentName}:</strong> ${opis}
+          <strong>${opcja}:</strong> ${getTalentDescription(opcja)}
         </div>
       `;
-    } else if (opcja === '1 zaklęcie') {
+    }
+    if (opcja === '1 zaklęcie') {
       return `
         <div class="spell-description">
-          <strong>1 zaklęcie:</strong> Możesz nauczyć się jednego zaklęcia z dostępnych szkół magii.
+          <strong>1 zaklęcie:</strong> Uczysz się jednego zaklęcia z tradycji, którą już znasz.
         </div>
       `;
-    } else if (opcja === 'zwiększenie Zdrowia o 4') {
+    }
+    if (opcja === 'zwiększenie Zdrowia o 4') {
       return `
         <div class="spell-description">
           <strong>Zwiększenie Zdrowia o 4:</strong> Podnosisz swoje Zdrowie o 4 punkty.
