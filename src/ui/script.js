@@ -20,11 +20,20 @@ import {
   formatStatsItem, SORT_LABELS, sortItems, CONVERTER_TO_COPPERBITS
 } from './logic/equipment.js';
 import { getSavedCharacters, saveCharacterToCache, generateSaveId, clearSavedCharacters } from './logic/saves.js';
+import { getTalentDescription } from './logic/talents.js';
 
 /** Zwraca znacznik `<svg>` odwołujący się do ikony (linia, bez wypełnienia) zdefiniowanej w sprite w index.html. */
 function icon(name) {
   return `<svg class="icon"><use href="#icon-${name}"></use></svg>`;
 }
+
+/**
+ * Progi wyboru ścieżek: poziom postaci -> klucz w `selectedPaths`. Trzy progi
+ * (1/3/7) powtarzają się w całym kreatorze, więc mapowanie żyje w jednym
+ * miejscu zamiast w kolejnych blokach `if`.
+ */
+const PATH_TIER_BY_LEVEL = { 1: 'nowicjusz', 3: 'ekspert', 7: 'mistrz' };
+const PATH_LEVEL_BY_TIER = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
 
 let currentCharacter = null;
 let selectedOrigin = null;
@@ -217,11 +226,7 @@ async function loadOptions() {
     }
 
     // Ładowanie szczegółowych danych pochodzeń
-    // eslint-disable-next-line no-console
-    console.log('Ładowanie pochodzeń:', opcje.pochodzenia.length);
     availableOrigin = await loadDetailsOriginsExtended(opcje.pochodzenia, originsWithTables);
-    // eslint-disable-next-line no-console
-    console.log('Załadowane pochodzenia:', availableOrigin.length);
 
     // Generowanie kafelków pochodzeń
     generateTilesOrigins(availableOrigin);
@@ -456,28 +461,12 @@ function renderPathBenefitsList(path, levelChoice) {
 }
 
 function applyPathBenefits({ levelChoice, sciezka }) {
-  // eslint-disable-next-line no-console
-  console.log('applyPathBenefits:', { levelChoice, sciezka: sciezka.id, selectedLevel });
-  
   // Poprzednie korzyści z tego progu (jeśli były) zostaną zastąpione niżej -
   // dodajBenefity() przelicza atrybuty drugorzędne od zera na podstawie
   // aktualnego stanu przyznaneKorzysciZeSciezek, więc nie trzeba ich osobno odjąć.
   // Zapisz wybór ścieżki w stanie uproszczonym
-  if (levelChoice === 1) {
-    selectedPaths.nowicjusz = sciezka.id;
-    // eslint-disable-next-line no-console
-    console.log('Ustawiono ścieżkę nowicjusza:', sciezka.id);
-  }
-  if (levelChoice === 3) {
-    selectedPaths.ekspert = sciezka.id;
-    // eslint-disable-next-line no-console
-    console.log('Ustawiono ścieżkę eksperta:', sciezka.id);
-  }
-  if (levelChoice === 7) {
-    selectedPaths.mistrz = sciezka.id;
-    // eslint-disable-next-line no-console
-    console.log('Ustawiono ścieżkę mistrza:', sciezka.id);
-  }
+  const tier = PATH_TIER_BY_LEVEL[levelChoice];
+  if (tier) selectedPaths[tier] = sciezka.id;
 
   // Zastosuj nowy pakiet korzyści
   const pkt = (sciezka.korzysci && sciezka.korzysci[levelChoice]) || {};
@@ -487,6 +476,10 @@ function applyPathBenefits({ levelChoice, sciezka }) {
   renderPathSummary(levelChoice, sciezka);
   updatePathAccordion();
   updateStep3NextButton();
+  // Sekcja "Korzyści Poziomu" w Kroku 2 pokazuje korzyści ze ścieżki
+  // przypisanej do bieżącego poziomu - po zmianie ścieżki trzeba ją
+  // przeliczyć, inaczej zostałaby przy stanie "Brak ścieżki".
+  loadBenefitsLevel(selectedLevel);
 }
 
 /**
@@ -499,8 +492,6 @@ function updateStep3NextButton() {
   // Dla poziomu 0 nie wymagaj żadnych ścieżek
   if (selectedLevel === 0) {
     btn.disabled = false;
-    // eslint-disable-next-line no-console
-    console.log('Poziom 0 - przycisk włączony');
     return;
   }
   
@@ -511,20 +502,6 @@ function updateStep3NextButton() {
   const hasMaster = !!selectedPaths.mistrz;
   const canProceed = hasNovice && (!needExpert || hasExpert) && (!needMaster || hasMaster);
   btn.disabled = !canProceed;
-  
-  // Debug - sprawdź stan
-  // eslint-disable-next-line no-console
-  console.log('updateStep3NextButton debug:', {
-    selectedLevel,
-    selectedPaths,
-    hasNovice,
-    needExpert,
-    needMaster,
-    hasExpert,
-    hasMaster,
-    canProceed,
-    disabled: btn.disabled
-  });
 }
 
 function renderPathSummary(levelChoice, sciezka) {
@@ -1731,8 +1708,7 @@ function resetSwapAttributes() {
  * @param {'nowicjusz'|'ekspert'|'mistrz'} tier
  */
 function resetPath(tier) {
-  const levelMap = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
-  const levelChoice = levelMap[tier];
+  const levelChoice = PATH_LEVEL_BY_TIER[tier];
   if (!levelChoice) return;
 
   if (grantedBenefitsWithPaths[levelChoice]) {
@@ -1750,6 +1726,8 @@ function resetPath(tier) {
   renderPathSectionsVisibility();
   renderPathSection(levelChoice);
   updatePreviewCharacter();
+  updateStep3NextButton();
+  loadBenefitsLevel(selectedLevel);
 }
 
 /**
@@ -2601,6 +2579,15 @@ async function loadBenefitsLevel(poziom) {
     return;
   }
 
+  // Poziom 0 to postać startowa - tabela Rozwoju w PG zaczyna się dopiero od
+  // poziomu 1, więc GAME_DATA.poziomy[0] celowo nie istnieje. Bez tego
+  // wyjścia obliczKorzysciPoziomu() rzucałoby wyjątek przy każdym powrocie
+  // na poziom 0 i sekcja wchodziła w awaryjny fallback.
+  if (poziom === 0) {
+    displayStartingLevelBenefits();
+    return;
+  }
+
   try {
     const benefits = calculateBenefitsLevel(poziom, {
       pochodzenie: selectedOrigin,
@@ -2615,6 +2602,27 @@ async function loadBenefitsLevel(poziom) {
     // Fallback - wyświetl podstawowe informacje
     displayLevelBenefitsFallback(poziom);
   }
+}
+
+/**
+ * Renderuje sekcję korzyści dla poziomu startowego (0), na którym postać ma
+ * wyłącznie to, co daje pochodzenie - żadna ścieżka nie jest jeszcze wybrana.
+ */
+function displayStartingLevelBenefits() {
+  const section = document.getElementById('level-benefits-section');
+  const levelName = document.getElementById('selected-level-name');
+  const content = document.getElementById('level-benefits-content');
+  if (!section || !content) return;
+
+  section.style.display = 'block';
+  if (levelName) levelName.textContent = 'Poziom startowy (Pochodzenie)';
+  content.innerHTML = `
+    <div class="benefit-category">
+      <h5>Postać startowa</h5>
+      <p>Na poziomie 0 postać ma wyłącznie atrybuty, języki i cechy wynikające z pochodzenia - nie wybiera jeszcze żadnej ścieżki.</p>
+      <p class="hint">Pierwszą ścieżkę (nowicjusza) wybierzesz po podniesieniu poziomu do 1.</p>
+    </div>
+  `;
 }
 
 /**
@@ -2680,211 +2688,101 @@ function displayLevelBenefitsFallback(poziom) {
 function displayBenefitsLevel(benefits) {
   const section = document.getElementById('level-benefits-section');
   const levelName = document.getElementById('selected-level-name');
-  
+  const content = document.getElementById('level-benefits-content');
+  if (!section || !content) return;
+
   section.style.display = 'block';
-  
-  // Bezpieczne wyświetlanie nazwy poziomu
+
   const nameLevel = benefits.nazwa_poziomu || 'Nieznany poziom';
-  const namePaths = benefits.nazwa_sciezki || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
-  levelName.textContent = `${nameLevel} (${namePaths})`;
+  const sourceName = benefits.nazwa_sciezki
+    || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
+  if (levelName) levelName.textContent = `${nameLevel} (${sourceName})`;
 
-  // Resetuj wszystkie sekcje
-  // Sprawdź czy elementy istnieją przed ustawieniem display
-  const elements = [
-    'secondary-attributes-growth',
-    'primary-attributes-choice', 
-    'talents-section',
-    'magic-section',
-    'languages-professions-section'
-  ];
-  
-  elements.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.style.display = 'none';
-    }
-  });
-  
-  // Sprawdź czy options-section istnieje
-  const optionsSection = document.getElementById('options-section');
-  if (optionsSection) {
-    optionsSection.style.display = 'none';
-  }
-
-  // Wyświetl atrybuty drugorzędne
-  if (benefits.korzyści.zdrowie || benefits.korzyści.moc || benefits.korzyści.obrona) {
-    const content = [];
-    if (benefits.korzyści.zdrowie) content.push(`Zdrowie: ${benefits.korzyści.zdrowie}`);
-    if (benefits.korzyści.moc) content.push(`Moc: ${benefits.korzyści.moc}`);
-    if (benefits.korzyści.obrona) content.push(`Obrona: ${benefits.korzyści.obrona}`);
-    
-    const secondaryAttrsContent = document.getElementById('secondary-attrs-content');
-    const secondaryAttributesGrowth = document.getElementById('secondary-attributes-growth');
-    
-    if (secondaryAttrsContent) {
-      secondaryAttrsContent.innerHTML = content.join(', ');
-    }
-    if (secondaryAttributesGrowth) {
-      secondaryAttributesGrowth.style.display = 'block';
-    }
-  }
-
-  // Wyświetl interaktywny wybór atrybutów głównych
-  if (benefits.korzyści.atrybuty_glowne && benefits.korzyści.atrybuty_glowne.typ === 'wybor') {
-    showChoiceAttributes(benefits.korzyści.atrybuty_glowne);
-  }
-
-  // Wyświetl talenty
-  if (benefits.korzyści.talenty && benefits.korzyści.talenty.length > 0) {
-    const talentsContent = document.getElementById('talents-content');
-    const talentsSection = document.getElementById('talents-section');
-    if (talentsContent) {
-      talentsContent.innerHTML = `<ul>${benefits.korzyści.talenty.map(t => `<li>${t}</li>`).join('')}</ul>`;
-    }
-    if (talentsSection) {
-      talentsSection.style.display = 'block';
-    }
-  }
-
-  // Wyświetl magię
-  if (benefits.korzyści.magia) {
-    const magicContent = document.getElementById('magic-content');
-    const magicSection = document.getElementById('magic-section');
-    if (magicContent) {
-      magicContent.textContent = descriptionMagic(benefits.korzyści.magia);
-    }
-    if (magicSection) {
-      magicSection.style.display = 'block';
-    }
-  }
-
-  // Wyświetl języki i profesje
-  if (benefits.korzyści.jezyki_profesje) {
-    const languagesContent = document.getElementById('languages-professions-content');
-    const languagesSection = document.getElementById('languages-professions-section');
-    if (languagesContent) {
-      languagesContent.textContent = benefits.korzyści.jezyki_profesje;
-    }
-    if (languagesSection) {
-      languagesSection.style.display = 'block';
-    }
-  }
-
-  // Wyświetl opcje (dla poziomu 4 - pochodzenie)
-  if (benefits.korzyści.opcje && benefits.korzyści.opcje.length > 0) {
-    const optionsContent = document.getElementById('options-content');
-    const optionsSection = document.getElementById('options-section');
-    if (optionsContent) {
-      const optionsList = benefits.korzyści.opcje.map(opcja => `<li>${opcja}</li>`).join('');
-      optionsContent.innerHTML = `<ul>${optionsList}</ul>`;
-    }
-    if (optionsSection) {
-      optionsSection.style.display = 'block';
-    }
-  }
+  content.innerHTML = renderBenefitsLevelHtml(benefits.korzyści || {}, benefits);
 }
 
-// State zarządzania wyborem atrybutów
-let attributeChoiceState = {
-  maxPoints: 0,
-  remainingPoints: 0,
-  maxPerAttribute: 1,
-  choices: { sila: 0, zrecznosc: 0, intelekt: 0, wola: 0 }
-};
-
 /**
- * Pokazuje interaktywny wybór atrybutów
+ * Składa HTML listy korzyści jednego poziomu - jeden blok `.benefit-category`
+ * na kategorię korzyści. Obsługuje wszystkie pola występujące w blokach
+ * `poziom_N` danych ścieżek i pochodzeń: atrybuty drugorzędne (zdrowie, moc,
+ * obrona, percepcja, prędkość, splugawienie), punkty atrybutów głównych,
+ * talenty, magię, języki/profesje oraz opcje do wyboru (poziom 4 pochodzenia).
  */
-function showChoiceAttributes(config) {
-  const section = document.getElementById('primary-attributes-choice');
-  section.style.display = 'block';
+function renderBenefitsLevelHtml(korzysci, benefits = {}) {
+  const block = (tytul, tresc) => `
+    <div class="benefit-category">
+      <h5>${tytul}</h5>
+      ${tresc}
+    </div>
+  `;
+  const blocks = [];
 
-  // Inicjalizuj state
-  attributeChoiceState = {
-    maxPoints: config.ilosc,
-    remainingPoints: config.ilosc,
-    maxPerAttribute: config.wartosc,
-    choices: { sila: 0, zrecznosc: 0, intelekt: 0, wola: 0 }
+  const secondary = [
+    ['Zdrowie', korzysci.zdrowie],
+    ['Moc', korzysci.moc],
+    ['Obrona', korzysci.obrona],
+    ['Percepcja', korzysci.percepcja],
+    ['Prędkość', korzysci.predkosc],
+    ['Splugawienie', korzysci.splugawienie]
+  ].filter(([, wartosc]) => wartosc).map(([nazwa, wartosc]) => `${nazwa} ${wartosc}`);
+  if (secondary.length) {
+    blocks.push(block('Atrybuty drugorzędne', `<p>${secondary.join(' · ')}</p>`));
+  }
+
+  const attributes = korzysci.atrybuty_glowne;
+  if (attributes && attributes.typ === 'wybor') {
+    const attributeNames = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
+    const available = (attributes.dostepne || []).map(a => attributeNames[a] || a).join(', ');
+    blocks.push(block('Atrybuty główne', `
+      <p>Do rozdania: <strong>${attributes.ilosc}</strong> pkt (maksymalnie ${attributes.wartosc} na jeden atrybut).</p>
+      ${available ? `<p class="hint">Do wyboru: ${available}.</p>` : ''}
+      <p class="hint">Punkty rozdasz w Kroku 4 (Rozwój Atrybutów).</p>
+    `));
+  }
+
+  if (korzysci.talenty && korzysci.talenty.length > 0) {
+    const items = korzysci.talenty
+      .map(talent => `<li><strong>${talent}</strong> - ${getTalentDescription(talent)}</li>`)
+      .join('');
+    blocks.push(block('Talenty', `<ul>${items}</ul>`));
+  }
+
+  if (korzysci.magia) {
+    blocks.push(block('Magia', `
+      <p>${descriptionMagic(korzysci.magia)}</p>
+      <p class="hint">Tradycje i zaklęcia wybierzesz w Kroku 6 (Magia).</p>
+    `));
+  }
+
+  if (korzysci.jezyki_profesje) {
+    blocks.push(block('Języki i profesje', `
+      <p>${korzysci.jezyki_profesje}</p>
+      <p class="hint">Sloty rozdasz w Kroku 5 (Profesje i Kurioza).</p>
+    `));
+  }
+
+  if (korzysci.opcje && korzysci.opcje.length > 0) {
+    const items = korzysci.opcje.map(opcja => `<li>${opcja}</li>`).join('');
+    blocks.push(block('Do wyboru', `
+      <ul>${items}</ul>
+      <p class="hint">Wyboru dokonasz w sekcji "Korzyści z Pochodzenia" poniżej.</p>
+    `));
+  }
+
+  if (blocks.length) return blocks.join('');
+
+  // Brak korzyści prawie zawsze znaczy "nie wybrano jeszcze ścieżki, z której
+  // ten poziom je czerpie" - powiedz to wprost zamiast sugerować, że poziom
+  // niczego nie daje.
+  const tierLabels = {
+    sciezka_nowicjusza: 'ścieżki nowicjusza',
+    sciezka_ekspercka: 'ścieżki eksperckiej',
+    sciezka_mistrzowska: 'ścieżki mistrzowskiej'
   };
-
-  // Aktualizuj wyświetlanie
-  document.getElementById('total-points').textContent = config.ilosc;
-  document.getElementById('remaining-points').textContent = config.ilosc;
-  
-  // Resetuj wartości
-  ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(attr => {
-    document.getElementById(`bonus-${attr}`).textContent = '0';
-  });
-
-  updateAttributeButtons();
-}
-
-/**
- * Zwiększa wybrany atrybut
- */
-// eslint-disable-next-line no-unused-vars
-function incrementAttribute(attr) {
-  if (attributeChoiceState.remainingPoints > 0 && 
-      attributeChoiceState.choices[attr] < attributeChoiceState.maxPerAttribute) {
-    attributeChoiceState.choices[attr]++;
-    attributeChoiceState.remainingPoints--;
-    updateDisplayAttributes();
-  }
-}
-
-/**
- * Zmniejsza wybrany atrybut
- */
-// eslint-disable-next-line no-unused-vars
-function decrementAttribute(attr) {
-  if (attributeChoiceState.choices[attr] > 0) {
-    attributeChoiceState.choices[attr]--;
-    attributeChoiceState.remainingPoints++;
-    updateDisplayAttributes();
-  }
-}
-
-/**
- * Aktualizuje wyświetlanie wyborów atrybutów
- */
-function updateDisplayAttributes() {
-  // Aktualizuj wartości
-  Object.entries(attributeChoiceState.choices).forEach(([attr, value]) => {
-    document.getElementById(`bonus-${attr}`).textContent = value;
-  });
-
-  // Aktualizuj licznik
-  document.getElementById('remaining-points').textContent = attributeChoiceState.remainingPoints;
-
-  // Aktualizuj przyciski
-  updateAttributeButtons();
-
-  // Walidacja przycisku "Dalej"
-  const btnNext = document.getElementById('btn-next-2');
-  if (attributeChoiceState.remainingPoints === 0) {
-    btnNext.disabled = false;
-  } else {
-    btnNext.disabled = true;
-  }
-}
-
-/**
- * Aktualizuje stan przycisków +/-
- */
-function updateAttributeButtons() {
-  ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(attr => {
-    const row = document.querySelector(`[data-attribute="${attr}"]`);
-    const btnPlus = row.querySelector('.btn-plus');
-    const btnMinus = row.querySelector('.btn-minus');
-
-    // Przycisk + wyłączony gdy:
-    // - brak punktów LUB osiągnięto max dla tego atrybutu
-    btnPlus.disabled = attributeChoiceState.remainingPoints === 0 || 
-                       attributeChoiceState.choices[attr] >= attributeChoiceState.maxPerAttribute;
-
-    // Przycisk - wyłączony gdy wartość = 0
-    btnMinus.disabled = attributeChoiceState.choices[attr] === 0;
-  });
+  const missingTier = tierLabels[benefits.zrodlo_korzysci];
+  return missingTier
+    ? `<p class="hint">Korzyści tego poziomu pochodzą ze ${missingTier} - wybierz ją w Kroku 3, żeby je tutaj zobaczyć.</p>`
+    : '<p class="hint">Ten poziom nie przyznaje dodatkowych korzyści.</p>';
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
