@@ -2,63 +2,63 @@
  * Frontend JavaScript dla kreatora postaci
  */
 
-import { budujPostac, obliczKorzysciPoziomu } from './logic/character.js';
-import { getPathsForLevel, obliczSlotyAtrybutow } from './logic/paths.js';
-import { getOriginsListUI, getOriginTablesUI } from './logic/origins.js';
-import { getProfesjeUI, getKuriozaUI } from './logic/professions-curios.js';
-import { JEZYKI, obliczSlotyProfesjiIJezykow } from './logic/languages-professions.js';
-import { obliczSlotyMagii, obliczRozwiazanieMagii, pobierzTradycjeDlaKategorii, pobierzZakleciaDoNauki, pobierzZakleciaKregu0, czyCzarnaMagia, opisAtomu, opisMagii } from './logic/magic.js';
-import { TRADYCJE } from './data/traditions.js';
+import { buildCharacter, calculateBenefitsLevel } from './logic/character.js';
+import { getPathsForLevel, calculateSlotsAttributes } from './logic/paths.js';
+import { getOriginsListUi, getOriginTablesUi } from './logic/origins.js';
+import { getProfessionsUi, getCuriosUi } from './logic/professions-curios.js';
+import { LANGUAGES, calculateSlotsProfessionsAndLanguages } from './logic/languages-professions.js';
+import { calculateSlotsMagic, calculateResolutionMagic, getTraditionsForCategory, getSpellsToLearning, getCircleZeroSpells, isBlackMagic, atomDescription, descriptionMagic } from './logic/magic.js';
+import { TRADITIONS } from './data/traditions.js';
 import { rollTable } from './data/table_utils.js';
-import DANE_GRY from './data/game-data.js';
+import GAME_DATA from './data/game-data.js';
 import SPELLS from './data/spells.js';
 import EQUIPMENT from './data/equipment.js';
-import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from './data/wealth.js';
+import { WEALTH, getWealthForRoll } from './data/wealth.js';
 import {
-  RZADKOSC_ETYKIETY, KATEGORIA_ETYKIETY, pobierzPrzedmiot, cenaNaOkrawki, formatujCene,
-  formatujOkrawki, cenaSkupuOkrawki, obliczAtomyWyposazenia, pobierzGwarantowanePozycje,
-  formatujStatystykiPrzedmiotu, SORTOWANIE_ETYKIETY, sortujPrzedmioty, PRZELICZNIK_NA_OKRAWKI
+  RARITY_LABELS, CATEGORY_LABELS_EQ, getItem, priceOnCopperbits, formatPrice,
+  formatCopperbits, priceBuybackCopperbits, calculateAtomsGear, getGuaranteedEntries,
+  formatStatsItem, SORT_LABELS, sortItems, CONVERTER_TO_COPPERBITS
 } from './logic/equipment.js';
-import { pobierzZapisanePostacie, zapiszPostacDoCache, generujIdZapisu } from './logic/saves.js';
+import { getSavedCharacters, saveCharacterToCache, generateSaveId } from './logic/saves.js';
 
-let biezacaPostac = null;
-let wybranePochodzenie = null;
-let wybranyPoziom = 0; // Gra zaczyna się od poziomu 0
-let dostepnePochodzenia = [];
-let wynikiTabel = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
-let wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
-let przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
-let wybraneProfesje = []; // Pochodna odpowiedziSlotow - profesje przypisane do slotów w trybie 'profesja'
-let odpowiedziSlotow = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
-let wybraneAtrybutySlotow = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
-let wybraneKurioza = [];
-let magiaWybory = {}; // atomId (ze slotu magii) -> { mode: 'tradycja'|'zaklecie', tradycjaId, spellId }
-let magiaRyzykoWyniki = {}; // atomId -> { spellId, rzut, przyznane } - zapamiętany rzut k6 ryzyka splugawienia
-let magiaCzarnaMagiaZaTradycje = new Set(); // tradycje czarnej magii, za które już przyznano 1 Splugawienie
-let dostepneProfesje = [];
-let dostepneKurioza = [];
-let wylosowaneSrebrniki = null; // 2k6 za każdy poziom powyżej 0
-let liczbaKuriozow = 0; // Po 1 za poziomy wyboru ścieżek: 1, 3, 7
+let currentCharacter = null;
+let selectedOrigin = null;
+let selectedLevel = 0; // Gra zaczyna się od poziomu 0
+let availableOrigin = [];
+let resultsTables = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
+let selectedPaths = { nowicjusz: '', ekspert: '', mistrz: '' };
+let grantedBenefitsWithPaths = { 1: null, 3: null, 7: null };
+let selectedProfessions = []; // Pochodna odpowiedziSlotow - profesje przypisane do slotów w trybie 'profesja'
+let answersSlots = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
+let selectedAttributesSlots = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
+let selectedCurios = [];
+let magicChoices = {}; // atomId (ze slotu magii) -> { mode: 'tradycja'|'zaklecie', tradycjaId, spellId }
+let magicRiskResults = {}; // atomId -> { spellId, rzut, przyznane } - zapamiętany rzut k6 ryzyka splugawienia
+let magicBlackMagicTooTraditions = new Set(); // tradycje czarnej magii, za które już przyznano 1 Splugawienie
+let availableProfessions = [];
+let availableCurios = [];
+let randomizedSilver = null; // 2k6 za każdy poziom powyżej 0
+let numberCurios = 0; // Po 1 za poziomy wyboru ścieżek: 1, 3, 7
 
 // --- Krok 7: Ekwipunek ---
-let ekwipunekZamoznoscWynik = null; // wynik rzutu 3k6 (albo null, gdy zamożność wybrano ręcznie bez losowania)
-let ekwipunekZamoznoscId = null; // klucz z ZAMOZNOSC (np. 'komfort')
-let ekwipunekGotowkaPoczatkowaWynik = null; // wylosowana suma kostek startowej sakiewki (w jednostce danego poziomu zamożności)
-let ekwipunekWybory = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:'zwoj_zaklecie', tradycjaId, spellId } / { typ:'przedmiot', itemId } (wybor_dodatkowy)
-let ekwipunekSprzedane = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
-let ekwipunekZakupione = []; // { itemId, ilosc } kupione w sklepie
-let ekwipunekOpisRozwiniete = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
+let equipmentWealthResult = null; // wynik rzutu 3k6 (albo null, gdy zamożność wybrano ręcznie bez losowania)
+let equipmentWealthId = null; // klucz z ZAMOZNOSC (np. 'komfort')
+let equipmentStartingCashRoll = null; // wylosowana suma kostek startowej sakiewki (w jednostce danego poziomu zamożności)
+let equipmentChoices = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:'zwoj_zaklecie', tradycjaId, spellId } / { typ:'przedmiot', itemId } (wybor_dodatkowy)
+let equipmentSold = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
+let equipmentPurchased = []; // { itemId, ilosc } kupione w sklepie
+let equipmentDescriptionExpanded = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
 
 // --- Zapis w pamięci przeglądarki (localStorage) ---
-let biezacyZapisCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
+let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
 
 // Ładowanie opcji przy starcie strony
 document.addEventListener('DOMContentLoaded', async () => {
-  await zaladujOpcje();
-  await zaladujPoziomy();
-  inicjalizujPoziomy();
-  await zaladujSciezkiDoKafelkow();
-  await zaladujProfesjeIKurioza();
+  await loadOptions();
+  await loadLevels();
+  initializeLevels();
+  await loadPathsToTiles();
+  await loadProfessionsAndCurios();
   
   // Inicjalizuj system pomocy
   initializeHelpSystem();
@@ -76,13 +76,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Centralne losowanie
-  const btnRandProf = document.getElementById('btn-randomize-professions');
-  if (btnRandProf) {
-    btnRandProf.addEventListener('click', () => losujProfesjeCentralnie());
+  const btnRandomizeProfessions = document.getElementById('btn-randomize-professions');
+  if (btnRandomizeProfessions) {
+    btnRandomizeProfessions.addEventListener('click', () => randomizeProfessionsCentrally());
   }
-  const btnRandCur = document.getElementById('btn-randomize-curios');
-  if (btnRandCur) {
-    btnRandCur.addEventListener('click', () => losujKuriozaCentralnie());
+  const btnRandomizeCurios = document.getElementById('btn-randomize-curios');
+  if (btnRandomizeCurios) {
+    btnRandomizeCurios.addEventListener('click', () => randomizeCuriosCentrally());
   }
 
   // Handlery wyboru ścieżek i zasobów - nowy system kafelków
@@ -90,18 +90,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnWealth = document.getElementById('btn-roll-wealth');
   if (btnWealth) {
     btnWealth.addEventListener('click', () => {
-      if (wybranyPoziom <= 0) return;
+      if (selectedLevel <= 0) return;
       // 2k6 srebrników za każdy poziom powyżej 0
-      let suma = 0;
-      const rzuty = [];
-      for (let i = 0; i < wybranyPoziom * 2; i++) {
+      let sum = 0;
+      const rolls = [];
+      for (let i = 0; i < selectedLevel * 2; i++) {
         const r = Math.floor(Math.random() * 6) + 1;
-        rzuty.push(r);
-        suma += r;
+        rolls.push(r);
+        sum += r;
       }
-      wylosowaneSrebrniki = suma;
-      aktualizujWealthUI(rzuty, suma);
-      aktualizujPodgladPostaci();
+      randomizedSilver = sum;
+      updateWealthUi(rolls, sum);
+      updatePreviewCharacter();
     });
   }
 
@@ -115,85 +115,85 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('atrybut-zwiekszony').value = '';
       aktualizujDomyślneAtrybuty();
     } else {
-      aktualizujObliczoneAtrybuty();
+      updateCalculatedAttributes();
     }
   });
 
   // Jednorazowa zamiana wartości atrybutów (-1/+1)
   ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
-    document.getElementById(id).addEventListener('change', aktualizujObliczoneAtrybuty);
+    document.getElementById(id).addEventListener('change', updateCalculatedAttributes);
   });
 
   // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
-  document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetujWyborPochodzenia);
-  document.getElementById('btn-losuj-krok-1')?.addEventListener('click', losujPochodzenieICechy);
+  document.getElementById('btn-reset-pochodzenie')?.addEventListener('click', resetChoiceOrigin);
+  document.getElementById('btn-losuj-krok-1')?.addEventListener('click', randomizeOriginAndTraits);
   document.getElementById('btn-import-postac')?.addEventListener('click', () => {
     document.getElementById('import-postac-file')?.click();
   });
   document.getElementById('import-postac-file')?.addEventListener('change', (e) => {
-    const plik = e.target.files?.[0];
-    if (plik) obslozImportPliku(plik);
+    const file = e.target.files?.[0];
+    if (file) handleFileImport(file);
     e.target.value = ''; // pozwala ponownie wybrać ten sam plik po błędzie
   });
-  document.getElementById('btn-reset-poziom')?.addEventListener('click', resetujPoziom);
-  document.getElementById('btn-reset-swap')?.addEventListener('click', resetujSwapAtrybutow);
-  document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetujWyborAtrybutuPochodzenia);
-  document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetujKurioza);
-  document.getElementById('btn-reset-professions')?.addEventListener('click', resetujWszystkieProfesjeIJezyki);
-  document.getElementById('btn-reset-magia')?.addEventListener('click', resetujMagie);
-  document.getElementById('magic-picker-close')?.addEventListener('click', zamknijMagicPicker);
+  document.getElementById('btn-reset-poziom')?.addEventListener('click', resetLevel);
+  document.getElementById('btn-reset-swap')?.addEventListener('click', resetSwapAttributes);
+  document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetChoiceAttributeOrigin);
+  document.getElementById('btn-reset-kurioza')?.addEventListener('click', resetCurios);
+  document.getElementById('btn-reset-professions')?.addEventListener('click', resetAllProfessionsAndLanguages);
+  document.getElementById('btn-reset-magia')?.addEventListener('click', resetMagic);
+  document.getElementById('magic-picker-close')?.addEventListener('click', closeMagicPicker);
   document.getElementById('magic-picker-overlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'magic-picker-overlay') zamknijMagicPicker();
+    if (e.target.id === 'magic-picker-overlay') closeMagicPicker();
   });
-  document.getElementById('btn-losuj-zamoznosc')?.addEventListener('click', losujZamoznosc);
-  document.getElementById('btn-reset-zamoznosc')?.addEventListener('click', resetujZamoznosc);
-  document.getElementById('equipment-picker-close')?.addEventListener('click', zamknijEkwipunekPicker);
+  document.getElementById('btn-losuj-zamoznosc')?.addEventListener('click', randomizeWealth);
+  document.getElementById('btn-reset-zamoznosc')?.addEventListener('click', resetWealth);
+  document.getElementById('equipment-picker-close')?.addEventListener('click', closeEquipmentPicker);
   document.getElementById('equipment-picker-overlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'equipment-picker-overlay') zamknijEkwipunekPicker();
+    if (e.target.id === 'equipment-picker-overlay') closeEquipmentPicker();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && magiaPicker) zamknijMagicPicker();
-    if (e.key === 'Escape' && ekwipunekPicker) zamknijEkwipunekPicker();
-    if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) zamknijWczytajPostacPopup();
+    if (e.key === 'Escape' && magicPicker) closeMagicPicker();
+    if (e.key === 'Escape' && equipmentPicker) closeEquipmentPicker();
+    if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) closeLoadCharacterPopup();
   });
   document.querySelectorAll('[data-reset-sciezka]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
       // nie pozwól, by kliknięcie przycisku Wyczyść też przełączało akordeon.
       e.stopPropagation();
-      resetujSciezke(btn.dataset.resetSciezka);
+      resetPath(btn.dataset.resetSciezka);
     });
   });
 
   // Boczne menu (nowa/wczytaj/wylosuj postać) + podpowiedzi zbudowane w JS
   document.getElementById('btn-nowa-postac')?.addEventListener('click', () => {
-    if (confirm('Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.')) nowaPostac();
+    if (confirm('Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.')) newCharacter();
   });
-  document.getElementById('btn-wczytaj-postac')?.addEventListener('click', otworzWczytajPostacPopup);
-  document.getElementById('btn-wylosuj-postac')?.addEventListener('click', () => losujCalaPostac());
-  document.getElementById('load-character-close')?.addEventListener('click', zamknijWczytajPostacPopup);
+  document.getElementById('btn-wczytaj-postac')?.addEventListener('click', openLoadCharacterPopup);
+  document.getElementById('btn-wylosuj-postac')?.addEventListener('click', () => randomizeWholeCharacter());
+  document.getElementById('load-character-close')?.addEventListener('click', closeLoadCharacterPopup);
   document.getElementById('load-character-overlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'load-character-overlay') zamknijWczytajPostacPopup();
+    if (e.target.id === 'load-character-overlay') closeLoadCharacterPopup();
   });
-  inicjalizujTooltipy();
+  initializeTooltips();
 });
 
 /**
  * Ładuje dostępne opcje z serwera
  */
-async function zaladujOpcje() {
+async function loadOptions() {
   try {
     // Pobierz podstawowe opcje
     const opcje = {
-      pochodzenia: Object.keys(DANE_GRY.pochodzenia),
-      sciezki: Object.keys(DANE_GRY.sciezki_nowicjuszy)
+      pochodzenia: Object.keys(GAME_DATA.pochodzenia),
+      sciezki: Object.keys(GAME_DATA.sciezki_nowicjuszy)
     };
 
     // Sprawdź, które pochodzenia mają tabele
-    let pochodzeniaZTabelami = [];
+    let originsWithTables = [];
     try {
-      const originsData = getOriginsListUI();
-      pochodzeniaZTabelami = originsData.pochodzenia || [];
+      const originsData = getOriginsListUi();
+      originsWithTables = originsData.pochodzenia || [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Nie udało się załadować metadanych pochodzeń:', error);
@@ -202,35 +202,35 @@ async function zaladujOpcje() {
     // Ładowanie szczegółowych danych pochodzeń
     // eslint-disable-next-line no-console
     console.log('Ładowanie pochodzeń:', opcje.pochodzenia.length);
-    dostepnePochodzenia = await zaladujSzczegolyPochodzenRozszerzone(opcje.pochodzenia, pochodzeniaZTabelami);
+    availableOrigin = await loadDetailsOriginsExtended(opcje.pochodzenia, originsWithTables);
     // eslint-disable-next-line no-console
-    console.log('Załadowane pochodzenia:', dostepnePochodzenia.length);
+    console.log('Załadowane pochodzenia:', availableOrigin.length);
 
     // Generowanie kafelków pochodzeń
-    generujKafelkiPochodzen(dostepnePochodzenia);
+    generateTilesOrigins(availableOrigin);
 
     // Wypełnianie selecta ścieżek (jeśli istnieje - dla kompatybilności wstecznej)
-    const sciezkaSelect = document.getElementById('sciezka');
-    if (sciezkaSelect) {
-      sciezkaSelect.innerHTML = '<option value="">Brak ścieżki</option>';
+    const pathSelect = document.getElementById('sciezka');
+    if (pathSelect) {
+      pathSelect.innerHTML = '<option value="">Brak ścieżki</option>';
 
       opcje.sciezki.forEach(id => {
         const option = document.createElement('option');
         option.value = id;
         option.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-        sciezkaSelect.appendChild(option);
+        pathSelect.appendChild(option);
       });
     }
 
   } catch (error) {
-    pokazBlad(`Nie można załadować opcji: ${  error.message}`);
+    showError(`Nie można załadować opcji: ${  error.message}`);
   }
 }
 
 /**
  * Ładuje dostępne poziomy z serwera
  */
-async function zaladujPoziomy() {
+async function loadLevels() {
   // Poziomy są dostępne w DANE_GRY.poziomy, ale obecnie nie są używane w UI
   // (poziomy są zdefiniowane bezpośrednio w HTML)
 }
@@ -238,17 +238,17 @@ async function zaladujPoziomy() {
 /**
  * Inicjalizuje obsługę poziomów postaci
  */
-function inicjalizujPoziomy() {
+function initializeLevels() {
   // Dodaj event listenery dla radio buttonów poziomów
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
   levelInputs.forEach(input => {
     input.addEventListener('change', async (e) => {
-      wybranyPoziom = parseInt(e.target.value);
-      aktualizujWidocznoscSciezek(wybranyPoziom);
-      aktualizujSciezkiPoziomu(wybranyPoziom);
-      aktualizujTytulSekcjiSciezek(wybranyPoziom);
-      aktualizujWealthSection(wybranyPoziom);
-      aktualizujOriginBenefits(wybranyPoziom);
+      selectedLevel = parseInt(e.target.value);
+      updatePathsVisibility(selectedLevel);
+      updatePathsLevel(selectedLevel);
+      updatePathsSectionTitle(selectedLevel);
+      updateWealthSection(selectedLevel);
+      updateOriginBenefits(selectedLevel);
 
       // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
       // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
@@ -258,24 +258,24 @@ function inicjalizujPoziomy() {
       await renderPathSection(7);
 
       // Załaduj korzyści dla wybranego poziomu
-      await zaladujKorzysciPoziomu(wybranyPoziom);
+      await loadBenefitsLevel(selectedLevel);
     });
   });
 
   // Inicjalizuj ścieżki dla poziomu 0 (domyślnego)
-  aktualizujWidocznoscSciezek(0);
-  aktualizujSciezkiPoziomu(0);
-  aktualizujWealthSection(0);
-  aktualizujOriginBenefits(0);
+  updatePathsVisibility(0);
+  updatePathsLevel(0);
+  updateWealthSection(0);
+  updateOriginBenefits(0);
   // Załaduj korzyści dla poziomu 0
-  zaladujKorzysciPoziomu(0);
+  loadBenefitsLevel(0);
 
   // Breadcrumbs
   const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
   crumbs.forEach(c => {
     c.addEventListener('click', () => {
       const step = parseFloat(c.getAttribute('data-step'));
-      goToStep(step);
+      randomizeToStep(step);
     });
   });
 }
@@ -283,9 +283,9 @@ function inicjalizujPoziomy() {
 /**
  * Ładuje i renderuje kafelki ścieżek w Kroku 3
  */
-async function zaladujSciezkiDoKafelkow() {
+async function loadPathsToTiles() {
   try {
-    inicjalizujAkordeonSciezek();
+    initializeAccordionPaths();
     renderPathSectionsVisibility();
     await renderPathSection(1);
     await renderPathSection(3);
@@ -301,18 +301,18 @@ async function zaladujSciezkiDoKafelkow() {
  * Umożliwia ręczne zwijanie/rozwijanie sekcji ścieżek po kliknięciu nagłówka
  * (np. by wrócić do wcześniej wybranej ścieżki i zmienić decyzję).
  */
-function inicjalizujAkordeonSciezek() {
+function initializeAccordionPaths() {
   document.querySelectorAll('.path-section-header').forEach(header => {
     header.addEventListener('click', () => {
-      const sekcja = header.closest('.path-section');
-      if (sekcja) sekcja.classList.toggle('collapsed');
+      const section = header.closest('.path-section');
+      if (section) section.classList.toggle('collapsed');
     });
   });
 }
 
 function renderPathSectionsVisibility() {
-  const can3 = wybranyPoziom >= 3;
-  const can7 = wybranyPoziom >= 7;
+  const canTier3 = selectedLevel >= 3;
+  const canTier7 = selectedLevel >= 7;
   const sec1 = document.getElementById('path-section-1');
   const sec3 = document.getElementById('path-section-3');
   const sec7 = document.getElementById('path-section-7');
@@ -322,17 +322,17 @@ function renderPathSectionsVisibility() {
   const s7 = document.getElementById('path-summary-7');
 
   // Dla poziomu 0 ukryj wszystkie sekcje ścieżek
-  const poziomZero = wybranyPoziom === 0;
-  if (sec1) sec1.style.display = poziomZero ? 'none' : '';
-  if (sec3) sec3.style.display = poziomZero ? 'none' : '';
-  if (sec7) sec7.style.display = poziomZero ? 'none' : '';
+  const levelZero = selectedLevel === 0;
+  if (sec1) sec1.style.display = levelZero ? 'none' : '';
+  if (sec3) sec3.style.display = levelZero ? 'none' : '';
+  if (sec7) sec7.style.display = levelZero ? 'none' : '';
 
-  if (!poziomZero) {
+  if (!levelZero) {
     // Dostępność sekcji eksperta i mistrza sygnalizuje opacja kafelków
-    if (g3) g3.style.opacity = can3 ? '1' : '0.5';
-    if (s3) s3.textContent = can3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
-    if (g7) g7.style.opacity = can7 ? '1' : '0.5';
-    if (s7) s7.textContent = can7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
+    if (g3) g3.style.opacity = canTier3 ? '1' : '0.5';
+    if (s3) s3.textContent = canTier3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
+    if (g7) g7.style.opacity = canTier7 ? '1' : '0.5';
+    if (s7) s7.textContent = canTier7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
   }
 
   updatePathAccordion();
@@ -346,45 +346,45 @@ function renderPathSectionsVisibility() {
  */
 function updatePathAccordion() {
   const poziomy = [1, 3, 7];
-  const wybraneMapa = { 1: wybraneSciezki.nowicjusz, 3: wybraneSciezki.ekspert, 7: wybraneSciezki.mistrz };
-  const dostepnePoziomy = poziomy.filter(p => wybranyPoziom >= p);
-  const aktywnyPoziom = dostepnePoziomy.find(p => !wybraneMapa[p]);
+  const selectedMap = { 1: selectedPaths.nowicjusz, 3: selectedPaths.ekspert, 7: selectedPaths.mistrz };
+  const availableLevels = poziomy.filter(p => selectedLevel >= p);
+  const activeLevel = availableLevels.find(p => !selectedMap[p]);
 
   poziomy.forEach(p => {
-    const sekcja = document.getElementById(`path-section-${p}`);
-    if (!sekcja) return;
-    if (!dostepnePoziomy.includes(p)) {
+    const section = document.getElementById(`path-section-${p}`);
+    if (!section) return;
+    if (!availableLevels.includes(p)) {
       // Sekcja niedostępna - poza akordeonem, domyślnie zwinięta
-      sekcja.classList.add('collapsed');
+      section.classList.add('collapsed');
       return;
     }
-    sekcja.classList.toggle('collapsed', p !== aktywnyPoziom);
+    section.classList.toggle('collapsed', p !== activeLevel);
   });
 }
 
-async function renderPathSection(poziomWyboru) {
-  const gridId = `path-grid-${poziomWyboru}`;
+async function renderPathSection(levelChoice) {
+  const gridId = `path-grid-${levelChoice}`;
   const grid = document.getElementById(gridId);
   if (!grid) return;
   grid.innerHTML = '';
   let paths = [];
   try {
-    paths = getPathsForLevel(poziomWyboru);
+    paths = getPathsForLevel(levelChoice);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('Nie udało się załadować ścieżek:', error);
     return;
   }
   for (const p of paths) {
-    const tile = renderPathTile(p, poziomWyboru);
+    const tile = renderPathTile(p, levelChoice);
     grid.appendChild(tile);
   }
   // updateStep3NextButton() jest wywoływane w applyPathBenefits
 }
 
-function renderPathTile(path, poziomWyboru) {
-  const canPick = wybranyPoziom >= poziomWyboru;
-  const selectedId = poziomWyboru === 1 ? wybraneSciezki.nowicjusz : (poziomWyboru === 3 ? wybraneSciezki.ekspert : wybraneSciezki.mistrz);
+function renderPathTile(path, levelChoice) {
+  const canPick = selectedLevel >= levelChoice;
+  const selectedId = levelChoice === 1 ? selectedPaths.nowicjusz : (levelChoice === 3 ? selectedPaths.ekspert : selectedPaths.mistrz);
   const isSelected = selectedId === path.id;
   const tile = document.createElement('div');
   tile.className = `tile path-tile${  isSelected ? ' selected' : ''}`;
@@ -393,83 +393,83 @@ function renderPathTile(path, poziomWyboru) {
     <div class="tile-header">
       <div>
         <div class="tile-title">${path.nazwa}</div>
-        <small>${renderujZnacznikZrodla(path.zrodlo || 'PG')} Poziom wyboru ${poziomWyboru}</small>
+        <small>${renderSourceTag(path.zrodlo || 'PG')} Poziom wyboru ${levelChoice}</small>
       </div>
     </div>
     <div class="tile-body">
-      ${renderPathBenefitsList(path, poziomWyboru)}
+      ${renderPathBenefitsList(path, levelChoice)}
     </div>
     <div class="tile-footer">
-      <button class="btn-primary" ${canPick ? '' : 'disabled'} data-path-id="${path.id}" data-pick-level="${poziomWyboru}">${isSelected ? 'Wybrano' : 'Wybierz tę ścieżkę'}</button>
+      <button class="btn-primary" ${canPick ? '' : 'disabled'} data-path-id="${path.id}" data-pick-level="${levelChoice}">${isSelected ? 'Wybrano' : 'Wybierz tę ścieżkę'}</button>
     </div>
   `;
   const btn = tile.querySelector('button');
   if (btn && canPick) {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      applyPathBenefits({ poziomWyboru, sciezka: path });
+      applyPathBenefits({ levelChoice, sciezka: path });
       // Po wyborze prze-renderuj sekcję, aby podświetlić kafel
-      renderPathSection(poziomWyboru);
+      renderPathSection(levelChoice);
     });
   }
   return tile;
 }
 
-function renderPathBenefitsList(path, poziomWyboru) {
-  const pkt = (path.korzysci && path.korzysci[poziomWyboru]) || {};
+function renderPathBenefitsList(path, levelChoice) {
+  const pkt = (path.korzysci && path.korzysci[levelChoice]) || {};
   const talenty = (pkt.talenty || []).map(t => `<li><strong>Talent:</strong> ${t.nazwa || t} – ${t.opis || ''}</li>`).join('');
   const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>Magia:</strong> ${z.opis || z.nazwa || z}</li>`).join('');
-  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${ETYKIETY_ATRYBUTOW[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
-  const modSec = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${ATTRIBUTE_LABELS[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modSecondary = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${SECONDARY_ATTRIBUTE_LABELS[k] || k}: ${v>0?'+':''}${v}`).join(', ') : '';
   const atrybutyGlowne = pkt.atrybuty_glowne
     ? `<li><strong>Atrybuty:</strong> Zwiększ ${pkt.atrybuty_glowne.ilosc} dowolne o ${pkt.atrybuty_glowne.wartosc} (Krok 4)</li>`
     : '';
-  const biegl = (pkt.bieglosci || []).map(b => `<li><strong>Języki i profesje:</strong> ${b}</li>`).join('');
-  const sprz = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
+  const literacy = (pkt.bieglosci || []).map(b => `<li><strong>Języki i profesje:</strong> ${b}</li>`).join('');
+  const gear = (pkt.sprzet || []).map(s => `<li><strong>Sprzęt:</strong> ${s}</li>`).join('');
   return `
-    <div class="benefit-category"><h5>Korzyści poziomu ${poziomWyboru}</h5>
+    <div class="benefit-category"><h5>Korzyści poziomu ${levelChoice}</h5>
       <ul class="path-benefits">
         ${atrybutyGlowne}
         ${talenty}
         ${zaklecia}
         ${modAttr?`<li><strong>Modyfikatory atrybutów:</strong> ${modAttr}</li>`:''}
-        ${modSec?`<li><strong>Modyfikatory drugorzędne:</strong> ${modSec}</li>`:''}
-        ${biegl}
-        ${sprz}
+        ${modSecondary?`<li><strong>Modyfikatory drugorzędne:</strong> ${modSecondary}</li>`:''}
+        ${literacy}
+        ${gear}
       </ul>
     </div>`;
 }
 
-function applyPathBenefits({ poziomWyboru, sciezka }) {
+function applyPathBenefits({ levelChoice, sciezka }) {
   // eslint-disable-next-line no-console
-  console.log('applyPathBenefits:', { poziomWyboru, sciezka: sciezka.id, wybranyPoziom });
+  console.log('applyPathBenefits:', { levelChoice, sciezka: sciezka.id, selectedLevel });
   
   // Poprzednie korzyści z tego progu (jeśli były) zostaną zastąpione niżej -
   // dodajBenefity() przelicza atrybuty drugorzędne od zera na podstawie
   // aktualnego stanu przyznaneKorzysciZeSciezek, więc nie trzeba ich osobno odjąć.
   // Zapisz wybór ścieżki w stanie uproszczonym
-  if (poziomWyboru === 1) {
-    wybraneSciezki.nowicjusz = sciezka.id;
+  if (levelChoice === 1) {
+    selectedPaths.nowicjusz = sciezka.id;
     // eslint-disable-next-line no-console
     console.log('Ustawiono ścieżkę nowicjusza:', sciezka.id);
   }
-  if (poziomWyboru === 3) {
-    wybraneSciezki.ekspert = sciezka.id;
+  if (levelChoice === 3) {
+    selectedPaths.ekspert = sciezka.id;
     // eslint-disable-next-line no-console
     console.log('Ustawiono ścieżkę eksperta:', sciezka.id);
   }
-  if (poziomWyboru === 7) {
-    wybraneSciezki.mistrz = sciezka.id;
+  if (levelChoice === 7) {
+    selectedPaths.mistrz = sciezka.id;
     // eslint-disable-next-line no-console
     console.log('Ustawiono ścieżkę mistrza:', sciezka.id);
   }
 
   // Zastosuj nowy pakiet korzyści
-  const pkt = (sciezka.korzysci && sciezka.korzysci[poziomWyboru]) || {};
-  przyznaneKorzysciZeSciezek[poziomWyboru] = { sciezkaId: sciezka.id, sciezkaNazwa: sciezka.nazwa, poziomWyboru, pkt };
-  dodajBenefity(pkt);
-  aktualizujPodgladPostaci();
-  renderPathSummary(poziomWyboru, sciezka);
+  const pkt = (sciezka.korzysci && sciezka.korzysci[levelChoice]) || {};
+  grantedBenefitsWithPaths[levelChoice] = { pathId: sciezka.id, sciezkaNazwa: sciezka.nazwa, levelChoice, pkt };
+  addBenefits(pkt);
+  updatePreviewCharacter();
+  renderPathSummary(levelChoice, sciezka);
   updatePathAccordion();
   updateStep3NextButton();
 }
@@ -482,26 +482,26 @@ function updateStep3NextButton() {
   if (!btn) return;
   
   // Dla poziomu 0 nie wymagaj żadnych ścieżek
-  if (wybranyPoziom === 0) {
+  if (selectedLevel === 0) {
     btn.disabled = false;
     // eslint-disable-next-line no-console
     console.log('Poziom 0 - przycisk włączony');
     return;
   }
   
-  const hasNovice = !!wybraneSciezki.nowicjusz;
-  const needExpert = wybranyPoziom >= 3;
-  const needMaster = wybranyPoziom >= 7;
-  const hasExpert = !!wybraneSciezki.ekspert;
-  const hasMaster = !!wybraneSciezki.mistrz;
+  const hasNovice = !!selectedPaths.nowicjusz;
+  const needExpert = selectedLevel >= 3;
+  const needMaster = selectedLevel >= 7;
+  const hasExpert = !!selectedPaths.ekspert;
+  const hasMaster = !!selectedPaths.mistrz;
   const canProceed = hasNovice && (!needExpert || hasExpert) && (!needMaster || hasMaster);
   btn.disabled = !canProceed;
   
   // Debug - sprawdź stan
   // eslint-disable-next-line no-console
   console.log('updateStep3NextButton debug:', {
-    wybranyPoziom,
-    wybraneSciezki,
+    selectedLevel,
+    selectedPaths,
     hasNovice,
     needExpert,
     needMaster,
@@ -512,13 +512,13 @@ function updateStep3NextButton() {
   });
 }
 
-function renderPathSummary(poziomWyboru, sciezka) {
-  const box = document.getElementById(`path-summary-${poziomWyboru}`);
+function renderPathSummary(levelChoice, sciezka) {
+  const box = document.getElementById(`path-summary-${levelChoice}`);
   if (!box) return;
-  box.innerHTML = `<div class="inline-box">Wybrana ścieżka: <strong>${sciezka.nazwa}</strong> – zastosowano korzyści poziomu ${poziomWyboru}</div>`;
+  box.innerHTML = `<div class="inline-box">Wybrana ścieżka: <strong>${sciezka.nazwa}</strong> – zastosowano korzyści poziomu ${levelChoice}</div>`;
 }
 
-function dodajBenefity(pkt) {
+function addBenefits(pkt) {
   // Modyfikatory atrybutów podstawowych
   if (pkt.mod_atrybuty) {
     const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
@@ -528,7 +528,7 @@ function dodajBenefity(pkt) {
     });
   }
   // Atrybuty drugorzędne – przeliczenie przez naszą funkcję
-  const pochodzenie = wybranePochodzenie && dostepnePochodzenia.find(p=>p.id===wybranePochodzenie);
+  const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
     const atrybuty = {
       sila: parseInt(document.getElementById('sila-final').textContent),
@@ -536,11 +536,11 @@ function dodajBenefity(pkt) {
       intelekt: parseInt(document.getElementById('intelekt-final').textContent),
       wola: parseInt(document.getElementById('wola-final').textContent)
     };
-    aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
+    updateAttributesSecondary(atrybuty, pochodzenie);
   }
 }
 
-function odejmijBenefity(prev) {
+function subtractBenefits(prev) {
   const pkt = prev.pkt || {};
   if (pkt.mod_atrybuty) {
     const map = { sila:'sila-final', zrecznosc:'zrecznosc-final', intelekt:'intelekt-final', wola:'wola-final' };
@@ -549,7 +549,7 @@ function odejmijBenefity(prev) {
       if (el) el.textContent = (parseInt(el.textContent)||0) - v;
     });
   }
-  const pochodzenie = wybranePochodzenie && dostepnePochodzenia.find(p=>p.id===wybranePochodzenie);
+  const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
     const atrybuty = {
       sila: parseInt(document.getElementById('sila-final').textContent),
@@ -557,7 +557,7 @@ function odejmijBenefity(prev) {
       intelekt: parseInt(document.getElementById('intelekt-final').textContent),
       wola: parseInt(document.getElementById('wola-final').textContent)
     };
-    aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
+    updateAttributesSecondary(atrybuty, pochodzenie);
   }
 }
 
@@ -565,7 +565,7 @@ function odejmijBenefity(prev) {
  * Aktualizuje dostępne ścieżki na podstawie wybranego poziomu
  * @param {number} poziom - Wybrany poziom postaci
  */
-async function aktualizujSciezkiPoziomu(_poziom) {
+async function updatePathsLevel(_level) {
   // Nowy system kafelków - funkcja jest już obsługiwana przez renderPathSectionsVisibility()
   // i renderPathSection() w głównym flow
 }
@@ -575,13 +575,13 @@ async function aktualizujSciezkiPoziomu(_poziom) {
  * @param {number} _poziom - Wybrany poziom postaci
  */
 /* eslint-disable-next-line no-unused-vars */
-function aktualizujSciezkiFallback(_poziom) {
-  const selNov = document.getElementById('sciezka-nowicjusza');
-  const selExp = document.getElementById('sciezka-eksperta');
-  const selMas = document.getElementById('sciezka-mistrza');
-  if (selNov) selNov.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-  if (selExp) selExp.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
-  if (selMas) selMas.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
+function updatePathsFallback(_level) {
+  const selNovice = document.getElementById('sciezka-nowicjusza');
+  const selExpert = document.getElementById('sciezka-eksperta');
+  const selMaster = document.getElementById('sciezka-mistrza');
+  if (selNovice) selNovice.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
+  if (selExpert) selExpert.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
+  if (selMaster) selMaster.innerHTML = '<option value="">Wybierz ścieżkę...</option>';
 
   const nowicjusz = [
     { id: 'kleryk', nazwa: 'Kleryk' },
@@ -608,26 +608,26 @@ function aktualizujSciezkiFallback(_poziom) {
     { id: 'niszczyciel', nazwa: 'Niszczyciel' }
   ];
 
-  if (selNov) {
+  if (selNovice) {
     nowicjusz.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selNov.appendChild(o);
+      o.value = s.id; o.textContent = s.nazwa; selNovice.appendChild(o);
     });
-    if (wybraneSciezki.nowicjusz) selNov.value = wybraneSciezki.nowicjusz;
+    if (selectedPaths.nowicjusz) selNovice.value = selectedPaths.nowicjusz;
   }
-  if (_poziom >= 3 && selExp) {
+  if (_level >= 3 && selExpert) {
     ekspert.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selExp.appendChild(o);
+      o.value = s.id; o.textContent = s.nazwa; selExpert.appendChild(o);
     });
-    if (wybraneSciezki.ekspert) selExp.value = wybraneSciezki.ekspert;
+    if (selectedPaths.ekspert) selExpert.value = selectedPaths.ekspert;
   }
-  if (_poziom >= 7 && selMas) {
+  if (_level >= 7 && selMaster) {
     mistrz.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.nazwa; selMas.appendChild(o);
+      o.value = s.id; o.textContent = s.nazwa; selMaster.appendChild(o);
     });
-    if (wybraneSciezki.mistrz) selMas.value = wybraneSciezki.mistrz;
+    if (selectedPaths.mistrz) selMaster.value = selectedPaths.mistrz;
   }
 }
 
@@ -635,11 +635,11 @@ function aktualizujSciezkiFallback(_poziom) {
  * Aktualizuje tytuł sekcji ścieżek na podstawie poziomu
  * @param {number} poziom - Wybrany poziom postaci
  */
-function aktualizujTytulSekcjiSciezek(poziom) {
-  const tytul = document.getElementById('path-section-title');
-  if (!tytul) return;
+function updatePathsSectionTitle(poziom) {
+  const title = document.getElementById('path-section-title');
+  if (!title) return;
 
-  const nazwyPoziomow = {
+  const namesLevels = {
     1: 'Ścieżka Nowicjusza',
     2: 'Kontynuacja Nowicjusza',
     3: 'Ścieżka Eksperta',
@@ -652,13 +652,13 @@ function aktualizujTytulSekcjiSciezek(poziom) {
     10: 'Wszystkie Ścieżki'
   };
 
-  tytul.textContent = nazwyPoziomow[poziom] || 'Ścieżki';
+  title.textContent = namesLevels[poziom] || 'Ścieżki';
 }
 
 /**
  * Ustawia widoczność selectów ścieżek w zależności od poziomu
  */
-function aktualizujWidocznoscSciezek(_poziom) {
+function updatePathsVisibility(_level) {
   // Funkcja jest już obsługiwana przez renderPathSectionsVisibility()
   renderPathSectionsVisibility();
 }
@@ -666,54 +666,54 @@ function aktualizujWidocznoscSciezek(_poziom) {
 /**
  * Aktualizuje sekcję zasobów (złoto i kurioza) na podstawie poziomu
  */
-function aktualizujWealthSection(poziom) {
-  const sec = document.getElementById('wealth-section');
-  if (!sec) return;
-  sec.style.display = poziom > 0 ? 'block' : 'none';
-  liczbaKuriozow = obliczIloscWyborow().kurioza;
+function updateWealthSection(poziom) {
+  const secondary = document.getElementById('wealth-section');
+  if (!secondary) return;
+  secondary.style.display = poziom > 0 ? 'block' : 'none';
+  numberCurios = calculateChoiceCount().kurioza;
   const curiosSpan = document.getElementById('curios-summary');
-  if (curiosSpan) curiosSpan.textContent = `Kurioza: ${liczbaKuriozow}`;
+  if (curiosSpan) curiosSpan.textContent = `Kurioza: ${numberCurios}`;
   const wealthSpan = document.getElementById('wealth-summary');
-  if (wealthSpan && wylosowaneSrebrniki != null) {
-    wealthSpan.textContent = `Srebrniki: ${wylosowaneSrebrniki}`;
+  if (wealthSpan && randomizedSilver != null) {
+    wealthSpan.textContent = `Srebrniki: ${randomizedSilver}`;
   }
 }
 
 /**
  * Uaktualnia wyświetlanie bogactwa po losowaniu
  */
-function aktualizujWealthUI(rzuty, suma) {
+function updateWealthUi(rolls, sum) {
   const wealthSpan = document.getElementById('wealth-summary');
   if (wealthSpan) {
-    wealthSpan.textContent = `Srebrniki: ${suma} (rzuty: ${rzuty.join(', ')})`;
+    wealthSpan.textContent = `Srebrniki: ${sum} (rzuty: ${rolls.join(', ')})`;
   }
 }
 
 /**
  * Aktualizuje sekcję korzyści z pochodzenia na podstawie poziomu
  */
-function aktualizujOriginBenefits(poziom) {
-  const sec = document.getElementById('origin-benefits-section');
-  if (!sec) return;
+function updateOriginBenefits(poziom) {
+  const secondary = document.getElementById('origin-benefits-section');
+  if (!secondary) return;
   
   // Pokaż sekcję tylko dla poziomu 4
-  sec.style.display = poziom >= 4 ? 'block' : 'none';
+  secondary.style.display = poziom >= 4 ? 'block' : 'none';
   
-  if (poziom >= 4 && wybranePochodzenie) {
-    aktualizujOriginBenefitsContent();
+  if (poziom >= 4 && selectedOrigin) {
+    updateOriginBenefitsContent();
     // Zaktualizuj atrybuty z bonusem z poziomu 4
-    aktualizujAtrybutyZPoziomem4();
+    updateAttributesWithLevel4();
   }
 }
 
 /**
  * Aktualizuje zawartość korzyści z pochodzenia
  */
-function aktualizujOriginBenefitsContent() {
+function updateOriginBenefitsContent() {
   const content = document.getElementById('origin-benefits-content');
-  if (!content || !wybranePochodzenie) return;
+  if (!content || !selectedOrigin) return;
   
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie || !pochodzenie.poziom_4) return;
   
   const benefits = pochodzenie.poziom_4;
@@ -745,21 +745,21 @@ function aktualizujOriginBenefitsContent() {
         
         <div class="talent-descriptions">
           <h6>📖 Opisy Talentów</h6>
-          ${generujOpisyTalentow(benefits.opcje)}
+          ${generateTalentDescriptions(benefits.opcje)}
         </div>
       </div>
     </div>
   `;
   
   // Dodaj event listenery dla wyboru opcji
-  dodajEventListeneryOpcji(pochodzenie.id);
+  addOptionEventListeners(pochodzenie.id);
 }
 
 /**
  * Generuje opisy talentów na podstawie opcji
  */
-function generujOpisyTalentow(opcje) {
-  const opisyTalentow = {
+function generateTalentDescriptions(opcje) {
+  const talentDescriptions = {
     'talent Determinacja': 'Gdy wyrzucisz 1 na kości ułatwienia, możesz rzucić ponownie i wybrać, którego wyniku użyć.',
     'talent Wysokie obroty': 'Możesz wykonać dodatkową akcję w swojej turze. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.',
     'talent Odskok': 'Gdy stworzenie, które widzisz, chybi, atakując twoją Obronę lub Zręczność, możesz użyć reakcji, by wykonać odwrót.',
@@ -771,11 +771,11 @@ function generujOpisyTalentow(opcje) {
   
   return opcje.map(opcja => {
     if (opcja.startsWith('talent ')) {
-      const nazwaTalentu = opcja;
-      const opis = opisyTalentow[nazwaTalentu] || 'Opis talentu nie jest dostępny.';
+      const talentName = opcja;
+      const opis = talentDescriptions[talentName] || 'Opis talentu nie jest dostępny.';
       return `
         <div class="talent-description">
-          <strong>${nazwaTalentu}:</strong> ${opis}
+          <strong>${talentName}:</strong> ${opis}
         </div>
       `;
     } else if (opcja === '1 zaklęcie') {
@@ -798,13 +798,13 @@ function generujOpisyTalentow(opcje) {
 /**
  * Dodaje event listenery dla wyboru opcji pochodzenia
  */
-function dodajEventListeneryOpcji(pochodzenieId) {
-  const radioButtons = document.querySelectorAll(`input[name="origin-option-${pochodzenieId}"]`);
+function addOptionEventListeners(originId) {
+  const radioButtons = document.querySelectorAll(`input[name="origin-option-${originId}"]`);
   radioButtons.forEach(radio => {
     radio.addEventListener('change', (e) => {
       if (e.target.checked) {
         // Zaktualizuj obliczone atrybuty z bonusem do zdrowia
-        aktualizujAtrybutyZPoziomem4();
+        updateAttributesWithLevel4();
       }
     });
   });
@@ -813,10 +813,10 @@ function dodajEventListeneryOpcji(pochodzenieId) {
 /**
  * Aktualizuje atrybuty z uwzględnieniem bonusu z poziomu 4
  */
-function aktualizujAtrybutyZPoziomem4() {
-  if (wybranyPoziom < 4 || !wybranePochodzenie) return;
+function updateAttributesWithLevel4() {
+  if (selectedLevel < 4 || !selectedOrigin) return;
   
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie || !pochodzenie.poziom_4) return;
   
   const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
@@ -830,13 +830,13 @@ function aktualizujAtrybutyZPoziomem4() {
   };
   
   // Dodaj bonus do zdrowia
-  const atrybutyZBonusem = {
+  const attributesWithBonus = {
     ...atrybuty,
     zdrowie: atrybuty.sila + healthBonus
   };
   
   // Aktualizuj wyświetlane atrybuty drugorzędne
-  aktualizujAtrybutyDrugorzedne(atrybutyZBonusem, pochodzenie);
+  updateAttributesSecondary(attributesWithBonus, pochodzenie);
 }
 
 /**
@@ -845,42 +845,42 @@ function aktualizujAtrybutyZPoziomem4() {
  * @param {Array} pochodzeniaZTabelami - Lista metadanych pochodzeń z tabelami
  * @returns {Array} Tablica obiektów pochodzeń z pełnymi danymi
  */
-async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, _pochodzeniaZTabelami = []) {
+async function loadDetailsOriginsExtended(originIds, _originsWithTables = []) {
   const pochodzenia = [];
   
   // Dopuszczalne źródła zgodne z katalogiem SOURCES
-  const dozwoloneZrodla = new Set(['PG', 'SP', 'RA', 'NW', 'GWP', 'GP', 'SUP', 'CS']);
+  const allowedSources = new Set(['PG', 'SP', 'RA', 'NW', 'GWP', 'GP', 'SUP', 'CS']);
   
-  for (const pochodzenieId of pochodzeniaIds) {
+  for (const originId of originIds) {
     try {
       // Pobierz podstawowe dane pochodzenia
-      const postac = budujPostac({
-        pochodzenie: pochodzenieId,
+      const character = buildCharacter({
+        pochodzenie: originId,
         atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
       });
       // Kopia płytka, żeby nie mutować współdzielonego obiektu z DANE_GRY
-      const podstawoweDane = { ...postac.pochodzenie };
+      const basicData = { ...character.pochodzenie };
 
       // Filtrowanie pochodzeń tylko do tych z dokumentów SOURCES
-      if (!podstawoweDane || !podstawoweDane.zrodlo || !dozwoloneZrodla.has(podstawoweDane.zrodlo)) {
+      if (!basicData || !basicData.zrodlo || !allowedSources.has(basicData.zrodlo)) {
         continue;
       }
 
       // Spróbuj zawsze pobrać tabele (niezależnie od metadanych), jeśli istnieją
       try {
-        const tabele = getOriginTablesUI(pochodzenieId);
+        const tabele = getOriginTablesUi(originId);
         if (tabele) {
-          podstawoweDane.tabele = tabele;
+          basicData.tabele = tabele;
         }
       } catch (tablesError) {
         // eslint-disable-next-line no-console
-        console.warn(`Nie udało się załadować tabel dla pochodzenia ${pochodzenieId}:`, tablesError);
+        console.warn(`Nie udało się załadować tabel dla pochodzenia ${originId}:`, tablesError);
       }
 
-      pochodzenia.push(podstawoweDane);
+      pochodzenia.push(basicData);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn(`Nie udało się załadować danych dla pochodzenia ${pochodzenieId}:`, error);
+      console.warn(`Nie udało się załadować danych dla pochodzenia ${originId}:`, error);
     }
   }
   
@@ -892,7 +892,7 @@ async function zaladujSzczegolyPochodzenRozszerzone(pochodzeniaIds, _pochodzenia
  * @param {Array} pochodzenia - Lista obiektów pochodzeń z danymi
  * @throws {Error} Gdy parametr nie jest tablicą
  */
-function generujKafelkiPochodzen(pochodzenia) {
+function generateTilesOrigins(pochodzenia) {
   if (!Array.isArray(pochodzenia)) {
     throw new Error('pochodzenia musi być tablicą');
   }
@@ -910,14 +910,14 @@ function generujKafelkiPochodzen(pochodzenia) {
     tile.dataset.originId = pochodzenie.id;
         
     // Krótki opis (1 zdanie) dla stanu zwiniętego
-    const krotkiOpis = utworzKrotkiOpisZwiniety(pochodzenie);
+    const shortDescription = createShortCollapsedDescription(pochodzenie);
         
     // Rozszerzony opis (3 zdania) dla stanu rozwiniętego
-    const rozszerzonyOpis = utworzRozszerzonyOpis(pochodzenie);
+    const extendedDescription = createExtendedDescription(pochodzenie);
         
     // Oblicz atrybuty drugorzędne
     const atrybutyDomyślne = { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 };
-    const atrybutyFinalne = {
+    const attributesFinal = {
       sila: atrybutyDomyślne.sila + (pochodzenie.atrybuty_bazowe.sila - 10),
       zrecznosc: atrybutyDomyślne.zrecznosc + (pochodzenie.atrybuty_bazowe.zrecznosc - 10),
       intelekt: atrybutyDomyślne.intelekt + (pochodzenie.atrybuty_bazowe.intelekt - 10),
@@ -925,24 +925,24 @@ function generujKafelkiPochodzen(pochodzenia) {
     };
         
     // Oblicz obronę (bez modyfikatorów rozmiaru - zgodnie z zasadami gry)
-    const obrona = atrybutyFinalne.zrecznosc;
-    const zdrowie = atrybutyFinalne.sila;
+    const obrona = attributesFinal.zrecznosc;
+    const zdrowie = attributesFinal.sila;
         
     // Pobierz wszystkie cechy specjalne dla stanu rozwiniętego
-    const wszystkieCechy = pobierzWszystkieCechy(pochodzenie.cechy_specjalne);
+    const allTraits = getAllTraits(pochodzenie.cechy_specjalne);
 
     tile.innerHTML = `
             <div class="tile-header">
                 <div class="badges-container">
                     <div class="feature-desc">rozmiar:</div><div class="size-badge">${pochodzenie.rozmiar}</div>
-                    ${pochodzenie.zrodlo ? `<div class="source-badge" title="${PELNE_NAZWY_ZRODEL[pochodzenie.zrodlo] || pochodzenie.zrodlo}">${pochodzenie.zrodlo}</div>` : ''}
+                    ${pochodzenie.zrodlo ? `<div class="source-badge" title="${FULL_SOURCE_NAMES[pochodzenie.zrodlo] || pochodzenie.zrodlo}">${pochodzenie.zrodlo}</div>` : ''}
                 </div>
                 <h4>${pochodzenie.nazwa}</h4>
             </div>
             
             <!-- Stan zwinięty -->
             <div class="tile-content-collapsed">
-                <div class="description">${krotkiOpis}</div>
+                <div class="description">${shortDescription}</div>
                 <div class="attributes-grid">
                     <div class="attribute-item">
                         <span class="attr-name">Siła</span>
@@ -969,7 +969,7 @@ function generujKafelkiPochodzen(pochodzenia) {
             
             <!-- Stan rozwinięty -->
             <div class="tile-content-expanded">
-                <div class="expanded-description">${rozszerzonyOpis}</div>
+                <div class="expanded-description">${extendedDescription}</div>
                 
                 <div class="tile-sections">
                     <div class="tile-section attributes-section">
@@ -1021,20 +1021,20 @@ function generujKafelkiPochodzen(pochodzenia) {
                         <div class="cultural-info">
                             <div class="cultural-item">
                                 <span class="cultural-label">Języki:</span>
-                                <span class="cultural-value">${formatujJezykiPochodzenia(pochodzenie.jezyki)}</span>
+                                <span class="cultural-value">${formatLanguagesOrigin(pochodzenie.jezyki)}</span>
                             </div>
                             <div class="cultural-item">
                                 <span class="cultural-label">Profesje:</span>
-                                <span class="cultural-value">${formatujBonusProfesjiPochodzenia(pochodzenie)}</span>
+                                <span class="cultural-value">${formatBonusProfessionsOrigin(pochodzenie)}</span>
                             </div>
                         </div>
                     </div>
                     
-                    ${wszystkieCechy ? `
+                    ${allTraits ? `
                     <div class="tile-section features-section">
                         <h5>✨ Cechy Specjalne</h5>
                         <div class="features-list">
-                            ${wszystkieCechy.map(cecha => `
+                            ${allTraits.map(cecha => `
                                 <div class="feature-item">
                                     <span class="feature-name">${cecha.nazwa}</span>
                                     <span class="feature-desc">${cecha.opis}</span>
@@ -1048,7 +1048,7 @@ function generujKafelkiPochodzen(pochodzenia) {
                     <div class="tile-section tables-section">
                         <h5>🎲 Tabele Losowania</h5>
                         <div class="tables-grid">
-                            ${Object.entries(pochodzenie.tabele).map(([nazwaTabeli, tabela]) => `
+                            ${Object.entries(pochodzenie.tabele).map(([nameTable, tabela]) => `
                                 <div class="table-item">
                                     <div class="table-header">
                                         <span class="table-name">${tabela.nazwa}</span>
@@ -1058,8 +1058,8 @@ function generujKafelkiPochodzen(pochodzenia) {
                                     
                                     <div class="table-controls">
                                         <div class="table-options">
-                                            <label for="table-select-${pochodzenie.id}-${nazwaTabeli}">Wybierz opcję:</label>
-                                            <select id="table-select-${pochodzenie.id}-${nazwaTabeli}" class="table-dropdown" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
+                                            <label for="table-select-${pochodzenie.id}-${nameTable}">Wybierz opcję:</label>
+                                            <select id="table-select-${pochodzenie.id}-${nameTable}" class="table-dropdown" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
                                                 <option value="">-- Wybierz opcję --</option>
                                                 ${tabela.opcje ? tabela.opcje.map(opcja => `
                                                     <option value="${opcja.rzut}" data-wynik="${opcja.wynik}">${opcja.rzut}: ${opcja.wynik}</option>
@@ -1068,16 +1068,16 @@ function generujKafelkiPochodzen(pochodzenia) {
                                         </div>
                                         
                                         <div class="table-buttons">
-                                            <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}">
+                                            <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
                                                 🎲 Losuj
                                             </button>
-                                            <button class="apply-selection-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nazwaTabeli}" style="display: none;">
+                                            <button class="apply-selection-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}" style="display: none;">
                                                 ✅ Zastosuj wybór
                                             </button>
                                         </div>
                                     </div>
                                     
-                                    <div class="roll-result" id="roll-result-${pochodzenie.id}-${nazwaTabeli}" style="display: none;">
+                                    <div class="roll-result" id="roll-result-${pochodzenie.id}-${nameTable}" style="display: none;">
                                         <!-- Wynik losowania będzie wyświetlany tutaj -->
                                     </div>
                                 </div>
@@ -1120,7 +1120,7 @@ function generujKafelkiPochodzen(pochodzenia) {
       if (e.target.classList.contains('tile-select-btn') || 
                 e.target.closest('.tile-select-btn')) {
         e.stopPropagation();
-        wybierzPochodzenie(pochodzenie.id);
+        selectOrigin(pochodzenie.id);
         return;
       }
       
@@ -1130,7 +1130,7 @@ function generujKafelkiPochodzen(pochodzenia) {
         e.stopPropagation();
         const originId = e.target.dataset.originId || e.target.closest('.roll-table-btn').dataset.originId;
         const tableName = e.target.dataset.tableName || e.target.closest('.roll-table-btn').dataset.tableName;
-        losujZTabeliUI(originId, tableName);
+        randomizeWithTableUi(originId, tableName);
         return;
       }
       
@@ -1140,7 +1140,7 @@ function generujKafelkiPochodzen(pochodzenia) {
         e.stopPropagation();
         const originId = e.target.dataset.originId || e.target.closest('.apply-selection-btn').dataset.originId;
         const tableName = e.target.dataset.tableName || e.target.closest('.apply-selection-btn').dataset.tableName;
-        zastosujWybranaOpcje(originId, tableName);
+        applySelectedOptions(originId, tableName);
         return;
       }
             
@@ -1158,8 +1158,8 @@ function generujKafelkiPochodzen(pochodzenia) {
  * @param {Object} pochodzenie - Obiekt pochodzenia
  * @returns {string} Krótki opis
  */
-function utworzKrotkiOpisZwiniety(pochodzenie) {
-  const opisy = {
+function createShortCollapsedDescription(pochodzenie) {
+  const descriptions = {
     'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach.',
     'automaton': 'Mechaniczne istoty stworzone przez dawnych magów.',
     'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości.',
@@ -1179,7 +1179,7 @@ function utworzKrotkiOpisZwiniety(pochodzenie) {
     'jotunn': 'Potężni giganci z północnych krain.'
   };
     
-  return opisy[pochodzenie.id] || 'Nieznane pochodzenie.';
+  return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
 /**
@@ -1187,8 +1187,8 @@ function utworzKrotkiOpisZwiniety(pochodzenie) {
  * @param {Object} pochodzenie - Obiekt pochodzenia
  * @returns {string} Rozszerzony opis
  */
-function utworzRozszerzonyOpis(pochodzenie) {
-  const opisy = {
+function createExtendedDescription(pochodzenie) {
+  const descriptions = {
     'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję i szybko dostosowują się do nowych wyzwań. Ich społeczeństwa opierają się na handlu, wiedzy i eksploracji.',
     'automaton': 'Mechaniczne istoty stworzone przez dawnych magów, poszukujące własnej tożsamości. Nie oddychają, nie śpią i są odporne na choroby oraz trucizny. Zbudowane z metalu i magii, wykazują zdolności analityczne i precyzyjne wykonanie zadań.',
     'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości, znane z zamiłowania do mechaniki i psot. Gobliny tworzą skomplikowane urządzenia z dostępnych materiałów, często niebezpieczne i nieprzewidywalne. Ich społeczeństwa opierają się na hierarchii opartej na wynalazczości i sprycie.',
@@ -1208,15 +1208,15 @@ function utworzRozszerzonyOpis(pochodzenie) {
     'jotunn': 'Potężni giganci z północnych krain, znani z siły, honoru bojowego i odporności na zimno. Jotunowie żyją w surowym środowisku, gdzie ich rozmiar i wytrzymałość są kluczowe. Ich społeczeństwa opierają się na tradycji, honorze i szacunku dla siły naturalnej.'
   };
     
-  return opisy[pochodzenie.id] || 'Nieznane pochodzenie.';
+  return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
 /**
  * Tworzy krótki opis pochodzenia (2 zdania) - zachowane dla kompatybilności
  */
 // eslint-disable-next-line no-unused-vars
-function utworzKrotkiOpis(pochodzenie) {
-  const opisy = {
+function createShortDescription(pochodzenie) {
+  const descriptions = {
     'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję.',
     'automaton': 'Mechaniczne istoty stworzone przez dawnych magów. Nie oddychają, nie śpią i są odporne na choroby.',
     'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości. Znane z zamiłowania do mechaniki i psot.',
@@ -1236,14 +1236,14 @@ function utworzKrotkiOpis(pochodzenie) {
     'jotunn': 'Potężni giganci z północnych krain. Znani z siły, honoru bojowego i odporności na zimno.'
   };
     
-  return opisy[pochodzenie.id] || pochodzenie.opis;
+  return descriptions[pochodzenie.id] || pochodzenie.opis;
 }
 
 /**
  * Zbiera wyniki tabel z kafelka pochodzenia
  * @param {string} originId - ID pochodzenia
  */
-function zbierzWynikiTabel(originId) {
+function collectResultsTables(originId) {
   // Znajdź kafelek pochodzenia
   const tile = document.querySelector(`[data-origin-id="${originId}"]`);
   if (!tile) return;
@@ -1262,16 +1262,16 @@ function zbierzWynikiTabel(originId) {
           const rollOutcome = content.querySelector('.roll-outcome');
           
           if (rollDice && rollOutcome) {
-            const rzutMatch = rollDice.textContent.match(/(\d+)/);
-            const rzut = rzutMatch ? rzutMatch[1] : '?';
+            const rollMatch = rollDice.textContent.match(/(\d+)/);
+            const rzut = rollMatch ? rollMatch[1] : '?';
             const wynik = rollOutcome.textContent;
             const typ = rollDice.textContent.includes('🎯') ? 'wybór' : 'losowanie';
             
             // Zapisz wynik
-            if (!wynikiTabel[originId]) {
-              wynikiTabel[originId] = {};
+            if (!resultsTables[originId]) {
+              resultsTables[originId] = {};
             }
-            wynikiTabel[originId][tableName] = {
+            resultsTables[originId][tableName] = {
               rzut,
               wynik,
               typ
@@ -1289,18 +1289,18 @@ function zbierzWynikiTabel(originId) {
  * kliknij "Wybierz") - dzięki temu wynikiTabel wypełnia się tak samo, jak przy ręcznym
  * wyborze, patrz zbierzWynikiTabel() wywoływane wewnątrz wybierzPochodzenie().
  */
-async function losujPochodzenieICechy() {
-  if (!dostepnePochodzenia.length) return;
+async function randomizeOriginAndTraits() {
+  if (!availableOrigin.length) return;
 
-  const losowe = dostepnePochodzenia[Math.floor(Math.random() * dostepnePochodzenia.length)];
+  const random = availableOrigin[Math.floor(Math.random() * availableOrigin.length)];
 
-  if (losowe.tabele) {
-    for (const nazwaTabeli of Object.keys(losowe.tabele)) {
-      await losujZTabeliUI(losowe.id, nazwaTabeli);
+  if (random.tabele) {
+    for (const nameTable of Object.keys(random.tabele)) {
+      await randomizeWithTableUi(random.id, nameTable);
     }
   }
 
-  wybierzPochodzenie(losowe.id);
+  selectOrigin(random.id);
 }
 
 /**
@@ -1311,14 +1311,14 @@ async function losujPochodzenieICechy() {
  *   po wyborze. Wyłączane przy imporcie postaci (zob. zaimportujPostac()), żeby
  *   nie odciągać strony od komunikatu importu, zanim użytkownik zdąży go przeczytać.
  */
-function wybierzPochodzenie(originId, { autoScroll = true } = {}) {
+function selectOrigin(originId, { autoScroll = true } = {}) {
   // Resetuj stan i UI dla poprzedniego wyboru
-  resetujStanPoZmianiePochodzenia();
+  resetStateAfterOriginChange();
 
-  wybranePochodzenie = originId;
+  selectedOrigin = originId;
     
   // Zbierz wyniki tabel z wybranego kafelka
-  zbierzWynikiTabel(originId);
+  collectResultsTables(originId);
     
   // Usuń selekcję z wszystkich kafelków
   document.querySelectorAll('.origin-tile').forEach(tile => {
@@ -1326,15 +1326,15 @@ function wybierzPochodzenie(originId, { autoScroll = true } = {}) {
   });
     
   // Dodaj selekcję do wybranego kafelka
-  const wybranyTile = document.querySelector(`[data-origin-id="${originId}"]`);
-  if (wybranyTile) {
-    wybranyTile.classList.add('selected');
+  const selectedTile = document.querySelector(`[data-origin-id="${originId}"]`);
+  if (selectedTile) {
+    selectedTile.classList.add('selected');
         
     // Zwiń wszystkie kafelki po wyborze pochodzenia
     collapseAllTiles();
         
     // Aktualizuj podsumowanie pochodzenia
-    aktualizujPodsumowaniePochodzenia();
+    updateSummaryOrigin();
         
     // Aktualizuj domyślne atrybuty
     aktualizujDomyślneAtrybuty();
@@ -1347,7 +1347,7 @@ function wybierzPochodzenie(originId, { autoScroll = true } = {}) {
   }
 
   // Pokaż komunikat o wyborze
-  pokazKomunikatWyboru(originId);
+  showMessageChoice(originId);
 
   // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
   if (autoScroll) {
@@ -1360,29 +1360,29 @@ function wybierzPochodzenie(originId, { autoScroll = true } = {}) {
 /**
  * Resetuje wszystkie dane kolejnych kroków po zmianie pochodzenia
  */
-function resetujStanPoZmianiePochodzenia() {
+function resetStateAfterOriginChange() {
   // Reset stanu aplikacji
-  biezacaPostac = null;
-  wybranyPoziom = 0;
-  wybraneSciezki = { nowicjusz: '', ekspert: '', mistrz: '' };
-  przyznaneKorzysciZeSciezek = { 1: null, 3: null, 7: null };
-  wybraneProfesje = [];
-  odpowiedziSlotow = {};
-  wybraneAtrybutySlotow = {};
-  wybraneKurioza = [];
-  magiaWybory = {};
-  magiaRyzykoWyniki = {};
-  magiaCzarnaMagiaZaTradycje = new Set();
-  wylosowaneSrebrniki = null;
-  liczbaKuriozow = 0;
-  wynikiTabel = {};
-  ekwipunekZamoznoscWynik = null;
-  ekwipunekZamoznoscId = null;
-  ekwipunekGotowkaPoczatkowaWynik = null;
-  ekwipunekWybory = {};
-  ekwipunekSprzedane = [];
-  ekwipunekZakupione = [];
-  ekwipunekOpisRozwiniete = new Set();
+  currentCharacter = null;
+  selectedLevel = 0;
+  selectedPaths = { nowicjusz: '', ekspert: '', mistrz: '' };
+  grantedBenefitsWithPaths = { 1: null, 3: null, 7: null };
+  selectedProfessions = [];
+  answersSlots = {};
+  selectedAttributesSlots = {};
+  selectedCurios = [];
+  magicChoices = {};
+  magicRiskResults = {};
+  magicBlackMagicTooTraditions = new Set();
+  randomizedSilver = null;
+  numberCurios = 0;
+  resultsTables = {};
+  equipmentWealthResult = null;
+  equipmentWealthId = null;
+  equipmentStartingCashRoll = null;
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
 
   // Reset selektorów poziomu
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
@@ -1408,8 +1408,8 @@ function resetujStanPoZmianiePochodzenia() {
   if (summary7) summary7.innerHTML = '';
 
   // Reset atrybutów własnych i przełączenie na domyślne
-  const chkDomyslne = document.getElementById('domyslne-atrybuty');
-  if (chkDomyslne) chkDomyslne.checked = true;
+  const chkDefault = document.getElementById('domyslne-atrybuty');
+  if (chkDefault) chkDefault.checked = true;
   const customDiv = document.getElementById('custom-attributes');
   if (customDiv) customDiv.style.display = 'none';
   ['atrybut-zmniejszony', 'atrybut-zwiekszony'].forEach(id => {
@@ -1426,8 +1426,8 @@ function resetujStanPoZmianiePochodzenia() {
   if (originBenefits) originBenefits.innerHTML = '';
 
   // Ukryj/pokaż sekcje zależne od poziomu na start (0)
-  aktualizujWealthSection(0);
-  aktualizujOriginBenefits(0);
+  updateWealthSection(0);
+  updateOriginBenefits(0);
   
   // Reset sekcji ścieżek
   renderPathSectionsVisibility();
@@ -1441,32 +1441,32 @@ function resetujStanPoZmianiePochodzenia() {
 // eslint-disable-next-line no-unused-vars
 function nextStep(currentStep) {
   if (currentStep === 1) {
-    if (!wybranePochodzenie) {
-      pokazBlad('Wybierz pochodzenie postaci!');
+    if (!selectedOrigin) {
+      showError('Wybierz pochodzenie postaci!');
       return;
     }
-    pokazKrok(2);
-    aktualizujPodsumowaniePochodzenia();
+    showStep(2);
+    updateSummaryOrigin();
     aktualizujDomyślneAtrybuty();
   } else if (currentStep === 2) {
-    pokazKrok(3);
-    aktualizujPodgladPostaci();
+    showStep(3);
+    updatePreviewCharacter();
   } else if (currentStep === 3) {
-    pokazKrok(4);
-    renderAtrybutySlotySection();
+    showStep(4);
+    renderAttributesSlotsSection();
   } else if (currentStep === 4) {
-    pokazKrok(5);
+    showStep(5);
     renderProfessionsSection();
     renderCuriosSection();
   } else if (currentStep === 5) {
-    pokazKrok(6);
+    showStep(6);
     renderSpellsSection();
   } else if (currentStep === 6) {
-    pokazKrok(7);
-    renderEkwipunekSection();
+    showStep(7);
+    renderEquipmentSection();
   } else if (currentStep === 7) {
-    pokazKrok(8);
-    aktualizujPodgladPostaci();
+    showStep(8);
+    updatePreviewCharacter();
   }
 }
 
@@ -1476,26 +1476,26 @@ function nextStep(currentStep) {
 // eslint-disable-next-line no-unused-vars
 function prevStep(currentStep) {
   if (currentStep === 2) {
-    pokazKrok(1);
+    showStep(1);
   } else if (currentStep === 3) {
-    pokazKrok(2);
+    showStep(2);
   } else if (currentStep === 4) {
-    pokazKrok(3);
+    showStep(3);
   } else if (currentStep === 5) {
-    pokazKrok(4);
+    showStep(4);
   } else if (currentStep === 6) {
-    pokazKrok(5);
+    showStep(5);
   } else if (currentStep === 7) {
-    pokazKrok(6);
+    showStep(6);
   } else if (currentStep === 8) {
-    pokazKrok(7);
+    showStep(7);
   }
 }
 
 /**
  * Pokazuje określony krok
  */
-function pokazKrok(stepNumber) {
+function showStep(stepNumber) {
   // Ukryj wszystkie kroki
   document.querySelectorAll('.step').forEach(step => {
     step.classList.remove('active');
@@ -1509,7 +1509,7 @@ function pokazKrok(stepNumber) {
   // Każde dotarcie do Kroku 8 (Podgląd) zapisuje/nadpisuje bieżącą postać
   // w pamięci przeglądarki - niezależnie od tego, czy trafiono tu przyciskiem
   // "Dalej", z górnego menu, czy programowo (zob. losujCalaPostac()).
-  if (stepNumber === 8) zapiszAktualnaPostacDoCache();
+  if (stepNumber === 8) saveCurrentCharacterToCache();
 }
 
 /**
@@ -1518,52 +1518,52 @@ function pokazKrok(stepNumber) {
  * formacie co eksport do JSON. Nic nie robi, jeśli postać jest niekompletna
  * (zbudujDaneEksportu() zwraca wtedy null).
  */
-function zapiszAktualnaPostacDoCache() {
-  const dane = zbudujDaneEksportu();
-  if (!dane) return;
-  if (!biezacyZapisCacheId) biezacyZapisCacheId = generujIdZapisu();
-  zapiszPostacDoCache(biezacyZapisCacheId, dane);
+function saveCurrentCharacterToCache() {
+  const data = buildExportData();
+  if (!data) return;
+  if (!currentSaveCacheId) currentSaveCacheId = generateSaveId();
+  saveCharacterToCache(currentSaveCacheId, data);
 }
 
 /**
  * Przechodzi do kroku z pełnym odświeżeniem UI zależnym od niego
  */
-function goToStep(stepNumber) {
+function randomizeToStep(stepNumber) {
   // Proste reguły walidacji: nie pozwól przejść dalej bez wymagań
-  if (stepNumber === 2 && !wybranePochodzenie) return;
+  if (stepNumber === 2 && !selectedOrigin) return;
   if (stepNumber === 3) {
-    if (!wybranePochodzenie) return;
+    if (!selectedOrigin) return;
   }
   if (stepNumber === 4) {
     // Dla poziomu 0 nie wymagaj żadnych ścieżek
-    if (wybranyPoziom === 0) return;
+    if (selectedLevel === 0) return;
 
     // Wymagane ścieżki zgodnie z poziomem
-    const needExpert = wybranyPoziom >= 3;
-    const needMaster = wybranyPoziom >= 7;
-    if (!wybraneSciezki.nowicjusz) return;
-    if (needExpert && !wybraneSciezki.ekspert) return;
-    if (needMaster && !wybraneSciezki.mistrz) return;
+    const needExpert = selectedLevel >= 3;
+    const needMaster = selectedLevel >= 7;
+    if (!selectedPaths.nowicjusz) return;
+    if (needExpert && !selectedPaths.ekspert) return;
+    if (needMaster && !selectedPaths.mistrz) return;
   }
   if (stepNumber === 5) {
     // Wymagane rozdanie punktów zwiększenia atrybutów (Krok 4)
-    const slotyAtr = obliczSlotyAtrybutow({
-      sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
-      sciezkaEksperckaId: wybraneSciezki.ekspert || null,
-      sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+    const slotsAttr = calculateSlotsAttributes({
+      pathNoviceId: selectedPaths.nowicjusz || null,
+      pathExpertId: selectedPaths.ekspert || null,
+      pathMasterId: selectedPaths.mistrz || null
     });
-    if (!slotyAtr.every(slotAtrybutowKompletny)) return;
+    if (!slotsAttr.every(slotAttributesComplete)) return;
   }
   if (stepNumber === 6 || stepNumber === 7 || stepNumber === 8) {
     // Wymagane profesje/języki i kurioza (Kroki 6 i 7 są opcjonalne, ale
     // wciąż wymagają, że Krok 5 zostanie zakończony, tak jak wcześniej
     // wymagał tego Krok 8)
-    const { kurioza } = obliczIloscWyborow();
-    const { sloty } = obliczSlotyPostaci();
-    if (!sloty.every(slot => slotOdpowiedzKompletna(slot))) return;
-    if (wybraneKurioza.length < kurioza) return;
+    const { kurioza } = calculateChoiceCount();
+    const { slots } = calculateSlotsCharacter();
+    if (!slots.every(slot => slotAnswerComplete(slot))) return;
+    if (selectedCurios.length < kurioza) return;
   }
-  pokazKrok(stepNumber);
+  showStep(stepNumber);
   if (stepNumber === 3) {
     renderPathSectionsVisibility();
     renderPathSection(1);
@@ -1572,7 +1572,7 @@ function goToStep(stepNumber) {
     updateStep3NextButton();
   }
   if (stepNumber === 4) {
-    renderAtrybutySlotySection();
+    renderAttributesSlotsSection();
   }
   if (stepNumber === 5) {
     renderProfessionsSection();
@@ -1582,10 +1582,10 @@ function goToStep(stepNumber) {
     renderSpellsSection();
   }
   if (stepNumber === 7) {
-    renderEkwipunekSection();
+    renderEquipmentSection();
   }
   if (stepNumber === 8) {
-    aktualizujPodgladPostaci();
+    updatePreviewCharacter();
   }
 }
 
@@ -1600,10 +1600,10 @@ function updateBreadcrumbs(activeStep) {
 /**
  * Aktualizuje podsumowanie wybranego pochodzenia
  */
-function aktualizujPodsumowaniePochodzenia() {
-  if (!wybranePochodzenie) return;
+function updateSummaryOrigin() {
+  if (!selectedOrigin) return;
     
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return;
     
   const container = document.getElementById('selected-origin-info');
@@ -1611,7 +1611,7 @@ function aktualizujPodsumowaniePochodzenia() {
         <h4>${pochodzenie.nazwa}</h4>
         <p><strong>Opis:</strong> ${pochodzenie.opis}</p>
         <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość:</strong> ${pochodzenie.predkosc}</p>
-        <p><strong>Języki:</strong> ${formatujJezykiPochodzenia(pochodzenie.jezyki)}</p>
+        <p><strong>Języki:</strong> ${formatLanguagesOrigin(pochodzenie.jezyki)}</p>
         <p><strong>Modyfikatory atrybutów:</strong> 
             Siła ${pochodzenie.atrybuty_bazowe.sila - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.sila - 10}, 
             Zręczność ${pochodzenie.atrybuty_bazowe.zrecznosc - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.zrecznosc - 10}, 
@@ -1633,15 +1633,15 @@ function aktualizujPodsumowaniePochodzenia() {
  * @param {string[]} [bonusoweAtrybuty] - Atrybuty wybrane do bonusu z pochodzenia
  * @returns {Object} Finalne wartości czterech atrybutów głównych
  */
-function obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtrybuty) {
+function calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes) {
   const atrybuty = { ...pochodzenie.atrybuty_bazowe };
   if (zmniejszony && zwiekszony && zmniejszony !== zwiekszony) {
     atrybuty[zmniejszony] -= 1;
     atrybuty[zwiekszony] += 1;
   }
-  if (pochodzenie.wybor_atrybutu && bonusoweAtrybuty) {
+  if (pochodzenie.wybor_atrybutu && bonusAttributes) {
     const wartosc = pochodzenie.wybor_atrybutu.wartosc || 1;
-    bonusoweAtrybuty.forEach(atr => {
+    bonusAttributes.forEach(atr => {
       if (atr && atrybuty[atr] !== undefined) atrybuty[atr] += wartosc;
     });
   }
@@ -1656,58 +1656,58 @@ function obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtry
  * @param {Object} pochodzenie
  */
 function renderOriginAttributeChoiceSection(pochodzenie) {
-  const sekcja = document.getElementById('origin-attribute-choice-section');
-  const selectyDiv = document.getElementById('origin-attribute-choice-selects');
+  const section = document.getElementById('origin-attribute-choice-section');
+  const selectsDiv = document.getElementById('origin-attribute-choice-selects');
   const hint = document.getElementById('origin-attribute-choice-hint');
-  if (!sekcja || !selectyDiv || !hint) return;
+  if (!section || !selectsDiv || !hint) return;
 
   const wybor = pochodzenie && pochodzenie.wybor_atrybutu;
   if (!wybor) {
-    sekcja.style.display = 'none';
-    selectyDiv.innerHTML = '';
+    section.style.display = 'none';
+    selectsDiv.innerHTML = '';
     return;
   }
 
-  sekcja.style.display = 'block';
+  section.style.display = 'block';
   hint.textContent = `${pochodzenie.nazwa}: ${wybor.opis}. Wybierz ${wybor.ilosc > 1 ? `${wybor.ilosc} różne atrybuty` : 'atrybut'}.`;
 
-  const ATRYBUTY = [
+  const ATTRIBUTES = [
     ['sila', 'Siła'], ['zrecznosc', 'Zręczność'], ['intelekt', 'Intelekt'], ['wola', 'Wola']
   ];
-  const opcjeHtml = (selectId) => `
+  const optionsHtml = (selectId) => `
     <option value="">-- brak wyboru --</option>
-    ${ATRYBUTY.map(([val, label]) => `<option value="${val}" id="${selectId}-opt-${val}">${label}</option>`).join('')}
+    ${ATTRIBUTES.map(([val, label]) => `<option value="${val}" id="${selectId}-opt-${val}">${label}</option>`).join('')}
   `;
 
-  selectyDiv.innerHTML = Array.from({ length: wybor.ilosc }, (_, i) => {
+  selectsDiv.innerHTML = Array.from({ length: wybor.ilosc }, (_, i) => {
     const selectId = `origin-attr-choice-${i}`;
     return `
       <div class="form-group">
         <label for="${selectId}">Atrybut ${i + 1}:</label>
-        <select id="${selectId}" class="origin-attr-choice-select">${opcjeHtml(selectId)}</select>
+        <select id="${selectId}" class="origin-attr-choice-select">${optionsHtml(selectId)}</select>
       </div>
     `;
   }).join('');
 
   document.querySelectorAll('.origin-attr-choice-select').forEach(sel => {
     sel.addEventListener('change', () => {
-      odswiezSelektyWyboruAtrybutu();
-      aktualizujObliczoneAtrybuty();
+      refreshSelectsChoiceAttribute();
+      updateCalculatedAttributes();
     });
   });
-  odswiezSelektyWyboruAtrybutu();
+  refreshSelectsChoiceAttribute();
 }
 
 /**
  * Wyłącza w każdym selectcie wyboru atrybutu bonusowego opcje już wybrane
  * w innych selectach, by nie dało się wybrać tego samego atrybutu dwa razy.
  */
-function odswiezSelektyWyboruAtrybutu() {
-  const selekty = Array.from(document.querySelectorAll('.origin-attr-choice-select'));
-  const wybrane = selekty.map(s => s.value).filter(Boolean);
-  selekty.forEach(sel => {
+function refreshSelectsChoiceAttribute() {
+  const selects = Array.from(document.querySelectorAll('.origin-attr-choice-select'));
+  const selected = selects.map(s => s.value).filter(Boolean);
+  selects.forEach(sel => {
     Array.from(sel.options).forEach(opt => {
-      opt.disabled = !!opt.value && opt.value !== sel.value && wybrane.includes(opt.value);
+      opt.disabled = !!opt.value && opt.value !== sel.value && selected.includes(opt.value);
     });
   });
 }
@@ -1717,7 +1717,7 @@ function odswiezSelektyWyboruAtrybutu() {
  * wyrenderowanych przez renderOriginAttributeChoiceSection.
  * @returns {string[]}
  */
-function pobierzWybraneAtrybutyBonusowe() {
+function getSelectedAttributesBonus() {
   return Array.from(document.querySelectorAll('.origin-attr-choice-select'))
     .map(s => s.value)
     .filter(Boolean);
@@ -1726,10 +1726,10 @@ function pobierzWybraneAtrybutyBonusowe() {
 /**
  * Czyści wybór atrybutu(ów) bonusowego z pochodzenia (Krok 2).
  */
-function resetujWyborAtrybutuPochodzenia() {
+function resetChoiceAttributeOrigin() {
   document.querySelectorAll('.origin-attr-choice-select').forEach(sel => { sel.value = ''; });
-  odswiezSelektyWyboruAtrybutu();
-  aktualizujObliczoneAtrybuty();
+  refreshSelectsChoiceAttribute();
+  updateCalculatedAttributes();
 }
 
 /**
@@ -1737,25 +1737,25 @@ function resetujWyborAtrybutuPochodzenia() {
  * było wybrać tego samego atrybutu do obniżenia i podniesienia, oraz
  * odświeża informację o puli atrybutów.
  */
-function odswiezSelektySwapuAtrybutow(pochodzenie) {
-  const selZmniejszony = document.getElementById('atrybut-zmniejszony');
-  const selZwiekszony = document.getElementById('atrybut-zwiekszony');
+function refreshAttributeSwapSelects(pochodzenie) {
+  const selDecreased = document.getElementById('atrybut-zmniejszony');
+  const selIncreased = document.getElementById('atrybut-zwiekszony');
   const info = document.getElementById('pula-atrybutow-info');
-  if (!selZmniejszony || !selZwiekszony) return;
+  if (!selDecreased || !selIncreased) return;
 
-  const wartoscZmniejszony = selZmniejszony.value;
-  const wartoscZwiekszony = selZwiekszony.value;
+  const valueDecreased = selDecreased.value;
+  const valueIncreased = selIncreased.value;
 
-  Array.from(selZmniejszony.options).forEach(opt => {
-    opt.disabled = !!opt.value && opt.value === wartoscZwiekszony;
+  Array.from(selDecreased.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === valueIncreased;
   });
-  Array.from(selZwiekszony.options).forEach(opt => {
-    opt.disabled = !!opt.value && opt.value === wartoscZmniejszony;
+  Array.from(selIncreased.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === valueDecreased;
   });
 
   if (info && pochodzenie) {
-    const pula = Object.values(pochodzenie.atrybuty_bazowe).reduce((a, b) => a + b, 0);
-    info.textContent = `Pula atrybutów pochodzenia: ${pula} (suma się nie zmienia po zamianie).`;
+    const pool = Object.values(pochodzenie.atrybuty_bazowe).reduce((a, b) => a + b, 0);
+    info.textContent = `Pula atrybutów pochodzenia: ${pool} (suma się nie zmienia po zamianie).`;
   }
 }
 
@@ -1763,9 +1763,9 @@ function odswiezSelektySwapuAtrybutow(pochodzenie) {
  * Czyści wybór pochodzenia (Krok 1) i cały zależny od niego stan
  * (poziom, ścieżki, profesje/języki, kurioza).
  */
-function resetujWyborPochodzenia() {
-  resetujStanPoZmianiePochodzenia();
-  wybranePochodzenie = null;
+function resetChoiceOrigin() {
+  resetStateAfterOriginChange();
+  selectedOrigin = null;
   document.querySelectorAll('.origin-tile').forEach(tile => tile.classList.remove('selected'));
   const info = document.getElementById('selected-origin-info');
   if (info) info.innerHTML = '';
@@ -1778,7 +1778,7 @@ function resetujWyborPochodzenia() {
 /**
  * Czyści wybór poziomu postaci (Krok 2), wracając do poziomu 0.
  */
-function resetujPoziom() {
+function resetLevel() {
   const radio0 = document.querySelector('input[name="poziom"][value="0"]');
   if (radio0) {
     radio0.checked = true;
@@ -1789,12 +1789,12 @@ function resetujPoziom() {
 /**
  * Czyści jednorazową zamianę wartości atrybutów (Krok 2).
  */
-function resetujSwapAtrybutow() {
-  const selZmniejszony = document.getElementById('atrybut-zmniejszony');
-  const selZwiekszony = document.getElementById('atrybut-zwiekszony');
-  if (selZmniejszony) selZmniejszony.value = '';
-  if (selZwiekszony) selZwiekszony.value = '';
-  aktualizujObliczoneAtrybuty();
+function resetSwapAttributes() {
+  const selDecreased = document.getElementById('atrybut-zmniejszony');
+  const selIncreased = document.getElementById('atrybut-zwiekszony');
+  if (selDecreased) selDecreased.value = '';
+  if (selIncreased) selIncreased.value = '';
+  updateCalculatedAttributes();
 }
 
 /**
@@ -1802,33 +1802,33 @@ function resetujSwapAtrybutow() {
  * mistrzowskiej - wraz z korzyściami, które ta ścieżka przyznała.
  * @param {'nowicjusz'|'ekspert'|'mistrz'} tier
  */
-function resetujSciezke(tier) {
-  const poziomMap = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
-  const poziomWyboru = poziomMap[tier];
-  if (!poziomWyboru) return;
+function resetPath(tier) {
+  const levelMap = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+  const levelChoice = levelMap[tier];
+  if (!levelChoice) return;
 
-  if (przyznaneKorzysciZeSciezek[poziomWyboru]) {
-    const usuwanaKorzysc = przyznaneKorzysciZeSciezek[poziomWyboru];
+  if (grantedBenefitsWithPaths[levelChoice]) {
+    const removedBenefit = grantedBenefitsWithPaths[levelChoice];
     // Wyczyść stan PRZED przeliczeniem, by sumujBonusyDrugorzedneZeSciezek()
     // (wywoływane wewnątrz odejmijBenefity) nie liczyło już usuwanej ścieżki.
-    przyznaneKorzysciZeSciezek[poziomWyboru] = null;
-    odejmijBenefity(usuwanaKorzysc);
+    grantedBenefitsWithPaths[levelChoice] = null;
+    subtractBenefits(removedBenefit);
   }
-  wybraneSciezki[tier] = '';
+  selectedPaths[tier] = '';
 
-  const summaryEl = document.getElementById(`path-summary-${poziomWyboru}`);
+  const summaryEl = document.getElementById(`path-summary-${levelChoice}`);
   if (summaryEl) summaryEl.innerHTML = '';
 
   renderPathSectionsVisibility();
-  renderPathSection(poziomWyboru);
-  aktualizujPodgladPostaci();
+  renderPathSection(levelChoice);
+  updatePreviewCharacter();
 }
 
 /**
  * Czyści wszystkie wybrane kurioza (Krok 5).
  */
-function resetujKurioza() {
-  wybraneKurioza = [];
+function resetCurios() {
+  selectedCurios = [];
   renderCuriosSection();
   updateStep5NextButton();
 }
@@ -1838,8 +1838,8 @@ function resetujKurioza() {
  * ponowny wybór od zera - w przeciwieństwie do lokalnego "Wyczyść" na
  * pojedynczej karcie, ten przycisk resetuje całą sekcję Profesje/Języki.
  */
-function resetujWszystkieProfesjeIJezyki() {
-  odpowiedziSlotow = {};
+function resetAllProfessionsAndLanguages() {
+  answersSlots = {};
   renderProfessionsSection();
 }
 
@@ -1847,74 +1847,74 @@ function resetujWszystkieProfesjeIJezyki() {
  * Aktualizuje domyślne atrybuty bazujące na pochodzeniu (bez zmiany wartości)
  */
 function aktualizujDomyślneAtrybuty() {
-  if (!wybranePochodzenie) return;
+  if (!selectedOrigin) return;
 
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return;
 
   renderOriginAttributeChoiceSection(pochodzenie);
 
-  const atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, undefined, undefined, pobierzWybraneAtrybutyBonusowe());
-  wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie);
+  const attributesFinal = calculateAttributesMain(pochodzenie, undefined, undefined, getSelectedAttributesBonus());
+  displayAttributesMain(attributesFinal, pochodzenie);
 }
 
 /**
  * Aktualizuje obliczone atrybuty na podstawie pochodzenia i (opcjonalnie)
  * jednorazowej zamiany wartości wybranej w selektach.
  */
-function aktualizujObliczoneAtrybuty() {
-  if (!wybranePochodzenie) return;
+function updateCalculatedAttributes() {
+  if (!selectedOrigin) return;
 
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return;
 
-  odswiezSelektySwapuAtrybutow(pochodzenie);
-  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
+  refreshAttributeSwapSelects(pochodzenie);
+  const bonusAttributes = getSelectedAttributesBonus();
 
-  let atrybutyFinalne;
+  let attributesFinal;
   if (document.getElementById('domyslne-atrybuty').checked) {
-    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, undefined, undefined, bonusoweAtrybuty);
+    attributesFinal = calculateAttributesMain(pochodzenie, undefined, undefined, bonusAttributes);
   } else {
     const zmniejszony = document.getElementById('atrybut-zmniejszony').value;
     const zwiekszony = document.getElementById('atrybut-zwiekszony').value;
-    atrybutyFinalne = obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony, bonusoweAtrybuty);
+    attributesFinal = calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes);
   }
 
   // Zsynchronizuj ukryte pola z finalnymi wartościami atrybutów głównych
   ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {
     const input = document.getElementById(`${atr}-base`);
-    if (input) input.value = atrybutyFinalne[atr];
+    if (input) input.value = attributesFinal[atr];
   });
 
-  wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie);
+  displayAttributesMain(attributesFinal, pochodzenie);
 }
 
 /**
  * Wyświetla finalne atrybuty główne i przelicza atrybuty drugorzędne.
  */
-function wyswietlAtrybutyGlowne(atrybutyFinalne, pochodzenie) {
-  document.getElementById('sila-final').textContent = atrybutyFinalne.sila;
-  document.getElementById('zrecznosc-final').textContent = atrybutyFinalne.zrecznosc;
-  document.getElementById('intelekt-final').textContent = atrybutyFinalne.intelekt;
-  document.getElementById('wola-final').textContent = atrybutyFinalne.wola;
+function displayAttributesMain(attributesFinal, pochodzenie) {
+  document.getElementById('sila-final').textContent = attributesFinal.sila;
+  document.getElementById('zrecznosc-final').textContent = attributesFinal.zrecznosc;
+  document.getElementById('intelekt-final').textContent = attributesFinal.intelekt;
+  document.getElementById('wola-final').textContent = attributesFinal.wola;
 
   // Modyfikator = wartość - 10 (przeciętna wartość atrybutu w PG)
-  document.getElementById('sila-mod').textContent = formatModifier(atrybutyFinalne.sila - 10);
-  document.getElementById('zrecznosc-mod').textContent = formatModifier(atrybutyFinalne.zrecznosc - 10);
-  document.getElementById('intelekt-mod').textContent = formatModifier(atrybutyFinalne.intelekt - 10);
-  document.getElementById('wola-mod').textContent = formatModifier(atrybutyFinalne.wola - 10);
+  document.getElementById('sila-mod').textContent = formatModifier(attributesFinal.sila - 10);
+  document.getElementById('zrecznosc-mod').textContent = formatModifier(attributesFinal.zrecznosc - 10);
+  document.getElementById('intelekt-mod').textContent = formatModifier(attributesFinal.intelekt - 10);
+  document.getElementById('wola-mod').textContent = formatModifier(attributesFinal.wola - 10);
 
-  aktualizujAtrybutyDrugorzedne(atrybutyFinalne, pochodzenie);
+  updateAttributesSecondary(attributesFinal, pochodzenie);
 
   // Aktywuj przycisk "Dalej" w kroku 2
   document.getElementById('btn-next-2').disabled = false;
 }
 
 /** Etykiety atrybutów głównych używane w Kroku 4. */
-const ETYKIETY_ATRYBUTOW = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
+const ATTRIBUTE_LABELS = { sila: 'Siła', zrecznosc: 'Zręczność', intelekt: 'Intelekt', wola: 'Wola' };
 
 /** Etykiety atrybutów drugorzędnych - używane przy formatowaniu modyfikatorów ścieżek na kafelkach (Krok 3). */
-const ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH = {
+const SECONDARY_ATTRIBUTE_LABELS = {
   zdrowie: 'Zdrowie', moc: 'Moc', obrona: 'Obrona', predkosc: 'Prędkość', splugawienie: 'Splugawienie'
 };
 
@@ -1922,21 +1922,21 @@ const ETYKIETY_ATRYBUTOW_DRUGORZEDNYCH = {
  * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 4) ma kompletną
  * odpowiedź: dokładnie `ilosc` różnych atrybutów wybranych.
  */
-function slotAtrybutowKompletny(slot) {
-  const wybrane = wybraneAtrybutySlotow[slot.id] || [];
-  return wybrane.length === slot.ilosc;
+function slotAttributesComplete(slot) {
+  const selected = selectedAttributesSlots[slot.id] || [];
+  return selected.length === slot.ilosc;
 }
 
 /**
  * Oblicza atrybuty główne postaci PRZED uwzględnieniem slotów Kroku 4:
  * pochodzenie + jednorazowa zamiana wartości z Kroku 2.
  */
-function obliczBazoweAtrybutyPrzedSciezkami() {
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function calculateBaseAttributesBeforePaths() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return null;
   const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
   const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
-  return obliczAtrybutyGlowne(pochodzenie, zmniejszony, zwiekszony);
+  return calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony);
 }
 
 /**
@@ -1946,30 +1946,30 @@ function obliczBazoweAtrybutyPrzedSciezkami() {
  * wszystkich slotów) do #sila-final itd., by kolejne kroki widziały
  * poprawne wartości.
  */
-function renderAtrybutySlotySection() {
+function renderAttributesSlotsSection() {
   const container = document.getElementById('attribute-slots');
   if (!container) return;
 
-  const sloty = obliczSlotyAtrybutow({
-    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
-    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
-    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+  const slots = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
   });
 
-  if (sloty.length === 0) {
+  if (slots.length === 0) {
     container.innerHTML = '<p class="hint">Żadna z wybranych ścieżek nie daje na tym poziomie możliwości zwiększenia atrybutów.</p>';
   } else {
-    container.innerHTML = sloty.map(slot => {
-      const wybrane = wybraneAtrybutySlotow[slot.id] || [];
-      const limitOsiagniety = wybrane.length >= slot.ilosc;
+    container.innerHTML = slots.map(slot => {
+      const selected = selectedAttributesSlots[slot.id] || [];
+      const limitReached = selected.length >= slot.ilosc;
       const opcje = slot.dostepne.map(atr => {
-        const iloscPrzypisana = wybrane.filter(w => w === atr).length;
+        const countAssigned = selected.filter(w => w === atr).length;
         return `
           <div class="attribute-stepper" data-slot-id="${slot.id}" data-attr="${atr}">
-            <span class="attribute-stepper-label">${ETYKIETY_ATRYBUTOW[atr] || atr}</span>
-            <button type="button" class="attribute-stepper-btn" data-delta="-1" ${iloscPrzypisana === 0 ? 'disabled' : ''}>−</button>
-            <span class="attribute-stepper-count">${iloscPrzypisana}</span>
-            <button type="button" class="attribute-stepper-btn" data-delta="1" ${limitOsiagniety ? 'disabled' : ''}>+</button>
+            <span class="attribute-stepper-label">${ATTRIBUTE_LABELS[atr] || atr}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="-1" ${countAssigned === 0 ? 'disabled' : ''}>−</button>
+            <span class="attribute-stepper-count">${countAssigned}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="1" ${limitReached ? 'disabled' : ''}>+</button>
           </div>
         `;
       }).join('');
@@ -1979,7 +1979,7 @@ function renderAtrybutySlotySection() {
             ${slot.source}
             <button type="button" class="section-reset-btn" data-reset-attribute-slot="${slot.id}" title="Wyczyść wybór dla tej ścieżki">Wyczyść</button>
           </div>
-          <div class="slot-opis">Rozdaj ${slot.ilosc} punkty(ów) zwiększenia o ${slot.wartosc} - można je łączyć na jednym atrybucie (przypisano ${wybrane.length}/${slot.ilosc})</div>
+          <div class="slot-opis">Rozdaj ${slot.ilosc} punkty(ów) zwiększenia o ${slot.wartosc} - można je łączyć na jednym atrybucie (przypisano ${selected.length}/${slot.ilosc})</div>
           <div class="attribute-choice-list">${opcje}</div>
         </div>
       `;
@@ -1990,41 +1990,41 @@ function renderAtrybutySlotySection() {
         const stepper = e.target.closest('.attribute-stepper');
         const { slotId, attr } = stepper.dataset;
         const delta = parseInt(e.target.dataset.delta);
-        const wybrane = [...(wybraneAtrybutySlotow[slotId] || [])];
-        const slot = sloty.find(s => s.id === slotId);
-        if (delta > 0 && wybrane.length < slot.ilosc) {
-          wybrane.push(attr);
+        const selected = [...(selectedAttributesSlots[slotId] || [])];
+        const slot = slots.find(s => s.id === slotId);
+        if (delta > 0 && selected.length < slot.ilosc) {
+          selected.push(attr);
         } else if (delta < 0) {
-          const idx = wybrane.lastIndexOf(attr);
-          if (idx !== -1) wybrane.splice(idx, 1);
+          const idx = selected.lastIndexOf(attr);
+          if (idx !== -1) selected.splice(idx, 1);
         }
-        wybraneAtrybutySlotow[slotId] = wybrane;
-        renderAtrybutySlotySection();
+        selectedAttributesSlots[slotId] = selected;
+        renderAttributesSlotsSection();
       });
     });
     container.querySelectorAll('[data-reset-attribute-slot]').forEach(btn => {
       btn.addEventListener('click', () => {
-        delete wybraneAtrybutySlotow[btn.dataset.resetAttributeSlot];
-        renderAtrybutySlotySection();
+        delete selectedAttributesSlots[btn.dataset.resetAttributeSlot];
+        renderAttributesSlotsSection();
       });
     });
   }
 
   // Przelicz i zapisz finalne atrybuty główne (bazowe + wszystkie sloty)
-  const bazowe = obliczBazoweAtrybutyPrzedSciezkami();
-  if (bazowe) {
-    const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
-    const finalne = { ...bazowe };
-    sloty.forEach(slot => {
-      (wybraneAtrybutySlotow[slot.id] || []).forEach(atr => {
-        finalne[atr] += slot.wartosc;
+  const base = calculateBaseAttributesBeforePaths();
+  if (base) {
+    const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+    const final = { ...base };
+    slots.forEach(slot => {
+      (selectedAttributesSlots[slot.id] || []).forEach(atr => {
+        final[atr] += slot.wartosc;
       });
     });
-    wyswietlAtrybutyGlowne(finalne, pochodzenie);
+    displayAttributesMain(final, pochodzenie);
   }
 
   const btn = document.getElementById('btn-next-4');
-  if (btn) btn.disabled = !sloty.every(slotAtrybutowKompletny);
+  if (btn) btn.disabled = !slots.every(slotAttributesComplete);
 }
 
 /**
@@ -2032,47 +2032,47 @@ function renderAtrybutySlotySection() {
  * Splugawienie) przyznane przez wszystkie aktualnie wybrane ścieżki.
  * @returns {{zdrowie: number, moc: number, obrona: number, predkosc: number, splugawienie: number}}
  */
-function sumujBonusyDrugorzedneZeSciezek() {
-  const suma = { zdrowie: 0, moc: 0, obrona: 0, predkosc: 0, splugawienie: 0 };
-  [1, 3, 7].forEach(poziomWyboru => {
-    const mod = przyznaneKorzysciZeSciezek[poziomWyboru]?.pkt?.mod_drugorzedne;
+function sumBonusesSecondaryWithPaths() {
+  const sum = { zdrowie: 0, moc: 0, obrona: 0, predkosc: 0, splugawienie: 0 };
+  [1, 3, 7].forEach(levelChoice => {
+    const mod = grantedBenefitsWithPaths[levelChoice]?.pkt?.mod_drugorzedne;
     if (!mod) return;
-    Object.keys(suma).forEach(k => { suma[k] += mod[k] || 0; });
+    Object.keys(sum).forEach(k => { sum[k] += mod[k] || 0; });
   });
-  return suma;
+  return sum;
 }
 
 /**
  * Aktualizuje atrybuty drugorzędne na podstawie atrybutów głównych i pochodzenia
  */
-function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
+function updateAttributesSecondary(atrybuty, pochodzenie) {
   // Oblicz atrybuty drugorzędne zgodnie z Podręcznikiem Głównym
-  const bonusySciezek = sumujBonusyDrugorzedneZeSciezek();
-  let zdrowie = atrybuty.sila + bonusySciezek.zdrowie;
+  const bonusesPaths = sumBonusesSecondaryWithPaths();
+  let zdrowie = atrybuty.sila + bonusesPaths.zdrowie;
 
   // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
-  if (wybranyPoziom >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
+  if (selectedLevel >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
     const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
     zdrowie += healthBonus;
   }
 
-  const atrybutyDrugorzedne = {
+  const attributesSecondary = {
     percepcja: atrybuty.intelekt,
-    obrona: atrybuty.zrecznosc + bonusySciezek.obrona,
+    obrona: atrybuty.zrecznosc + bonusesPaths.obrona,
     zdrowie,
     szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1,
-    moc: bonusySciezek.moc,
-    predkosc: (pochodzenie.predkosc || 0) + bonusySciezek.predkosc,
-    splugawienie: bonusySciezek.splugawienie + obliczSplugawienieZMagiiAktualnej()
+    moc: bonusesPaths.moc,
+    predkosc: (pochodzenie.predkosc || 0) + bonusesPaths.predkosc,
+    splugawienie: bonusesPaths.splugawienie + calculateCorruptionFromCurrentMagic()
   };
 
   // Modyfikatory obrony na podstawie rozmiaru pochodzenia
   if (pochodzenie.rozmiar === '1/4') {
-    atrybutyDrugorzedne.obrona += 4;
+    attributesSecondary.obrona += 4;
   } else if (pochodzenie.rozmiar === '1/2') {
-    atrybutyDrugorzedne.obrona += 2;
+    attributesSecondary.obrona += 2;
   } else if (pochodzenie.rozmiar === '2') {
-    atrybutyDrugorzedne.obrona -= 2;
+    attributesSecondary.obrona -= 2;
   }
   
   // Wyświetl atrybuty drugorzędne w sekcji obliczonych atrybutów
@@ -2088,44 +2088,44 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
         <div class="attributes-grid">
           <div class="attribute-display">
             <label>Percepcja:</label>
-            <span id="percepcja-final">${atrybutyDrugorzedne.percepcja}</span>
+            <span id="percepcja-final">${attributesSecondary.percepcja}</span>
           </div>
           <div class="attribute-display">
             <label>Obrona:</label>
-            <span id="obrona-final">${atrybutyDrugorzedne.obrona}</span>
+            <span id="obrona-final">${attributesSecondary.obrona}</span>
           </div>
           <div class="attribute-display">
             <label>Zdrowie:</label>
-            <span id="zdrowie-final">${atrybutyDrugorzedne.zdrowie}</span>
+            <span id="zdrowie-final">${attributesSecondary.zdrowie}</span>
           </div>
           <div class="attribute-display">
             <label>Szybkość Zdrowienia:</label>
-            <span id="szybkosc-zdrowienia-final">${atrybutyDrugorzedne.szybkosc_zdrowienia}</span>
+            <span id="szybkosc-zdrowienia-final">${attributesSecondary.szybkosc_zdrowienia}</span>
           </div>
           <div class="attribute-display">
             <label>Prędkość:</label>
-            <span id="predkosc-final">${atrybutyDrugorzedne.predkosc}</span>
+            <span id="predkosc-final">${attributesSecondary.predkosc}</span>
           </div>
           <div class="attribute-display">
             <label>Moc:</label>
-            <span id="moc-final">${atrybutyDrugorzedne.moc}</span>
+            <span id="moc-final">${attributesSecondary.moc}</span>
           </div>
           <div class="attribute-display">
             <label>Splugawienie:</label>
-            <span id="splugawienie-final">${atrybutyDrugorzedne.splugawienie}</span>
+            <span id="splugawienie-final">${attributesSecondary.splugawienie}</span>
           </div>
         </div>
       `;
       container.appendChild(secondaryDiv);
     } else {
       // Aktualizuj istniejące wartości
-      document.getElementById('percepcja-final').textContent = atrybutyDrugorzedne.percepcja;
-      document.getElementById('obrona-final').textContent = atrybutyDrugorzedne.obrona;
-      document.getElementById('zdrowie-final').textContent = atrybutyDrugorzedne.zdrowie;
-      document.getElementById('szybkosc-zdrowienia-final').textContent = atrybutyDrugorzedne.szybkosc_zdrowienia;
-      document.getElementById('predkosc-final').textContent = atrybutyDrugorzedne.predkosc;
-      document.getElementById('moc-final').textContent = atrybutyDrugorzedne.moc;
-      document.getElementById('splugawienie-final').textContent = atrybutyDrugorzedne.splugawienie;
+      document.getElementById('percepcja-final').textContent = attributesSecondary.percepcja;
+      document.getElementById('obrona-final').textContent = attributesSecondary.obrona;
+      document.getElementById('zdrowie-final').textContent = attributesSecondary.zdrowie;
+      document.getElementById('szybkosc-zdrowienia-final').textContent = attributesSecondary.szybkosc_zdrowienia;
+      document.getElementById('predkosc-final').textContent = attributesSecondary.predkosc;
+      document.getElementById('moc-final').textContent = attributesSecondary.moc;
+      document.getElementById('splugawienie-final').textContent = attributesSecondary.splugawienie;
     }
   }
 }
@@ -2135,9 +2135,9 @@ function aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie) {
  * Kroku 6, gdy poznanie/nauka czarnej magii zmienia Splugawienie) na
  * podstawie atrybutów głównych aktualnie wyświetlonych w Kroku 2.
  */
-function odswiezAtrybutyDrugorzedne() {
-  if (!wybranePochodzenie) return;
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function refreshAttributesSecondary() {
+  if (!selectedOrigin) return;
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return;
   const atrybuty = {
     sila: parseInt(document.getElementById('sila-final')?.textContent, 10) || 0,
@@ -2145,7 +2145,7 @@ function odswiezAtrybutyDrugorzedne() {
     intelekt: parseInt(document.getElementById('intelekt-final')?.textContent, 10) || 0,
     wola: parseInt(document.getElementById('wola-final')?.textContent, 10) || 0
   };
-  aktualizujAtrybutyDrugorzedne(atrybuty, pochodzenie);
+  updateAttributesSecondary(atrybuty, pochodzenie);
 }
 
 /**
@@ -2167,14 +2167,14 @@ function formatModifier(modifier) {
  * @param {Object} cechySpecjalne - Obiekt z cechami specjalnymi
  * @returns {Array|null} Tablica ze wszystkimi cechami
  */
-function pobierzWszystkieCechy(cechySpecjalne) {
-  if (!cechySpecjalne || Object.keys(cechySpecjalne).length === 0) {
+function getAllTraits(traitsSpecial) {
+  if (!traitsSpecial || Object.keys(traitsSpecial).length === 0) {
     return null;
   }
     
-  const cechy = Object.entries(cechySpecjalne);
+  const cechy = Object.entries(traitsSpecial);
   return cechy.map(([nazwa, opis]) => ({
-    nazwa: formatujNazweCechy(nazwa),
+    nazwa: formatNameTraits(nazwa),
     opis
   }));
 }
@@ -2185,18 +2185,18 @@ function pobierzWszystkieCechy(cechySpecjalne) {
  * @returns {Array|null} Tablica z maksymalnie 2 kluczowymi cechami
  */
 // eslint-disable-next-line no-unused-vars
-function pobierzKluczoweCechy(cechySpecjalne) {
-  if (!cechySpecjalne || Object.keys(cechySpecjalne).length === 0) {
+function getKeyTraits(traitsSpecial) {
+  if (!traitsSpecial || Object.keys(traitsSpecial).length === 0) {
     return null;
   }
     
-  const cechy = Object.entries(cechySpecjalne);
-  const kluczoweCechy = cechy.slice(0, 2).map(([nazwa, opis]) => ({
-    nazwa: formatujNazweCechy(nazwa),
+  const cechy = Object.entries(traitsSpecial);
+  const keyTraits = cechy.slice(0, 2).map(([nazwa, opis]) => ({
+    nazwa: formatNameTraits(nazwa),
     opis: opis.length > 60 ? `${opis.substring(0, 60)  }...` : opis
   }));
     
-  return kluczoweCechy.length > 0 ? kluczoweCechy : null;
+  return keyTraits.length > 0 ? keyTraits : null;
 }
 
 /**
@@ -2206,8 +2206,8 @@ function pobierzKluczoweCechy(cechySpecjalne) {
  * @param {string[]} jezyki
  * @returns {string}
  */
-function formatujJezykiPochodzenia(jezyki) {
-  return (jezyki || []).map(j => JEZYKI[j] || j).join(', ');
+function formatLanguagesOrigin(jezyki) {
+  return (jezyki || []).map(j => LANGUAGES[j] || j).join(', ');
 }
 
 /**
@@ -2216,7 +2216,7 @@ function formatujJezykiPochodzenia(jezyki) {
  * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
  * @returns {string} Opis bonusu
  */
-function formatujBonusProfesjiPochodzenia(pochodzenie) {
+function formatBonusProfessionsOrigin(pochodzenie) {
   if (!pochodzenie.profesje || pochodzenie.profesje.length === 0) {
     return 'brak dodatkowej profesji lub języka';
   }
@@ -2231,7 +2231,7 @@ function formatujBonusProfesjiPochodzenia(pochodzenie) {
  * @param {string} nazwa - Nazwa cechy w formacie snake_case
  * @returns {string} Sformatowana nazwa cechy
  */
-function formatujNazweCechy(nazwa) {
+function formatNameTraits(nazwa) {
   return nazwa
     .replace(/_/g, ' ')
     .split(' ')
@@ -2329,16 +2329,16 @@ function collapseAllTiles() {
  * Pokazuje komunikat o wyborze pochodzenia
  * @param {string} originId - ID wybranego pochodzenia
  */
-function pokazKomunikatWyboru(originId) {
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === originId);
+function showMessageChoice(originId) {
+  const pochodzenie = availableOrigin.find(p => p.id === originId);
   if (!pochodzenie) {
     return;
   }
     
   // Utwórz komunikat
-  const komunikat = document.createElement('div');
-  komunikat.className = 'selection-message';
-  komunikat.innerHTML = `
+  const message = document.createElement('div');
+  message.className = 'selection-message';
+  message.innerHTML = `
         <div class="message-content">
             <span class="message-icon">✓</span>
             <span class="message-text">Wybrano pochodzenie: <strong>${pochodzenie.nazwa}</strong></span>
@@ -2355,12 +2355,12 @@ function pokazKomunikatWyboru(originId) {
     }
         
     // Dodaj nowy komunikat
-    step1.appendChild(komunikat);
+    step1.appendChild(message);
         
     // Automatycznie usuń komunikat po 3 sekundach
     setTimeout(() => {
-      if (komunikat.parentNode) {
-        komunikat.remove();
+      if (message.parentNode) {
+        message.remove();
       }
     }, 3000);
   }
@@ -2371,7 +2371,7 @@ function pokazKomunikatWyboru(originId) {
  * czytelny tekst ("Znienawidzone stworzenia") - wyłącznie awaryjny fallback,
  * gdy dla klucza brakuje właściwej, poprawnie sformatowanej nazwy w danych.
  */
-function humanizujKluczTabeli(klucz) {
+function humanizeKeyTable(klucz) {
   const tekst = klucz.replace(/_/g, ' ');
   return tekst.charAt(0).toUpperCase() + tekst.slice(1);
 }
@@ -2381,12 +2381,12 @@ function humanizujKluczTabeli(klucz) {
  * @param {string} originId - ID pochodzenia
  * @returns {string} HTML sekcji z wynikami tabel
  */
-function generujSekcjeWynikowTabel(originId) {
-  if (!wynikiTabel[originId] || Object.keys(wynikiTabel[originId]).length === 0) {
+function generateSectionsResultsTables(originId) {
+  if (!resultsTables[originId] || Object.keys(resultsTables[originId]).length === 0) {
     return '';
   }
   
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === originId);
+  const pochodzenie = availableOrigin.find(p => p.id === originId);
   if (!pochodzenie || !pochodzenie.tabele) {
     return '';
   }
@@ -2394,18 +2394,18 @@ function generujSekcjeWynikowTabel(originId) {
   let html = '<div class="preview-section">';
   html += '<h5>🎲 Wyniki Tabel Losowych</h5>';
 
-  Object.entries(wynikiTabel[originId]).forEach(([tableName, result]) => {
+  Object.entries(resultsTables[originId]).forEach(([tableName, result]) => {
     // Nazwa tabeli pochodzi bezpośrednio z jej definicji (pochodzenie.tabele),
     // a nie z osobno utrzymywanej listy - inaczej brakujący wpis pokazywałby
     // surowy klucz (np. "znienawidzone_stworzenia") zamiast czytelnej nazwy.
-    const nazwaTabeli = pochodzenie.tabele[tableName]?.nazwa || humanizujKluczTabeli(tableName);
-    const ikona = result.typ === 'wybór' ? '🎯' : '🎲';
-    const typTekst = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
+    const nameTable = pochodzenie.tabele[tableName]?.nazwa || humanizeKeyTable(tableName);
+    const icon = result.typ === 'wybór' ? '🎯' : '🎲';
+    const typeText = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
     
     html += '<div class="table-result-item">';
     html += '<div class="table-result-header">';
-    html += `<span class="table-result-name">${nazwaTabeli}</span>`;
-    html += `<span class="table-result-type">${ikona} ${typTekst}</span>`;
+    html += `<span class="table-result-name">${nameTable}</span>`;
+    html += `<span class="table-result-type">${icon} ${typeText}</span>`;
     html += '</div>';
     html += '<div class="table-result-content">';
     html += `<div class="table-result-roll">Rzut: ${result.rzut}</div>`;
@@ -2428,7 +2428,7 @@ function generujSekcjeWynikowTabel(originId) {
  * @param {number} poziom
  * @returns {string}
  */
-function nazwaTieruPoziomu(poziom) {
+function nameTierLevel(poziom) {
   if (poziom === 0) return 'Poziom startowy';
   if (poziom <= 2) return 'Nowicjusz';
   if (poziom <= 6) return 'Ekspert';
@@ -2439,15 +2439,15 @@ function nazwaTieruPoziomu(poziom) {
  * Renderuje sekcję pochodzenia: nazwa, opis, cechy specjalne, rozmiar,
  * prędkość bazowa, języki i bonus profesyjny/językowy z pochodzenia.
  */
-function renderKartaPochodzeniaSection(pochodzenie) {
-  const cechy = pobierzWszystkieCechy(pochodzenie.cechy_specjalne);
+function renderCardOriginSection(pochodzenie) {
+  const cechy = getAllTraits(pochodzenie.cechy_specjalne);
   return `
     <div class="preview-section">
       <h5>${pochodzenie.nazwa}</h5>
       <p>${pochodzenie.opis}</p>
       <p><strong>Rozmiar:</strong> ${pochodzenie.rozmiar} | <strong>Prędkość bazowa:</strong> ${pochodzenie.predkosc}</p>
-      <p><strong>Języki:</strong> ${formatujJezykiPochodzenia(pochodzenie.jezyki)}</p>
-      <p><strong>Profesja/język z pochodzenia:</strong> ${formatujBonusProfesjiPochodzenia(pochodzenie)}</p>
+      <p><strong>Języki:</strong> ${formatLanguagesOrigin(pochodzenie.jezyki)}</p>
+      <p><strong>Profesja/język z pochodzenia:</strong> ${formatBonusProfessionsOrigin(pochodzenie)}</p>
       ${cechy ? `
         <div class="trait-list">
           ${cechy.map(c => `<div class="trait-item"><strong>${c.nazwa}:</strong> ${c.opis}</div>`).join('')}
@@ -2462,7 +2462,7 @@ function renderKartaPochodzeniaSection(pochodzenie) {
  * zamianie wartości (Krok 2) i bonusie do atrybutu z pochodzenia, jeśli
  * były użyte.
  */
-function renderKartaAtrybutyPodstawoweSection(pochodzenie) {
+function renderCardAttributesBasicSection(pochodzenie) {
   const atrybuty = {
     sila: parseInt(document.getElementById('sila-final').textContent),
     zrecznosc: parseInt(document.getElementById('zrecznosc-final').textContent),
@@ -2470,19 +2470,19 @@ function renderKartaAtrybutyPodstawoweSection(pochodzenie) {
     wola: parseInt(document.getElementById('wola-final').textContent)
   };
 
-  const notatki = [];
-  const domyslneAtrybuty = document.getElementById('domyslne-atrybuty');
-  if (domyslneAtrybuty && !domyslneAtrybuty.checked) {
+  const notes = [];
+  const defaultAttributes = document.getElementById('domyslne-atrybuty');
+  if (defaultAttributes && !defaultAttributes.checked) {
     const zmniejszony = document.getElementById('atrybut-zmniejszony')?.value;
     const zwiekszony = document.getElementById('atrybut-zwiekszony')?.value;
     if (zmniejszony && zwiekszony) {
-      notatki.push(`Zamiana wartości: −1 ${ETYKIETY_ATRYBUTOW[zmniejszony]}, +1 ${ETYKIETY_ATRYBUTOW[zwiekszony]}.`);
+      notes.push(`Zamiana wartości: −1 ${ATTRIBUTE_LABELS[zmniejszony]}, +1 ${ATTRIBUTE_LABELS[zwiekszony]}.`);
     }
   }
-  const bonusoweAtrybuty = pobierzWybraneAtrybutyBonusowe();
-  if (pochodzenie.wybor_atrybutu && bonusoweAtrybuty.length > 0) {
-    const wartoscBonusu = pochodzenie.wybor_atrybutu.wartosc || 1;
-    notatki.push(`Bonus z pochodzenia: ${bonusoweAtrybuty.map(a => `${ETYKIETY_ATRYBUTOW[a]} +${wartoscBonusu}`).join(', ')}.`);
+  const bonusAttributes = getSelectedAttributesBonus();
+  if (pochodzenie.wybor_atrybutu && bonusAttributes.length > 0) {
+    const bonusValue = pochodzenie.wybor_atrybutu.wartosc || 1;
+    notes.push(`Bonus z pochodzenia: ${bonusAttributes.map(a => `${ATTRIBUTE_LABELS[a]} +${bonusValue}`).join(', ')}.`);
   }
 
   return `
@@ -2494,7 +2494,7 @@ function renderKartaAtrybutyPodstawoweSection(pochodzenie) {
         <div class="attribute-box"><strong>Intelekt</strong><br>${atrybuty.intelekt}</div>
         <div class="attribute-box"><strong>Wola</strong><br>${atrybuty.wola}</div>
       </div>
-      ${notatki.map(n => `<p class="hint">${n}</p>`).join('')}
+      ${notes.map(n => `<p class="hint">${n}</p>`).join('')}
     </div>
   `;
 }
@@ -2504,19 +2504,19 @@ function renderKartaAtrybutyPodstawoweSection(pochodzenie) {
  * przeliczone wartości (łącznie z bonusami ze ścieżek) z Kroku 2 -
  * patrz aktualizujAtrybutyDrugorzedne().
  */
-function renderKartaAtrybutyDrugorzedneSection() {
-  const odczytaj = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+function renderCardAttributesSecondarySection() {
+  const read = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
   return `
     <div class="preview-section">
       <h5>Atrybuty Drugorzędne</h5>
       <div class="attributes-grid">
-        <div class="attribute-box"><strong>Percepcja</strong><br>${odczytaj('percepcja-final')}</div>
-        <div class="attribute-box"><strong>Obrona</strong><br>${odczytaj('obrona-final')}</div>
-        <div class="attribute-box"><strong>Zdrowie</strong><br>${odczytaj('zdrowie-final')}</div>
-        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${odczytaj('szybkosc-zdrowienia-final', '1')}</div>
-        <div class="attribute-box"><strong>Prędkość</strong><br>${odczytaj('predkosc-final')}</div>
-        <div class="attribute-box"><strong>Moc</strong><br>${odczytaj('moc-final')}</div>
-        <div class="attribute-box"><strong>Splugawienie</strong><br>${odczytaj('splugawienie-final')}</div>
+        <div class="attribute-box"><strong>Percepcja</strong><br>${read('percepcja-final')}</div>
+        <div class="attribute-box"><strong>Obrona</strong><br>${read('obrona-final')}</div>
+        <div class="attribute-box"><strong>Zdrowie</strong><br>${read('zdrowie-final')}</div>
+        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${read('szybkosc-zdrowienia-final', '1')}</div>
+        <div class="attribute-box"><strong>Prędkość</strong><br>${read('predkosc-final')}</div>
+        <div class="attribute-box"><strong>Moc</strong><br>${read('moc-final')}</div>
+        <div class="attribute-box"><strong>Splugawienie</strong><br>${read('splugawienie-final')}</div>
       </div>
     </div>
   `;
@@ -2526,15 +2526,15 @@ function renderKartaAtrybutyDrugorzedneSection() {
  * Renderuje wybraną korzyść z pochodzenia na poziomie 4 (spell/talent/inna
  * opcja wybrana w radiobuttonach sekcji "Korzyści z Pochodzenia").
  */
-function renderKartaPoziom4Section(pochodzenie) {
-  if (wybranyPoziom < 4 || !pochodzenie.poziom_4) return '';
-  const wybranaOpcja = document.querySelector(`input[name="origin-option-${pochodzenie.id}"]:checked`)?.value;
-  const zdrowieBonus = parseInt((pochodzenie.poziom_4.zdrowie || '+0').replace('+', '')) || 0;
+function renderCardLevel4Section(pochodzenie) {
+  if (selectedLevel < 4 || !pochodzenie.poziom_4) return '';
+  const selectedOption = document.querySelector(`input[name="origin-option-${pochodzenie.id}"]:checked`)?.value;
+  const healthBonus = parseInt((pochodzenie.poziom_4.zdrowie || '+0').replace('+', '')) || 0;
   return `
     <div class="preview-section">
       <h5>Korzyść z Pochodzenia (Poziom 4)</h5>
-      ${zdrowieBonus > 0 ? `<p><strong>Zdrowie:</strong> +${zdrowieBonus}</p>` : ''}
-      <p><strong>Wybrana opcja:</strong> ${wybranaOpcja || 'nie wybrano'}</p>
+      ${healthBonus > 0 ? `<p><strong>Zdrowie:</strong> +${healthBonus}</p>` : ''}
+      <p><strong>Wybrana opcja:</strong> ${selectedOption || 'nie wybrano'}</p>
     </div>
   `;
 }
@@ -2543,28 +2543,28 @@ function renderKartaPoziom4Section(pochodzenie) {
  * Renderuje sekcję wybranych ścieżek wraz z talentami i magią, które
  * przyznają, oraz zasoby (srebrniki, kurioza) przyznane wraz z poziomem.
  */
-function renderKartaSciezkiSection() {
-  const etykietyTieru = { 1: 'Nowicjusz', 3: 'Ekspert', 7: 'Mistrz' };
-  const sekcje = [1, 3, 7].map(poziomWyboru => {
-    const benefit = przyznaneKorzysciZeSciezek[poziomWyboru];
+function renderCardPathsSection() {
+  const labelsTier = { 1: 'Nowicjusz', 3: 'Ekspert', 7: 'Mistrz' };
+  const sections = [1, 3, 7].map(levelChoice => {
+    const benefit = grantedBenefitsWithPaths[levelChoice];
     if (!benefit) return '';
     const pkt = benefit.pkt || {};
     const talenty = (pkt.talenty || []).map(t => `<div class="trait-item"><strong>${t.nazwa}:</strong> ${t.opis}</div>`).join('');
     const magia = (pkt.zaklecia || []).map(z => `<div class="trait-item"><strong>Magia:</strong> ${z.opis}</div>`).join('');
     return `
       <div class="path-benefit-item">
-        <h6>${etykietyTieru[poziomWyboru]}: ${benefit.sciezkaNazwa || benefit.sciezkaId} (poziom ${poziomWyboru})</h6>
+        <h6>${labelsTier[levelChoice]}: ${benefit.sciezkaNazwa || benefit.pathId} (poziom ${levelChoice})</h6>
         ${talenty || magia ? `<div class="trait-list">${talenty}${magia}</div>` : ''}
       </div>
     `;
   }).filter(Boolean);
 
-  if (sekcje.length === 0) return '';
+  if (sections.length === 0) return '';
 
   return `
     <div class="preview-section">
       <h5>Wybrane Ścieżki</h5>
-      ${sekcje.join('')}
+      ${sections.join('')}
     </div>
   `;
 }
@@ -2573,13 +2573,13 @@ function renderKartaSciezkiSection() {
  * Renderuje sekcję zasobów: srebrniki wylosowane za poziomy powyżej 0
  * i liczbę dostępnych kuriozów.
  */
-function renderKartaZasobySection() {
-  if (wybranyPoziom <= 0) return '';
-  const srebro = wylosowaneSrebrniki != null ? wylosowaneSrebrniki : 'nie wylosowano';
+function renderCardResourcesSection() {
+  if (selectedLevel <= 0) return '';
+  const silver = randomizedSilver != null ? randomizedSilver : 'nie wylosowano';
   return `
     <div class="preview-section">
       <h5>Zasoby</h5>
-      <p><strong>Srebrniki:</strong> ${srebro} | <strong>Kurioza:</strong> ${liczbaKuriozow}</p>
+      <p><strong>Srebrniki:</strong> ${silver} | <strong>Kurioza:</strong> ${numberCurios}</p>
     </div>
   `;
 }
@@ -2588,12 +2588,12 @@ function renderKartaZasobySection() {
  * Renderuje sekcję znanych tradycji i zaklęć wybranych opcjonalnie
  * w Kroku 6, na podstawie rozwiązanych atomowych wyborów magii.
  */
-function renderKartaZakleciaSection() {
-  const atomy = pobierzAktualneAtomyMagii();
-  if (atomy.length === 0) return '';
-  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomy, magiaWybory);
-  const tradycjeList = [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
-  const zaklecia = rozwiazania
+function renderCardSpellsSection() {
+  const atoms = getCurrentAtomsMagic();
+  if (atoms.length === 0) return '';
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atoms, magicChoices);
+  const traditionsList = [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
+  const zaklecia = resolutions
     .flatMap(r => {
       if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
       if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
@@ -2602,19 +2602,19 @@ function renderKartaZakleciaSection() {
     .map(id => SPELLS.find(s => s.id === id))
     .filter(Boolean);
 
-  if (tradycjeList.length === 0 && zaklecia.length === 0) return '';
+  if (traditionsList.length === 0 && zaklecia.length === 0) return '';
 
-  const tradycjeHtml = tradycjeList.length
-    ? `<div class="trait-item"><strong>Znane tradycje:</strong> ${tradycjeList.join(', ')}</div>`
+  const traditionsHtml = traditionsList.length
+    ? `<div class="trait-item"><strong>Znane tradycje:</strong> ${traditionsList.join(', ')}</div>`
     : '';
-  const zakleciaHtml = zaklecia
-    .map(s => `<div class="trait-item"><strong>${s.nazwa}</strong> ${renderujZnacznikZrodla(s.zrodlo)} <em>(${s.tradycjaNazwa}, krąg ${s.krag}, ${s.kategoria === 'atak' ? 'atak' : 'użytkowe'})</em>: ${s.opis}</div>`)
+  const spellsHtml = zaklecia
+    .map(s => `<div class="trait-item"><strong>${s.nazwa}</strong> ${renderSourceTag(s.zrodlo)} <em>(${s.tradycjaNazwa}, krąg ${s.krag}, ${s.kategoria === 'atak' ? 'atak' : 'użytkowe'})</em>: ${s.opis}</div>`)
     .join('');
 
   return `
     <div class="preview-section">
       <h5>Magia - Znane Tradycje i Zaklęcia</h5>
-      <div class="trait-list">${tradycjeHtml}${zakleciaHtml}</div>
+      <div class="trait-list">${traditionsHtml}${spellsHtml}</div>
     </div>
   `;
 }
@@ -2624,28 +2624,28 @@ function renderKartaZakleciaSection() {
  * (wyposażenie startowe pozostałe po sprzedaży + zakupy w sklepie) wraz
  * z dostępną gotówką. Pomija Zamożność bez wybranego poziomu.
  */
-function renderKartaEkwipunekSection() {
-  const stan = obliczStanEkwipunku();
-  if (!stan) return '';
+function renderCardEquipmentSection() {
+  const state = calculateStateEquipment();
+  if (!state) return '';
 
-  const pozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje];
-  if (pozycje.length === 0) return '';
+  const entries = [...state.ownedStarting, ...state.purchasedEntries];
+  if (entries.length === 0) return '';
 
-  const pozycjeHtml = pozycje.map(p => {
+  const entriesHtml = entries.map(p => {
     const nazwa = p.zwojZaklecie
-      ? `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
-      : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
-    const przedmiot = p.itemId ? pobierzPrzedmiot(p.itemId) : null;
+      ? `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const item = p.itemId ? getItem(p.itemId) : null;
     const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
-    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
-    return `<div class="trait-item">${nazwa}${ilosc}${przedmiot ? ` ${renderujZnacznikZrodla(przedmiot.zrodlo)}` : ''}${statystyki ? `<br><small>${statystyki}</small>` : ''}</div>`;
+    const stats = item ? formatStatsItem(item) : null;
+    return `<div class="trait-item">${nazwa}${ilosc}${item ? ` ${renderSourceTag(item.zrodlo)}` : ''}${stats ? `<br><small>${stats}</small>` : ''}</div>`;
   }).join('');
 
   return `
     <div class="preview-section">
-      <h5>Ekwipunek (Zamożność: ${stan.zam.nazwa})</h5>
-      <div class="trait-list">${pozycjeHtml}</div>
-      <p><strong>Gotówka:</strong> ${formatujOkrawki(stan.gotowkaOkrawki)}</p>
+      <h5>Ekwipunek (Zamożność: ${state.wealthentry.nazwa})</h5>
+      <div class="trait-list">${entriesHtml}</div>
+      <p><strong>Gotówka:</strong> ${formatCopperbits(state.cashCopperbits)}</p>
     </div>
   `;
 }
@@ -2657,25 +2657,25 @@ function renderKartaEkwipunekSection() {
  * losowych. Używana jako żywy podgląd w Kroku 8.
  * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
  */
-function generujKartePostaciHTML() {
-  if (!wybranePochodzenie) return '';
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function generateCardCharacterHtml() {
+  if (!selectedOrigin) return '';
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return '';
 
   return `
     <div class="preview-section">
-      <p><strong>Poziom:</strong> ${wybranyPoziom} (${nazwaTieruPoziomu(wybranyPoziom)})</p>
+      <p><strong>Poziom:</strong> ${selectedLevel} (${nameTierLevel(selectedLevel)})</p>
     </div>
-    ${renderKartaPochodzeniaSection(pochodzenie)}
-    ${renderKartaAtrybutyPodstawoweSection(pochodzenie)}
-    ${renderKartaAtrybutyDrugorzedneSection()}
-    ${renderKartaPoziom4Section(pochodzenie)}
-    ${renderKartaSciezkiSection()}
+    ${renderCardOriginSection(pochodzenie)}
+    ${renderCardAttributesBasicSection(pochodzenie)}
+    ${renderCardAttributesSecondarySection()}
+    ${renderCardLevel4Section(pochodzenie)}
+    ${renderCardPathsSection()}
     ${renderProfessionsAndCuriosSummary()}
-    ${renderKartaZakleciaSection()}
-    ${renderKartaEkwipunekSection()}
-    ${renderKartaZasobySection()}
-    ${generujSekcjeWynikowTabel(pochodzenie.id)}
+    ${renderCardSpellsSection()}
+    ${renderCardEquipmentSection()}
+    ${renderCardResourcesSection()}
+    ${generateSectionsResultsTables(pochodzenie.id)}
   `;
 }
 
@@ -2683,11 +2683,11 @@ function generujKartePostaciHTML() {
  * Aktualizuje podgląd postaci (Krok 7) - żywa, aktualizowana na bieżąco
  * wersja Karty Postaci, zanim użytkownik kliknie "Utwórz Postać".
  */
-function aktualizujPodgladPostaci() {
-  if (!wybranePochodzenie) return;
+function updatePreviewCharacter() {
+  if (!selectedOrigin) return;
   const container = document.getElementById('character-preview');
   if (!container) return;
-  container.innerHTML = `<h4>📜 Podgląd Postaci</h4>${generujKartePostaciHTML()}`;
+  container.innerHTML = `<h4>📜 Podgląd Postaci</h4>${generateCardCharacterHtml()}`;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -2695,8 +2695,8 @@ function aktualizujPodgladPostaci() {
 /**
  * Załaduj korzyści dla wybranego poziomu
  */
-async function zaladujKorzysciPoziomu(poziom) {
-  if (!wybranePochodzenie) {
+async function loadBenefitsLevel(poziom) {
+  if (!selectedOrigin) {
     const section = document.getElementById('level-benefits-section');
     if (section) {
       section.style.display = 'none';
@@ -2705,32 +2705,32 @@ async function zaladujKorzysciPoziomu(poziom) {
   }
 
   try {
-    const benefits = obliczKorzysciPoziomu(poziom, {
-      pochodzenie: wybranePochodzenie,
-      sciezka_nowicjusza: wybraneSciezki.nowicjusz || null,
-      sciezka_ekspercka: wybraneSciezki.ekspert || null,
-      sciezka_mistrzowska: wybraneSciezki.mistrz || null
+    const benefits = calculateBenefitsLevel(poziom, {
+      pochodzenie: selectedOrigin,
+      sciezka_nowicjusza: selectedPaths.nowicjusz || null,
+      sciezka_ekspercka: selectedPaths.ekspert || null,
+      sciezka_mistrzowska: selectedPaths.mistrz || null
     });
-    wyswietlKorzysciPoziomu(benefits);
+    displayBenefitsLevel(benefits);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Błąd ładowania korzyści:', error);
     // Fallback - wyświetl podstawowe informacje
-    wyswietlKorzysciPoziomuFallback(poziom);
+    displayLevelBenefitsFallback(poziom);
   }
 }
 
 /**
  * Fallback dla wyświetlania korzyści poziomu
  */
-function wyswietlKorzysciPoziomuFallback(poziom) {
+function displayLevelBenefitsFallback(poziom) {
   const section = document.getElementById('level-benefits-section');
   const levelName = document.getElementById('selected-level-name');
   
   section.style.display = 'block';
   
   // Podstawowe nazwy poziomów
-  const nazwyPoziomow = {
+  const namesLevels = {
     1: 'Nowicjusz',
     2: 'Nowicjusz', 
     3: 'Ekspert',
@@ -2743,9 +2743,9 @@ function wyswietlKorzysciPoziomuFallback(poziom) {
     10: 'Mistrz'
   };
   
-  const nazwaPoziomu = nazwyPoziomow[poziom] || 'Nieznany poziom';
-  const nazwaSciezki = poziom === 4 ? 'Pochodzenie' : 'Brak ścieżki';
-  levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
+  const nameLevel = namesLevels[poziom] || 'Nieznany poziom';
+  const namePaths = poziom === 4 ? 'Pochodzenie' : 'Brak ścieżki';
+  levelName.textContent = `${nameLevel} (${namePaths})`;
   
   // Resetuj wszystkie sekcje
   // Sprawdź czy elementy istnieją przed ustawieniem display
@@ -2770,7 +2770,7 @@ function wyswietlKorzysciPoziomuFallback(poziom) {
     content.innerHTML = `
       <div class="benefit-category">
         <h5>Podstawowe informacje</h5>
-        <p>Poziom ${poziom} - ${nazwaPoziomu}</p>
+        <p>Poziom ${poziom} - ${nameLevel}</p>
         <p><em>Szczegółowe korzyści będą dostępne po wyborze pochodzenia i ścieżek.</em></p>
       </div>
     `;
@@ -2780,16 +2780,16 @@ function wyswietlKorzysciPoziomuFallback(poziom) {
 /**
  * Wyświetla korzyści poziomu
  */
-function wyswietlKorzysciPoziomu(benefits) {
+function displayBenefitsLevel(benefits) {
   const section = document.getElementById('level-benefits-section');
   const levelName = document.getElementById('selected-level-name');
   
   section.style.display = 'block';
   
   // Bezpieczne wyświetlanie nazwy poziomu
-  const nazwaPoziomu = benefits.nazwa_poziomu || 'Nieznany poziom';
-  const nazwaSciezki = benefits.nazwa_sciezki || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
-  levelName.textContent = `${nazwaPoziomu} (${nazwaSciezki})`;
+  const nameLevel = benefits.nazwa_poziomu || 'Nieznany poziom';
+  const namePaths = benefits.nazwa_sciezki || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
+  levelName.textContent = `${nameLevel} (${namePaths})`;
 
   // Resetuj wszystkie sekcje
   // Sprawdź czy elementy istnieją przed ustawieniem display
@@ -2834,7 +2834,7 @@ function wyswietlKorzysciPoziomu(benefits) {
 
   // Wyświetl interaktywny wybór atrybutów głównych
   if (benefits.korzyści.atrybuty_glowne && benefits.korzyści.atrybuty_glowne.typ === 'wybor') {
-    pokazWyborAtrybutow(benefits.korzyści.atrybuty_glowne);
+    showChoiceAttributes(benefits.korzyści.atrybuty_glowne);
   }
 
   // Wyświetl talenty
@@ -2854,7 +2854,7 @@ function wyswietlKorzysciPoziomu(benefits) {
     const magicContent = document.getElementById('magic-content');
     const magicSection = document.getElementById('magic-section');
     if (magicContent) {
-      magicContent.textContent = opisMagii(benefits.korzyści.magia);
+      magicContent.textContent = descriptionMagic(benefits.korzyści.magia);
     }
     if (magicSection) {
       magicSection.style.display = 'block';
@@ -2898,7 +2898,7 @@ let attributeChoiceState = {
 /**
  * Pokazuje interaktywny wybór atrybutów
  */
-function pokazWyborAtrybutow(config) {
+function showChoiceAttributes(config) {
   const section = document.getElementById('primary-attributes-choice');
   section.style.display = 'block';
 
@@ -2919,7 +2919,7 @@ function pokazWyborAtrybutow(config) {
     document.getElementById(`bonus-${attr}`).textContent = '0';
   });
 
-  aktualizujPrzyciskiAtrybutow();
+  updateAttributeButtons();
 }
 
 /**
@@ -2931,7 +2931,7 @@ function incrementAttribute(attr) {
       attributeChoiceState.choices[attr] < attributeChoiceState.maxPerAttribute) {
     attributeChoiceState.choices[attr]++;
     attributeChoiceState.remainingPoints--;
-    aktualizujWyswietlanieAtrybutow();
+    updateDisplayAttributes();
   }
 }
 
@@ -2943,14 +2943,14 @@ function decrementAttribute(attr) {
   if (attributeChoiceState.choices[attr] > 0) {
     attributeChoiceState.choices[attr]--;
     attributeChoiceState.remainingPoints++;
-    aktualizujWyswietlanieAtrybutow();
+    updateDisplayAttributes();
   }
 }
 
 /**
  * Aktualizuje wyświetlanie wyborów atrybutów
  */
-function aktualizujWyswietlanieAtrybutow() {
+function updateDisplayAttributes() {
   // Aktualizuj wartości
   Object.entries(attributeChoiceState.choices).forEach(([attr, value]) => {
     document.getElementById(`bonus-${attr}`).textContent = value;
@@ -2960,7 +2960,7 @@ function aktualizujWyswietlanieAtrybutow() {
   document.getElementById('remaining-points').textContent = attributeChoiceState.remainingPoints;
 
   // Aktualizuj przyciski
-  aktualizujPrzyciskiAtrybutow();
+  updateAttributeButtons();
 
   // Walidacja przycisku "Dalej"
   const btnNext = document.getElementById('btn-next-2');
@@ -2974,7 +2974,7 @@ function aktualizujWyswietlanieAtrybutow() {
 /**
  * Aktualizuje stan przycisków +/-
  */
-function aktualizujPrzyciskiAtrybutow() {
+function updateAttributeButtons() {
   ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(attr => {
     const row = document.querySelector(`[data-attribute="${attr}"]`);
     const btnPlus = row.querySelector('.btn-plus');
@@ -2991,7 +2991,7 @@ function aktualizujPrzyciskiAtrybutow() {
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
-const WERSJA_EKSPORTU = 2; // v2: dodano sekcję ekwipunku (Krok 7 - Zamożność, wyposażenie startowe, sklep)
+const EXPORT_VERSION = 2; // v2: dodano sekcję ekwipunku (Krok 7 - Zamożność, wyposażenie startowe, sklep)
 
 /**
  * Buduje kompletny, wersjonowany obiekt zawierający WSZYSTKIE wybory dokonane
@@ -3000,16 +3000,16 @@ const WERSJA_EKSPORTU = 2; // v2: dodano sekcję ekwipunku (Krok 7 - Zamożnoś�
  * nazw i wartości (sekcja `podsumowanie` - dla kogoś otwierającego plik
  * ręcznie). Zwraca `null`, gdy nie wybrano jeszcze pochodzenia.
  */
-function zbudujDaneEksportu() {
-  if (!wybranePochodzenie) return null;
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function buildExportData() {
+  if (!selectedOrigin) return null;
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return null;
 
-  const odczytajTekst = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+  const readText = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
 
-  const atomyMagii = pobierzAktualneAtomyMagii();
-  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomyMagii, magiaWybory);
-  const zaklecia = rozwiazania
+  const atomsMagic = getCurrentAtomsMagic();
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atomsMagic, magicChoices);
+  const zaklecia = resolutions
     .flatMap(r => {
       if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
       if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
@@ -3018,95 +3018,95 @@ function zbudujDaneEksportu() {
     .map(id => SPELLS.find(s => s.id === id))
     .filter(Boolean);
 
-  const pismo = new Set(pobierzJezykiZPismem());
-  const jezyki = pobierzMowioneJezyki().map(k => {
-    const nazwa = JEZYKI[k] || k;
-    return pismo.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  const script = new Set(getLanguagesWithScript());
+  const jezyki = getSpokenLanguages().map(k => {
+    const nazwa = LANGUAGES[k] || k;
+    return script.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
   });
 
-  const nazwaSciezki = (poziomWyboru, sciezkaId) => {
-    if (!sciezkaId) return null;
-    const lista = getPathsForLevel(poziomWyboru);
-    return lista.find(p => p.id === sciezkaId)?.nazwa || sciezkaId;
+  const namePaths = (levelChoice, pathId) => {
+    if (!pathId) return null;
+    const list = getPathsForLevel(levelChoice);
+    return list.find(p => p.id === pathId)?.nazwa || pathId;
   };
 
   return {
-    wersjaEksportu: WERSJA_EKSPORTU,
+    wersjaEksportu: EXPORT_VERSION,
     utworzono: new Date().toISOString(),
     // Surowe wybory gracza - jedyna sekcja odczytywana przy imporcie.
     wybory: {
-      pochodzenie: wybranePochodzenie,
-      bonusoweAtrybutyPochodzenia: pobierzWybraneAtrybutyBonusowe(),
-      opcjaPoziom4: pobierzWybranaOpcjaPoziom4Aktualna(),
-      wynikiTabelPochodzenia: JSON.parse(JSON.stringify(wynikiTabel[wybranePochodzenie] || {})),
-      poziom: wybranyPoziom,
+      pochodzenie: selectedOrigin,
+      bonusoweAtrybutyPochodzenia: getSelectedAttributesBonus(),
+      opcjaPoziom4: getCurrentSelectedLevel4Option(),
+      wynikiTabelPochodzenia: JSON.parse(JSON.stringify(resultsTables[selectedOrigin] || {})),
+      poziom: selectedLevel,
       atrybutyGlowne: {
         domyslne: document.getElementById('domyslne-atrybuty')?.checked ?? true,
         zmniejszony: document.getElementById('atrybut-zmniejszony')?.value || '',
         zwiekszony: document.getElementById('atrybut-zwiekszony')?.value || ''
       },
-      sciezki: { ...wybraneSciezki },
-      atrybutySloty: JSON.parse(JSON.stringify(wybraneAtrybutySlotow)),
-      profesjeJezykiSloty: JSON.parse(JSON.stringify(odpowiedziSlotow)),
-      kurioza: [...wybraneKurioza],
+      sciezki: { ...selectedPaths },
+      atrybutySloty: JSON.parse(JSON.stringify(selectedAttributesSlots)),
+      profesjeJezykiSloty: JSON.parse(JSON.stringify(answersSlots)),
+      kurioza: [...selectedCurios],
       magia: {
-        wybory: JSON.parse(JSON.stringify(magiaWybory)),
-        ryzykoWyniki: JSON.parse(JSON.stringify(magiaRyzykoWyniki))
+        wybory: JSON.parse(JSON.stringify(magicChoices)),
+        ryzykoWyniki: JSON.parse(JSON.stringify(magicRiskResults))
       },
-      srebrniki: wylosowaneSrebrniki,
+      srebrniki: randomizedSilver,
       ekwipunek: {
-        zamoznoscId: ekwipunekZamoznoscId,
-        zamoznoscWynik: ekwipunekZamoznoscWynik,
-        gotowkaPoczatkowaWynik: ekwipunekGotowkaPoczatkowaWynik,
-        wybory: JSON.parse(JSON.stringify(ekwipunekWybory)),
-        sprzedane: [...ekwipunekSprzedane],
-        zakupione: JSON.parse(JSON.stringify(ekwipunekZakupione))
+        zamoznoscId: equipmentWealthId,
+        zamoznoscWynik: equipmentWealthResult,
+        gotowkaPoczatkowaWynik: equipmentStartingCashRoll,
+        wybory: JSON.parse(JSON.stringify(equipmentChoices)),
+        sprzedane: [...equipmentSold],
+        zakupione: JSON.parse(JSON.stringify(equipmentPurchased))
       }
     },
     // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
     // jest odczytywane przy imporcie.
     podsumowanie: {
       pochodzenie: pochodzenie.nazwa,
-      poziom: wybranyPoziom,
-      poziomNazwa: nazwaTieruPoziomu(wybranyPoziom),
+      poziom: selectedLevel,
+      poziomNazwa: nameTierLevel(selectedLevel),
       atrybutyGlowne: {
-        sila: odczytajTekst('sila-final'),
-        zrecznosc: odczytajTekst('zrecznosc-final'),
-        intelekt: odczytajTekst('intelekt-final'),
-        wola: odczytajTekst('wola-final')
+        sila: readText('sila-final'),
+        zrecznosc: readText('zrecznosc-final'),
+        intelekt: readText('intelekt-final'),
+        wola: readText('wola-final')
       },
-      atrybutyDrugorzedne: {
-        percepcja: odczytajTekst('percepcja-final'),
-        obrona: odczytajTekst('obrona-final'),
-        zdrowie: odczytajTekst('zdrowie-final'),
-        szybkoscZdrowienia: odczytajTekst('szybkosc-zdrowienia-final', '1'),
-        predkosc: odczytajTekst('predkosc-final'),
-        moc: odczytajTekst('moc-final'),
-        splugawienie: odczytajTekst('splugawienie-final')
+      attributesSecondary: {
+        percepcja: readText('percepcja-final'),
+        obrona: readText('obrona-final'),
+        zdrowie: readText('zdrowie-final'),
+        szybkoscZdrowienia: readText('szybkosc-zdrowienia-final', '1'),
+        predkosc: readText('predkosc-final'),
+        moc: readText('moc-final'),
+        splugawienie: readText('splugawienie-final')
       },
       sciezki: {
-        nowicjusz: nazwaSciezki(1, wybraneSciezki.nowicjusz),
-        ekspert: nazwaSciezki(3, wybraneSciezki.ekspert),
-        mistrz: nazwaSciezki(7, wybraneSciezki.mistrz)
+        nowicjusz: namePaths(1, selectedPaths.nowicjusz),
+        ekspert: namePaths(3, selectedPaths.ekspert),
+        mistrz: namePaths(7, selectedPaths.mistrz)
       },
-      profesje: wybraneProfesje.map(id => dostepneProfesje.find(p => p.id === id)?.nazwa || id),
+      profesje: selectedProfessions.map(id => availableProfessions.find(p => p.id === id)?.nazwa || id),
       jezyki,
-      kurioza: wybraneKurioza.map(id => dostepneKurioza.find(c => c.id === id)?.nazwa || id),
-      tradycje: [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl')),
+      kurioza: selectedCurios.map(id => availableCurios.find(c => c.id === id)?.nazwa || id),
+      tradycje: [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl')),
       zaklecia: zaklecia.map(s => s.nazwa),
-      srebrniki: wylosowaneSrebrniki,
+      srebrniki: randomizedSilver,
       ekwipunek: (() => {
-        const stan = obliczStanEkwipunku();
-        if (!stan) return null;
-        const pozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje].map(p => {
+        const state = calculateStateEquipment();
+        if (!state) return null;
+        const entries = [...state.ownedStarting, ...state.purchasedEntries].map(p => {
           if (p.zwojZaklecie) {
             const spell = p.zwojZaklecie.spellId ? SPELLS.find(s => s.id === p.zwojZaklecie.spellId) : null;
-            return `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${spell ? `: ${spell.nazwa}` : ''})`;
+            return `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${spell ? `: ${spell.nazwa}` : ''})`;
           }
-          const nazwa = p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst;
+          const nazwa = p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst;
           return p.ilosc > 1 ? `${nazwa} ×${p.ilosc}` : nazwa;
         });
-        return { zamoznosc: stan.zam.nazwa, przedmioty: pozycje, gotowka: formatujOkrawki(stan.gotowkaOkrawki) };
+        return { zamoznosc: state.wealthentry.nazwa, przedmioty: entries, gotowka: formatCopperbits(state.cashCopperbits) };
       })()
     }
   };
@@ -3118,16 +3118,16 @@ function zbudujDaneEksportu() {
  */
 // eslint-disable-next-line no-unused-vars
 function exportJSON() {
-  biezacaPostac = zbudujDaneEksportu();
-  if (!biezacaPostac) {
-    pokazBlad('Wybierz pochodzenie postaci, zanim wyeksportujesz kartę!');
+  currentCharacter = buildExportData();
+  if (!currentCharacter) {
+    showError('Wybierz pochodzenie postaci, zanim wyeksportujesz kartę!');
     return;
   }
 
-  const dataStr = JSON.stringify(biezacaPostac, null, 2);
+  const dataStr = JSON.stringify(currentCharacter, null, 2);
   const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
 
-  const exportFileDefaultName = `postac-${biezacaPostac.wybory.pochodzenie}-${new Date().toISOString().split('T')[0]}.json`;
+  const exportFileDefaultName = `postac-${currentCharacter.wybory.pochodzenie}-${new Date().toISOString().split('T')[0]}.json`;
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
@@ -3138,9 +3138,9 @@ function exportJSON() {
 /**
  * Pokazuje komunikat błędu
  */
-function pokazBlad(wiadomosc) {
+function showError(message) {
   const errorDiv = document.getElementById('error');
-  errorDiv.textContent = wiadomosc;
+  errorDiv.textContent = message;
   errorDiv.style.display = 'block';
 }
 
@@ -3155,14 +3155,14 @@ function pokazBlad(wiadomosc) {
  * widoku (w przeciwieństwie do ręcznego wyboru pochodzenia/poziomu itd.),
  * żeby użytkownik zdążył przeczytać komunikat i sam zdecydował, co dalej.
  */
-function pokazKomunikatImportu(typ, wiadomosc, listaBledow = []) {
+function showImportMessage(typ, message, errorList = []) {
   const box = document.getElementById('import-feedback');
   if (!box) return;
   box.className = `import-feedback ${typ}`;
-  const listaHtml = listaBledow.length
-    ? `<ul>${listaBledow.map(b => `<li>${b}</li>`).join('')}</ul>`
+  const listHtml = errorList.length
+    ? `<ul>${errorList.map(b => `<li>${b}</li>`).join('')}</ul>`
     : '';
-  box.innerHTML = `${wiadomosc}${listaHtml}`;
+  box.innerHTML = `${message}${listHtml}`;
   box.style.display = 'block';
 }
 
@@ -3175,56 +3175,56 @@ function pokazKomunikatImportu(typ, wiadomosc, listaBledow = []) {
  * czytelnych komunikatów błędów po polsku; pusta tablica oznacza, że plik
  * jest poprawny i bezpieczny do zaimportowania.
  */
-function walidujDaneImportu(dane) {
-  if (!dane || typeof dane !== 'object' || Array.isArray(dane)) {
+function validateImportData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return ['Plik nie zawiera poprawnego obiektu JSON (oczekiwano danych postaci wyeksportowanych z tego kreatora).'];
   }
 
-  const bledy = [];
-  if (dane.wersjaEksportu !== WERSJA_EKSPORTU) {
-    bledy.push(`Nieobsługiwana wersja pliku (${dane.wersjaEksportu ?? 'brak'}) - ten kreator obsługuje wersję ${WERSJA_EKSPORTU}.`);
+  const errors = [];
+  if (data.wersjaEksportu !== EXPORT_VERSION) {
+    errors.push(`Nieobsługiwana wersja pliku (${data.wersjaEksportu ?? 'brak'}) - ten kreator obsługuje wersję ${EXPORT_VERSION}.`);
   }
 
-  const w = dane.wybory;
+  const w = data.wybory;
   if (!w || typeof w !== 'object' || Array.isArray(w)) {
-    bledy.push('Plik nie zawiera wymaganej sekcji "wybory".');
-    return bledy;
+    errors.push('Plik nie zawiera wymaganej sekcji "wybory".');
+    return errors;
   }
 
   if (!w.pochodzenie || typeof w.pochodzenie !== 'string') {
-    bledy.push('Brak pochodzenia postaci w pliku.');
-  } else if (!dostepnePochodzenia.some(p => p.id === w.pochodzenie)) {
-    bledy.push(`Nieznane pochodzenie: "${w.pochodzenie}" nie istnieje w aktualnej bazie danych.`);
+    errors.push('Brak pochodzenia postaci w pliku.');
+  } else if (!availableOrigin.some(p => p.id === w.pochodzenie)) {
+    errors.push(`Nieznane pochodzenie: "${w.pochodzenie}" nie istnieje w aktualnej bazie danych.`);
   }
 
   if (typeof w.poziom !== 'number' || !Number.isInteger(w.poziom) || w.poziom < 0 || w.poziom > 10) {
-    bledy.push(`Nieprawidłowy poziom postaci: "${w.poziom}" (oczekiwano liczby całkowitej 0-10).`);
+    errors.push(`Nieprawidłowy poziom postaci: "${w.poziom}" (oczekiwano liczby całkowitej 0-10).`);
   }
 
-  const NAZWY_ATRYBUTOW = ['sila', 'zrecznosc', 'intelekt', 'wola'];
+  const ATTRIBUTE_NAMES = ['sila', 'zrecznosc', 'intelekt', 'wola'];
   if (w.atrybutyGlowne && typeof w.atrybutyGlowne === 'object') {
     ['zmniejszony', 'zwiekszony'].forEach(pole => {
       const wartosc = w.atrybutyGlowne[pole];
-      if (wartosc && !NAZWY_ATRYBUTOW.includes(wartosc)) {
-        bledy.push(`Nieznany atrybut w polu "atrybutyGlowne.${pole}": "${wartosc}".`);
+      if (wartosc && !ATTRIBUTE_NAMES.includes(wartosc)) {
+        errors.push(`Nieznany atrybut w polu "atrybutyGlowne.${pole}": "${wartosc}".`);
       }
     });
   }
   if (Array.isArray(w.bonusoweAtrybutyPochodzenia)) {
     w.bonusoweAtrybutyPochodzenia.forEach(atr => {
-      if (atr && !NAZWY_ATRYBUTOW.includes(atr)) {
-        bledy.push(`Nieznany bonusowy atrybut pochodzenia: "${atr}".`);
+      if (atr && !ATTRIBUTE_NAMES.includes(atr)) {
+        errors.push(`Nieznany bonusowy atrybut pochodzenia: "${atr}".`);
       }
     });
   }
 
   if (w.sciezki && typeof w.sciezki === 'object') {
-    const grupy = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
-    Object.entries(grupy).forEach(([klucz, poziomWyboru]) => {
-      const sciezkaId = w.sciezki[klucz];
-      if (!sciezkaId) return;
-      if (!getPathsForLevel(poziomWyboru).some(p => p.id === sciezkaId)) {
-        bledy.push(`Nieznana ścieżka (${klucz}): "${sciezkaId}" nie istnieje w aktualnej bazie danych.`);
+    const groups = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+    Object.entries(groups).forEach(([klucz, levelChoice]) => {
+      const pathId = w.sciezki[klucz];
+      if (!pathId) return;
+      if (!getPathsForLevel(levelChoice).some(p => p.id === pathId)) {
+        errors.push(`Nieznana ścieżka (${klucz}): "${pathId}" nie istnieje w aktualnej bazie danych.`);
       }
     });
   }
@@ -3232,32 +3232,32 @@ function walidujDaneImportu(dane) {
   if (w.atrybutySloty && typeof w.atrybutySloty === 'object') {
     Object.entries(w.atrybutySloty).forEach(([slotId, wartosci]) => {
       if (!Array.isArray(wartosci)) {
-        bledy.push(`Nieprawidłowa struktura slotu atrybutów "${slotId}" (oczekiwano tablicy).`);
+        errors.push(`Nieprawidłowa struktura slotu atrybutów "${slotId}" (oczekiwano tablicy).`);
         return;
       }
       wartosci.forEach(atr => {
-        if (!NAZWY_ATRYBUTOW.includes(atr)) {
-          bledy.push(`Nieznany atrybut "${atr}" w slocie zwiększenia "${slotId}".`);
+        if (!ATTRIBUTE_NAMES.includes(atr)) {
+          errors.push(`Nieznany atrybut "${atr}" w slocie zwiększenia "${slotId}".`);
         }
       });
     });
   }
 
   if (w.profesjeJezykiSloty && typeof w.profesjeJezykiSloty === 'object') {
-    Object.entries(w.profesjeJezykiSloty).forEach(([slotId, odp]) => {
-      if (!odp || typeof odp !== 'object') return;
-      if (odp.mode === 'profesja' && odp.profesjaId && !dostepneProfesje.some(p => p.id === odp.profesjaId)) {
-        bledy.push(`Nieznana profesja: "${odp.profesjaId}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
-      } else if ((odp.mode === 'jezyk_nowy' || odp.mode === 'jezyk_pismo') && odp.jezyk && !JEZYKI[odp.jezyk]) {
-        bledy.push(`Nieznany język: "${odp.jezyk}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
+    Object.entries(w.profesjeJezykiSloty).forEach(([slotId, answer]) => {
+      if (!answer || typeof answer !== 'object') return;
+      if (answer.mode === 'profesja' && answer.profesjaId && !availableProfessions.some(p => p.id === answer.profesjaId)) {
+        errors.push(`Nieznana profesja: "${answer.profesjaId}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
+      } else if ((answer.mode === 'jezyk_nowy' || answer.mode === 'jezyk_pismo') && answer.jezyk && !LANGUAGES[answer.jezyk]) {
+        errors.push(`Nieznany język: "${answer.jezyk}" (slot "${slotId}") nie istnieje w aktualnej bazie danych.`);
       }
     });
   }
 
   if (Array.isArray(w.kurioza)) {
     w.kurioza.forEach(id => {
-      if (!dostepneKurioza.some(c => c.id === id)) {
-        bledy.push(`Nieznane kurioza: "${id}" nie istnieje w aktualnej bazie danych.`);
+      if (!availableCurios.some(c => c.id === id)) {
+        errors.push(`Nieznane kurioza: "${id}" nie istnieje w aktualnej bazie danych.`);
       }
     });
   }
@@ -3265,53 +3265,53 @@ function walidujDaneImportu(dane) {
   if (w.magia && w.magia.wybory && typeof w.magia.wybory === 'object') {
     Object.entries(w.magia.wybory).forEach(([atomId, wybor]) => {
       if (!wybor || typeof wybor !== 'object') return;
-      if (wybor.tradycjaId && !TRADYCJE[wybor.tradycjaId]) {
-        bledy.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+      if (wybor.tradycjaId && !TRADITIONS[wybor.tradycjaId]) {
+        errors.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
       }
       ['spellId', 'darmowyZaklecieId'].forEach(pole => {
         const spellId = wybor[pole];
         if (spellId && !SPELLS.some(s => s.id === spellId)) {
-          bledy.push(`Nieznane zaklęcie: "${spellId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+          errors.push(`Nieznane zaklęcie: "${spellId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
         }
       });
     });
   }
 
   if (w.srebrniki !== null && w.srebrniki !== undefined && typeof w.srebrniki !== 'number') {
-    bledy.push(`Nieprawidłowa wartość srebrników: "${w.srebrniki}" (oczekiwano liczby albo null).`);
+    errors.push(`Nieprawidłowa wartość srebrników: "${w.srebrniki}" (oczekiwano liczby albo null).`);
   }
 
   if (w.ekwipunek && typeof w.ekwipunek === 'object') {
-    const ek = w.ekwipunek;
-    if (ek.zamoznoscId && !ZAMOZNOSC[ek.zamoznoscId]) {
-      bledy.push(`Nieznany poziom zamożności: "${ek.zamoznoscId}" nie istnieje w aktualnej bazie danych.`);
+    const eq = w.ekwipunek;
+    if (eq.zamoznoscId && !WEALTH[eq.zamoznoscId]) {
+      errors.push(`Nieznany poziom zamożności: "${eq.zamoznoscId}" nie istnieje w aktualnej bazie danych.`);
     }
-    if (ek.wybory && typeof ek.wybory === 'object') {
-      Object.entries(ek.wybory).forEach(([atomId, wybor]) => {
+    if (eq.wybory && typeof eq.wybory === 'object') {
+      Object.entries(eq.wybory).forEach(([atomId, wybor]) => {
         if (!wybor || typeof wybor !== 'object') return;
-        if (wybor.itemId && !pobierzPrzedmiot(wybor.itemId)) {
-          bledy.push(`Nieznany przedmiot ekwipunku: "${wybor.itemId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+        if (wybor.itemId && !getItem(wybor.itemId)) {
+          errors.push(`Nieznany przedmiot ekwipunku: "${wybor.itemId}" (wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
         }
         if (wybor.typ === 'zwoj_zaklecie') {
-          if (wybor.tradycjaId && !TRADYCJE[wybor.tradycjaId]) {
-            bledy.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+          if (wybor.tradycjaId && !TRADITIONS[wybor.tradycjaId]) {
+            errors.push(`Nieznana tradycja magiczna: "${wybor.tradycjaId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
           }
           if (wybor.spellId && !SPELLS.some(s => s.id === wybor.spellId)) {
-            bledy.push(`Nieznane zaklęcie: "${wybor.spellId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
+            errors.push(`Nieznane zaklęcie: "${wybor.spellId}" (zwój, wybór "${atomId}") nie istnieje w aktualnej bazie danych.`);
           }
         }
       });
     }
-    if (Array.isArray(ek.zakupione)) {
-      ek.zakupione.forEach(z => {
-        if (z && z.itemId && !pobierzPrzedmiot(z.itemId)) {
-          bledy.push(`Nieznany przedmiot ekwipunku: "${z.itemId}" (zakupiony) nie istnieje w aktualnej bazie danych.`);
+    if (Array.isArray(eq.zakupione)) {
+      eq.zakupione.forEach(z => {
+        if (z && z.itemId && !getItem(z.itemId)) {
+          errors.push(`Nieznany przedmiot ekwipunku: "${z.itemId}" (zakupiony) nie istnieje w aktualnej bazie danych.`);
         }
       });
     }
   }
 
-  return bledy;
+  return errors;
 }
 
 /**
@@ -3320,17 +3320,17 @@ function walidujDaneImportu(dane) {
  * na żywo (zob. losujZTabeliUI()/zastosujWybranaOpcje()) - używane po
  * imporcie, żeby kafelek pokazywał te same wyniki co zapisany stan.
  */
-function przywrocWynikiTabelDoDom(originId) {
-  const wyniki = wynikiTabel[originId] || {};
+function restoreTableResultsToDom(originId) {
+  const wyniki = resultsTables[originId] || {};
   Object.entries(wyniki).forEach(([tableName, wynik]) => {
     const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
     if (!resultDiv) return;
-    const etykietaTypu = wynik.typ === 'wybór' ? '🎯 Wybór' : '🎲 Rzut';
+    const typeLabel = wynik.typ === 'wybór' ? '🎯 Wybór' : '🎲 Rzut';
     const efekt = wynik.efekt ? `<br><strong>Efekt mechaniczny:</strong> ${wynik.efekt}` : '';
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
       <div class="roll-result-content">
-        <div class="roll-dice">${etykietaTypu}: ${wynik.rzut}</div>
+        <div class="roll-dice">${typeLabel}: ${wynik.rzut}</div>
         <div class="roll-outcome">${wynik.wynik}</div>
         ${efekt}
       </div>
@@ -3345,15 +3345,15 @@ function przywrocWynikiTabelDoDom(originId) {
  * wykonałby użytkownik ręcznie, dzięki czemu korzysta z tej samej logiki
  * co normalny przepływ kreatora zamiast duplikować ją osobno.
  */
-async function zaimportujPostac(dane) {
-  const w = dane.wybory;
+async function importCharacter(data) {
+  const w = data.wybory;
 
   // 1. Pochodzenie
-  wybierzPochodzenie(w.pochodzenie, { autoScroll: false });
+  selectOrigin(w.pochodzenie, { autoScroll: false });
 
   // 2. Wyniki tabel pochodzenia (wybierzPochodzenie zeruje wynikiTabel - nadpisz PO)
-  wynikiTabel[w.pochodzenie] = JSON.parse(JSON.stringify(w.wynikiTabelPochodzenia || {}));
-  przywrocWynikiTabelDoDom(w.pochodzenie);
+  resultsTables[w.pochodzenie] = JSON.parse(JSON.stringify(w.wynikiTabelPochodzenia || {}));
+  restoreTableResultsToDom(w.pochodzenie);
 
   // 3. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
   const bonusSelects = document.querySelectorAll('.origin-attr-choice-select');
@@ -3365,19 +3365,19 @@ async function zaimportujPostac(dane) {
   });
 
   // 4. Poziom - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
-  wybranyPoziom = w.poziom;
-  const poziomInput = document.querySelector(`input[name="poziom"][value="${w.poziom}"]`);
-  if (poziomInput) poziomInput.checked = true;
-  aktualizujWidocznoscSciezek(wybranyPoziom);
-  await aktualizujSciezkiPoziomu(wybranyPoziom);
-  aktualizujTytulSekcjiSciezek(wybranyPoziom);
-  aktualizujWealthSection(wybranyPoziom);
-  aktualizujOriginBenefits(wybranyPoziom);
+  selectedLevel = w.poziom;
+  const levelInput = document.querySelector(`input[name="poziom"][value="${w.poziom}"]`);
+  if (levelInput) levelInput.checked = true;
+  updatePathsVisibility(selectedLevel);
+  await updatePathsLevel(selectedLevel);
+  updatePathsSectionTitle(selectedLevel);
+  updateWealthSection(selectedLevel);
+  updateOriginBenefits(selectedLevel);
   renderPathSectionsVisibility();
   await renderPathSection(1);
   await renderPathSection(3);
   await renderPathSection(7);
-  await zaladujKorzysciPoziomu(wybranyPoziom);
+  await loadBenefitsLevel(selectedLevel);
 
   // 5. Wybrana opcja korzyści z pochodzenia na poziomie 4 (np. "1 zaklęcie")
   if (w.opcjaPoziom4) {
@@ -3390,57 +3390,57 @@ async function zaimportujPostac(dane) {
   }
 
   // 6. Atrybuty główne: domyślne albo jednorazowa zamiana -1/+1 (Krok 2)
-  const chkDomyslne = document.getElementById('domyslne-atrybuty');
-  chkDomyslne.checked = w.atrybutyGlowne?.domyslne ?? true;
+  const chkDefault = document.getElementById('domyslne-atrybuty');
+  chkDefault.checked = w.atrybutyGlowne?.domyslne ?? true;
   const customDiv = document.getElementById('custom-attributes');
-  if (customDiv) customDiv.style.display = chkDomyslne.checked ? 'none' : 'block';
-  if (!chkDomyslne.checked) {
+  if (customDiv) customDiv.style.display = chkDefault.checked ? 'none' : 'block';
+  if (!chkDefault.checked) {
     document.getElementById('atrybut-zmniejszony').value = w.atrybutyGlowne?.zmniejszony || '';
     document.getElementById('atrybut-zwiekszony').value = w.atrybutyGlowne?.zwiekszony || '';
   }
-  aktualizujObliczoneAtrybuty();
+  updateCalculatedAttributes();
 
   // 7. Ścieżki (Krok 3) - kliknij przyciski wyboru tak, jak zrobiłby użytkownik
-  [[1, w.sciezki?.nowicjusz], [3, w.sciezki?.ekspert], [7, w.sciezki?.mistrz]].forEach(([poziomWyboru, sciezkaId]) => {
-    if (!sciezkaId) return;
-    document.querySelector(`button[data-path-id="${sciezkaId}"][data-pick-level="${poziomWyboru}"]`)?.click();
+  [[1, w.sciezki?.nowicjusz], [3, w.sciezki?.ekspert], [7, w.sciezki?.mistrz]].forEach(([levelChoice, pathId]) => {
+    if (!pathId) return;
+    document.querySelector(`button[data-path-id="${pathId}"][data-pick-level="${levelChoice}"]`)?.click();
   });
 
   // 8. Sloty zwiększenia atrybutów (Krok 4)
-  wybraneAtrybutySlotow = JSON.parse(JSON.stringify(w.atrybutySloty || {}));
-  renderAtrybutySlotySection();
+  selectedAttributesSlots = JSON.parse(JSON.stringify(w.atrybutySloty || {}));
+  renderAttributesSlotsSection();
 
   // 9. Profesje i języki (Krok 5)
-  odpowiedziSlotow = JSON.parse(JSON.stringify(w.profesjeJezykiSloty || {}));
+  answersSlots = JSON.parse(JSON.stringify(w.profesjeJezykiSloty || {}));
   renderProfessionsSection();
 
   // 10. Kurioza (Krok 5)
-  wybraneKurioza = [...(w.kurioza || [])];
+  selectedCurios = [...(w.kurioza || [])];
   renderCuriosSection();
   updateStep5NextButton();
 
   // 11. Srebrniki (Krok 5) - tylko suma jest zapisywana, pojedyncze rzuty są ulotne
-  wylosowaneSrebrniki = (typeof w.srebrniki === 'number') ? w.srebrniki : null;
+  randomizedSilver = (typeof w.srebrniki === 'number') ? w.srebrniki : null;
   const wealthSpan = document.getElementById('wealth-summary');
-  if (wealthSpan && wylosowaneSrebrniki != null) {
-    wealthSpan.textContent = `Srebrniki: ${wylosowaneSrebrniki} (zaimportowano)`;
+  if (wealthSpan && randomizedSilver != null) {
+    wealthSpan.textContent = `Srebrniki: ${randomizedSilver} (zaimportowano)`;
   }
 
   // 12. Magia: tradycje i zaklęcia (Krok 6)
-  magiaWybory = JSON.parse(JSON.stringify(w.magia?.wybory || {}));
-  magiaRyzykoWyniki = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
+  magicChoices = JSON.parse(JSON.stringify(w.magia?.wybory || {}));
+  magicRiskResults = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
   renderSpellsSection();
 
   // 13. Ekwipunek: zamożność, startowe wyposażenie i sklep (Krok 7)
-  ekwipunekZamoznoscId = w.ekwipunek?.zamoznoscId || null;
-  ekwipunekZamoznoscWynik = (typeof w.ekwipunek?.zamoznoscWynik === 'number') ? w.ekwipunek.zamoznoscWynik : null;
-  ekwipunekGotowkaPoczatkowaWynik = (typeof w.ekwipunek?.gotowkaPoczatkowaWynik === 'number') ? w.ekwipunek.gotowkaPoczatkowaWynik : null;
-  ekwipunekWybory = JSON.parse(JSON.stringify(w.ekwipunek?.wybory || {}));
-  ekwipunekSprzedane = [...(w.ekwipunek?.sprzedane || [])];
-  ekwipunekZakupione = JSON.parse(JSON.stringify(w.ekwipunek?.zakupione || []));
-  renderEkwipunekSection();
+  equipmentWealthId = w.ekwipunek?.zamoznoscId || null;
+  equipmentWealthResult = (typeof w.ekwipunek?.zamoznoscWynik === 'number') ? w.ekwipunek.zamoznoscWynik : null;
+  equipmentStartingCashRoll = (typeof w.ekwipunek?.gotowkaPoczatkowaWynik === 'number') ? w.ekwipunek.gotowkaPoczatkowaWynik : null;
+  equipmentChoices = JSON.parse(JSON.stringify(w.ekwipunek?.wybory || {}));
+  equipmentSold = [...(w.ekwipunek?.sprzedane || [])];
+  equipmentPurchased = JSON.parse(JSON.stringify(w.ekwipunek?.zakupione || []));
+  renderEquipmentSection();
 
-  aktualizujPodgladPostaci();
+  updatePreviewCharacter();
 }
 
 /**
@@ -3451,41 +3451,41 @@ async function zaimportujPostac(dane) {
  * odwołuje się do pochodzeń/ścieżek/profesji/kuriozów/tradycji/zaklęć,
  * które nie istnieją w aktualnej bazie danych aplikacji.
  */
-function obslozImportPliku(plik) {
+function handleFileImport(file) {
   const reader = new FileReader();
   reader.onload = async (e) => {
-    let dane;
+    let data;
     try {
-      dane = JSON.parse(e.target.result);
+      data = JSON.parse(e.target.result);
     } catch (err) {
-      pokazKomunikatImportu('error', 'Nie udało się odczytać pliku - to nie jest poprawny plik JSON.');
+      showImportMessage('error', 'Nie udało się odczytać pliku - to nie jest poprawny plik JSON.');
       return;
     }
 
-    const bledy = walidujDaneImportu(dane);
-    if (bledy.length > 0) {
-      pokazKomunikatImportu('error', 'Nie udało się zaimportować postaci - plik zawiera błędy:', bledy);
+    const errors = validateImportData(data);
+    if (errors.length > 0) {
+      showImportMessage('error', 'Nie udało się zaimportować postaci - plik zawiera błędy:', errors);
       return;
     }
 
     try {
-      await zaimportujPostac(dane);
+      await importCharacter(data);
       // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
       // id - dalsze zmiany, aż do ponownego dotarcia do Kroku 8, nadpiszą
       // ten sam zapis (zob. zapiszAktualnaPostacDoCache()).
-      biezacyZapisCacheId = generujIdZapisu();
-      zapiszPostacDoCache(biezacyZapisCacheId, dane);
-      pokazKomunikatImportu('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
+      currentSaveCacheId = generateSaveId();
+      saveCharacterToCache(currentSaveCacheId, data);
+      showImportMessage('success', '✓ Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);
-      pokazKomunikatImportu('error', `Wystąpił nieoczekiwany błąd podczas importu: ${err.message}`);
+      showImportMessage('error', `Wystąpił nieoczekiwany błąd podczas importu: ${err.message}`);
     }
   };
   reader.onerror = () => {
-    pokazKomunikatImportu('error', 'Nie udało się odczytać wybranego pliku.');
+    showImportMessage('error', 'Nie udało się odczytać wybranego pliku.');
   };
-  reader.readAsText(plik);
+  reader.readAsText(file);
 }
 
 // ========== SYSTEM POMOCY (LIGHTBOX) ==========
@@ -3629,7 +3629,7 @@ function initializeHelpSystem() {
  * @param {string} originId - ID pochodzenia
  * @param {string} tableName - Nazwa tabeli
  */
-function zastosujWybranaOpcje(originId, tableName) {
+function applySelectedOptions(originId, tableName) {
   const dropdown = document.getElementById(`table-select-${originId}-${tableName}`);
   const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
   const applyBtn = document.querySelector(`.apply-selection-btn[data-origin-id="${originId}"][data-table-name="${tableName}"]`);
@@ -3643,10 +3643,10 @@ function zastosujWybranaOpcje(originId, tableName) {
   const wynik = selectedOption.dataset.wynik;
   
   // Zapisz wynik w globalnej zmiennej
-  if (!wynikiTabel[originId]) {
-    wynikiTabel[originId] = {};
+  if (!resultsTables[originId]) {
+    resultsTables[originId] = {};
   }
-  wynikiTabel[originId][tableName] = {
+  resultsTables[originId][tableName] = {
     rzut,
     wynik,
     typ: 'wybór'
@@ -3675,7 +3675,7 @@ function zastosujWybranaOpcje(originId, tableName) {
  * @param {string} originId - ID pochodzenia
  * @param {string} tableName - Nazwa tabeli
  */
-async function losujZTabeliUI(originId, tableName) {
+async function randomizeWithTableUi(originId, tableName) {
   try {
     // Wyświetl loading
     const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
@@ -3688,10 +3688,10 @@ async function losujZTabeliUI(originId, tableName) {
     const wynik = rollTable(originId, tableName);
 
     // Zapisz wynik w globalnej zmiennej
-    if (!wynikiTabel[originId]) {
-      wynikiTabel[originId] = {};
+    if (!resultsTables[originId]) {
+      resultsTables[originId] = {};
     }
-    wynikiTabel[originId][tableName] = {
+    resultsTables[originId][tableName] = {
       rzut: wynik.rzut,
       wynik: wynik.wynik,
       efekt: wynik.efekt,
@@ -3725,20 +3725,20 @@ async function losujZTabeliUI(originId, tableName) {
  * @returns {string} HTML z podsumowaniem profesji i kuriozów
  */
 function renderProfessionsAndCuriosSummary() {
-  const professions = wybraneProfesje.map(id => {
-    const prof = dostepneProfesje.find(p => p.id === id);
+  const professions = selectedProfessions.map(id => {
+    const prof = availableProfessions.find(p => p.id === id);
     return prof ? prof.nazwa : id;
   });
 
-  const curios = wybraneKurioza.map(id => {
-    const curio = dostepneKurioza.find(c => c.id === id);
+  const curios = selectedCurios.map(id => {
+    const curio = availableCurios.find(c => c.id === id);
     return curio ? curio.nazwa : id;
   });
 
-  const pismo = new Set(pobierzJezykiZPismem());
-  const jezyki = pobierzMowioneJezyki().map(k => {
-    const nazwa = JEZYKI[k] || k;
-    return pismo.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  const script = new Set(getLanguagesWithScript());
+  const jezyki = getSpokenLanguages().map(k => {
+    const nazwa = LANGUAGES[k] || k;
+    return script.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
   });
 
   if (professions.length === 0 && curios.length === 0 && jezyki.length === 0) {
@@ -3758,13 +3758,13 @@ function renderProfessionsAndCuriosSummary() {
 /**
  * Ładuje dane profesji i kuriozów
  */
-async function zaladujProfesjeIKurioza() {
+async function loadProfessionsAndCurios() {
   try {
-    const profData = getProfesjeUI();
-    dostepneProfesje = profData.profesje;
+    const profData = getProfessionsUi();
+    availableProfessions = profData.profesje;
 
-    const curiosData = getKuriozaUI();
-    dostepneKurioza = curiosData.kurioza;
+    const curiosData = getCuriosUi();
+    availableCurios = curiosData.kurioza;
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('Nie udało się załadować profesji i kuriozów:', e);
@@ -3775,11 +3775,11 @@ async function zaladujProfesjeIKurioza() {
  * Oblicza ilość kuriozów do wyboru na podstawie poziomu (progi 1/3/7).
  * Profesje i języki liczone są przez system slotów - patrz obliczSlotyPostaci().
  */
-function obliczIloscWyborow() {
-  const poziom = wybranyPoziom;
+function calculateChoiceCount() {
+  const poziom = selectedLevel;
   let kurioza = 0;
 
-  if (wybranePochodzenie) kurioza += 1; // Każde pochodzenie daje 1 kurioza
+  if (selectedOrigin) kurioza += 1; // Każde pochodzenie daje 1 kurioza
   if (poziom >= 1) kurioza += 1;
   if (poziom >= 3) kurioza += 1;
   if (poziom >= 7) kurioza += 1;
@@ -3791,18 +3791,18 @@ function obliczIloscWyborow() {
  * Oblicza wszystkie sloty językowo-profesyjne przyznane postaci na podstawie
  * wybranego pochodzenia i ścieżek (patrz logic/languages-professions.js).
  */
-function obliczSlotyPostaci() {
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie) || null;
-  return obliczSlotyProfesjiIJezykow({
+function calculateSlotsCharacter() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin) || null;
+  return calculateSlotsProfessionsAndLanguages({
     pochodzenie,
-    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
-    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
-    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
   });
 }
 
 /** Etykiety kategorii profesji używane w PROFESSIONS.tables/dostepneProfesje. */
-const ETYKIETY_KATEGORII = {
+const CATEGORY_LABELS = {
   naukowe: 'Naukowe', pospolite: 'Pospolite', przestepcze: 'Przestępcze',
   wojenne: 'Wojenne', koczownicze: 'Koczownicze', religijne: 'Religijne'
 };
@@ -3811,18 +3811,18 @@ const ETYKIETY_KATEGORII = {
  * Zwraca profesje z dostepneProfesje dopuszczone przez kategorie slotu,
  * z wyłączeniem profesji już przypisanych do innych slotów.
  */
-function profesjeDlaSlotu(slot) {
-  const wszystkie = slot.kategorie.includes('dowolna');
-  const zajete = new Set(
-    Object.entries(odpowiedziSlotow)
-      .filter(([id, odp]) => id !== slot.id && odp && odp.mode === 'profesja' && odp.profesjaId)
-      .map(([, odp]) => odp.profesjaId)
+function professionsForSlot(slot) {
+  const all = slot.kategorie.includes('dowolna');
+  const taken = new Set(
+    Object.entries(answersSlots)
+      .filter(([id, answer]) => id !== slot.id && answer && answer.mode === 'profesja' && answer.profesjaId)
+      .map(([, answer]) => answer.profesjaId)
   );
-  return dostepneProfesje.filter(p => {
-    if (zajete.has(p.id)) return false;
-    if (wszystkie) return true;
-    const kat = Object.keys(ETYKIETY_KATEGORII).find(k => ETYKIETY_KATEGORII[k] === p.kategoria);
-    return slot.kategorie.includes(kat);
+  return availableProfessions.filter(p => {
+    if (taken.has(p.id)) return false;
+    if (all) return true;
+    const cat = Object.keys(CATEGORY_LABELS).find(k => CATEGORY_LABELS[k] === p.kategoria);
+    return slot.kategorie.includes(cat);
   });
 }
 
@@ -3831,25 +3831,25 @@ function profesjeDlaSlotu(slot) {
  * pochodzenia + wyuczone w slotach jezyk_nowy.
  * @returns {Array<{jezyk: string, source: string}>}
  */
-function pobierzJezykiZeSzczegolami() {
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function getLanguagesWithDetails() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   const wynik = [];
   if (pochodzenie) {
     pochodzenie.jezyki.forEach(j => wynik.push({ jezyk: j, source: `Pochodzenie: ${pochodzenie.nazwa}` }));
   }
-  const { sloty } = obliczSlotyPostaci();
-  sloty.forEach(slot => {
-    const odp = odpowiedziSlotow[slot.id];
-    if (odp && odp.mode === 'jezyk_nowy' && odp.jezyk && !wynik.some(w => w.jezyk === odp.jezyk)) {
-      wynik.push({ jezyk: odp.jezyk, source: slot.source });
+  const { slots } = calculateSlotsCharacter();
+  slots.forEach(slot => {
+    const answer = answersSlots[slot.id];
+    if (answer && answer.mode === 'jezyk_nowy' && answer.jezyk && !wynik.some(w => w.jezyk === answer.jezyk)) {
+      wynik.push({ jezyk: answer.jezyk, source: slot.source });
     }
   });
   return wynik;
 }
 
 /** Znane języki (mówione), bez informacji o źródle - patrz pobierzJezykiZeSzczegolami(). */
-function pobierzMowioneJezyki() {
-  return pobierzJezykiZeSzczegolami().map(w => w.jezyk);
+function getSpokenLanguages() {
+  return getLanguagesWithDetails().map(w => w.jezyk);
 }
 
 /**
@@ -3858,42 +3858,42 @@ function pobierzMowioneJezyki() {
  * origins.js) lub wybrane wprost w slocie typu jezyk_pismo.
  * @returns {Array<{jezyk: string, source: string}>}
  */
-function pobierzPismoZeSzczegolami() {
-  const { autoPismoWszystkieZnane, autoPismoWszystkieZnaneSource, autoPismoZPochodzenia, autoPismoZPochodzeniaSource, sloty } = obliczSlotyPostaci();
+function getScriptWithDetails() {
+  const { autoScriptAllKnown, autoScriptAllKnownSource, autoScriptWithOrigin, autoScriptWithOriginSource, slots } = calculateSlotsCharacter();
 
-  if (autoPismoWszystkieZnane) {
-    return pobierzJezykiZeSzczegolami().map(w => ({ jezyk: w.jezyk, source: autoPismoWszystkieZnaneSource }));
+  if (autoScriptAllKnown) {
+    return getLanguagesWithDetails().map(w => ({ jezyk: w.jezyk, source: autoScriptAllKnownSource }));
   }
 
-  const wynik = autoPismoZPochodzenia.map(j => ({ jezyk: j, source: autoPismoZPochodzeniaSource }));
-  sloty.forEach(slot => {
-    const odp = odpowiedziSlotow[slot.id];
-    if (odp && odp.mode === 'jezyk_pismo' && odp.jezyk && !wynik.some(w => w.jezyk === odp.jezyk)) {
-      wynik.push({ jezyk: odp.jezyk, source: slot.source });
+  const wynik = autoScriptWithOrigin.map(j => ({ jezyk: j, source: autoScriptWithOriginSource }));
+  slots.forEach(slot => {
+    const answer = answersSlots[slot.id];
+    if (answer && answer.mode === 'jezyk_pismo' && answer.jezyk && !wynik.some(w => w.jezyk === answer.jezyk)) {
+      wynik.push({ jezyk: answer.jezyk, source: slot.source });
     }
   });
   return wynik;
 }
 
 /** Języki z pismem, bez informacji o źródle - patrz pobierzPismoZeSzczegolami(). */
-function pobierzJezykiZPismem() {
-  return pobierzPismoZeSzczegolami().map(w => w.jezyk);
+function getLanguagesWithScript() {
+  return getScriptWithDetails().map(w => w.jezyk);
 }
 
 /**
  * Renderuje kartę jednego slotu profesyjno-językowego (wybór trybu + odpowiedni picker).
  */
 function renderSlotCard(slot) {
-  const odp = odpowiedziSlotow[slot.id] || {};
-  const mode = odp.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+  const answer = answersSlots[slot.id] || {};
+  const mode = answer.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
 
-  const etykietyTrybow = { profesja: 'Profesja', jezyk_nowy: 'Nowy język', jezyk_pismo: 'Pismo w znanym języku' };
-  const trybyHtml = slot.opcje.length > 1 ? `
+  const labelsModes = { profesja: 'Profesja', jezyk_nowy: 'Nowy język', jezyk_pismo: 'Pismo w znanym języku' };
+  const modesHtml = slot.opcje.length > 1 ? `
     <div class="slot-mode-toggle" role="radiogroup">
       ${slot.opcje.map(o => `
         <label class="slot-mode-option">
           <input type="radio" name="mode-${slot.id}" value="${o}" ${mode === o ? 'checked' : ''}>
-          ${etykietyTrybow[o]}
+          ${labelsModes[o]}
         </label>
       `).join('')}
     </div>
@@ -3901,36 +3901,36 @@ function renderSlotCard(slot) {
 
   let pickerHtml = '';
   if (mode === 'profesja') {
-    const opcjeProf = profesjeDlaSlotu(slot);
-    const grupy = {};
-    opcjeProf.forEach(p => { (grupy[p.kategoria] = grupy[p.kategoria] || []).push(p); });
+    const optionsProf = professionsForSlot(slot);
+    const groups = {};
+    optionsProf.forEach(p => { (groups[p.kategoria] = groups[p.kategoria] || []).push(p); });
     pickerHtml = `
       <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="profesjaId">
         <option value="">-- wybierz profesję --</option>
-        ${Object.entries(grupy).map(([kat, profs]) => `
-          <optgroup label="${kat}">
-            ${profs.map(p => `<option value="${p.id}" ${odp.profesjaId === p.id ? 'selected' : ''}>${p.nazwa}</option>`).join('')}
+        ${Object.entries(groups).map(([cat, profs]) => `
+          <optgroup label="${cat}">
+            ${profs.map(p => `<option value="${p.id}" ${answer.profesjaId === p.id ? 'selected' : ''}>${p.nazwa}</option>`).join('')}
           </optgroup>
         `).join('')}
       </select>
     `;
   } else if (mode === 'jezyk_nowy') {
-    const znane = new Set(pobierzMowioneJezyki());
-    const opcjeJ = Object.entries(JEZYKI).filter(([klucz]) => !znane.has(klucz) || klucz === odp.jezyk);
+    const known = new Set(getSpokenLanguages());
+    const optionsJ = Object.entries(LANGUAGES).filter(([klucz]) => !known.has(klucz) || klucz === answer.jezyk);
     pickerHtml = `
       <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
         <option value="">-- wybierz język --</option>
-        ${opcjeJ.map(([klucz, nazwa]) => `<option value="${klucz}" ${odp.jezyk === klucz ? 'selected' : ''}>${nazwa}</option>`).join('')}
+        ${optionsJ.map(([klucz, nazwa]) => `<option value="${klucz}" ${answer.jezyk === klucz ? 'selected' : ''}>${nazwa}</option>`).join('')}
       </select>
     `;
   } else if (mode === 'jezyk_pismo') {
-    const mowione = pobierzMowioneJezyki();
-    const juzPismo = new Set(pobierzJezykiZPismem());
-    const opcjeJ = mowione.filter(k => !juzPismo.has(k) || k === odp.jezyk);
+    const spoken = getSpokenLanguages();
+    const alreadyScript = new Set(getLanguagesWithScript());
+    const optionsJ = spoken.filter(k => !alreadyScript.has(k) || k === answer.jezyk);
     pickerHtml = `
       <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
         <option value="">-- wybierz język --</option>
-        ${opcjeJ.map(klucz => `<option value="${klucz}" ${odp.jezyk === klucz ? 'selected' : ''}>${JEZYKI[klucz] || klucz}</option>`).join('')}
+        ${optionsJ.map(klucz => `<option value="${klucz}" ${answer.jezyk === klucz ? 'selected' : ''}>${LANGUAGES[klucz] || klucz}</option>`).join('')}
       </select>
     `;
   }
@@ -3942,7 +3942,7 @@ function renderSlotCard(slot) {
         <button type="button" class="section-reset-btn" data-reset-jp-slot="${slot.id}" title="Wyczyść wybór dla tego slotu">Wyczyść</button>
       </div>
       ${slot.opis ? `<div class="slot-opis">${slot.opis}</div>` : ''}
-      ${trybyHtml}
+      ${modesHtml}
       ${pickerHtml}
     </div>
   `;
@@ -3955,30 +3955,30 @@ function renderProfessionsSection() {
   const container = document.getElementById('professions-slots');
   if (!container) return;
 
-  const { sloty } = obliczSlotyPostaci();
+  const { slots } = calculateSlotsCharacter();
 
-  container.innerHTML = sloty.map(slot => renderSlotCard(slot)).join('');
+  container.innerHTML = slots.map(slot => renderSlotCard(slot)).join('');
 
   container.querySelectorAll('input[type="radio"][name^="mode-"]').forEach(input => {
     input.addEventListener('change', (e) => {
       const slotId = e.target.closest('.slot-card').dataset.slotId;
-      ustawSlotOdpowiedz(slotId, { mode: e.target.value, profesjaId: null, jezyk: null });
+      setSlotAnswer(slotId, { mode: e.target.value, profesjaId: null, jezyk: null });
     });
   });
   container.querySelectorAll('.slot-value-select').forEach(select => {
     select.addEventListener('change', (e) => {
       const { slotId, slotField } = e.target.dataset;
-      ustawSlotOdpowiedz(slotId, { [slotField]: e.target.value || null });
+      setSlotAnswer(slotId, { [slotField]: e.target.value || null });
     });
   });
   container.querySelectorAll('[data-reset-jp-slot]').forEach(btn => {
     btn.addEventListener('click', () => {
-      delete odpowiedziSlotow[btn.dataset.resetJpSlot];
+      delete answersSlots[btn.dataset.resetJpSlot];
       renderProfessionsSection();
     });
   });
 
-  synchronizujWybraneProfesje();
+  syncSelectedProfessions();
   updateSelectedProfessions();
   renderLanguagesSummary();
   updateStep5NextButton();
@@ -3987,8 +3987,8 @@ function renderProfessionsSection() {
 /**
  * Scala częściową odpowiedź w slot i przerenderowuje sekcję.
  */
-function ustawSlotOdpowiedz(slotId, patch) {
-  odpowiedziSlotow[slotId] = { ...odpowiedziSlotow[slotId], ...patch };
+function setSlotAnswer(slotId, patch) {
+  answersSlots[slotId] = { ...answersSlots[slotId], ...patch };
   renderProfessionsSection();
 }
 
@@ -3996,14 +3996,14 @@ function ustawSlotOdpowiedz(slotId, patch) {
  * Odtwarza płaską listę wybranych profesji (do podglądu/eksportu postaci)
  * na podstawie aktualnych odpowiedzi slotów.
  */
-function synchronizujWybraneProfesje() {
-  wybraneProfesje = Object.values(odpowiedziSlotow)
-    .filter(odp => odp && odp.mode === 'profesja' && odp.profesjaId)
-    .map(odp => odp.profesjaId);
+function syncSelectedProfessions() {
+  selectedProfessions = Object.values(answersSlots)
+    .filter(answer => answer && answer.mode === 'profesja' && answer.profesjaId)
+    .map(answer => answer.profesjaId);
 }
 
 /** Pełne nazwy podręczników odpowiadające skrótom używanym w polu `zrodlo`. */
-const PELNE_NAZWY_ZRODEL = {
+const FULL_SOURCE_NAMES = {
   PG: 'Podręcznik Główny',
   SUP: 'Suplement Władcy Demonów',
   NW: 'Niepewna Wiara',
@@ -4023,10 +4023,10 @@ const PELNE_NAZWY_ZRODEL = {
  * atrybut title z pełną nazwą podręcznika, widoczny jako tooltip po
  * najechaniu wskaźnikiem myszy.
  */
-function renderujZnacznikZrodla(source) {
+function renderSourceTag(source) {
   if (!source) return '';
-  const pelnaNazwa = PELNE_NAZWY_ZRODEL[source] || source;
-  return `<span class="source-tag" title="${pelnaNazwa}">(${source})</span>`;
+  const fullName = FULL_SOURCE_NAMES[source] || source;
+  return `<span class="source-tag" title="${fullName}">(${source})</span>`;
 }
 
 function renderLanguagesSummary() {
@@ -4034,29 +4034,29 @@ function renderLanguagesSummary() {
   const list = document.getElementById('language-slots');
   if (!summary || !list) return;
 
-  const { autoPismoWszystkieZnane, autoPismoWszystkieZnaneSource } = obliczSlotyPostaci();
-  const mowioneSzczegoly = pobierzJezykiZeSzczegolami();
-  const pismoWedlugJezyka = new Map(pobierzPismoZeSzczegolami().map(w => [w.jezyk, w.source]));
+  const { autoScriptAllKnown, autoScriptAllKnownSource } = calculateSlotsCharacter();
+  const spokenDetails = getLanguagesWithDetails();
+  const scriptByLanguage = new Map(getScriptWithDetails().map(w => [w.jezyk, w.source]));
 
-  summary.innerHTML = mowioneSzczegoly.length
-    ? `Znane języki: <strong>${mowioneSzczegoly.map(w => JEZYKI[w.jezyk] || w.jezyk).join(', ')}</strong>`
+  summary.innerHTML = spokenDetails.length
+    ? `Znane języki: <strong>${spokenDetails.map(w => LANGUAGES[w.jezyk] || w.jezyk).join(', ')}</strong>`
     : 'Brak wybranego pochodzenia.';
 
-  list.innerHTML = mowioneSzczegoly.map(({ jezyk, source }) => {
-    const pismoSource = pismoWedlugJezyka.get(jezyk);
+  list.innerHTML = spokenDetails.map(({ jezyk, source }) => {
+    const scriptSource = scriptByLanguage.get(jezyk);
     return `
       <div class="language-chip">
         <div class="language-chip-row">
-          <span class="language-name">${JEZYKI[jezyk] || jezyk}</span>
-          ${renderujZnacznikZrodla(source)}
+          <span class="language-name">${LANGUAGES[jezyk] || jezyk}</span>
+          ${renderSourceTag(source)}
         </div>
         <div class="language-chip-row">
-          <span class="language-flags">mówiony${pismoSource ? ' • pismo' : ''}</span>
-          ${pismoSource ? renderujZnacznikZrodla(pismoSource) : ''}
+          <span class="language-flags">mówiony${scriptSource ? ' • pismo' : ''}</span>
+          ${scriptSource ? renderSourceTag(scriptSource) : ''}
         </div>
       </div>
     `;
-  }).join('') + (autoPismoWszystkieZnane ? `<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach ${renderujZnacznikZrodla(autoPismoWszystkieZnaneSource)}.</p>` : '');
+  }).join('') + (autoScriptAllKnown ? `<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach ${renderSourceTag(autoScriptAllKnownSource)}.</p>` : '');
 }
 
 /**
@@ -4064,7 +4064,7 @@ function renderLanguagesSummary() {
  */
 /* eslint-disable-next-line no-unused-vars */
 function _randomizeProfession() {
-  losujProfesjeCentralnie();
+  randomizeProfessionsCentrally();
 }
 
 /**
@@ -4074,18 +4074,18 @@ function updateSelectedProfessions() {
   const listDiv = document.getElementById('professions-list');
   if (!listDiv) return;
 
-  const { sloty } = obliczSlotyPostaci();
+  const { slots } = calculateSlotsCharacter();
 
-  listDiv.innerHTML = sloty.map(slot => {
-    const odp = odpowiedziSlotow[slot.id];
-    if (!odp || odp.mode !== 'profesja' || !odp.profesjaId) return '';
-    const prof = dostepneProfesje.find(p => p.id === odp.profesjaId);
+  listDiv.innerHTML = slots.map(slot => {
+    const answer = answersSlots[slot.id];
+    if (!answer || answer.mode !== 'profesja' || !answer.profesjaId) return '';
+    const prof = availableProfessions.find(p => p.id === answer.profesjaId);
     if (!prof) return '';
     return `
       <div class="selected-item">
         <button class="remove-btn" data-remove-profession-id="${prof.id}">×</button>
         <span>${prof.nazwa}</span>
-        ${renderujZnacznikZrodla(slot.source)}
+        ${renderSourceTag(slot.source)}
       </div>
     `;
   }).join('');
@@ -4098,12 +4098,12 @@ function updateSelectedProfessions() {
  * Usuwa profesję z wybranych, czyszcząc odpowiedź slotu, do którego była przypisana.
  */
 function removeProfession(professionId) {
-  const slotId = Object.keys(odpowiedziSlotow).find(id => {
-    const odp = odpowiedziSlotow[id];
-    return odp && odp.mode === 'profesja' && odp.profesjaId === professionId;
+  const slotId = Object.keys(answersSlots).find(id => {
+    const answer = answersSlots[id];
+    return answer && answer.mode === 'profesja' && answer.profesjaId === professionId;
   });
   if (slotId) {
-    odpowiedziSlotow[slotId] = { ...odpowiedziSlotow[slotId], profesjaId: null };
+    answersSlots[slotId] = { ...answersSlots[slotId], profesjaId: null };
   }
   renderProfessionsSection();
 }
@@ -4118,7 +4118,7 @@ function renderCuriosSection() {
   
   if (!grid || !countSpan || !listDiv) return;
   
-  const { kurioza } = obliczIloscWyborow();
+  const { kurioza } = calculateChoiceCount();
   countSpan.textContent = kurioza;
   
   // Wyczyść grid
@@ -4126,7 +4126,7 @@ function renderCuriosSection() {
   
   // Grupuj kurioza według kategorii
   const kategorie = {};
-  dostepneKurioza.forEach(curio => {
+  availableCurios.forEach(curio => {
     if (!kategorie[curio.kategoria]) {
       kategorie[curio.kategoria] = [];
     }
@@ -4149,7 +4149,7 @@ function renderCuriosSection() {
  * Renderuje kafel kurioza
  */
 function renderCurioTile(curio) {
-  const isSelected = wybraneKurioza.includes(curio.id);
+  const isSelected = selectedCurios.includes(curio.id);
   const tile = document.createElement('div');
   tile.className = `curio-tile ${isSelected ? 'selected' : ''}`;
   tile.dataset.curioId = curio.id;
@@ -4170,15 +4170,15 @@ function renderCurioTile(curio) {
  * Przełącza wybór kurioza
  */
 function toggleCurio(curioId) {
-  const { kurioza } = obliczIloscWyborow();
+  const { kurioza } = calculateChoiceCount();
   
-  if (wybraneKurioza.includes(curioId)) {
+  if (selectedCurios.includes(curioId)) {
     // Usuń z wybranych
-    wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
+    selectedCurios = selectedCurios.filter(id => id !== curioId);
   } else {
     // Dodaj do wybranych (jeśli nie przekracza limitu)
-    if (wybraneKurioza.length < kurioza) {
-      wybraneKurioza.push(curioId);
+    if (selectedCurios.length < kurioza) {
+      selectedCurios.push(curioId);
     }
   }
   
@@ -4191,12 +4191,12 @@ function toggleCurio(curioId) {
  */
 /* eslint-disable-next-line no-unused-vars */
 function _randomizeCurio() {
-  const { kurioza } = obliczIloscWyborow();
-  const available = dostepneKurioza.filter(curio => !wybraneKurioza.includes(curio.id));
+  const { kurioza } = calculateChoiceCount();
+  const available = availableCurios.filter(curio => !selectedCurios.includes(curio.id));
   
-  if (available.length > 0 && wybraneKurioza.length < kurioza) {
+  if (available.length > 0 && selectedCurios.length < kurioza) {
     const randomCurio = available[Math.floor(Math.random() * available.length)];
-    wybraneKurioza.push(randomCurio.id);
+    selectedCurios.push(randomCurio.id);
     renderCuriosSection();
     updateStep5NextButton();
   }
@@ -4205,32 +4205,32 @@ function _randomizeCurio() {
 /**
  * Sprawdza, czy dany slot profesyjno-językowy ma kompletną odpowiedź.
  */
-function slotOdpowiedzKompletna(slot) {
-  const odp = odpowiedziSlotow[slot.id];
+function slotAnswerComplete(slot) {
+  const answer = answersSlots[slot.id];
   // Gdy slot ma tylko jedną dozwoloną opcję (np. 'tylko_profesja'), UI nie
   // renderuje przełącznika trybu (radiogroup) - tryb trzeba więc wywnioskować
   // tak samo, jak robi to renderSlotCard(), inaczej odpowiedź nigdy nie
   // zostanie uznana za kompletną, mimo wybranej wartości w widocznym select.
-  const mode = odp?.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+  const mode = answer?.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
   if (!mode) return false;
-  return mode === 'profesja' ? !!odp?.profesjaId : !!odp?.jezyk;
+  return mode === 'profesja' ? !!answer?.profesjaId : !!answer?.jezyk;
 }
 
 /**
  * Zwraca dostępne wartości dla danego trybu ('profesja'/'jezyk_nowy'/
  * 'jezyk_pismo') w kontekście danego slotu.
  */
-function opcjeWartosciDlaTrybu(slot, mode) {
+function valueOptionsForMode(slot, mode) {
   if (mode === 'profesja') {
-    return profesjeDlaSlotu(slot).map(p => p.id);
+    return professionsForSlot(slot).map(p => p.id);
   }
   if (mode === 'jezyk_nowy') {
-    const znane = new Set(pobierzMowioneJezyki());
-    return Object.keys(JEZYKI).filter(k => !znane.has(k));
+    const known = new Set(getSpokenLanguages());
+    return Object.keys(LANGUAGES).filter(k => !known.has(k));
   }
   if (mode === 'jezyk_pismo') {
-    const juzPismo = new Set(pobierzJezykiZPismem());
-    return pobierzMowioneJezyki().filter(k => !juzPismo.has(k));
+    const alreadyScript = new Set(getLanguagesWithScript());
+    return getSpokenLanguages().filter(k => !alreadyScript.has(k));
   }
   return [];
 }
@@ -4242,7 +4242,7 @@ function opcjeWartosciDlaTrybu(slot, mode) {
  * sprawiało, że losowanie "zawsze" wybierało tryb 'profesja' (bo jest
  * pierwszy w liście `opcje`).
  */
-function losowaKolejnosc(array) {
+function randomOrder(array) {
   const wynik = [...array];
   for (let i = wynik.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -4258,20 +4258,20 @@ function losowaKolejnosc(array) {
  * nie zmienia trybu na inny. Tryb losuje się jednorodnie tylko dla slotów,
  * których użytkownik jeszcze w żaden sposób nie dotknął.
  */
-function losujProfesjeCentralnie() {
-  const { sloty } = obliczSlotyPostaci();
+function randomizeProfessionsCentrally() {
+  const { slots } = calculateSlotsCharacter();
 
-  for (const slot of sloty) {
-    if (slotOdpowiedzKompletna(slot)) continue;
+  for (const slot of slots) {
+    if (slotAnswerComplete(slot)) continue;
 
-    const wybranyTryb = odpowiedziSlotow[slot.id]?.mode;
-    const tryby = wybranyTryb ? [wybranyTryb] : losowaKolejnosc(slot.opcje);
+    const selectedMode = answersSlots[slot.id]?.mode;
+    const modes = selectedMode ? [selectedMode] : randomOrder(slot.opcje);
 
-    for (const mode of tryby) {
-      const opcje = opcjeWartosciDlaTrybu(slot, mode);
+    for (const mode of modes) {
+      const opcje = valueOptionsForMode(slot, mode);
       if (opcje.length === 0) continue;
       const pick = opcje[Math.floor(Math.random() * opcje.length)];
-      odpowiedziSlotow[slot.id] = mode === 'profesja' ? { mode, profesjaId: pick } : { mode, jezyk: pick };
+      answersSlots[slot.id] = mode === 'profesja' ? { mode, profesjaId: pick } : { mode, jezyk: pick };
       break;
     }
   }
@@ -4282,15 +4282,15 @@ function losujProfesjeCentralnie() {
 /**
  * Losuje kurioza zgodnie z aktualnym limitem brakujących wyborów
  */
-function losujKuriozaCentralnie() {
-  const { kurioza } = obliczIloscWyborow();
-  const remaining = Math.max(0, kurioza - wybraneKurioza.length);
+function randomizeCuriosCentrally() {
+  const { kurioza } = calculateChoiceCount();
+  const remaining = Math.max(0, kurioza - selectedCurios.length);
   if (remaining === 0) return;
-  const available = dostepneKurioza.filter(c => !wybraneKurioza.includes(c.id));
+  const available = availableCurios.filter(c => !selectedCurios.includes(c.id));
   for (let i = 0; i < remaining && available.length > 0; i++) {
     const idx = Math.floor(Math.random() * available.length);
     const pick = available.splice(idx, 1)[0];
-    wybraneKurioza.push(pick.id);
+    selectedCurios.push(pick.id);
   }
   renderCuriosSection();
   updateStep5NextButton();
@@ -4303,8 +4303,8 @@ function updateSelectedCurios() {
   const listDiv = document.getElementById('curios-list');
   if (!listDiv) return;
   
-  listDiv.innerHTML = wybraneKurioza.map(id => {
-    const curio = dostepneKurioza.find(c => c.id === id);
+  listDiv.innerHTML = selectedCurios.map(id => {
+    const curio = availableCurios.find(c => c.id === id);
     return curio ? `
       <div class="selected-item">
         <button class="remove-btn" data-remove-curio-id="${id}">×</button>
@@ -4321,7 +4321,7 @@ function updateSelectedCurios() {
  * Usuwa kurioza z wybranych
  */
 function removeCurio(curioId) {
-  wybraneKurioza = wybraneKurioza.filter(id => id !== curioId);
+  selectedCurios = selectedCurios.filter(id => id !== curioId);
   renderCuriosSection();
   updateStep5NextButton();
 }
@@ -4333,10 +4333,10 @@ function updateStep5NextButton() {
   const btn = document.getElementById('btn-next-5');
   if (!btn) return;
 
-  const { kurioza } = obliczIloscWyborow();
-  const { sloty } = obliczSlotyPostaci();
-  const hasRequiredProfessions = sloty.every(slot => slotOdpowiedzKompletna(slot));
-  const hasRequiredCurios = wybraneKurioza.length >= kurioza;
+  const { kurioza } = calculateChoiceCount();
+  const { slots } = calculateSlotsCharacter();
+  const hasRequiredProfessions = slots.every(slot => slotAnswerComplete(slot));
+  const hasRequiredCurios = selectedCurios.length >= kurioza;
 
   btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);
 }
@@ -4346,31 +4346,31 @@ function updateStep5NextButton() {
  * jeśli już wybrana - potrzebne do ustalenia, czy pochodzenie przyznaje
  * dodatkowy atomowy wybór zaklęcia na tym poziomie ("1 zaklęcie").
  */
-function pobierzWybranaOpcjaPoziom4Aktualna() {
-  if (!wybranePochodzenie) return null;
-  return document.querySelector(`input[name="origin-option-${wybranePochodzenie}"]:checked`)?.value || null;
+function getCurrentSelectedLevel4Option() {
+  if (!selectedOrigin) return null;
+  return document.querySelector(`input[name="origin-option-${selectedOrigin}"]:checked`)?.value || null;
 }
 
 /**
  * Oblicza aktualne atomowe wybory magii (jeden atom = jedna karta w Kroku
  * 4.5) na podstawie pochodzenia, wybranych ścieżek i poziomu postaci.
  */
-function pobierzAktualneAtomyMagii() {
-  if (!wybranePochodzenie) return [];
-  const pochodzenie = dostepnePochodzenia.find(p => p.id === wybranePochodzenie);
+function getCurrentAtomsMagic() {
+  if (!selectedOrigin) return [];
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
   if (!pochodzenie) return [];
-  return obliczSlotyMagii({
+  return calculateSlotsMagic({
     pochodzenie,
-    wybranaOpcjaPoziom4: pobierzWybranaOpcjaPoziom4Aktualna(),
-    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
-    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
-    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null,
-    wybranyPoziom
+    wybranaOpcjaPoziom4: getCurrentSelectedLevel4Option(),
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null,
+    selectedLevel
   });
 }
 
 /** Odczytuje aktualną Moc postaci - limit kręgu zaklęć dostępnych do nauki. */
-function pobierzAktualnaMoc() {
+function getCurrentPower() {
   return parseInt(document.getElementById('moc-final')?.textContent, 10) || 0;
 }
 
@@ -4381,30 +4381,30 @@ function pobierzAktualnaMoc() {
  * tradycji i zaklęć z podręcznika (zob. logic/magic.js).
  */
 function renderSpellsSection() {
-  const atomy = pobierzAktualneAtomyMagii();
+  const atoms = getCurrentAtomsMagic();
   const container = document.getElementById('magic-slots-container');
   const hint = document.getElementById('known-traditions-hint');
   if (!container) return;
 
-  if (atomy.length === 0) {
+  if (atoms.length === 0) {
     container.innerHTML = '<p class="hint">Żadna z dotychczas wybranych ścieżek (ani pochodzenie) nie przyznaje magii na obecnym poziomie postaci - ten krok jest w pełni opcjonalny.</p>';
     if (hint) hint.innerHTML = '';
     return;
   }
 
-  const { rozwiazania, znaneTradycje } = obliczRozwiazanieMagii(atomy, magiaWybory);
-  przeliczCzarnaMagieZTradycji(rozwiazania);
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atoms, magicChoices);
+  recalculateBlackMagicWithTraditions(resolutions);
 
   if (hint) {
-    const nazwy = [...znaneTradycje].map(id => TRADYCJE[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
-    hint.innerHTML = nazwy.length
-      ? `<strong>Znane tradycje:</strong> ${nazwy.join(', ')}`
+    const names = [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, 'pl'));
+    hint.innerHTML = names.length
+      ? `<strong>Znane tradycje:</strong> ${names.join(', ')}`
       : 'Jeszcze nie poznano żadnej tradycji.';
   }
 
-  container.innerHTML = rozwiazania.map(r => renderujKarteMagii(r)).join('');
-  podlaczObslugeKartMagii(container);
-  odswiezAtrybutyDrugorzedne();
+  container.innerHTML = resolutions.map(r => renderCardMagic(r)).join('');
+  attachHandleCardsMagic(container);
+  refreshAttributesSecondary();
 }
 
 /**
@@ -4413,12 +4413,12 @@ function renderSpellsSection() {
  * Splugawienia. Liczone od zera przy każdym renderze, żeby wycofanie
  * wcześniejszego wyboru poprawnie usunęło też przyznane Splugawienie.
  */
-function przeliczCzarnaMagieZTradycji(rozwiazania) {
-  const nowy = new Set();
-  rozwiazania.forEach(r => {
-    if (r.mode === 'tradycja' && r.tradycjaId && czyCzarnaMagia(r.tradycjaId)) nowy.add(r.tradycjaId);
+function recalculateBlackMagicWithTraditions(resolutions) {
+  const updatedSet = new Set();
+  resolutions.forEach(r => {
+    if (r.mode === 'tradycja' && r.tradycjaId && isBlackMagic(r.tradycjaId)) updatedSet.add(r.tradycjaId);
   });
-  magiaCzarnaMagiaZaTradycje = nowy;
+  magicBlackMagicTooTraditions = updatedSet;
 }
 
 /**
@@ -4426,31 +4426,31 @@ function przeliczCzarnaMagieZTradycji(rozwiazania) {
  * tradycję czarnej magii, plus 1 punkt za każdy rzut ryzyka, który się
  * powiódł (nauka kolejnego zaklęcia czarnej magii z już znanej tradycji).
  */
-function obliczSplugawienieZMagiiAktualnej() {
-  const zTradycji = magiaCzarnaMagiaZaTradycje.size;
-  const zRyzyka = Object.values(magiaRyzykoWyniki).filter(w => w.przyznane).length;
-  return zTradycji + zRyzyka;
+function calculateCorruptionFromCurrentMagic() {
+  const withTraditions = magicBlackMagicTooTraditions.size;
+  const withRisk = Object.values(magicRiskResults).filter(w => w.przyznane).length;
+  return withTraditions + withRisk;
 }
 
 /** Renderuje pojedynczą kartę jednego atomowego wyboru magii. */
-function renderujKarteMagii(rozwiazanie) {
-  const { atom, mode, tradycjaId, spellId, darmowyZaklecieId, kompletny, czarnaMagiaRyzyko } = rozwiazanie;
-  const jestCzarnaTradycja = mode === 'tradycja' && czyCzarnaMagia(tradycjaId);
-  const klasy = ['magic-slot-card'];
-  if (kompletny) klasy.push('complete');
-  if (jestCzarnaTradycja || czarnaMagiaRyzyko) klasy.push('black-magic');
+function renderCardMagic(resolution) {
+  const { atom, mode, tradycjaId, spellId, darmowyZaklecieId, complete, blackMagicRisk } = resolution;
+  const isBlackTradition = mode === 'tradycja' && isBlackMagic(tradycjaId);
+  const classes = ['magic-slot-card'];
+  if (complete) classes.push('complete');
+  if (isBlackTradition || blackMagicRisk) classes.push('black-magic');
 
   let bodyHtml = '';
   if (atom.rodzaj === 'wymuszona_tradycja') {
-    bodyHtml = renderujWyborTradycji(atom.id, atom.kategoria, tradycjaId);
-    if (tradycjaId) bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, tradycjaId, darmowyZaklecieId);
+    bodyHtml = renderChoiceTraditions(atom.id, atom.kategoria, tradycjaId);
+    if (tradycjaId) bodyHtml += renderChoiceFreeSpells(atom.id, tradycjaId, darmowyZaklecieId);
   } else if (atom.rodzaj === 'wybor_fixed') {
-    const nazwaTr = TRADYCJE[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
+    const traditionName = TRADITIONS[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
     if (mode === 'tradycja') {
-      bodyHtml = `<p class="magic-slot-status ok">Tradycja ${nazwaTr} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
-      bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
+      bodyHtml = `<p class="magic-slot-status ok">Tradycja ${traditionName} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
+      bodyHtml += renderChoiceFreeSpells(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
     } else {
-      bodyHtml = renderujWyborZaklecia(atom.id, spellId, atom.tradycjaNazwa);
+      bodyHtml = renderChoiceSpells(atom.id, spellId, atom.tradycjaNazwa);
     }
   } else if (atom.rodzaj === 'wybor') {
     bodyHtml = `
@@ -4460,22 +4460,22 @@ function renderujKarteMagii(rozwiazanie) {
       </div>
     `;
     if (mode === 'tradycja') {
-      bodyHtml += renderujWyborTradycji(atom.id, atom.kategoria, tradycjaId);
-      if (tradycjaId) bodyHtml += renderujWyborDarmowegoZaklecia(atom.id, tradycjaId, darmowyZaklecieId);
+      bodyHtml += renderChoiceTraditions(atom.id, atom.kategoria, tradycjaId);
+      if (tradycjaId) bodyHtml += renderChoiceFreeSpells(atom.id, tradycjaId, darmowyZaklecieId);
     } else if (mode === 'zaklecie') {
-      bodyHtml += renderujWyborZaklecia(atom.id, spellId);
+      bodyHtml += renderChoiceSpells(atom.id, spellId);
     }
   } else if (atom.rodzaj === 'zaklecie_tylko') {
-    bodyHtml = renderujWyborZaklecia(atom.id, spellId);
+    bodyHtml = renderChoiceSpells(atom.id, spellId);
   }
 
   return `
-    <div class="${klasy.join(' ')}" data-magic-slot="${atom.id}">
+    <div class="${classes.join(' ')}" data-magic-slot="${atom.id}">
       <p class="magic-slot-source">${atom.source}</p>
-      <p class="magic-slot-desc">${opisAtomu(atom)}</p>
+      <p class="magic-slot-desc">${atomDescription(atom)}</p>
       ${bodyHtml}
-      ${renderujOstrzezenieCzarnejMagii(rozwiazanie)}
-      <p class="magic-slot-status ${kompletny ? 'ok' : ''}">${kompletny ? '✓ Rozwiązano' : 'Nierozwiązane (opcjonalne)'}</p>
+      ${renderBlackMagicWarning(resolution)}
+      <p class="magic-slot-status ${complete ? 'ok' : ''}">${complete ? '✓ Rozwiązano' : 'Nierozwiązane (opcjonalne)'}</p>
     </div>
   `;
 }
@@ -4485,13 +4485,13 @@ function renderujKarteMagii(rozwiazanie) {
  * atomu wraz z kafelkiem aktualnego wyboru (jeśli już dokonano) - bez
  * dropdownów, wybór odbywa się w popupie na kafelkach (zob. otworzTradycjaPicker()).
  */
-function renderujWyborTradycji(atomId, kategoria, aktualnyWybor) {
-  const nazwa = aktualnyWybor ? (TRADYCJE[aktualnyWybor]?.nazwa || aktualnyWybor) : null;
-  const czarna = aktualnyWybor && czyCzarnaMagia(aktualnyWybor);
+function renderChoiceTraditions(atomId, kategoria, currentChoice) {
+  const nazwa = currentChoice ? (TRADITIONS[currentChoice]?.nazwa || currentChoice) : null;
+  const black = currentChoice && isBlackMagic(currentChoice);
   return `
     <div class="magic-slot-picker">
       ${nazwa ? `
-        <div class="magic-picked-chip">${nazwa}${czarna ? ' ⚠️' : ''}
+        <div class="magic-picked-chip">${nazwa}${black ? ' ⚠️' : ''}
           <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">✕</button>
         </div>
       ` : ''}
@@ -4507,12 +4507,12 @@ function renderujWyborTradycji(atomId, kategoria, aktualnyWybor) {
  * Popup sam ograniczy listę do tradycji już znanych (albo `tradycjaOgraniczenie`,
  * dla wybor_fixed) i kręgu nie wyższego niż Moc postaci.
  */
-function renderujWyborZaklecia(atomId, aktualnyWybor, tradycjaOgraniczenie = null) {
-  const spell = aktualnyWybor ? SPELLS.find(s => s.id === aktualnyWybor) : null;
+function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) {
+  const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
     <div class="magic-slot-picker">
       ${spell ? `
-        <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${czyCzarnaMagia(spell.tradycja) ? ' ⚠️' : ''}
+        <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ' ⚠️' : ''}
           <button type="button" class="chip-remove" data-magia-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">✕</button>
         </div>
       ` : ''}
@@ -4528,8 +4528,8 @@ function renderujWyborZaklecia(atomId, aktualnyWybor, tradycjaOgraniczenie = nul
  * renderujWyborZaklecia(), ale ograniczone wyłącznie do kręgu 0 danej
  * tradycji (zob. otworzDarmoweZakleciePicker()).
  */
-function renderujWyborDarmowegoZaklecia(atomId, tradycjaId, aktualnyWybor) {
-  const spell = aktualnyWybor ? SPELLS.find(s => s.id === aktualnyWybor) : null;
+function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
+  const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
     <div class="magic-slot-picker magic-slot-picker-secondary">
       ${spell ? `
@@ -4547,20 +4547,20 @@ function renderujWyborDarmowegoZaklecia(atomId, tradycjaId, aktualnyWybor) {
  * informację o automatycznym Splugawieniu za poznanie tradycji, albo
  * widget rzutu ryzyka (k6) przy nauce kolejnego zaklęcia czarnej magii.
  */
-function renderujOstrzezenieCzarnejMagii(rozwiazanie) {
-  const { atom, mode, tradycjaId, spellId, czarnaMagiaRyzyko } = rozwiazanie;
-  if (mode === 'tradycja' && tradycjaId && czyCzarnaMagia(tradycjaId)) {
-    return `<div class="black-magic-warning">⚠️ ${TRADYCJE[tradycjaId]?.nazwa || tradycjaId} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;
+function renderBlackMagicWarning(resolution) {
+  const { atom, mode, tradycjaId, spellId, blackMagicRisk } = resolution;
+  if (mode === 'tradycja' && tradycjaId && isBlackMagic(tradycjaId)) {
+    return `<div class="black-magic-warning">⚠️ ${TRADITIONS[tradycjaId]?.nazwa || tradycjaId} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;
   }
-  if (czarnaMagiaRyzyko) {
-    const wynik = magiaRyzykoWyniki[atom.id];
+  if (blackMagicRisk) {
+    const wynik = magicRiskResults[atom.id];
     if (wynik && wynik.spellId === spellId) {
       return `<div class="black-magic-warning">⚠️ Zaklęcie czarnej magii. Rzut ryzyka: <span class="black-magic-roll-result">k6 = ${wynik.rzut}</span> ${wynik.przyznane ? '→ +1 Splugawienie' : '→ bez efektu'}.</div>`;
     }
     return `
       <div class="black-magic-warning">
-        ⚠️ Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${czarnaMagiaRyzyko.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
-        <button type="button" class="btn-secondary small" data-magia-rzut="${atom.id}" data-rzut-spell="${spellId}" data-rzut-limit="${czarnaMagiaRyzyko.liczbaZnanychPrzed}">Rzuć k6</button>
+        ⚠️ Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${blackMagicRisk.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).
+        <button type="button" class="btn-secondary small" data-magia-rzut="${atom.id}" data-rzut-spell="${spellId}" data-rzut-limit="${blackMagicRisk.liczbaZnanychPrzed}">Rzuć k6</button>
       </div>
     `;
   }
@@ -4568,14 +4568,14 @@ function renderujOstrzezenieCzarnejMagii(rozwiazanie) {
 }
 
 /** Podłącza obsługę zdarzeń dla wszystkich kart magii w kontenerze (delegacja przez ponowny render). */
-function podlaczObslugeKartMagii(container) {
+function attachHandleCardsMagic(container) {
   container.querySelectorAll('[data-magia-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
       const atomId = btn.dataset.magiaMode;
       const mode = btn.dataset.modeValue;
-      if ((magiaWybory[atomId] || {}).mode === mode) return;
-      magiaWybory[atomId] = { mode };
-      delete magiaRyzykoWyniki[atomId];
+      if ((magicChoices[atomId] || {}).mode === mode) return;
+      magicChoices[atomId] = { mode };
+      delete magicRiskResults[atomId];
       renderSpellsSection();
     });
   });
@@ -4583,31 +4583,31 @@ function podlaczObslugeKartMagii(container) {
     btn.addEventListener('click', () => {
       const atomId = btn.dataset.openTradycjaPicker;
       const kategoria = btn.dataset.kategoria.split(',').filter(Boolean);
-      const { znaneTradycje } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
-      otworzTradycjaPicker(atomId, kategoria, znaneTradycje);
+      const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+      openTraditionPicker(atomId, kategoria, knownTraditions);
     });
   });
   container.querySelectorAll('[data-open-zaklecie-picker]').forEach(btn => {
     btn.addEventListener('click', () => {
       const atomId = btn.dataset.openZakleciePicker;
       const tradycjaOgraniczenie = btn.dataset.tradycjaOgraniczenie || null;
-      const { znaneTradycje } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
-      otworzZakleciePicker(atomId, znaneTradycje, pobierzAktualnaMoc(), tradycjaOgraniczenie);
+      const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+      openSpellPicker(atomId, knownTraditions, getCurrentPower(), tradycjaOgraniczenie);
     });
   });
   container.querySelectorAll('[data-open-darmowe-zaklecie-picker]').forEach(btn => {
     btn.addEventListener('click', () => {
-      otworzDarmoweZakleciePicker(btn.dataset.openDarmoweZakleciePicker, btn.dataset.tradycjaDarmowa);
+      openFreeSpellPicker(btn.dataset.openDarmoweZakleciePicker, btn.dataset.tradycjaDarmowa);
     });
   });
   container.querySelectorAll('[data-magia-clear]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const atomId = btn.dataset.magiaClear;
-      const wybor = { ...(magiaWybory[atomId] || {}) };
+      const wybor = { ...(magicChoices[atomId] || {}) };
       delete wybor[btn.dataset.clearField];
-      magiaWybory[atomId] = wybor;
-      delete magiaRyzykoWyniki[atomId];
+      magicChoices[atomId] = wybor;
+      delete magicRiskResults[atomId];
       renderSpellsSection();
     });
   });
@@ -4617,7 +4617,7 @@ function podlaczObslugeKartMagii(container) {
       const spellId = btn.dataset.rzutSpell;
       const limit = parseInt(btn.dataset.rzutLimit, 10);
       const rzut = Math.floor(Math.random() * 6) + 1;
-      magiaRyzykoWyniki[atomId] = { spellId, rzut, przyznane: rzut < limit };
+      magicRiskResults[atomId] = { spellId, rzut, przyznane: rzut < limit };
       renderSpellsSection();
     });
   });
@@ -4627,7 +4627,7 @@ function podlaczObslugeKartMagii(container) {
  * Stan aktualnie otwartego popupu wyboru magii (Krok 6) - `null` gdy
  * popup jest zamknięty. Patrz otworzTradycjaPicker()/otworzZakleciePicker().
  */
-let magiaPicker = null;
+let magicPicker = null;
 
 /**
  * Otwiera popup wyboru nowej tradycji (kafelki, bez dropdownów) dla danego atomu.
@@ -4636,8 +4636,8 @@ let magiaPicker = null;
  * więc zarówno poznawanie tradycji w Kroku 6, jak i "zwój z zaklęciem kręgu 0"
  * w Kroku Ekwipunek.
  */
-function otworzTradycjaPicker(atomId, kategoria, znaneTradycje, docelowy = 'magia') {
-  magiaPicker = { atomId, kind: 'tradycja', kategoria, znaneTradycje, search: '', docelowy };
+function openTraditionPicker(atomId, kategoria, knownTraditions, target = 'magia') {
+  magicPicker = { atomId, kind: 'tradycja', kategoria, knownTraditions, search: '', target };
   const title = document.getElementById('magic-picker-title');
   if (title) title.textContent = 'Wybierz tradycję';
   // Odkryj popup PRZED renderowaniem treści - fokus na polu wyszukiwania
@@ -4649,9 +4649,9 @@ function otworzTradycjaPicker(atomId, kategoria, znaneTradycje, docelowy = 'magi
 }
 
 /** Otwiera popup wyboru zaklęcia do nauki (kafelki, bez dropdownów) dla danego atomu. */
-function otworzZakleciePicker(atomId, znaneTradycje, moc, tradycjaOgraniczenie) {
-  magiaPicker = {
-    atomId, kind: 'zaklecie', znaneTradycje, moc, tradycjaOgraniczenie,
+function openSpellPicker(atomId, knownTraditions, moc, tradycjaOgraniczenie) {
+  magicPicker = {
+    atomId, kind: 'zaklecie', knownTraditions, moc, tradycjaOgraniczenie,
     search: '', filterKrag: null, filterKategoria: null, filterTradycja: null
   };
   const title = document.getElementById('magic-picker-title');
@@ -4666,8 +4666,8 @@ function otworzZakleciePicker(atomId, znaneTradycje, moc, tradycjaOgraniczenie) 
  * automatycznie przy jej poznaniu ("Poznawanie tradycji", PG) - kafelki
  * ograniczone wyłącznie do kręgu 0 tej jednej, konkretnej tradycji.
  */
-function otworzDarmoweZakleciePicker(atomId, tradycjaId, docelowy = 'magia') {
-  magiaPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '', docelowy };
+function openFreeSpellPicker(atomId, tradycjaId, target = 'magia') {
+  magicPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '', target };
   const title = document.getElementById('magic-picker-title');
   if (title) title.textContent = 'Wybierz zaklęcie kręgu 0';
   const overlay = document.getElementById('magic-picker-overlay');
@@ -4676,10 +4676,10 @@ function otworzDarmoweZakleciePicker(atomId, tradycjaId, docelowy = 'magia') {
 }
 
 /** Zamyka popup wyboru magii bez dokonywania wyboru. */
-function zamknijMagicPicker() {
+function closeMagicPicker() {
   const overlay = document.getElementById('magic-picker-overlay');
   if (overlay) overlay.hidden = true;
-  magiaPicker = null;
+  magicPicker = null;
 }
 
 /**
@@ -4689,18 +4689,18 @@ function zamknijMagicPicker() {
  */
 function renderMagicPickerBody() {
   const body = document.getElementById('magic-picker-body');
-  if (!body || !magiaPicker) return;
-  const placeholder = magiaPicker.kind === 'tradycja'
+  if (!body || !magicPicker) return;
+  const placeholder = magicPicker.kind === 'tradycja'
     ? 'Szukaj tradycji...'
-    : (magiaPicker.kind === 'darmowe_zaklecie' ? 'Szukaj zaklęcia kręgu 0...' : 'Szukaj zaklęcia po nazwie lub opisie...');
+    : (magicPicker.kind === 'darmowe_zaklecie' ? 'Szukaj zaklęcia kręgu 0...' : 'Szukaj zaklęcia po nazwie lub opisie...');
   body.innerHTML = `
     <input type="text" class="picker-search" id="picker-search-input" placeholder="${placeholder}">
     <div id="picker-dynamic"></div>
   `;
   const input = document.getElementById('picker-search-input');
-  input.value = magiaPicker.search;
+  input.value = magicPicker.search;
   input.addEventListener('input', () => {
-    magiaPicker.search = input.value;
+    magicPicker.search = input.value;
     rerenderPickerDynamic();
   });
   input.focus();
@@ -4710,18 +4710,18 @@ function renderMagicPickerBody() {
 /** Przerenderowuje tylko chipy filtrów + siatkę kafelków popupu (pole wyszukiwania zostaje niezmienione, by nie tracić fokusu/kursora). */
 function rerenderPickerDynamic() {
   const el = document.getElementById('picker-dynamic');
-  if (!el || !magiaPicker) return;
-  if (magiaPicker.kind === 'tradycja') el.innerHTML = renderTradycjaPickerDynamicHtml();
-  else if (magiaPicker.kind === 'darmowe_zaklecie') el.innerHTML = renderDarmoweZakleciePickerDynamicHtml();
-  else el.innerHTML = renderZakleciePickerDynamicHtml();
-  podlaczObslugePickerDynamic(el);
+  if (!el || !magicPicker) return;
+  if (magicPicker.kind === 'tradycja') el.innerHTML = renderTraditionPickerDynamicHtml();
+  else if (magicPicker.kind === 'darmowe_zaklecie') el.innerHTML = renderFreeSpellPickerDynamicHtml();
+  else el.innerHTML = renderSpellPickerDynamicHtml();
+  attachHandlePickerDynamic(el);
 }
 
 /** Renderuje kafelki tradycji dostępnych do poznania w popupie, po zastosowaniu wyszukiwania tekstowego. */
-function renderTradycjaPickerDynamicHtml() {
-  const wszystkie = pobierzTradycjeDlaKategorii(magiaPicker.kategoria, magiaPicker.znaneTradycje);
-  const search = magiaPicker.search.trim().toLowerCase();
-  const wynik = search ? wszystkie.filter(t => t.nazwa.toLowerCase().includes(search)) : wszystkie;
+function renderTraditionPickerDynamicHtml() {
+  const all = getTraditionsForCategory(magicPicker.kategoria, magicPicker.knownTraditions);
+  const search = magicPicker.search.trim().toLowerCase();
+  const wynik = search ? all.filter(t => t.nazwa.toLowerCase().includes(search)) : all;
 
   const tiles = wynik.map(t => `
     <button type="button" class="picker-tile" data-pick-tradycja="${t.id}">
@@ -4731,7 +4731,7 @@ function renderTradycjaPickerDynamicHtml() {
   `).join('') || '<p class="hint">Brak tradycji spełniających kryteria wyszukiwania.</p>';
 
   return `
-    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${wszystkie.length} tradycji</p>
+    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${all.length} tradycji</p>
     <div class="picker-tile-grid">${tiles}</div>
   `;
 }
@@ -4741,68 +4741,68 @@ function renderTradycjaPickerDynamicHtml() {
  * `wylaczAtomId`, czyli slocie właśnie edytowanym) - używane do wyszarzenia
  * ich w popupie, bo nauka tego samego zaklęcia drugi raz nie ma sensu.
  */
-function pobierzZajeteZaklecia(wylaczAtomId) {
-  const { rozwiazania } = obliczRozwiazanieMagii(pobierzAktualneAtomyMagii(), magiaWybory);
-  const zajete = new Set();
-  rozwiazania.forEach(r => {
-    if (r.atom.id === wylaczAtomId) return;
-    if (r.mode === 'zaklecie' && r.spellId) zajete.add(r.spellId);
-    if (r.mode === 'tradycja' && r.darmowyZaklecieId) zajete.add(r.darmowyZaklecieId);
+function getTakenSpells(disableAtomId) {
+  const { resolutions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+  const taken = new Set();
+  resolutions.forEach(r => {
+    if (r.atom.id === disableAtomId) return;
+    if (r.mode === 'zaklecie' && r.spellId) taken.add(r.spellId);
+    if (r.mode === 'tradycja' && r.darmowyZaklecieId) taken.add(r.darmowyZaklecieId);
   });
-  return zajete;
+  return taken;
 }
 
 /** Renderuje kafelki zaklęć dostępnych do nauki w popupie, po zastosowaniu wyszukiwania i chipów filtrów. */
-function renderZakleciePickerDynamicHtml() {
-  const { znaneTradycje, moc, tradycjaOgraniczenie, search, filterKrag, filterKategoria, filterTradycja } = magiaPicker;
-  const wszystkie = pobierzZakleciaDoNauki({ znaneTradycje, moc, tradycjaOgraniczenie });
+function renderSpellPickerDynamicHtml() {
+  const { knownTraditions, moc, tradycjaOgraniczenie, search, filterKrag, filterKategoria, filterTradycja } = magicPicker;
+  const all = getSpellsToLearning({ knownTraditions, moc, tradycjaOgraniczenie });
 
-  const kregi = [...new Set(wszystkie.map(s => s.krag))].sort((a, b) => a - b);
-  const tradycjeWZbiorze = [...new Map(wszystkie.map(s => [s.tradycja, s.tradycjaNazwa])).entries()]
+  const circles = [...new Set(all.map(s => s.krag))].sort((a, b) => a - b);
+  const traditionsInSet = [...new Map(all.map(s => [s.tradycja, s.tradycjaNazwa])).entries()]
     .sort((a, b) => a[1].localeCompare(b[1], 'pl'));
 
-  let wynik = wszystkie;
+  let wynik = all;
   if (filterKrag !== null) wynik = wynik.filter(s => s.krag === filterKrag);
   if (filterKategoria) wynik = wynik.filter(s => s.kategoria === filterKategoria);
   if (filterTradycja) wynik = wynik.filter(s => s.tradycja === filterTradycja);
   const searchLower = search.trim().toLowerCase();
   if (searchLower) wynik = wynik.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower));
 
-  const tradChipy = tradycjeWZbiorze.length > 1
-    ? tradycjeWZbiorze.map(([id, nazwa]) => `<button type="button" class="picker-filter-chip ${filterTradycja === id ? 'active' : ''}" data-filter-tradycja="${id}">${nazwa}</button>`).join('')
+  const traditionChips = traditionsInSet.length > 1
+    ? traditionsInSet.map(([id, nazwa]) => `<button type="button" class="picker-filter-chip ${filterTradycja === id ? 'active' : ''}" data-filter-tradycja="${id}">${nazwa}</button>`).join('')
     : '';
-  const kregChipy = kregi.length > 1
-    ? kregi.map(k => `<button type="button" class="picker-filter-chip ${filterKrag === k ? 'active' : ''}" data-filter-krag="${k}">Krąg ${k}</button>`).join('')
+  const circleChips = circles.length > 1
+    ? circles.map(k => `<button type="button" class="picker-filter-chip ${filterKrag === k ? 'active' : ''}" data-filter-krag="${k}">Krąg ${k}</button>`).join('')
     : '';
-  const katChipy = [['atak', 'Atak'], ['uzytkowe', 'Użytkowe']]
+  const catChips = [['atak', 'Atak'], ['uzytkowe', 'Użytkowe']]
     .map(([id, etykieta]) => `<button type="button" class="picker-filter-chip ${filterKategoria === id ? 'active' : ''}" data-filter-kategoria="${id}">${etykieta}</button>`).join('');
-  const chipyHtml = (tradChipy || kregChipy || katChipy)
-    ? `<div class="picker-filter-chips">${tradChipy}${kregChipy}${katChipy}</div>`
+  const chipsHtml = (traditionChips || circleChips || catChips)
+    ? `<div class="picker-filter-chips">${traditionChips}${circleChips}${catChips}</div>`
     : '';
 
-  const zajete = pobierzZajeteZaklecia(magiaPicker.atomId);
+  const taken = getTakenSpells(magicPicker.atomId);
   const tiles = wynik
     .slice()
     .sort((a, b) => a.tradycjaNazwa.localeCompare(b.tradycjaNazwa, 'pl') || a.krag - b.krag || a.nazwa.localeCompare(b.nazwa, 'pl'))
     .map(s => {
-      const jestZajete = zajete.has(s.id);
+      const isTaken = taken.has(s.id);
       return `
-      <button type="button" class="picker-tile ${jestZajete ? 'disabled' : ''}" ${jestZajete ? 'disabled' : ''} data-pick-zaklecie="${s.id}">
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-zaklecie="${s.id}">
         <div class="picker-tile-header">
           <span>${s.nazwa}</span>
-          ${renderujZnacznikZrodla(s.zrodlo)}
+          ${renderSourceTag(s.zrodlo)}
         </div>
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg ${s.krag} · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
         <p class="picker-tile-opis">${s.opis}</p>
-        ${jestZajete ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
-        ${!jestZajete && czyCzarnaMagia(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
+        ${isTaken ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
+        ${!isTaken && isBlackMagic(s.tradycja) ? '<div class="picker-tile-warning">⚠️ Czarna magia</div>' : ''}
       </button>
     `;
     }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
 
   return `
-    ${chipyHtml}
-    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${wszystkie.length} zaklęć</p>
+    ${chipsHtml}
+    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${all.length} zaklęć</p>
     <div class="picker-tile-grid">${tiles}</div>
   `;
 }
@@ -4812,68 +4812,68 @@ function renderZakleciePickerDynamicHtml() {
  * darmowego zaklęcia ("Poznawanie tradycji", PG) - bez chipów filtrów, bo
  * krąg jest już z definicji ograniczony do 0, a tradycja jest ustalona.
  */
-function renderDarmoweZakleciePickerDynamicHtml() {
-  const { tradycjaId, search } = magiaPicker;
-  const wszystkie = pobierzZakleciaKregu0(tradycjaId);
+function renderFreeSpellPickerDynamicHtml() {
+  const { tradycjaId, search } = magicPicker;
+  const all = getCircleZeroSpells(tradycjaId);
   const searchLower = search.trim().toLowerCase();
-  const wynik = searchLower ? wszystkie.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower)) : wszystkie;
+  const wynik = searchLower ? all.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower)) : all;
 
-  const zajete = pobierzZajeteZaklecia(magiaPicker.atomId);
+  const taken = getTakenSpells(magicPicker.atomId);
   const tiles = wynik
     .slice()
     .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'))
     .map(s => {
-      const jestZajete = zajete.has(s.id);
+      const isTaken = taken.has(s.id);
       return `
-      <button type="button" class="picker-tile ${jestZajete ? 'disabled' : ''}" ${jestZajete ? 'disabled' : ''} data-pick-darmowe-zaklecie="${s.id}">
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-darmowe-zaklecie="${s.id}">
         <div class="picker-tile-header">
           <span>${s.nazwa}</span>
-          ${renderujZnacznikZrodla(s.zrodlo)}
+          ${renderSourceTag(s.zrodlo)}
         </div>
         <div class="picker-tile-meta">${s.tradycjaNazwa} · Krąg 0 · ${s.kategoria === 'atak' ? 'Atak' : 'Użytkowe'}</div>
         <p class="picker-tile-opis">${s.opis}</p>
-        ${jestZajete ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
+        ${isTaken ? '<div class="picker-tile-taken">Już wybrane w innym slocie</div>' : ''}
       </button>
     `;
     }).join('') || '<p class="hint">Brak zaklęć kręgu 0 spełniających kryteria wyszukiwania.</p>';
 
   return `
-    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${wszystkie.length} zaklęć kręgu 0</p>
+    <p class="picker-results-count hint">Znaleziono ${wynik.length} z ${all.length} zaklęć kręgu 0</p>
     <div class="picker-tile-grid">${tiles}</div>
   `;
 }
 
 /** Podłącza obsługę chipów filtrów i kafelków w dynamicznym obszarze popupu. */
-function podlaczObslugePickerDynamic(container) {
+function attachHandlePickerDynamic(container) {
   container.querySelectorAll('[data-filter-krag]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = parseInt(btn.dataset.filterKrag, 10);
-      magiaPicker.filterKrag = magiaPicker.filterKrag === val ? null : val;
+      magicPicker.filterKrag = magicPicker.filterKrag === val ? null : val;
       rerenderPickerDynamic();
     });
   });
   container.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.dataset.filterKategoria;
-      magiaPicker.filterKategoria = magiaPicker.filterKategoria === val ? null : val;
+      magicPicker.filterKategoria = magicPicker.filterKategoria === val ? null : val;
       rerenderPickerDynamic();
     });
   });
   container.querySelectorAll('[data-filter-tradycja]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.dataset.filterTradycja;
-      magiaPicker.filterTradycja = magiaPicker.filterTradycja === val ? null : val;
+      magicPicker.filterTradycja = magicPicker.filterTradycja === val ? null : val;
       rerenderPickerDynamic();
     });
   });
   container.querySelectorAll('[data-pick-tradycja]').forEach(btn => {
-    btn.addEventListener('click', () => wybierzTradycjaZPickera(btn.dataset.pickTradycja));
+    btn.addEventListener('click', () => selectTraditionWithPicker(btn.dataset.pickTradycja));
   });
   container.querySelectorAll('[data-pick-zaklecie]').forEach(btn => {
-    btn.addEventListener('click', () => wybierzZaklecieZPickera(btn.dataset.pickZaklecie));
+    btn.addEventListener('click', () => selectSpellWithPicker(btn.dataset.pickZaklecie));
   });
   container.querySelectorAll('[data-pick-darmowe-zaklecie]').forEach(btn => {
-    btn.addEventListener('click', () => wybierzDarmoweZaklecieZPickera(btn.dataset.pickDarmoweZaklecie));
+    btn.addEventListener('click', () => selectFreeSpellWithPicker(btn.dataset.pickDarmoweZaklecie));
   });
 }
 
@@ -4884,119 +4884,119 @@ function podlaczObslugePickerDynamic(container) {
  * zaklęcia - albo, gdy tradycja ma tylko jedno zaklęcie kręgu 0, wybiera je
  * automatycznie, bez dodatkowego kliknięcia.
  */
-function wybierzTradycjaZPickera(tradycjaId) {
-  const atomId = magiaPicker.atomId;
-  const docelowy = magiaPicker.docelowy || 'magia';
+function selectTraditionWithPicker(tradycjaId) {
+  const atomId = magicPicker.atomId;
+  const target = magicPicker.target || 'magia';
 
-  if (docelowy === 'ekwipunek') {
-    const wybor = ekwipunekWybory[atomId] || {};
-    ekwipunekWybory[atomId] = { ...wybor, typ: 'zwoj_zaklecie', tradycjaId, spellId: null };
-    const kregZero = pobierzZakleciaKregu0(tradycjaId);
-    if (kregZero.length === 1) {
-      ekwipunekWybory[atomId].spellId = kregZero[0].id;
-      zamknijMagicPicker();
-    } else if (kregZero.length > 1) {
-      otworzDarmoweZakleciePicker(atomId, tradycjaId, 'ekwipunek');
+  if (target === 'ekwipunek') {
+    const wybor = equipmentChoices[atomId] || {};
+    equipmentChoices[atomId] = { ...wybor, typ: 'zwoj_zaklecie', tradycjaId, spellId: null };
+    const circleZero = getCircleZeroSpells(tradycjaId);
+    if (circleZero.length === 1) {
+      equipmentChoices[atomId].spellId = circleZero[0].id;
+      closeMagicPicker();
+    } else if (circleZero.length > 1) {
+      openFreeSpellPicker(atomId, tradycjaId, 'ekwipunek');
     } else {
-      zamknijMagicPicker();
+      closeMagicPicker();
     }
-    renderEkwipunekSection();
+    renderEquipmentSection();
     return;
   }
 
-  const wybor = magiaWybory[atomId] || {};
-  magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId, darmowyZaklecieId: null };
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId, darmowyZaklecieId: null };
 
-  const kregZero = pobierzZakleciaKregu0(tradycjaId);
-  if (kregZero.length === 1) {
-    magiaWybory[atomId].darmowyZaklecieId = kregZero[0].id;
-    zamknijMagicPicker();
-  } else if (kregZero.length > 1) {
-    otworzDarmoweZakleciePicker(atomId, tradycjaId);
+  const circleZero = getCircleZeroSpells(tradycjaId);
+  if (circleZero.length === 1) {
+    magicChoices[atomId].darmowyZaklecieId = circleZero[0].id;
+    closeMagicPicker();
+  } else if (circleZero.length > 1) {
+    openFreeSpellPicker(atomId, tradycjaId);
   } else {
-    zamknijMagicPicker();
+    closeMagicPicker();
   }
   renderSpellsSection();
 }
 
 /** Zatwierdza wybór zaklęcia dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
-function wybierzZaklecieZPickera(spellId) {
-  const atomId = magiaPicker.atomId;
-  const wybor = magiaWybory[atomId] || {};
-  magiaWybory[atomId] = { ...wybor, mode: wybor.mode || 'zaklecie', spellId };
-  delete magiaRyzykoWyniki[atomId];
-  zamknijMagicPicker();
+function selectSpellWithPicker(spellId) {
+  const atomId = magicPicker.atomId;
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, mode: wybor.mode || 'zaklecie', spellId };
+  delete magicRiskResults[atomId];
+  closeMagicPicker();
   renderSpellsSection();
 }
 
 /** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
-function wybierzDarmoweZaklecieZPickera(spellId) {
-  const atomId = magiaPicker.atomId;
-  const docelowy = magiaPicker.docelowy || 'magia';
+function selectFreeSpellWithPicker(spellId) {
+  const atomId = magicPicker.atomId;
+  const target = magicPicker.target || 'magia';
 
-  if (docelowy === 'ekwipunek') {
-    const wybor = ekwipunekWybory[atomId] || {};
-    ekwipunekWybory[atomId] = { ...wybor, spellId };
-    zamknijMagicPicker();
-    renderEkwipunekSection();
+  if (target === 'ekwipunek') {
+    const wybor = equipmentChoices[atomId] || {};
+    equipmentChoices[atomId] = { ...wybor, spellId };
+    closeMagicPicker();
+    renderEquipmentSection();
     return;
   }
 
-  const wybor = magiaWybory[atomId] || {};
-  magiaWybory[atomId] = { ...wybor, darmowyZaklecieId: spellId };
-  zamknijMagicPicker();
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, darmowyZaklecieId: spellId };
+  closeMagicPicker();
   renderSpellsSection();
 }
 
 /** Czyści wszystkie wybory magii dokonane w Kroku 6. */
-function resetujMagie() {
-  magiaWybory = {};
-  magiaRyzykoWyniki = {};
-  magiaCzarnaMagiaZaTradycje = new Set();
+function resetMagic() {
+  magicChoices = {};
+  magicRiskResults = {};
+  magicBlackMagicTooTraditions = new Set();
   renderSpellsSection();
 }
 
 // ========== KROK 7: EKWIPUNEK (Zamożność, wyposażenie startowe, sklep) ==========
 
 /** Rzuca podaną liczbą kostek k6 (zapis "NkM", tylko k6 używane w tabelach zamożności) i zwraca sumę oczek. */
-function rzucKostki(zapis) {
-  const [iloscKostekTxt, scianTxt] = zapis.split('k');
-  const iloscKostek = parseInt(iloscKostekTxt, 10) || 1;
-  const scian = parseInt(scianTxt, 10) || 6;
-  let suma = 0;
-  for (let i = 0; i < iloscKostek; i++) suma += Math.floor(Math.random() * scian) + 1;
-  return suma;
+function rollDice(save) {
+  const [iloscKostekTxt, scianTxt] = save.split('k');
+  const diceCount = parseInt(iloscKostekTxt, 10) || 1;
+  const faces = parseInt(scianTxt, 10) || 6;
+  let sum = 0;
+  for (let i = 0; i < diceCount; i++) sum += Math.floor(Math.random() * faces) + 1;
+  return sum;
 }
 
 /** Renderuje całą sekcję Kroku 7 (Zamożność, wyposażenie startowe, sklep). */
-function renderEkwipunekSection() {
-  renderZamoznoscGrid();
-  renderWyposazenieStartowe();
-  renderSklepSection();
+function renderEquipmentSection() {
+  renderWealthGrid();
+  renderGearStarting();
+  renderShopSection();
 }
 
 /** Renderuje kafelki wyboru Zamożności wraz z ewentualnym wynikiem rzutu 3k6. */
-function renderZamoznoscGrid() {
+function renderWealthGrid() {
   const grid = document.getElementById('zamoznosc-grid');
-  const wynikEl = document.getElementById('zamoznosc-wynik');
+  const resultEl = document.getElementById('zamoznosc-wynik');
   if (!grid) return;
 
-  if (wynikEl) {
-    wynikEl.textContent = ekwipunekZamoznoscWynik != null
-      ? `Wynik rzutu 3k6: ${ekwipunekZamoznoscWynik}`
+  if (resultEl) {
+    resultEl.textContent = equipmentWealthResult != null
+      ? `Wynik rzutu 3k6: ${equipmentWealthResult}`
       : '';
   }
 
-  grid.innerHTML = Object.values(ZAMOZNOSC).map(z => {
-    const zakres = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
-    const selected = ekwipunekZamoznoscId === z.id;
+  grid.innerHTML = Object.values(WEALTH).map(z => {
+    const range = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
+    const selected = equipmentWealthId === z.id;
     return `
       <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-wybierz-zamoznosc="${z.id}">
         <div class="picker-tile-header">
           <span>${z.nazwa}</span>
           ${selected ? '<span class="zamoznosc-badge">✓ Wybrano</span>' : ''}
         </div>
-        <div class="picker-tile-meta">3k6: ${zakres}</div>
+        <div class="picker-tile-meta">3k6: ${range}</div>
         <p class="picker-tile-opis">${z.opis}</p>
       </button>
     `;
@@ -5008,10 +5008,10 @@ function renderZamoznoscGrid() {
 }
 
 /** Losuje Zamożność rzutem 3k6 i wybiera odpowiedni poziom z tabeli. */
-function losujZamoznosc() {
-  const wynik = rzucKostki('3k6');
-  const zam = pobierzZamoznoscDlaRzutu(wynik);
-  if (zam) wybierzZamoznosc(zam.id, wynik);
+function randomizeWealth() {
+  const wynik = rollDice('3k6');
+  const wealthentry = getWealthForRoll(wynik);
+  if (wealthentry) wybierzZamoznosc(wealthentry.id, wynik);
 }
 
 /**
@@ -5019,29 +5019,29 @@ function losujZamoznosc() {
  * startową gotówkę (PG: "sakiewka z NkM ..."). Czyści wybory wyposażenia
  * startowego i sklepu, bo należą do poprzedniego poziomu zamożności.
  */
-function wybierzZamoznosc(zamoznoscId, wynikRzutu) {
-  const zam = ZAMOZNOSC[zamoznoscId];
-  if (!zam) return;
-  ekwipunekZamoznoscId = zamoznoscId;
-  ekwipunekZamoznoscWynik = wynikRzutu;
-  ekwipunekGotowkaPoczatkowaWynik = rzucKostki(zam.pieniadze.kosci);
-  ekwipunekWybory = {};
-  ekwipunekSprzedane = [];
-  ekwipunekZakupione = [];
-  ekwipunekOpisRozwiniete = new Set();
-  renderEkwipunekSection();
+function wybierzZamoznosc(zamoznoscId, resultRoll) {
+  const wealthentry = WEALTH[zamoznoscId];
+  if (!wealthentry) return;
+  equipmentWealthId = zamoznoscId;
+  equipmentWealthResult = resultRoll;
+  equipmentStartingCashRoll = rollDice(wealthentry.pieniadze.kosci);
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
+  renderEquipmentSection();
 }
 
 /** Czyści wybraną Zamożność i cały zależny od niej stan ekwipunku. */
-function resetujZamoznosc() {
-  ekwipunekZamoznoscId = null;
-  ekwipunekZamoznoscWynik = null;
-  ekwipunekGotowkaPoczatkowaWynik = null;
-  ekwipunekWybory = {};
-  ekwipunekSprzedane = [];
-  ekwipunekZakupione = [];
-  ekwipunekOpisRozwiniete = new Set();
-  renderEkwipunekSection();
+function resetWealth() {
+  equipmentWealthId = null;
+  equipmentWealthResult = null;
+  equipmentStartingCashRoll = null;
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
+  renderEquipmentSection();
 }
 
 /**
@@ -5052,203 +5052,203 @@ function resetujZamoznosc() {
  * wyższych poziomach" - minus wydatki na zakupy). Zwraca `null`, gdy
  * Zamożność nie została jeszcze wybrana.
  */
-function obliczStanEkwipunku() {
-  if (!ekwipunekZamoznoscId) return null;
-  const zam = ZAMOZNOSC[ekwipunekZamoznoscId];
-  const gwarantowane = pobierzGwarantowanePozycje(ekwipunekZamoznoscId);
-  const atomy = obliczAtomyWyposazenia(ekwipunekZamoznoscId);
+function calculateStateEquipment() {
+  if (!equipmentWealthId) return null;
+  const wealthentry = WEALTH[equipmentWealthId];
+  const guaranteed = getGuaranteedEntries(equipmentWealthId);
+  const atoms = calculateAtomsGear(equipmentWealthId);
 
-  const startowePozycje = [];
-  gwarantowane.forEach((p, idx) => {
-    startowePozycje.push({ klucz: `g${idx}`, itemId: p.id || null, tekst: p.tekst || null, ilosc: p.ilosc || 1 });
+  const startingEntries = [];
+  guaranteed.forEach((p, idx) => {
+    startingEntries.push({ klucz: `g${idx}`, itemId: p.id || null, tekst: p.tekst || null, ilosc: p.ilosc || 1 });
   });
-  atomy.forEach(atom => {
-    const wybor = ekwipunekWybory[atom.id];
+  atoms.forEach(atom => {
+    const wybor = equipmentChoices[atom.id];
     if (!wybor) return;
     if (wybor.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
-      startowePozycje.push({
+      startingEntries.push({
         klucz: atom.id, itemId: null, ilosc: 1, atomId: atom.id, sprzedawalny: false,
         zwojZaklecie: { tradycjaId: wybor.tradycjaId, spellId: wybor.spellId || null }
       });
     } else if (wybor.itemId) {
-      startowePozycje.push({ klucz: atom.id, itemId: wybor.itemId, ilosc: 1, atomId: atom.id });
+      startingEntries.push({ klucz: atom.id, itemId: wybor.itemId, ilosc: 1, atomId: atom.id });
     }
   });
 
-  const sprzedaneSet = new Set(ekwipunekSprzedane);
-  const posiadaneStartowe = startowePozycje.filter(p => !sprzedaneSet.has(p.klucz));
-  const sprzedaneStartowe = startowePozycje.filter(p => sprzedaneSet.has(p.klucz));
+  const soldSet = new Set(equipmentSold);
+  const ownedStarting = startingEntries.filter(p => !soldSet.has(p.klucz));
+  const soldStarting = startingEntries.filter(p => soldSet.has(p.klucz));
 
-  const jednostkaGotowki = zam.pieniadze.jednostka;
-  const startowaGotowkaOkrawki = ekwipunekGotowkaPoczatkowaWynik != null
-    ? ekwipunekGotowkaPoczatkowaWynik * PRZELICZNIK_NA_OKRAWKI[jednostkaGotowki]
+  const unitCash = wealthentry.pieniadze.jednostka;
+  const startingCashCopperbits = equipmentStartingCashRoll != null
+    ? equipmentStartingCashRoll * CONVERTER_TO_COPPERBITS[unitCash]
     : 0;
-  const zeSprzedazyOkrawki = sprzedaneStartowe.reduce((suma, p) => {
-    if (!p.itemId) return suma;
-    return suma + cenaSkupuOkrawki(pobierzPrzedmiot(p.itemId)?.cena) * p.ilosc;
+  const withSaleCopperbits = soldStarting.reduce((sum, p) => {
+    if (!p.itemId) return sum;
+    return sum + priceBuybackCopperbits(getItem(p.itemId)?.cena) * p.ilosc;
   }, 0);
-  const zaZakupyOkrawki = ekwipunekZakupione.reduce((suma, z) => {
-    return suma + cenaNaOkrawki(pobierzPrzedmiot(z.itemId)?.cena) * z.ilosc;
+  const tooPurchasesCopperbits = equipmentPurchased.reduce((sum, z) => {
+    return sum + priceOnCopperbits(getItem(z.itemId)?.cena) * z.ilosc;
   }, 0);
-  const zeSrebrnikowPoziomu = (wylosowaneSrebrniki || 0) * PRZELICZNIK_NA_OKRAWKI.sr;
+  const withSilverLevel = (randomizedSilver || 0) * CONVERTER_TO_COPPERBITS.sr;
 
-  const gotowkaOkrawki = startowaGotowkaOkrawki + zeSprzedazyOkrawki + zeSrebrnikowPoziomu - zaZakupyOkrawki;
+  const cashCopperbits = startingCashCopperbits + withSaleCopperbits + withSilverLevel - tooPurchasesCopperbits;
 
-  const zakupionePozycje = ekwipunekZakupione.map((z, idx) => ({ klucz: `z${idx}`, itemId: z.itemId, ilosc: z.ilosc }));
+  const purchasedEntries = equipmentPurchased.map((z, idx) => ({ klucz: `z${idx}`, itemId: z.itemId, ilosc: z.ilosc }));
 
   return {
-    zam, atomy, gwarantowane,
-    posiadaneStartowe, sprzedaneStartowe, zakupionePozycje,
-    startowaGotowkaOkrawki, zeSprzedazyOkrawki, zaZakupyOkrawki, zeSrebrnikowPoziomu,
-    gotowkaOkrawki
+    wealthentry, atoms, guaranteed,
+    ownedStarting, soldStarting, purchasedEntries,
+    startingCashCopperbits, withSaleCopperbits, tooPurchasesCopperbits, withSilverLevel,
+    cashCopperbits
   };
 }
 
 /** Renderuje sekcję wyposażenia startowego: gwarantowane pozycje i karty wyboru (jedna karta = jeden atom). */
-function renderWyposazenieStartowe() {
+function renderGearStarting() {
   const container = document.getElementById('wyposazenie-startowe-section');
   if (!container) return;
 
-  if (!ekwipunekZamoznoscId) {
+  if (!equipmentWealthId) {
     container.innerHTML = '';
     return;
   }
 
-  const stan = obliczStanEkwipunku();
-  const gwarantowaneHtml = stan.gwarantowane.map(p => {
-    const przedmiot = p.id ? pobierzPrzedmiot(p.id) : null;
-    const nazwa = przedmiot?.nazwa || p.id || p.tekst;
+  const state = calculateStateEquipment();
+  const guaranteedHtml = state.guaranteed.map(p => {
+    const item = p.id ? getItem(p.id) : null;
+    const nazwa = item?.nazwa || p.id || p.tekst;
     const ilosc = p.ilosc && p.ilosc > 1 ? ` (${p.ilosc}×)` : '';
-    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
-    return `<li${statystyki ? ` title="${statystyki}"` : ''}>${nazwa}${ilosc}</li>`;
+    const stats = item ? formatStatsItem(item) : null;
+    return `<li${stats ? ` title="${stats}"` : ''}>${nazwa}${ilosc}</li>`;
   }).join('');
 
-  const atomyHtml = stan.atomy.map(atom => renderujKarteWyposazenia(atom)).join('');
+  const atomsHtml = state.atoms.map(atom => renderCardGear(atom)).join('');
 
   container.innerHTML = `
-    <h4>🎒 Wyposażenie startowe (${stan.zam.nazwa})</h4>
-    <p class="hint">Gwarantowane: <ul class="gwarantowane-lista">${gwarantowaneHtml}</ul></p>
-    ${atomyHtml}
-    <p class="hint">Startowa gotówka: <strong>${formatujOkrawki(stan.startowaGotowkaOkrawki)}</strong> (sakiewka z ${stan.zam.pieniadze.kosci} ${stan.zam.pieniadze.jednostka === 'okr' ? 'okrawków' : stan.zam.pieniadze.jednostka === 'md' ? 'miedziaków' : 'srebrników'})</p>
-    ${stan.zam.dodatkowyOpis ? `<p class="hint">${stan.zam.dodatkowyOpis}</p>` : ''}
+    <h4>🎒 Wyposażenie startowe (${state.wealthentry.nazwa})</h4>
+    <p class="hint">Gwarantowane: <ul class="gwarantowane-lista">${guaranteedHtml}</ul></p>
+    ${atomsHtml}
+    <p class="hint">Startowa gotówka: <strong>${formatCopperbits(state.startingCashCopperbits)}</strong> (sakiewka z ${state.wealthentry.pieniadze.kosci} ${state.wealthentry.pieniadze.jednostka === 'okr' ? 'okrawków' : state.wealthentry.pieniadze.jednostka === 'md' ? 'miedziaków' : 'srebrników'})</p>
+    ${state.wealthentry.dodatkowyOpis ? `<p class="hint">${state.wealthentry.dodatkowyOpis}</p>` : ''}
   `;
 
   container.querySelectorAll('[data-wybierz-startowy]').forEach(btn => {
     btn.addEventListener('click', () => {
-      wybierzPrzedmiotStartowy(btn.dataset.wybierzStartowy, btn.dataset.itemId);
+      selectItemStarting(btn.dataset.wybierzStartowy, btn.dataset.itemId);
     });
   });
   container.querySelectorAll('[data-otworz-zwoj]').forEach(btn => {
-    btn.addEventListener('click', () => otworzTradycjaPicker(btn.dataset.otworzZwoj, ['dowolna'], new Set(), 'ekwipunek'));
+    btn.addEventListener('click', () => openTraditionPicker(btn.dataset.otworzZwoj, ['dowolna'], new Set(), 'ekwipunek'));
   });
 }
 
 /** Renderuje jedną kartę wyboru wyposażenia startowego (wybor_przedmiotu albo wybor_dodatkowy). */
-function renderujKarteWyposazenia(atom) {
-  const wybor = ekwipunekWybory[atom.id];
+function renderCardGear(atom) {
+  const wybor = equipmentChoices[atom.id];
 
   if (atom.rodzaj === 'wybor_przedmiotu') {
-    const kafelki = atom.opcje.map(itemId => {
-      const przedmiot = pobierzPrzedmiot(itemId);
-      const aktywny = wybor?.itemId === itemId;
-      const statystyki = formatujStatystykiPrzedmiotu(przedmiot);
-      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}"${statystyki ? ` title="${statystyki}"` : ''}>${przedmiot?.nazwa || itemId}</button>`;
+    const tiles = atom.opcje.map(itemId => {
+      const item = getItem(itemId);
+      const active = wybor?.itemId === itemId;
+      const stats = formatStatsItem(item);
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${itemId}"${stats ? ` title="${stats}"` : ''}>${item?.nazwa || itemId}</button>`;
     }).join('');
-    const wybranyPrzedmiot = wybor?.itemId ? pobierzPrzedmiot(wybor.itemId) : null;
-    const statystykiWybranego = wybranyPrzedmiot ? formatujStatystykiPrzedmiotu(wybranyPrzedmiot) : null;
+    const selectedItem = wybor?.itemId ? getItem(wybor.itemId) : null;
+    const statsSelected = selectedItem ? formatStatsItem(selectedItem) : null;
     return `
       <div class="magic-slot-card ${wybor?.itemId ? 'complete' : ''}">
-        <p class="magic-slot-desc">Wybierz jedno: ${atom.opcje.map(id => pobierzPrzedmiot(id)?.nazwa || id).join(' / ')}${atom.opisWyboru ? ` (${atom.opisWyboru})` : ''}</p>
-        <div class="magic-slot-mode-toggle">${kafelki}</div>
-        ${statystykiWybranego ? `<p class="magic-slot-status ok">${wybranyPrzedmiot.nazwa}: ${statystykiWybranego}</p>` : ''}
+        <p class="magic-slot-desc">Wybierz jedno: ${atom.opcje.map(id => getItem(id)?.nazwa || id).join(' / ')}${atom.opisWyboru ? ` (${atom.opisWyboru})` : ''}</p>
+        <div class="magic-slot-mode-toggle">${tiles}</div>
+        ${statsSelected ? `<p class="magic-slot-status ok">${selectedItem.nazwa}: ${statsSelected}</p>` : ''}
       </div>
     `;
   }
 
   // wybor_dodatkowy
-  const kafelki = atom.opcje.map(opcja => {
-    const aktywny = opcja.typ === 'zwoj_zaklecie' ? wybor?.typ === 'zwoj_zaklecie' : (wybor?.typ === 'przedmiot' && wybor?.itemId === opcja.id);
+  const tiles = atom.opcje.map(opcja => {
+    const active = opcja.typ === 'zwoj_zaklecie' ? wybor?.typ === 'zwoj_zaklecie' : (wybor?.typ === 'przedmiot' && wybor?.itemId === opcja.id);
     if (opcja.typ === 'zwoj_zaklecie') {
-      return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-otworz-zwoj="${atom.id}">${opcja.etykieta}</button>`;
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-otworz-zwoj="${atom.id}">${opcja.etykieta}</button>`;
     }
-    const statystyki = formatujStatystykiPrzedmiotu(pobierzPrzedmiot(opcja.id));
-    return `<button type="button" class="btn-secondary small ${aktywny ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}"${statystyki ? ` title="${statystyki}"` : ''}>${opcja.etykieta}</button>`;
+    const stats = formatStatsItem(getItem(opcja.id));
+    return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-wybierz-startowy="${atom.id}" data-item-id="${opcja.id}"${stats ? ` title="${stats}"` : ''}>${opcja.etykieta}</button>`;
   }).join('');
 
-  let opisWyniku = '';
+  let descriptionResult = '';
   if (wybor?.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
-    const nazwaTr = TRADYCJE[wybor.tradycjaId]?.nazwa || wybor.tradycjaId;
+    const traditionName = TRADITIONS[wybor.tradycjaId]?.nazwa || wybor.tradycjaId;
     const spell = wybor.spellId ? SPELLS.find(s => s.id === wybor.spellId) : null;
-    opisWyniku = `<p class="magic-slot-status ok">Wybrano: ${nazwaTr}${spell ? ` - ${spell.nazwa}` : ' (wybierz zaklęcie kręgu 0)'}</p>`;
+    descriptionResult = `<p class="magic-slot-status ok">Wybrano: ${traditionName}${spell ? ` - ${spell.nazwa}` : ' (wybierz zaklęcie kręgu 0)'}</p>`;
   } else if (wybor?.typ === 'przedmiot' && wybor.itemId) {
-    const wybranyPrzedmiot = pobierzPrzedmiot(wybor.itemId);
-    const statystykiWybranego = wybranyPrzedmiot ? formatujStatystykiPrzedmiotu(wybranyPrzedmiot) : null;
-    if (statystykiWybranego) opisWyniku = `<p class="magic-slot-status ok">${wybranyPrzedmiot.nazwa}: ${statystykiWybranego}</p>`;
+    const selectedItem = getItem(wybor.itemId);
+    const statsSelected = selectedItem ? formatStatsItem(selectedItem) : null;
+    if (statsSelected) descriptionResult = `<p class="magic-slot-status ok">${selectedItem.nazwa}: ${statsSelected}</p>`;
   }
 
   return `
     <div class="magic-slot-card ${wybor ? 'complete' : ''}">
       <p class="magic-slot-desc">${atom.opis}</p>
-      <div class="magic-slot-mode-toggle">${kafelki}</div>
-      ${opisWyniku}
+      <div class="magic-slot-mode-toggle">${tiles}</div>
+      ${descriptionResult}
     </div>
   `;
 }
 
 /** Zatwierdza wybór w karcie "wybór jednego przedmiotu" (np. pałka/proca) wyposażenia startowego. */
-function wybierzPrzedmiotStartowy(atomId, itemId) {
-  ekwipunekWybory[atomId] = { typ: 'przedmiot', itemId };
-  renderEkwipunekSection();
+function selectItemStarting(atomId, itemId) {
+  equipmentChoices[atomId] = { typ: 'przedmiot', itemId };
+  renderEquipmentSection();
 }
 
 /** Renderuje sekcję sklepu: aktualna gotówka, posiadane przedmioty (z opcją sprzedaży) i katalog zakupów. */
-function renderSklepSection() {
+function renderShopSection() {
   const container = document.getElementById('sklep-section');
   if (!container) return;
 
-  if (!ekwipunekZamoznoscId) {
+  if (!equipmentWealthId) {
     container.innerHTML = '';
     return;
   }
 
-  const stan = obliczStanEkwipunku();
+  const state = calculateStateEquipment();
 
-  const renderujWiersze = (pozycje, zrodlo) => pozycje.map(p => {
+  const renderRows = (entries, zrodlo) => entries.map(p => {
     const nazwa = p.zwojZaklecie
-      ? `Zwój (${TRADYCJE[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
-      : (p.itemId ? (pobierzPrzedmiot(p.itemId)?.nazwa || p.itemId) : p.tekst);
-    const przedmiot = p.itemId ? pobierzPrzedmiot(p.itemId) : null;
-    const mozeSprzedac = zrodlo === 'startowe' ? (przedmiot && przedmiot.cena) : true;
-    const cenaSkupu = przedmiot ? formatujOkrawki(cenaSkupuOkrawki(przedmiot.cena) * p.ilosc) : null;
+      ? `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const item = p.itemId ? getItem(p.itemId) : null;
+    const canSell = zrodlo === 'startowe' ? (item && item.cena) : true;
+    const priceBuyback = item ? formatCopperbits(priceBuybackCopperbits(item.cena) * p.ilosc) : null;
     const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
-    const statystyki = przedmiot ? formatujStatystykiPrzedmiotu(przedmiot) : null;
-    const maOpis = !!przedmiot?.opis;
-    const rozwiniety = ekwipunekOpisRozwiniete.has(p.klucz);
-    const wiersz = `
+    const stats = item ? formatStatsItem(item) : null;
+    const hasDescription = !!item?.opis;
+    const expanded = equipmentDescriptionExpanded.has(p.klucz);
+    const row = `
       <tr>
-        <td>${nazwa}${ilosc} ${przedmiot ? renderujZnacznikZrodla(przedmiot.zrodlo) : ''}</td>
-        <td>${statystyki || '—'}</td>
-        <td>${przedmiot ? formatujCene(przedmiot.cena) : '—'}</td>
+        <td>${nazwa}${ilosc} ${item ? renderSourceTag(item.zrodlo) : ''}</td>
+        <td>${stats || '—'}</td>
+        <td>${item ? formatPrice(item.cena) : '—'}</td>
         <td class="equipment-table-actions">
-          ${maOpis ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">ℹ️</button>` : ''}
-          ${mozeSprzedac ? `<button type="button" class="icon-btn" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${cenaSkupu}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
+          ${hasDescription ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="Pokaż opis">ℹ️</button>` : ''}
+          ${canSell ? `<button type="button" class="icon-btn" data-sprzedaj="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? '💰' : '↩️'}</button>` : ''}
         </td>
       </tr>
     `;
-    const wierszOpis = maOpis
-      ? `<tr class="equipment-table-desc-row" ${rozwiniety ? '' : 'hidden'}><td colspan="4">${przedmiot.opis}</td></tr>`
+    const rowDescription = hasDescription
+      ? `<tr class="equipment-table-desc-row" ${expanded ? '' : 'hidden'}><td colspan="4">${item.opis}</td></tr>`
       : '';
-    return wiersz + wierszOpis;
+    return row + rowDescription;
   }).join('');
 
-  const wszystkiePozycje = [...stan.posiadaneStartowe, ...stan.zakupionePozycje];
-  const tabelaHtml = wszystkiePozycje.length ? `
+  const allEntries = [...state.ownedStarting, ...state.purchasedEntries];
+  const tableHtml = allEntries.length ? `
     <div class="equipment-table-wrap">
       <table class="equipment-table">
         <thead><tr><th>Przedmiot</th><th>Statystyki</th><th>Cena</th><th></th></tr></thead>
         <tbody id="ekwipunek-posiadane-list">
-          ${renderujWiersze(stan.posiadaneStartowe, 'startowe')}
-          ${renderujWiersze(stan.zakupionePozycje, 'kupione')}
+          ${renderRows(state.ownedStarting, 'startowe')}
+          ${renderRows(state.purchasedEntries, 'kupione')}
         </tbody>
       </table>
     </div>
@@ -5257,18 +5257,18 @@ function renderSklepSection() {
   container.innerHTML = `
     <div class="flex-row-between">
       <h4>🏪 Sklep</h4>
-      <span id="gotowka-summary" class="inline-summary"><strong>Gotówka: ${formatujOkrawki(stan.gotowkaOkrawki)}</strong></span>
+      <span id="gotowka-summary" class="inline-summary"><strong>Gotówka: ${formatCopperbits(state.cashCopperbits)}</strong></span>
     </div>
-    ${stan.zeSrebrnikowPoziomu > 0 ? `<p class="hint">Zawiera ${wylosowaneSrebrniki} wylosowanych srebrników z Kroku 2 (poziom ${wybranyPoziom}).</p>` : ''}
+    ${state.withSilverLevel > 0 ? `<p class="hint">Zawiera ${randomizedSilver} wylosowanych srebrników z Kroku 2 (poziom ${selectedLevel}).</p>` : ''}
 
     <div class="flex-row-between">
       <h5>Twoje przedmioty</h5>
     </div>
-    ${tabelaHtml}
+    ${tableHtml}
 
-    ${stan.sprzedaneStartowe.length ? `
+    ${state.soldStarting.length ? `
       <div class="flex-row-between"><h5>Sprzedane</h5></div>
-      <div class="equipment-tag-list">${stan.sprzedaneStartowe.map(p => `<span class="equipment-tag sold">${p.itemId ? pobierzPrzedmiot(p.itemId)?.nazwa : p.tekst}</span>`).join('')}</div>
+      <div class="equipment-tag-list">${state.soldStarting.map(p => `<span class="equipment-tag sold">${p.itemId ? getItem(p.itemId)?.nazwa : p.tekst}</span>`).join('')}</div>
     ` : ''}
 
     <div class="flex-row-between">
@@ -5278,133 +5278,133 @@ function renderSklepSection() {
   `;
 
   container.querySelectorAll('[data-sprzedaj]').forEach(btn => {
-    btn.addEventListener('click', () => sprzedajPozycje(btn.dataset.sprzedaj, btn.dataset.zrodlo));
+    btn.addEventListener('click', () => sellEntries(btn.dataset.sprzedaj, btn.dataset.zrodlo));
   });
   container.querySelectorAll('[data-info]').forEach(btn => {
     btn.addEventListener('click', () => {
       const klucz = btn.dataset.info;
-      if (ekwipunekOpisRozwiniete.has(klucz)) ekwipunekOpisRozwiniete.delete(klucz);
-      else ekwipunekOpisRozwiniete.add(klucz);
-      renderSklepSection();
+      if (equipmentDescriptionExpanded.has(klucz)) equipmentDescriptionExpanded.delete(klucz);
+      else equipmentDescriptionExpanded.add(klucz);
+      renderShopSection();
     });
   });
-  document.getElementById('btn-otworz-sklep')?.addEventListener('click', () => otworzEkwipunekPicker());
+  document.getElementById('btn-otworz-sklep')?.addEventListener('click', () => openEquipmentPicker());
 }
 
 /** Sprzedaje (pozycja startowa, za połowę ceny) albo zwraca (pozycja kupiona, pełny zwrot) daną pozycję ekwipunku. */
-function sprzedajPozycje(klucz, zrodlo) {
+function sellEntries(klucz, zrodlo) {
   if (zrodlo === 'startowe') {
-    if (!ekwipunekSprzedane.includes(klucz)) ekwipunekSprzedane.push(klucz);
+    if (!equipmentSold.includes(klucz)) equipmentSold.push(klucz);
   } else if (zrodlo === 'kupione') {
     const idx = parseInt(klucz.replace('z', ''), 10);
-    const zakup = ekwipunekZakupione[idx];
-    if (zakup) {
-      if (zakup.ilosc > 1) zakup.ilosc -= 1;
-      else ekwipunekZakupione.splice(idx, 1);
+    const purchase = equipmentPurchased[idx];
+    if (purchase) {
+      if (purchase.ilosc > 1) purchase.ilosc -= 1;
+      else equipmentPurchased.splice(idx, 1);
     }
   }
-  renderEkwipunekSection();
+  renderEquipmentSection();
 }
 
 /**
  * Stan aktualnie otwartego popupu katalogu sklepu (Krok 7) - `null`, gdy
  * popup jest zamknięty.
  */
-let ekwipunekPicker = null;
+let equipmentPicker = null;
 
 /** Otwiera popup katalogu przedmiotów do kupienia (kafelki z wyszukiwaniem i filtrami kategorii/rzadkości). */
-function otworzEkwipunekPicker() {
-  ekwipunekPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc', ukryjNiedostepne: true };
+function openEquipmentPicker() {
+  equipmentPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc', ukryjNiedostepne: true };
   const overlay = document.getElementById('equipment-picker-overlay');
   if (overlay) overlay.hidden = false;
-  renderEkwipunekPickerBody();
+  renderEquipmentPickerBody();
 }
 
 /** Zamyka popup katalogu sklepu. */
-function zamknijEkwipunekPicker() {
+function closeEquipmentPicker() {
   const overlay = document.getElementById('equipment-picker-overlay');
   if (overlay) overlay.hidden = true;
-  ekwipunekPicker = null;
+  equipmentPicker = null;
 }
 
 /** Renderuje zawartość popupu katalogu: statyczne pole wyszukiwania + dynamiczny obszar z chipami i kafelkami. */
-function renderEkwipunekPickerBody() {
+function renderEquipmentPickerBody() {
   const body = document.getElementById('equipment-picker-body');
-  if (!body || !ekwipunekPicker) return;
+  if (!body || !equipmentPicker) return;
   body.innerHTML = `
     <input type="text" class="picker-search" id="equipment-picker-search-input" placeholder="Szukaj przedmiotu...">
     <div id="equipment-picker-dynamic"></div>
   `;
   const input = document.getElementById('equipment-picker-search-input');
-  input.value = ekwipunekPicker.search;
+  input.value = equipmentPicker.search;
   input.addEventListener('input', () => {
-    ekwipunekPicker.search = input.value;
-    rerenderEkwipunekPickerDynamic();
+    equipmentPicker.search = input.value;
+    rerenderEquipmentPickerDynamic();
   });
   input.focus();
-  rerenderEkwipunekPickerDynamic();
+  rerenderEquipmentPickerDynamic();
 }
 
 /** Przerenderowuje chipy filtrów i siatkę kafelków katalogu (pole wyszukiwania zostaje niezmienione). */
-function rerenderEkwipunekPickerDynamic() {
+function rerenderEquipmentPickerDynamic() {
   const el = document.getElementById('equipment-picker-dynamic');
-  if (!el || !ekwipunekPicker) return;
+  if (!el || !equipmentPicker) return;
 
-  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir, ukryjNiedostepne } = ekwipunekPicker;
+  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir, ukryjNiedostepne } = equipmentPicker;
   let wynik = EQUIPMENT.filter(i => i.cena);
   if (filterKategoria) wynik = wynik.filter(i => i.kategoria === filterKategoria);
   if (filterRzadkosc) wynik = wynik.filter(i => i.rzadkosc === filterRzadkosc);
   const searchLower = search.trim().toLowerCase();
   if (searchLower) wynik = wynik.filter(i => `${i.nazwa} ${i.opis || ''}`.toLowerCase().includes(searchLower));
 
-  const kategorieChipy = Object.keys(KATEGORIA_ETYKIETY)
+  const categoriesChips = Object.keys(CATEGORY_LABELS_EQ)
     .filter(k => EQUIPMENT.some(i => i.kategoria === k && i.cena))
-    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-kategoria="${k}">${KATEGORIA_ETYKIETY[k]}</button>`)
+    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-kategoria="${k}">${CATEGORY_LABELS_EQ[k]}</button>`)
     .join('');
-  const rzadkoscChipy = Object.keys(RZADKOSC_ETYKIETY)
-    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rzadkosc="${r}">${RZADKOSC_ETYKIETY[r]}</button>`)
+  const rarityChips = Object.keys(RARITY_LABELS)
+    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rzadkosc="${r}">${RARITY_LABELS[r]}</button>`)
     .join('');
-  const sortChipy = Object.keys(SORTOWANIE_ETYKIETY)
-    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORTOWANIE_ETYKIETY[s]}${sortBy === s ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}</button>`)
+  const sortChips = Object.keys(SORT_LABELS)
+    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${SORT_LABELS[s]}${sortBy === s ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}</button>`)
     .join('');
 
-  const stan = obliczStanEkwipunku();
-  const posiadaneIds = stan
-    ? new Set([...stan.posiadaneStartowe, ...stan.zakupionePozycje].filter(p => p.itemId).map(p => p.itemId))
+  const state = calculateStateEquipment();
+  const ownedIds = state
+    ? new Set([...state.ownedStarting, ...state.purchasedEntries].filter(p => p.itemId).map(p => p.itemId))
     : new Set();
 
-  let wynikDoWyswietlenia = sortujPrzedmioty(wynik, sortBy, sortDir).map(i => {
-    const zaDrogi = !stan || stan.gotowkaOkrawki < cenaNaOkrawki(i.cena);
-    const posiadany = posiadaneIds.has(i.id);
-    return { i, zaDrogi, posiadany, niedostepny: zaDrogi || posiadany };
+  let resultToDisplay = sortItems(wynik, sortBy, sortDir).map(i => {
+    const tooExpensive = !state || state.cashCopperbits < priceOnCopperbits(i.cena);
+    const owned = ownedIds.has(i.id);
+    return { i, tooExpensive, owned, niedostepny: tooExpensive || owned };
   });
-  const wszystkichPasujacych = wynikDoWyswietlenia.length;
-  if (ukryjNiedostepne) wynikDoWyswietlenia = wynikDoWyswietlenia.filter(w => !w.niedostepny);
+  const allMatching = resultToDisplay.length;
+  if (ukryjNiedostepne) resultToDisplay = resultToDisplay.filter(w => !w.niedostepny);
 
-  const tiles = wynikDoWyswietlenia
-    .map(({ i, zaDrogi, posiadany, niedostepny }) => {
-      const statystyki = formatujStatystykiPrzedmiotu(i);
-      const powod = posiadany ? 'Już posiadane' : (zaDrogi ? 'Za mało gotówki' : '');
+  const tiles = resultToDisplay
+    .map(({ i, tooExpensive, owned, niedostepny }) => {
+      const stats = formatStatsItem(i);
+      const reason = owned ? 'Już posiadane' : (tooExpensive ? 'Za mało gotówki' : '');
       return `
       <button type="button" class="picker-tile ${niedostepny ? 'disabled' : ''}" ${niedostepny ? 'disabled' : ''} data-kup="${i.id}">
         <div class="picker-tile-header">
           <span>${i.nazwa}</span>
-          ${renderujZnacznikZrodla(i.zrodlo)}
+          ${renderSourceTag(i.zrodlo)}
         </div>
-        <div class="picker-tile-meta">${KATEGORIA_ETYKIETY[i.kategoria] || i.kategoria} · ${RZADKOSC_ETYKIETY[i.rzadkosc] || '—'} · ${formatujCene(i.cena)}</div>
-        ${statystyki ? `<div class="picker-tile-stats">${statystyki}</div>` : ''}
+        <div class="picker-tile-meta">${CATEGORY_LABELS_EQ[i.kategoria] || i.kategoria} · ${RARITY_LABELS[i.rzadkosc] || '—'} · ${formatPrice(i.cena)}</div>
+        ${stats ? `<div class="picker-tile-stats">${stats}</div>` : ''}
         ${i.opis ? `<p class="picker-tile-opis">${i.opis}</p>` : ''}
-        ${powod ? `<div class="picker-tile-taken">${powod}</div>` : ''}
+        ${reason ? `<div class="picker-tile-taken">${reason}</div>` : ''}
       </button>
     `;
     }).join('') || '<p class="hint">Brak przedmiotów spełniających kryteria wyszukiwania.</p>';
 
   el.innerHTML = `
-    <div class="picker-filter-chips">${kategorieChipy}</div>
-    <div class="picker-filter-chips">${rzadkoscChipy}</div>
-    <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">Sortuj:</span>${sortChipy}</div>
+    <div class="picker-filter-chips">${categoriesChips}</div>
+    <div class="picker-filter-chips">${rarityChips}</div>
+    <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">Sortuj:</span>${sortChips}</div>
     <div class="picker-toolbar">
-      <p class="picker-results-count hint">Znaleziono ${wszystkichPasujacych} przedmiotów${ukryjNiedostepne && wszystkichPasujacych !== wynikDoWyswietlenia.length ? ` (${wynikDoWyswietlenia.length} dostępnych)` : ''}</p>
+      <p class="picker-results-count hint">Znaleziono ${allMatching} przedmiotów${ukryjNiedostepne && allMatching !== resultToDisplay.length ? ` (${resultToDisplay.length} dostępnych)` : ''}</p>
       <label class="picker-toggle-label">
         <input type="checkbox" id="equipment-picker-hide-unavailable" ${ukryjNiedostepne ? 'checked' : ''}>
         Ukryj niedostępne (za drogie, już posiadane)
@@ -5414,54 +5414,54 @@ function rerenderEkwipunekPickerDynamic() {
   `;
 
   document.getElementById('equipment-picker-hide-unavailable')?.addEventListener('change', (e) => {
-    ekwipunekPicker.ukryjNiedostepne = e.target.checked;
-    rerenderEkwipunekPickerDynamic();
+    equipmentPicker.ukryjNiedostepne = e.target.checked;
+    rerenderEquipmentPickerDynamic();
   });
 
   el.querySelectorAll('[data-filter-kategoria]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.dataset.filterKategoria;
-      ekwipunekPicker.filterKategoria = ekwipunekPicker.filterKategoria === val ? null : val;
-      rerenderEkwipunekPickerDynamic();
+      equipmentPicker.filterKategoria = equipmentPicker.filterKategoria === val ? null : val;
+      rerenderEquipmentPickerDynamic();
     });
   });
   el.querySelectorAll('[data-filter-rzadkosc]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.dataset.filterRzadkosc;
-      ekwipunekPicker.filterRzadkosc = ekwipunekPicker.filterRzadkosc === val ? null : val;
-      rerenderEkwipunekPickerDynamic();
+      equipmentPicker.filterRzadkosc = equipmentPicker.filterRzadkosc === val ? null : val;
+      rerenderEquipmentPickerDynamic();
     });
   });
   el.querySelectorAll('[data-sort-by]').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.dataset.sortBy;
-      if (ekwipunekPicker.sortBy === val) {
-        ekwipunekPicker.sortDir = ekwipunekPicker.sortDir === 'desc' ? 'asc' : 'desc';
+      if (equipmentPicker.sortBy === val) {
+        equipmentPicker.sortDir = equipmentPicker.sortDir === 'desc' ? 'asc' : 'desc';
       } else {
-        ekwipunekPicker.sortBy = val;
-        ekwipunekPicker.sortDir = 'asc';
+        equipmentPicker.sortBy = val;
+        equipmentPicker.sortDir = 'asc';
       }
-      rerenderEkwipunekPickerDynamic();
+      rerenderEquipmentPickerDynamic();
     });
   });
   el.querySelectorAll('[data-kup]').forEach(btn => {
-    btn.addEventListener('click', () => kupPrzedmiotZSklepu(btn.dataset.kup));
+    btn.addEventListener('click', () => buyItemFromShop(btn.dataset.kup));
   });
 }
 
 /** Kupuje przedmiot z katalogu (jeśli starcza gotówki) i przerenderowuje sklep + katalog. */
-function kupPrzedmiotZSklepu(itemId) {
-  const przedmiot = pobierzPrzedmiot(itemId);
-  if (!przedmiot) return;
-  const stan = obliczStanEkwipunku();
-  if (!stan || stan.gotowkaOkrawki < cenaNaOkrawki(przedmiot.cena)) return;
+function buyItemFromShop(itemId) {
+  const item = getItem(itemId);
+  if (!item) return;
+  const state = calculateStateEquipment();
+  if (!state || state.cashCopperbits < priceOnCopperbits(item.cena)) return;
 
-  const istniejacy = ekwipunekZakupione.find(z => z.itemId === itemId);
-  if (istniejacy) istniejacy.ilosc += 1;
-  else ekwipunekZakupione.push({ itemId, ilosc: 1 });
+  const existing = equipmentPurchased.find(z => z.itemId === itemId);
+  if (existing) existing.ilosc += 1;
+  else equipmentPurchased.push({ itemId, ilosc: 1 });
 
-  renderSklepSection();
-  rerenderEkwipunekPickerDynamic();
+  renderShopSection();
+  rerenderEquipmentPickerDynamic();
 }
 
 // ========== BOCZNE MENU (nowa/wczytaj/wylosuj postać) ==========
@@ -5475,7 +5475,7 @@ function kupPrzedmiotZSklepu(itemId) {
 let tooltipEl = null;
 
 /** Tworzy (jednorazowo) pływający element podpowiedzi i dopina obsługę hover/focus do elementów z atrybutem `data-tooltip`. */
-function inicjalizujTooltipy() {
+function initializeTooltips() {
   if (!tooltipEl) {
     tooltipEl = document.createElement('div');
     tooltipEl.className = 'js-tooltip';
@@ -5485,28 +5485,28 @@ function inicjalizujTooltipy() {
   document.querySelectorAll('[data-tooltip]').forEach(el => {
     if (el.dataset.tooltipBound) return;
     el.dataset.tooltipBound = 'true';
-    el.addEventListener('mouseenter', () => pokazTooltip(el));
-    el.addEventListener('mouseleave', ukryjTooltip);
-    el.addEventListener('focus', () => pokazTooltip(el));
-    el.addEventListener('blur', ukryjTooltip);
+    el.addEventListener('mouseenter', () => showTooltip(el));
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('focus', () => showTooltip(el));
+    el.addEventListener('blur', hideTooltip);
   });
 }
 
 /** Pokazuje podpowiedź obok wskazanego elementu, dobierając stronę (prawo/lewo/góra), żeby zmieścić się w oknie. */
-function pokazTooltip(el) {
+function showTooltip(el) {
   const tekst = el.dataset.tooltip;
   if (!tooltipEl || !tekst) return;
   tooltipEl.textContent = tekst;
   tooltipEl.classList.add('visible');
 
   const rect = el.getBoundingClientRect();
-  const preferGora = window.matchMedia('(max-width: 860px)').matches;
+  const preferTop = window.matchMedia('(max-width: 860px)').matches;
 
   requestAnimationFrame(() => {
     const tw = tooltipEl.offsetWidth;
     const th = tooltipEl.offsetHeight;
     let left; let top;
-    if (preferGora) {
+    if (preferTop) {
       // Boczne menu jest poziomym paskiem u dołu ekranu - podpowiedź nad ikoną.
       left = rect.left + rect.width / 2 - tw / 2;
       top = rect.top - th - 10;
@@ -5524,7 +5524,7 @@ function pokazTooltip(el) {
 }
 
 /** Ukrywa aktualnie widoczną podpowiedź. */
-function ukryjTooltip() {
+function hideTooltip() {
   tooltipEl?.classList.remove('visible');
 }
 
@@ -5535,56 +5535,56 @@ function ukryjTooltip() {
  * od dotychczasowego zapisu w cache, żeby kolejny zapis (po dotarciu do
  * Kroku 8) trafił do nowego wpisu zamiast nadpisać poprzednią postać.
  */
-function nowaPostac() {
-  resetujWyborPochodzenia();
+function newCharacter() {
+  resetChoiceOrigin();
   renderProfessionsSection();
   renderCuriosSection();
   renderSpellsSection();
-  renderEkwipunekSection();
+  renderEquipmentSection();
   const importFeedback = document.getElementById('import-feedback');
   if (importFeedback) importFeedback.innerHTML = '';
-  biezacyZapisCacheId = null;
-  pokazKrok(1);
-  aktualizujPodgladPostaci();
+  currentSaveCacheId = null;
+  showStep(1);
+  updatePreviewCharacter();
 }
 
 /** Otwiera popup z listą postaci zapisanych w cache przeglądarki (localStorage). */
-function otworzWczytajPostacPopup() {
+function openLoadCharacterPopup() {
   const overlay = document.getElementById('load-character-overlay');
   if (!overlay) return;
   overlay.hidden = false;
-  renderWczytajPostacListe();
+  renderLoadCharacterList();
 }
 
 /** Zamyka popup listy zapisanych postaci. */
-function zamknijWczytajPostacPopup() {
+function closeLoadCharacterPopup() {
   const overlay = document.getElementById('load-character-overlay');
   if (overlay) overlay.hidden = true;
 }
 
 /** Renderuje listę zapisanych postaci (najnowsze na górze) w popupie "Wczytaj postać". */
-function renderWczytajPostacListe() {
+function renderLoadCharacterList() {
   const body = document.getElementById('load-character-body');
   if (!body) return;
 
-  const wszystkie = Object.values(pobierzZapisanePostacie()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+  const all = Object.values(getSavedCharacters()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 
-  if (wszystkie.length === 0) {
+  if (all.length === 0) {
     body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisuje się automatycznie, gdy dotrzesz do Kroku 8 (Podgląd), oraz przy imporcie z pliku JSON.</p>';
     return;
   }
 
   body.innerHTML = `
     <div class="known-spells-list">
-      ${wszystkie.map(wpis => {
-    const pochodzenieId = wpis.dane?.wybory?.pochodzenie;
-    const pochodzenie = dostepnePochodzenia.find(p => p.id === pochodzenieId)?.nazwa || pochodzenieId || 'Nieznane pochodzenie';
-    const poziom = wpis.dane?.wybory?.poziom ?? '?';
-    const data = wpis.savedAt ? new Date(wpis.savedAt).toLocaleString('pl-PL') : '';
+      ${all.map(entry => {
+    const originId = entry.data?.wybory?.pochodzenie;
+    const pochodzenie = availableOrigin.find(p => p.id === originId)?.nazwa || originId || 'Nieznane pochodzenie';
+    const poziom = entry.data?.wybory?.poziom ?? '?';
+    const data = entry.savedAt ? new Date(entry.savedAt).toLocaleString('pl-PL') : '';
     return `
           <div class="selected-item">
             <span>${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
-            <button type="button" class="btn-secondary small" data-wczytaj-postac="${wpis.id}">Wczytaj</button>
+            <button type="button" class="btn-secondary small" data-wczytaj-postac="${entry.id}">Wczytaj</button>
           </div>
         `;
   }).join('')}
@@ -5592,23 +5592,23 @@ function renderWczytajPostacListe() {
   `;
 
   body.querySelectorAll('[data-wczytaj-postac]').forEach(btn => {
-    btn.addEventListener('click', () => wczytajPostacZCache(btn.dataset.wczytajPostac));
+    btn.addEventListener('click', () => loadCharacterWithCache(btn.dataset.wczytajPostac));
   });
 }
 
 /** Wczytuje wybraną zapisaną postać z cache i podpina jej id, żeby dalsze zmiany nadpisywały ten sam wpis. */
-async function wczytajPostacZCache(id) {
-  const wpis = pobierzZapisanePostacie()[id];
-  if (!wpis) return;
-  zamknijWczytajPostacPopup();
-  biezacyZapisCacheId = id;
+async function loadCharacterWithCache(id) {
+  const entry = getSavedCharacters()[id];
+  if (!entry) return;
+  closeLoadCharacterPopup();
+  currentSaveCacheId = id;
   try {
-    await zaimportujPostac(wpis.dane);
-    pokazKomunikatImportu('success', '✓ Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
+    await importCharacter(entry.data);
+    showImportMessage('success', '✓ Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.');
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Błąd wczytywania postaci z cache:', err);
-    pokazKomunikatImportu('error', `Wystąpił nieoczekiwany błąd podczas wczytywania postaci: ${err.message}`);
+    showImportMessage('error', `Wystąpił nieoczekiwany błąd podczas wczytywania postaci: ${err.message}`);
   }
 }
 
@@ -5625,11 +5625,11 @@ async function wczytajPostacZCache(id) {
  * podręcznika; opcja "zwój z zaklęciem" (wymagająca ręcznego wyboru
  * tradycji/zaklęcia) jest pomijana na rzecz pozostałych dostępnych opcji.
  */
-async function losujCalaPostac() {
-  nowaPostac();
+async function randomizeWholeCharacter() {
+  newCharacter();
 
   // 1. Pochodzenie + jego tabele (istniejący, przetestowany losowacz z Kroku 1)
-  await losujPochodzenieICechy();
+  await randomizeOriginAndTraits();
 
   // 2. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
   document.querySelectorAll('.origin-attr-choice-select').forEach(select => {
@@ -5640,23 +5640,23 @@ async function losujCalaPostac() {
   });
 
   // 3. Poziom (0-10) - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
-  wybranyPoziom = Math.floor(Math.random() * 11);
-  const poziomInput = document.querySelector(`input[name="poziom"][value="${wybranyPoziom}"]`);
-  if (poziomInput) poziomInput.checked = true;
-  aktualizujWidocznoscSciezek(wybranyPoziom);
-  await aktualizujSciezkiPoziomu(wybranyPoziom);
-  aktualizujTytulSekcjiSciezek(wybranyPoziom);
-  aktualizujWealthSection(wybranyPoziom);
-  aktualizujOriginBenefits(wybranyPoziom);
+  selectedLevel = Math.floor(Math.random() * 11);
+  const levelInput = document.querySelector(`input[name="poziom"][value="${selectedLevel}"]`);
+  if (levelInput) levelInput.checked = true;
+  updatePathsVisibility(selectedLevel);
+  await updatePathsLevel(selectedLevel);
+  updatePathsSectionTitle(selectedLevel);
+  updateWealthSection(selectedLevel);
+  updateOriginBenefits(selectedLevel);
   renderPathSectionsVisibility();
   await renderPathSection(1);
   await renderPathSection(3);
   await renderPathSection(7);
-  await zaladujKorzysciPoziomu(wybranyPoziom);
+  await loadBenefitsLevel(selectedLevel);
 
   // 4. Opcja poziomu 4 z pochodzenia (np. "1 zaklęcie"), jeśli dostępna
-  if (wybranyPoziom >= 4) {
-    const radios = Array.from(document.querySelectorAll(`input[name="origin-option-${wybranePochodzenie}"]`));
+  if (selectedLevel >= 4) {
+    const radios = Array.from(document.querySelectorAll(`input[name="origin-option-${selectedOrigin}"]`));
     if (radios.length) {
       const radio = radios[Math.floor(Math.random() * radios.length)];
       radio.checked = true;
@@ -5665,66 +5665,66 @@ async function losujCalaPostac() {
   }
 
   // 5. Ścieżki (Krok 3) - losowa dostępna ścieżka na każdym odblokowanym progu
-  [[1, 'path-grid-1'], [3, 'path-grid-3'], [7, 'path-grid-7']].forEach(([poziomWyboru, gridId]) => {
-    if (wybranyPoziom < poziomWyboru) return;
+  [[1, 'path-grid-1'], [3, 'path-grid-3'], [7, 'path-grid-7']].forEach(([levelChoice, gridId]) => {
+    if (selectedLevel < levelChoice) return;
     const buttons = Array.from(document.getElementById(gridId)?.querySelectorAll('button[data-path-id]') || []);
     if (!buttons.length) return;
     buttons[Math.floor(Math.random() * buttons.length)].click();
   });
 
   // 6. Sloty zwiększenia atrybutów (Krok 4) - losowy rozdział punktów
-  const slotyAtr = obliczSlotyAtrybutow({
-    sciezkaNowicjuszaId: wybraneSciezki.nowicjusz || null,
-    sciezkaEksperckaId: wybraneSciezki.ekspert || null,
-    sciezkaMistrzowskaId: wybraneSciezki.mistrz || null
+  const slotsAttr = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
   });
-  slotyAtr.forEach(slot => {
-    const wybrane = [];
+  slotsAttr.forEach(slot => {
+    const selected = [];
     for (let i = 0; i < slot.ilosc; i++) {
-      wybrane.push(slot.dostepne[Math.floor(Math.random() * slot.dostepne.length)]);
+      selected.push(slot.dostepne[Math.floor(Math.random() * slot.dostepne.length)]);
     }
-    wybraneAtrybutySlotow[slot.id] = wybrane;
+    selectedAttributesSlots[slot.id] = selected;
   });
-  renderAtrybutySlotySection();
+  renderAttributesSlotsSection();
 
   // 7. Profesje/języki i kurioza (Krok 5) - istniejące centralne losowacze
   renderProfessionsSection();
   renderCuriosSection();
-  losujProfesjeCentralnie();
-  losujKuriozaCentralnie();
+  randomizeProfessionsCentrally();
+  randomizeCuriosCentrally();
 
   // 8. Srebrniki (Krok 5) - 2k6 za każdy poziom powyżej 0, jak przycisk "Losuj srebrniki"
-  if (wybranyPoziom > 0) {
-    let suma = 0;
-    const rzuty = [];
-    for (let i = 0; i < wybranyPoziom * 2; i++) {
+  if (selectedLevel > 0) {
+    let sum = 0;
+    const rolls = [];
+    for (let i = 0; i < selectedLevel * 2; i++) {
       const r = Math.floor(Math.random() * 6) + 1;
-      rzuty.push(r);
-      suma += r;
+      rolls.push(r);
+      sum += r;
     }
-    wylosowaneSrebrniki = suma;
-    aktualizujWealthUI(rzuty, suma);
+    randomizedSilver = sum;
+    updateWealthUi(rolls, sum);
   }
 
   // 9. Ekwipunek (Krok 7): Zamożność + wyposażenie startowe - BEZ sklepu
   //    (żadnych dodatkowych zakupów/sprzedaży) i bez opcji "zwój z zaklęciem"
   //    (wymagałaby ręcznego wyboru tradycji/zaklęcia w popupie).
-  losujZamoznosc();
-  obliczAtomyWyposazenia(ekwipunekZamoznoscId).forEach(atom => {
+  randomizeWealth();
+  calculateAtomsGear(equipmentWealthId).forEach(atom => {
     if (atom.rodzaj === 'wybor_przedmiotu') {
       const itemId = atom.opcje[Math.floor(Math.random() * atom.opcje.length)];
-      wybierzPrzedmiotStartowy(atom.id, itemId);
+      selectItemStarting(atom.id, itemId);
     } else if (atom.rodzaj === 'wybor_dodatkowy') {
-      const opcjePrzedmiotow = atom.opcje.filter(o => o.typ === 'przedmiot');
-      if (!opcjePrzedmiotow.length) return;
-      const opcja = opcjePrzedmiotow[Math.floor(Math.random() * opcjePrzedmiotow.length)];
-      wybierzPrzedmiotStartowy(atom.id, opcja.id);
+      const optionsItems = atom.opcje.filter(o => o.typ === 'przedmiot');
+      if (!optionsItems.length) return;
+      const opcja = optionsItems[Math.floor(Math.random() * optionsItems.length)];
+      selectItemStarting(atom.id, opcja.id);
     }
   });
 
   // 10. Krok 8: podsumowanie (zapisuje się automatycznie w cache w pokazKrok())
-  pokazKrok(8);
-  aktualizujPodgladPostaci();
+  showStep(8);
+  updatePreviewCharacter();
 }
 
 // Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje

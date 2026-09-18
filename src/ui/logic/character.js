@@ -4,7 +4,7 @@
  * zamiast przez endpointy /api/build, /api/build-complete i /api/calculate-level-benefits.
  */
 
-import DANE_GRY from '../data/game-data.js';
+import GAME_DATA from '../data/game-data.js';
 
 /**
  * Buduje postać na podstawie specyfikacji zgodnie z zasadami z PDF
@@ -16,59 +16,59 @@ import DANE_GRY from '../data/game-data.js';
  * @param {number} [spec.poziom] - Poziom postaci (0-10, domyślnie 0)
  * @returns {Object} Obiekt postaci
  */
-function budujPostac(spec) {
+function buildCharacter(spec) {
   // Walidacja danych wejściowych
   if (!spec.pochodzenie) {
     throw new Error('Brak pochodzenia postaci');
   }
 
-  const pochodzenie = DANE_GRY.pochodzenia[spec.pochodzenie];
+  const pochodzenie = GAME_DATA.pochodzenia[spec.pochodzenie];
   if (!pochodzenie) {
     throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
   }
 
   // Poziom postaci - domyślnie 1 (Nowicjusz) - gra nie ma poziomu 0
-  const poziomPostaci = spec.poziom !== undefined ? parseInt(spec.poziom) : 1;
+  const levelCharacter = spec.poziom !== undefined ? parseInt(spec.poziom) : 1;
 
   // Sprawdzenie czy poziom istnieje
-  const poziomData = DANE_GRY.poziomy[poziomPostaci];
-  if (!poziomData) {
-    throw new Error(`Nieznany poziom: ${poziomPostaci}`);
+  const levelData = GAME_DATA.poziomy[levelCharacter];
+  if (!levelData) {
+    throw new Error(`Nieznany poziom: ${levelCharacter}`);
   }
 
   // Oblicz atrybuty zgodnie z zasadami z PDF
-  const atrybuty_finalne = DANE_GRY.obliczenia.oblicz_atrybuty_poczatkowe(pochodzenie, spec.wybor_atrybutu);
+  const attributesFinal = GAME_DATA.obliczenia.oblicz_atrybuty_poczatkowe(pochodzenie, spec.wybor_atrybutu);
 
   // Oblicz atrybuty drugorzędne z modyfikatorami rozmiaru
-  const drugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty_finalne, pochodzenie, poziomPostaci);
+  const secondary = GAME_DATA.obliczenia.atrybuty_drugorzedne(attributesFinal, pochodzenie, levelCharacter);
 
   // Pobierz ścieżkę jeśli podana
-  let sciezkaData = null;
+  let pathData = null;
   if (spec.sciezka) {
     // Sprawdź w odpowiedniej kategorii ścieżek na podstawie poziomu
-    if (poziomPostaci >= 1 && poziomPostaci <= 2 && DANE_GRY.sciezki_nowicjuszy[spec.sciezka]) {
-      sciezkaData = DANE_GRY.sciezki_nowicjuszy[spec.sciezka];
-    } else if (poziomPostaci >= 3 && poziomPostaci <= 6 && DANE_GRY.sciezki_ekspertow[spec.sciezka]) {
-      sciezkaData = DANE_GRY.sciezki_ekspertow[spec.sciezka];
-    } else if (poziomPostaci >= 7 && DANE_GRY.sciezki_mistrzow[spec.sciezka]) {
-      sciezkaData = DANE_GRY.sciezki_mistrzow[spec.sciezka];
+    if (levelCharacter >= 1 && levelCharacter <= 2 && GAME_DATA.sciezki_nowicjuszy[spec.sciezka]) {
+      pathData = GAME_DATA.sciezki_nowicjuszy[spec.sciezka];
+    } else if (levelCharacter >= 3 && levelCharacter <= 6 && GAME_DATA.sciezki_ekspertow[spec.sciezka]) {
+      pathData = GAME_DATA.sciezki_ekspertow[spec.sciezka];
+    } else if (levelCharacter >= 7 && GAME_DATA.sciezki_mistrzow[spec.sciezka]) {
+      pathData = GAME_DATA.sciezki_mistrzow[spec.sciezka];
     }
   }
 
   // Dodaj korzyści z pochodzenia na poziomie 4
-  let korzysciPochodzenia = {};
-  if (poziomPostaci === 4) {
-    korzysciPochodzenia = DANE_GRY.obliczenia.korzysci_pochodzenia_poziom_4(pochodzenie);
+  let benefitsOrigin = {};
+  if (levelCharacter === 4) {
+    benefitsOrigin = GAME_DATA.obliczenia.korzysci_pochodzenia_poziom_4(pochodzenie);
   }
 
   // Składanie finalnego obiektu postaci
   return {
     pochodzenie,
-    poziom: poziomData,
-    atrybuty: atrybuty_finalne,
-    atrybuty_drugorzedne: drugorzedne,
-    sciezka: sciezkaData,
-    korzysci_pochodzenia: korzysciPochodzenia,
+    poziom: levelData,
+    atrybuty: attributesFinal,
+    atrybuty_drugorzedne: secondary,
+    sciezka: pathData,
+    korzysci_pochodzenia: benefitsOrigin,
     profesje: pochodzenie.profesje,
     jezyki: pochodzenie.jezyki,
     cechy_specjalne: pochodzenie.cechy_specjalne,
@@ -86,27 +86,27 @@ function budujPostac(spec) {
  * @param {string} [spec.sciezka_mistrzowska] - ID ścieżki mistrzowskiej
  * @returns {Object} Korzyści dla poziomu
  */
-function obliczKorzysciPoziomu(poziom, spec) {
-  const poziomData = DANE_GRY.poziomy[poziom];
-  if (!poziomData) {
+function calculateBenefitsLevel(poziom, spec) {
+  const levelData = GAME_DATA.poziomy[poziom];
+  if (!levelData) {
     throw new Error(`Nieznany poziom: ${poziom}`);
   }
 
-  const pochodzenie = DANE_GRY.pochodzenia[spec.pochodzenie];
+  const pochodzenie = GAME_DATA.pochodzenia[spec.pochodzenie];
   if (!pochodzenie) {
     throw new Error(`Nieznane pochodzenie: ${spec.pochodzenie}`);
   }
 
   const result = {
     poziom,
-    nazwa_poziomu: poziomData.nazwa,
-    opis_poziomu: poziomData.opis,
-    zrodlo_korzysci: poziomData.zrodlo_korzysci,
+    nazwa_poziomu: levelData.nazwa,
+    opis_poziomu: levelData.opis,
+    zrodlo_korzysci: levelData.zrodlo_korzysci,
     korzyści: {}
   };
 
   // Zależnie od źródła korzyści
-  switch (poziomData.zrodlo_korzysci) {
+  switch (levelData.zrodlo_korzysci) {
   case 'pochodzenie':
     // Poziom 4 - korzyści z pochodzenia
     if (poziom === 4 && pochodzenie.poziom_4) {
@@ -116,7 +116,7 @@ function obliczKorzysciPoziomu(poziom, spec) {
 
   case 'sciezka_nowicjusza':
     if (spec.sciezka_nowicjusza) {
-      const sciezka = DANE_GRY.sciezki_nowicjuszy[spec.sciezka_nowicjusza];
+      const sciezka = GAME_DATA.sciezki_nowicjuszy[spec.sciezka_nowicjusza];
       if (sciezka) {
         const klucz = `poziom_${poziom}`;
         result.korzyści = sciezka[klucz] || {};
@@ -127,7 +127,7 @@ function obliczKorzysciPoziomu(poziom, spec) {
 
   case 'sciezka_ekspercka':
     if (spec.sciezka_ekspercka) {
-      const sciezka = DANE_GRY.sciezki_ekspertow[spec.sciezka_ekspercka];
+      const sciezka = GAME_DATA.sciezki_ekspertow[spec.sciezka_ekspercka];
       if (sciezka) {
         const klucz = `poziom_${poziom}`;
         result.korzyści = sciezka[klucz] || {};
@@ -138,7 +138,7 @@ function obliczKorzysciPoziomu(poziom, spec) {
 
   case 'sciezka_mistrzowska':
     if (spec.sciezka_mistrzowska) {
-      const sciezka = DANE_GRY.sciezki_mistrzow[spec.sciezka_mistrzowska];
+      const sciezka = GAME_DATA.sciezki_mistrzow[spec.sciezka_mistrzowska];
       if (sciezka) {
         const klucz = `poziom_${poziom}`;
         result.korzyści = sciezka[klucz] || {};
@@ -156,48 +156,48 @@ function obliczKorzysciPoziomu(poziom, spec) {
  * @param {Object} spec - Specyfikacja postaci
  * @returns {Object} Kompletny obiekt postaci z progresją
  */
-function budujPostacKompletna(spec) {
+function buildCharacterComplete(spec) {
   // Buduj podstawową postać
-  const postacBazowa = budujPostac(spec);
+  const characterBase = buildCharacter(spec);
 
   // Dodaj progresję atrybutów na podstawie poziomu
-  const bonusyPoziomu = DANE_GRY.progresja.obliczBonusyAtrybutow(postacBazowa.poziom.id);
+  const bonusesLevel = GAME_DATA.progresja.obliczBonusyAtrybutow(characterBase.poziom.id);
 
   // Dodaj bonusy ze ścieżek
   const sciezki = spec.sciezki || [];
-  const bonusyZdrowia = DANE_GRY.progresja.obliczBonusyZdrowia(sciezki);
-  const bonusyMocy = DANE_GRY.progresja.obliczBonusyMocy(sciezki);
+  const bonusesHealth = GAME_DATA.progresja.obliczBonusyZdrowia(sciezki);
+  const bonusesPower = GAME_DATA.progresja.obliczBonusyMocy(sciezki);
 
   // Oblicz finalne atrybuty z progresją
-  const atrybutyFinalne = {
-    sila: postacBazowa.atrybuty.sila + (bonusyPoziomu.sila || 0),
-    zrecznosc: postacBazowa.atrybuty.zrecznosc + (bonusyPoziomu.zrecznosc || 0),
-    intelekt: postacBazowa.atrybuty.intelekt + (bonusyPoziomu.intelekt || 0),
-    wola: postacBazowa.atrybuty.wola + (bonusyPoziomu.wola || 0)
+  const attributesFinal = {
+    sila: characterBase.atrybuty.sila + (bonusesLevel.sila || 0),
+    zrecznosc: characterBase.atrybuty.zrecznosc + (bonusesLevel.zrecznosc || 0),
+    intelekt: characterBase.atrybuty.intelekt + (bonusesLevel.intelekt || 0),
+    wola: characterBase.atrybuty.wola + (bonusesLevel.wola || 0)
   };
 
   // Aktualizuj atrybuty drugorzędne
-  const atrybutyDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybutyFinalne, postacBazowa.pochodzenie);
-  atrybutyDrugorzedne.zdrowie += bonusyZdrowia;
-  atrybutyDrugorzedne.moc += bonusyMocy;
+  const attributesSecondary = GAME_DATA.obliczenia.atrybuty_drugorzedne(attributesFinal, characterBase.pochodzenie);
+  attributesSecondary.zdrowie += bonusesHealth;
+  attributesSecondary.moc += bonusesPower;
 
   // Dodaj informacje o progresji
   const progresja = {
-    poziom: postacBazowa.poziom,
-    bonusy_poziomu: bonusyPoziomu,
-    bonusy_zdrowia: bonusyZdrowia,
-    bonusy_mocy: bonusyMocy,
+    poziom: characterBase.poziom,
+    bonusy_poziomu: bonusesLevel,
+    bonusy_zdrowia: bonusesHealth,
+    bonusy_mocy: bonusesPower,
     wybrane_sciezki: sciezki,
-    opis_poziomu: DANE_GRY.progresja.pobierzOpisPoziomu(postacBazowa.poziom.id)
+    opis_poziomu: GAME_DATA.progresja.pobierzOpisPoziomu(characterBase.poziom.id)
   };
 
   return {
-    ...postacBazowa,
-    atrybuty: atrybutyFinalne,
-    atrybuty_drugorzedne: atrybutyDrugorzedne,
+    ...characterBase,
+    atrybuty: attributesFinal,
+    atrybuty_drugorzedne: attributesSecondary,
     progresja,
     typ_eksportu: 'kompletna'
   };
 }
 
-export { budujPostac, obliczKorzysciPoziomu, budujPostacKompletna };
+export { buildCharacter, calculateBenefitsLevel, buildCharacterComplete };

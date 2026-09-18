@@ -20,7 +20,7 @@
  * zestawów narzędziowych.
  */
 
-const ZAMOZNOSC = {
+const WEALTH = {
   nedza: {
     id: 'nedza',
     nazwa: 'Nędza',
@@ -144,8 +144,8 @@ const ZAMOZNOSC = {
 };
 
 /** Zwraca poziom zamożności odpowiadający danemu wynikowi rzutu 3k6. */
-function pobierzZamoznoscDlaRzutu(wynik3k6) {
-  return Object.values(ZAMOZNOSC).find(z => wynik3k6 >= z.zakres3k6[0] && wynik3k6 <= z.zakres3k6[1]) || null;
+function getWealthForRoll(wynik3k6) {
+  return Object.values(WEALTH).find(z => wynik3k6 >= z.zakres3k6[0] && wynik3k6 <= z.zakres3k6[1]) || null;
 }
 
-export { ZAMOZNOSC, pobierzZamoznoscDlaRzutu };
+export { WEALTH, getWealthForRoll };

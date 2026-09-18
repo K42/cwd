@@ -22,18 +22,18 @@
 
 import PATHS from '../data/paths.js';
 import SPELLS from '../data/spells.js';
-import { TRADYCJE, TRADYCJE_RELIGIJNE, pobierzListePoznawalnychTradycji } from '../data/traditions.js';
+import { TRADITIONS, RELIGIOUS_TRADITIONS, getLearnableTraditionsList } from '../data/traditions.js';
 
 /** Minimalny poziom postaci wymagany do odblokowania danego klucza korzyści ścieżki. */
-const WYMAGANY_POZIOM = {
+const REQUIRED_LEVEL = {
   sciezki_nowicjuszy: { poziom_1: 1, poziom_2: 2, poziom_5: 5, poziom_8: 8 },
   sciezki_ekspertow: { poziom_1: 3, poziom_6: 6 },
   sciezki_mistrzow: { poziom_1: 7, poziom_10: 10 }
 };
 
-function znajdzSciezke(grupaKey, id) {
+function findPath(groupKey, id) {
   if (!id) return null;
-  return (PATHS[grupaKey] && PATHS[grupaKey][id]) || null;
+  return (PATHS[groupKey] && PATHS[groupKey][id]) || null;
 }
 
 /**
@@ -42,7 +42,7 @@ function znajdzSciezke(grupaKey, id) {
  * to automatyczne, nieinteraktywne nadania zaklęcia - nie przechodzą przez
  * ten mechanizm wyboru, więc zwracają puste.
  */
-function normalizujMagie(magia) {
+function normalizeMagic(magia) {
   if (!magia || typeof magia === 'string') return [];
   return Array.isArray(magia) ? magia : [magia];
 }
@@ -54,26 +54,26 @@ function normalizujMagie(magia) {
  * @param {string} source - etykieta źródła nadania (do wyświetlenia)
  * @returns {Array}
  */
-function rozwinJednostke(jednostka, idBase, source) {
-  const atomy = [];
+function expandUnit(jednostka, idBase, source) {
+  const atoms = [];
   if (jednostka.typ === 'tradycja') {
-    atomy.push({ id: `${idBase}-t`, source, rodzaj: 'wymuszona_tradycja', kategoria: jednostka.kategoria || ['dowolna'] });
+    atoms.push({ id: `${idBase}-t`, source, rodzaj: 'wymuszona_tradycja', kategoria: jednostka.kategoria || ['dowolna'] });
   } else if (jednostka.typ === 'wybor') {
     const ilosc = jednostka.ilosc || 1;
     for (let i = 0; i < ilosc; i++) {
       if (jednostka.tradycjaNazwa) {
-        atomy.push({ id: `${idBase}-w${i}`, source, rodzaj: 'wybor_fixed', tradycjaNazwa: jednostka.tradycjaNazwa });
+        atoms.push({ id: `${idBase}-w${i}`, source, rodzaj: 'wybor_fixed', tradycjaNazwa: jednostka.tradycjaNazwa });
       } else {
-        atomy.push({ id: `${idBase}-w${i}`, source, rodzaj: 'wybor', kategoria: jednostka.kategoria || ['dowolna'] });
+        atoms.push({ id: `${idBase}-w${i}`, source, rodzaj: 'wybor', kategoria: jednostka.kategoria || ['dowolna'] });
       }
     }
   } else if (jednostka.typ === 'zaklecie') {
     const ilosc = jednostka.ilosc || 1;
     for (let i = 0; i < ilosc; i++) {
-      atomy.push({ id: `${idBase}-z${i}`, source, rodzaj: 'zaklecie_tylko' });
+      atoms.push({ id: `${idBase}-z${i}`, source, rodzaj: 'zaklecie_tylko' });
     }
   }
-  return atomy;
+  return atoms;
 }
 
 /**
@@ -92,44 +92,44 @@ function rozwinJednostke(jednostka, idBase, source) {
  * @param {number} params.wybranyPoziom
  * @returns {Array}
  */
-function obliczSlotyMagii({ pochodzenie, wybranaOpcjaPoziom4, sciezkaNowicjuszaId, sciezkaEksperckaId, sciezkaMistrzowskaId, wybranyPoziom }) {
-  const atomy = [];
+function calculateSlotsMagic({ pochodzenie, wybranaOpcjaPoziom4, pathNoviceId, pathExpertId, pathMasterId, selectedLevel }) {
+  const atoms = [];
 
-  if (pochodzenie && pochodzenie.poziom_4 && wybranyPoziom >= 4 && wybranaOpcjaPoziom4 === '1 zaklęcie') {
-    atomy.push(...rozwinJednostke(
+  if (pochodzenie && pochodzenie.poziom_4 && selectedLevel >= 4 && wybranaOpcjaPoziom4 === '1 zaklęcie') {
+    atoms.push(...expandUnit(
       { typ: 'zaklecie', ilosc: 1 },
       `poch-${pochodzenie.id}`,
       `Pochodzenie: ${pochodzenie.nazwa} (poziom 4)`
     ));
   }
 
-  const dodajSciezke = (grupaKey, sciezkaId) => {
-    const sciezka = znajdzSciezke(grupaKey, sciezkaId);
+  const addPath = (groupKey, pathId) => {
+    const sciezka = findPath(groupKey, pathId);
     if (!sciezka) return;
-    const poziomyWTejGrupie = WYMAGANY_POZIOM[grupaKey];
-    Object.entries(poziomyWTejGrupie).forEach(([lvlKey, wymaganyPoziom]) => {
-      if (wybranyPoziom < wymaganyPoziom) return;
+    const levelsInThisGroup = REQUIRED_LEVEL[groupKey];
+    Object.entries(levelsInThisGroup).forEach(([lvlKey, wymaganyPoziom]) => {
+      if (selectedLevel < wymaganyPoziom) return;
       const pkt = sciezka[lvlKey];
       if (!pkt) return;
-      const jednostki = normalizujMagie(pkt.magia);
-      jednostki.forEach((jednostka, idx) => {
-        const idBase = `${sciezkaId}-${lvlKey}-m${idx}`;
+      const units = normalizeMagic(pkt.magia);
+      units.forEach((jednostka, idx) => {
+        const idBase = `${pathId}-${lvlKey}-m${idx}`;
         const source = `Ścieżka: ${sciezka.nazwa} (poziom ${wymaganyPoziom})`;
-        atomy.push(...rozwinJednostke(jednostka, idBase, source));
+        atoms.push(...expandUnit(jednostka, idBase, source));
       });
     });
   };
 
-  dodajSciezke('sciezki_nowicjuszy', sciezkaNowicjuszaId);
-  dodajSciezke('sciezki_ekspertow', sciezkaEksperckaId);
-  dodajSciezke('sciezki_mistrzow', sciezkaMistrzowskaId);
+  addPath('sciezki_nowicjuszy', pathNoviceId);
+  addPath('sciezki_ekspertow', pathExpertId);
+  addPath('sciezki_mistrzow', pathMasterId);
 
-  return atomy;
+  return atoms;
 }
 
 /** Sprawdza, czy dana tradycja (po id) jest tradycją czarnej magii. */
-function czyCzarnaMagia(tradycjaId) {
-  return !!(tradycjaId && TRADYCJE[tradycjaId] && TRADYCJE[tradycjaId].czarnaMagia);
+function isBlackMagic(tradycjaId) {
+  return !!(tradycjaId && TRADITIONS[tradycjaId] && TRADITIONS[tradycjaId].czarnaMagia);
 }
 
 /**
@@ -137,19 +137,19 @@ function czyCzarnaMagia(tradycjaId) {
  * kategorii slotu ('dowolna' / 'religijne' / lista konkretnych id tradycji),
  * pomijając tradycje już znane.
  */
-function pobierzTradycjeDlaKategorii(kategoria, znaneTradycje) {
-  const wszystkie = pobierzListePoznawalnychTradycji();
+function getTraditionsForCategory(kategoria, knownTraditions) {
+  const all = getLearnableTraditionsList();
   let dozwolone;
   if (!kategoria || kategoria.includes('dowolna')) {
-    dozwolone = wszystkie;
+    dozwolone = all;
   } else if (kategoria.includes('religijne')) {
-    dozwolone = wszystkie.filter(id => TRADYCJE_RELIGIJNE.includes(id));
+    dozwolone = all.filter(id => RELIGIOUS_TRADITIONS.includes(id));
   } else {
-    dozwolone = wszystkie.filter(id => kategoria.includes(id));
+    dozwolone = all.filter(id => kategoria.includes(id));
   }
   return dozwolone
-    .filter(id => !znaneTradycje.has(id))
-    .map(id => ({ id, nazwa: TRADYCJE[id].nazwa, czarnaMagia: !!TRADYCJE[id].czarnaMagia }))
+    .filter(id => !knownTraditions.has(id))
+    .map(id => ({ id, nazwa: TRADITIONS[id].nazwa, czarnaMagia: !!TRADITIONS[id].czarnaMagia }))
     .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
 }
 
@@ -158,9 +158,9 @@ function pobierzTradycjeDlaKategorii(kategoria, znaneTradycje) {
  * (albo wyłącznie z `tradycjaOgraniczenie`, gdy podana - przypadek
  * wybor_fixed), o kręgu nie wyższym niż aktualna Moc postaci.
  */
-function pobierzZakleciaDoNauki({ znaneTradycje, moc, tradycjaOgraniczenie }) {
-  const dozwoloneTradycje = tradycjaOgraniczenie ? [tradycjaOgraniczenie] : [...znaneTradycje];
-  return SPELLS.filter(s => dozwoloneTradycje.includes(s.tradycja) && s.krag <= moc);
+function getSpellsToLearning({ knownTraditions, moc, tradycjaOgraniczenie }) {
+  const allowedTraditions = tradycjaOgraniczenie ? [tradycjaOgraniczenie] : [...knownTraditions];
+  return SPELLS.filter(s => allowedTraditions.includes(s.tradycja) && s.krag <= moc);
 }
 
 /**
@@ -170,12 +170,12 @@ function pobierzZakleciaDoNauki({ znaneTradycje, moc, tradycjaOgraniczenie }) {
  * już znane w chwili przetwarzania danego atomu) oraz zbiór wynikowych
  * znanych tradycji.
  */
-function obliczRozwiazanieMagii(atomy, wybory) {
-  const znaneTradycje = new Set();
-  const rozwiazania = [];
-  let liczbaZnanychCzarnychZaklec = 0;
+function calculateResolutionMagic(atoms, wybory) {
+  const knownTraditions = new Set();
+  const resolutions = [];
+  let knownBlackSpellCount = 0;
 
-  for (const atom of atomy) {
+  for (const atom of atoms) {
     const wybor = wybory[atom.id] || {};
     let mode = null;
     let tradycjaId = null;
@@ -186,7 +186,7 @@ function obliczRozwiazanieMagii(atomy, wybory) {
       mode = 'tradycja';
       tradycjaId = wybor.tradycjaId || null;
     } else if (atom.rodzaj === 'wybor_fixed') {
-      mode = znaneTradycje.has(atom.tradycjaNazwa) ? 'zaklecie' : 'tradycja';
+      mode = knownTraditions.has(atom.tradycjaNazwa) ? 'zaklecie' : 'tradycja';
       tradycjaId = atom.tradycjaNazwa;
       spellId = wybor.spellId || null;
     } else if (atom.rodzaj === 'zaklecie_tylko') {
@@ -199,35 +199,35 @@ function obliczRozwiazanieMagii(atomy, wybory) {
     }
 
     if (mode === 'tradycja' && tradycjaId) {
-      znaneTradycje.add(tradycjaId);
+      knownTraditions.add(tradycjaId);
       // "Poznawanie tradycji": poznanie tradycji oznacza naukę jednego jej
       // zaklęcia kręgu 0 - gracz wybiera, które (patrz pobierzZakleciaKregu0()).
       darmowyZaklecieId = wybor.darmowyZaklecieId || null;
       // Jeśli to tradycja czarnej magii, to darmowe zaklęcie liczy się już
       // jako "znane zaklęcie czarnej magii" na potrzeby ryzyka splugawienia
       // przy nauce KOLEJNYCH zaklęć z tej tradycji.
-      if (czyCzarnaMagia(tradycjaId)) liczbaZnanychCzarnychZaklec++;
+      if (isBlackMagic(tradycjaId)) knownBlackSpellCount++;
     }
 
-    const kompletny = mode === 'tradycja' ? !!(tradycjaId && darmowyZaklecieId) : (mode === 'zaklecie' ? !!spellId : false);
+    const complete = mode === 'tradycja' ? !!(tradycjaId && darmowyZaklecieId) : (mode === 'zaklecie' ? !!spellId : false);
 
     // Ryzyko splugawienia dotyczy tylko zaklęć czarnej magii nauczonych
     // jako "kolejne zaklęcie" (mode 'zaklecie') - nie darmowego zaklęcia
     // kręgu 0 przyznanego automatycznie przy poznaniu samej tradycji
     // (to już naliczone powyżej, jednorazowo, przy poznaniu tradycji).
-    let czarnaMagiaRyzyko = null;
+    let blackMagicRisk = null;
     if (mode === 'zaklecie' && spellId) {
       const spell = SPELLS.find(s => s.id === spellId);
-      if (spell && czyCzarnaMagia(spell.tradycja)) {
-        czarnaMagiaRyzyko = { liczbaZnanychPrzed: liczbaZnanychCzarnychZaklec };
-        liczbaZnanychCzarnychZaklec++;
+      if (spell && isBlackMagic(spell.tradycja)) {
+        blackMagicRisk = { liczbaZnanychPrzed: knownBlackSpellCount };
+        knownBlackSpellCount++;
       }
     }
 
-    rozwiazania.push({ atom, mode, tradycjaId, spellId, darmowyZaklecieId, kompletny, czarnaMagiaRyzyko });
+    resolutions.push({ atom, mode, tradycjaId, spellId, darmowyZaklecieId, complete, blackMagicRisk });
   }
 
-  return { rozwiazania, znaneTradycje };
+  return { resolutions, knownTraditions };
 }
 
 /**
@@ -235,20 +235,20 @@ function obliczRozwiazanieMagii(atomy, wybory) {
  * wybiera darmowe zaklęcie przyznawane automatycznie przy poznaniu tejże
  * tradycji ("Poznawanie tradycji", PG).
  */
-function pobierzZakleciaKregu0(tradycjaId) {
+function getCircleZeroSpells(tradycjaId) {
   return SPELLS.filter(s => s.tradycja === tradycjaId && s.krag === 0);
 }
 
 /** Krótki, czytelny opis jednego atomowego wyboru - do podglądu/pomocy. */
-function opisAtomu(atom) {
+function atomDescription(atom) {
   if (atom.rodzaj === 'wymuszona_tradycja') {
-    return `Poznajesz nową tradycję${opisKategorii(atom.kategoria, 'accusative')}.`;
+    return `Poznajesz nową tradycję${descriptionCategories(atom.kategoria, 'accusative')}.`;
   }
   if (atom.rodzaj === 'wybor_fixed') {
-    return `Tradycja ${TRADYCJE[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa} lub zaklęcie z niej.`;
+    return `Tradycja ${TRADITIONS[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa} lub zaklęcie z niej.`;
   }
   if (atom.rodzaj === 'wybor') {
-    return `Nowa tradycja${opisKategorii(atom.kategoria, 'nominative')} lub zaklęcie ze znanej tradycji.`;
+    return `Nowa tradycja${descriptionCategories(atom.kategoria, 'nominative')} lub zaklęcie ze znanej tradycji.`;
   }
   if (atom.rodzaj === 'zaklecie_tylko') {
     return 'Uczysz się jednego zaklęcia ze znanej już tradycji.';
@@ -263,11 +263,11 @@ function opisAtomu(atom) {
  *   "związana/związaną", dopasowana do rzeczownika, który opisuje ("tradycja"
  *   w mianowniku vs. "tradycję" w bierniku po "Poznajesz").
  */
-function opisKategorii(kategoria, forma = 'nominative') {
+function descriptionCategories(kategoria, forma = 'nominative') {
   if (!kategoria || kategoria.includes('dowolna')) return '';
-  const zwiazana = forma === 'accusative' ? 'związaną' : 'związana';
-  if (kategoria.includes('religijne')) return ` ${zwiazana} z religią`;
-  return ` ${zwiazana} z: ${kategoria.map(id => TRADYCJE[id]?.nazwa || id).join(', ')}`;
+  const related = forma === 'accusative' ? 'związaną' : 'związana';
+  if (kategoria.includes('religijne')) return ` ${related} z religią`;
+  return ` ${related} z: ${kategoria.map(id => TRADITIONS[id]?.nazwa || id).join(', ')}`;
 }
 
 /**
@@ -276,17 +276,17 @@ function opisKategorii(kategoria, forma = 'nominative') {
  * Postaci, gdzie liczy się zwięzłe podsumowanie całej korzyści, nie
  * pojedyncza karta wyboru.
  */
-function opisJednostki(jednostka) {
+function descriptionUnits(jednostka) {
   if (jednostka.typ === 'tradycja') {
-    return `Poznajesz nową tradycję${opisKategorii(jednostka.kategoria, 'accusative')}.`;
+    return `Poznajesz nową tradycję${descriptionCategories(jednostka.kategoria, 'accusative')}.`;
   }
   if (jednostka.typ === 'wybor') {
     const ilosc = jednostka.ilosc || 1;
     if (jednostka.tradycjaNazwa) {
-      return `Tradycja ${TRADYCJE[jednostka.tradycjaNazwa]?.nazwa || jednostka.tradycjaNazwa} lub zaklęcie z niej.`;
+      return `Tradycja ${TRADITIONS[jednostka.tradycjaNazwa]?.nazwa || jednostka.tradycjaNazwa} lub zaklęcie z niej.`;
     }
-    const razy = ilosc > 1 ? `${ilosc}x: ` : '';
-    return `${razy}nowa tradycja${opisKategorii(jednostka.kategoria, 'nominative')} lub zaklęcie ze znanej tradycji.`;
+    const times = ilosc > 1 ? `${ilosc}x: ` : '';
+    return `${times}nowa tradycja${descriptionCategories(jednostka.kategoria, 'nominative')} lub zaklęcie ze znanej tradycji.`;
   }
   if (jednostka.typ === 'zaklecie') {
     const ilosc = jednostka.ilosc || 1;
@@ -299,20 +299,20 @@ function opisJednostki(jednostka) {
  * Czytelny opis całego pola `magia` (string bare / obiekt / tablica) - do
  * podglądu w kafelku ścieżki (Krok 3) i w Karcie Postaci.
  */
-function opisMagii(magia) {
+function descriptionMagic(magia) {
   if (!magia) return '';
   if (typeof magia === 'string') return magia;
-  const jednostki = Array.isArray(magia) ? magia : [magia];
-  return jednostki.map(opisJednostki).join(' ');
+  const units = Array.isArray(magia) ? magia : [magia];
+  return units.map(descriptionUnits).join(' ');
 }
 
 export {
-  obliczSlotyMagii,
-  obliczRozwiazanieMagii,
-  pobierzTradycjeDlaKategorii,
-  pobierzZakleciaDoNauki,
-  pobierzZakleciaKregu0,
-  czyCzarnaMagia,
-  opisAtomu,
-  opisMagii
+  calculateSlotsMagic,
+  calculateResolutionMagic,
+  getTraditionsForCategory,
+  getSpellsToLearning,
+  getCircleZeroSpells,
+  isBlackMagic,
+  atomDescription,
+  descriptionMagic
 };

@@ -15,7 +15,7 @@
  * pozostają wyszukiwalne w bibliotece.
  */
 
-const TRADYCJE = {
+const TRADITIONS = {
   // --- Podręcznik Główny (PG str. 115, "Tradycje i atrybuty") ---
   sztuki_tajemne: { nazwa: 'Sztuki Tajemne', atrybut: 'intelekt', czarnaMagia: false },
   magia_bitewna: { nazwa: 'Magia Bitewna', atrybut: 'intelekt', czarnaMagia: false },
@@ -72,13 +72,13 @@ const TRADYCJE = {
  * (Kleryk/Kapłan/Paladyn/Wyrocznia) ogranicza wybór nowej tradycji do religijnych.
  * Uproszczenie: aplikacja nie śledzi osobno wybranej religii, więc pokazuje unię
  * tradycji ze wszystkich czterech religii. */
-const TRADYCJE_RELIGIJNE = ['magia_niebianska', 'teurgia', 'zycie', 'magia_bitewna', 'ziemia', 'natura', 'magia_pierwotna', 'klatwy', 'uroki'];
+const RELIGIOUS_TRADITIONS = ['magia_niebianska', 'teurgia', 'zycie', 'magia_bitewna', 'ziemia', 'natura', 'magia_pierwotna', 'klatwy', 'uroki'];
 
 /** Zwraca listę id tradycji, które są prawdziwymi, samodzielnie poznawalnymi tradycjami. */
-function pobierzListePoznawalnychTradycji() {
-  return Object.entries(TRADYCJE)
+function getLearnableTraditionsList() {
+  return Object.entries(TRADITIONS)
     .filter(([, t]) => t.realTradycja !== false)
     .map(([id]) => id);
 }
 
-export { TRADYCJE, TRADYCJE_RELIGIJNE, pobierzListePoznawalnychTradycji };
+export { TRADITIONS, RELIGIOUS_TRADITIONS, getLearnableTraditionsList };

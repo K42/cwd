@@ -7,14 +7,14 @@
  * (bez serwera) ta sama logika jest wywoływana bezpośrednio.
  */
 
-import { getOriginsListUI, getOriginTablesUI } from '../src/ui/logic/origins.js';
+import { getOriginsListUi, getOriginTablesUi } from '../src/ui/logic/origins.js';
 import { rollTable } from '../src/ui/data/table_utils.js';
 
 describe('Logika pochodzeń - Sprint 2', () => {
 
   describe('getOriginsListUI', () => {
     test('powinien zwrócić listę dostępnych pochodzeń', () => {
-      const data = getOriginsListUI();
+      const data = getOriginsListUi();
 
       expect(data).toHaveProperty('pochodzenia');
       expect(data).toHaveProperty('liczba_pochodzen');
@@ -25,7 +25,7 @@ describe('Logika pochodzeń - Sprint 2', () => {
     });
 
     test('powinien zwrócić informacje o pochodzeniach z tabelami', () => {
-      const { pochodzenia } = getOriginsListUI();
+      const { pochodzenia } = getOriginsListUi();
       expect(pochodzenia.length).toBeGreaterThan(0);
 
       pochodzenia.forEach(pochodzenie => {
@@ -43,7 +43,7 @@ describe('Logika pochodzeń - Sprint 2', () => {
 
   describe('getOriginTablesUI', () => {
     test('powinien zwrócić tabele dla istniejącego pochodzenia', () => {
-      const tabele = getOriginTablesUI('czlowiek');
+      const tabele = getOriginTablesUi('czlowiek');
 
       expect(tabele).toHaveProperty('wiek');
       expect(tabele).toHaveProperty('budowa_ciala');
@@ -54,11 +54,11 @@ describe('Logika pochodzeń - Sprint 2', () => {
     });
 
     test('powinien zwrócić null dla nieistniejącego pochodzenia', () => {
-      expect(getOriginTablesUI('nieistniejace')).toBeNull();
+      expect(getOriginTablesUi('nieistniejace')).toBeNull();
     });
 
     test('powinien mieć prawidłową strukturę dla każdej tabeli', () => {
-      const tabele = getOriginTablesUI('czlowiek');
+      const tabele = getOriginTablesUi('czlowiek');
 
       Object.values(tabele).forEach(tabela => {
         expect(tabela).toHaveProperty('nazwa');

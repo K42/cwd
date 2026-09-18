@@ -5,7 +5,7 @@
 
 import PATHS from '../data/paths.js';
 import { getTalentDescription } from './talents.js';
-import { opisMagii } from './magic.js';
+import { descriptionMagic } from './magic.js';
 
 /**
  * Zwraca grupę ścieżek (obiekt id -> ścieżka) z danych PATHS odpowiadającą
@@ -14,7 +14,7 @@ import { opisMagii } from './magic.js';
  * @returns {Object}
  * @throws {Error} Gdy próg poziomu jest nieprawidłowy
  */
-function getGrupaSciezekDlaPoziomu(poziom) {
+function getPathGroupForLevel(poziom) {
   if (poziom === 1) return PATHS.sciezki_nowicjuszy;
   if (poziom === 3) return PATHS.sciezki_ekspertow;
   if (poziom === 7) return PATHS.sciezki_mistrzow;
@@ -33,9 +33,9 @@ function getGrupaSciezekDlaPoziomu(poziom) {
  * @throws {Error} Gdy próg poziomu jest nieprawidłowy
  */
 function getPathsForLevel(poziom) {
-  const grupa = getGrupaSciezekDlaPoziomu(poziom);
+  const group = getPathGroupForLevel(poziom);
 
-  return Object.values(grupa).map(path => {
+  return Object.values(group).map(path => {
     const pkt = path.poziom_1 || {};
     return {
       id: path.id,
@@ -50,7 +50,7 @@ function getPathsForLevel(poziom) {
           })),
           zaklecia: (pkt.magia ? [{
             nazwa: 'Magia',
-            opis: opisMagii(pkt.magia)
+            opis: descriptionMagic(pkt.magia)
           }] : []),
           mod_atrybuty: {},
           atrybuty_glowne: pkt.atrybuty_glowne || null,
@@ -80,17 +80,17 @@ function getPathsForLevel(poziom) {
  * @param {string} params.sciezkaMistrzowskaId
  * @returns {Array<{id: string, source: string, ilosc: number, wartosc: number, dostepne: string[]}>}
  */
-function obliczSlotyAtrybutow({ sciezkaNowicjuszaId, sciezkaEksperckaId, sciezkaMistrzowskaId }) {
-  const sloty = [];
+function calculateSlotsAttributes({ pathNoviceId, pathExpertId, pathMasterId }) {
+  const slots = [];
 
-  const dodaj = (grupaKey, sciezkaId, etykieta) => {
-    if (!sciezkaId) return;
-    const grupa = PATHS[grupaKey];
-    const sciezka = grupa && grupa[sciezkaId];
+  const add = (groupKey, pathId, etykieta) => {
+    if (!pathId) return;
+    const group = PATHS[groupKey];
+    const sciezka = group && group[pathId];
     const grant = sciezka && sciezka.poziom_1 && sciezka.poziom_1.atrybuty_glowne;
     if (!grant) return;
-    sloty.push({
-      id: `${sciezkaId}-atr`,
+    slots.push({
+      id: `${pathId}-atr`,
       source: `Ścieżka: ${sciezka.nazwa} (${etykieta})`,
       ilosc: grant.ilosc,
       wartosc: grant.wartosc,
@@ -98,11 +98,11 @@ function obliczSlotyAtrybutow({ sciezkaNowicjuszaId, sciezkaEksperckaId, sciezka
     });
   };
 
-  dodaj('sciezki_nowicjuszy', sciezkaNowicjuszaId, 'poziom 1');
-  dodaj('sciezki_ekspertow', sciezkaEksperckaId, 'poziom 3');
-  dodaj('sciezki_mistrzow', sciezkaMistrzowskaId, 'poziom 7');
+  add('sciezki_nowicjuszy', pathNoviceId, 'poziom 1');
+  add('sciezki_ekspertow', pathExpertId, 'poziom 3');
+  add('sciezki_mistrzow', pathMasterId, 'poziom 7');
 
-  return sloty;
+  return slots;
 }
 
-export { getPathsForLevel, obliczSlotyAtrybutow };
+export { getPathsForLevel, calculateSlotsAttributes };

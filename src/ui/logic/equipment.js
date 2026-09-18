@@ -13,24 +13,24 @@
  */
 
 import EQUIPMENT from '../data/equipment.js';
-import { ZAMOZNOSC, pobierzZamoznoscDlaRzutu } from '../data/wealth.js';
+import { WEALTH, getWealthForRoll } from '../data/wealth.js';
 
-const PRZELICZNIK_NA_OKRAWKI = { okr: 1, md: 10, sr: 100, zk: 1000 };
-const NOMINALY_OD_NAJWIEKSZEGO = ['zk', 'sr', 'md', 'okr'];
+const CONVERTER_TO_COPPERBITS = { okr: 1, md: 10, sr: 100, zk: 1000 };
+const DENOMINATIONS_DESC = ['zk', 'sr', 'md', 'okr'];
 
-const STAWKA_SKUPU = 0.5;
+const BUYBACK_RATE = 0.5;
 
-const RZADKOSC_ETYKIETY = {
+const RARITY_LABELS = {
   pospolity: 'Pospolity', niepospolity: 'Niepospolity', rzadki: 'Rzadki', egzotyczny: 'Egzotyczny'
 };
 
-const RZADKOSC_RANGA = { pospolity: 0, niepospolity: 1, rzadki: 2, egzotyczny: 3 };
+const RARITY_RANK = { pospolity: 0, niepospolity: 1, rzadki: 2, egzotyczny: 3 };
 
-const SORTOWANIE_ETYKIETY = {
+const SORT_LABELS = {
   nazwa: 'Nazwa', cena: 'Cena', obrazenia: 'Obrażenia', obrona: 'Obrona', rzadkosc: 'Rzadkość'
 };
 
-const KATEGORIA_ETYKIETY = {
+const CATEGORY_LABELS_EQ = {
   bron_biala: 'Broń biała',
   bron_dystansowa: 'Broń dystansowa',
   tarcze: 'Tarcze',
@@ -48,44 +48,44 @@ const KATEGORIA_ETYKIETY = {
 };
 
 /** Znajduje przedmiot w katalogu po id. */
-function pobierzPrzedmiot(id) {
+function getItem(id) {
   return EQUIPMENT.find(i => i.id === id) || null;
 }
 
 /** Przelicza cenę przedmiotu (obiekt {wartosc, jednostka}) na okrawki. */
-function cenaNaOkrawki(cena) {
+function priceOnCopperbits(cena) {
   if (!cena) return 0;
-  return cena.wartosc * (PRZELICZNIK_NA_OKRAWKI[cena.jednostka] || 1);
+  return cena.wartosc * (CONVERTER_TO_COPPERBITS[cena.jednostka] || 1);
 }
 
 /** Formatuje cenę przedmiotu z katalogu do czytelnego tekstu (np. "min. 5 md"). */
-function formatujCene(cena) {
+function formatPrice(cena) {
   if (!cena) return '—';
-  const etykietyJednostek = { okr: 'okr.', md: 'md', sr: 'sr', zk: 'zk' };
+  const labelsUnits = { okr: 'okr.', md: 'md', sr: 'sr', zk: 'zk' };
   const prefix = cena.orientacyjna ? 'min. ' : '';
-  return `${prefix}${cena.wartosc} ${etykietyJednostek[cena.jednostka] || cena.jednostka}`;
+  return `${prefix}${cena.wartosc} ${labelsUnits[cena.jednostka] || cena.jednostka}`;
 }
 
 /** Formatuje kwotę w okrawkach na czytelny tekst w rozbiciu na nominały (np. "1 zk 3 sr"). */
-function formatujOkrawki(okrawki) {
-  if (!Number.isFinite(okrawki) || okrawki <= 0) return '0 okr.';
-  let pozostale = Math.floor(okrawki);
-  const etykiety = { zk: 'zk', sr: 'sr', md: 'md', okr: 'okr.' };
-  const czesci = [];
-  NOMINALY_OD_NAJWIEKSZEGO.forEach(nominal => {
-    const wartoscNominalu = PRZELICZNIK_NA_OKRAWKI[nominal];
-    const ilosc = Math.floor(pozostale / wartoscNominalu);
+function formatCopperbits(copperbits) {
+  if (!Number.isFinite(copperbits) || copperbits <= 0) return '0 okr.';
+  let remaining = Math.floor(copperbits);
+  const labels = { zk: 'zk', sr: 'sr', md: 'md', okr: 'okr.' };
+  const parts = [];
+  DENOMINATIONS_DESC.forEach(nominal => {
+    const denominationValue = CONVERTER_TO_COPPERBITS[nominal];
+    const ilosc = Math.floor(remaining / denominationValue);
     if (ilosc > 0) {
-      czesci.push(`${ilosc} ${etykiety[nominal]}`);
-      pozostale -= ilosc * wartoscNominalu;
+      parts.push(`${ilosc} ${labels[nominal]}`);
+      remaining -= ilosc * denominationValue;
     }
   });
-  return czesci.length ? czesci.join(' ') : '0 okr.';
+  return parts.length ? parts.join(' ') : '0 okr.';
 }
 
 /** Cena skupu (sprzedaży przez postać) przedmiotu w okrawkach - połowa ceny bazowej, zaokrąglona w dół. */
-function cenaSkupuOkrawki(cena) {
-  return Math.floor(cenaNaOkrawki(cena) * STAWKA_SKUPU);
+function priceBuybackCopperbits(cena) {
+  return Math.floor(priceOnCopperbits(cena) * BUYBACK_RATE);
 }
 
 /**
@@ -93,13 +93,13 @@ function cenaSkupuOkrawki(cena) {
  * gracza (jedna karta UI = jeden atom) - analogicznie do rozwinJednostke()
  * w logic/magic.js. Gwarantowane pozycje (bez wyboru) nie generują atomu.
  */
-function obliczAtomyWyposazenia(zamoznoscId) {
-  const zam = ZAMOZNOSC[zamoznoscId];
-  if (!zam) return [];
-  const atomy = [];
-  zam.przedmioty.forEach((p, idx) => {
+function calculateAtomsGear(zamoznoscId) {
+  const wealthentry = WEALTH[zamoznoscId];
+  if (!wealthentry) return [];
+  const atoms = [];
+  wealthentry.przedmioty.forEach((p, idx) => {
     if (p.wybor) {
-      atomy.push({
+      atoms.push({
         id: `${zamoznoscId}-w${idx}`,
         rodzaj: 'wybor_przedmiotu',
         opcje: p.wybor,
@@ -107,25 +107,25 @@ function obliczAtomyWyposazenia(zamoznoscId) {
       });
     }
   });
-  if (zam.wyborDodatkowy) {
-    atomy.push({
+  if (wealthentry.wyborDodatkowy) {
+    atoms.push({
       id: `${zamoznoscId}-dodatkowy`,
       rodzaj: 'wybor_dodatkowy',
-      opcje: zam.wyborDodatkowy.opcje,
-      opis: zam.wyborDodatkowy.opis
+      opcje: wealthentry.wyborDodatkowy.opcje,
+      opis: wealthentry.wyborDodatkowy.opis
     });
   }
-  return atomy;
+  return atoms;
 }
 
 /** Zwraca gwarantowane (bez wyboru) pozycje wyposażenia danego poziomu zamożności - katalogowe i opisowe. */
-function pobierzGwarantowanePozycje(zamoznoscId) {
-  const zam = ZAMOZNOSC[zamoznoscId];
-  if (!zam) return [];
-  return zam.przedmioty.filter(p => !p.wybor);
+function getGuaranteedEntries(zamoznoscId) {
+  const wealthentry = WEALTH[zamoznoscId];
+  if (!wealthentry) return [];
+  return wealthentry.przedmioty.filter(p => !p.wybor);
 }
 
-const KATEGORIE_BRONI = ['bron_biala', 'bron_dystansowa', 'tarcze'];
+const WEAPON_CATEGORIES = ['bron_biala', 'bron_dystansowa', 'tarcze'];
 
 /**
  * Formatuje statystyki i właściwości przedmiotu (broń/tarcza: obrażenia,
@@ -133,21 +133,21 @@ const KATEGORIE_BRONI = ['bron_biala', 'bron_dystansowa', 'tarcze'];
  * czytelnej linijki tekstu. Zwraca `null` dla przedmiotów bez takich pól
  * (np. wyposażenie ogólne, jedzenie).
  */
-function formatujStatystykiPrzedmiotu(item) {
+function formatStatsItem(item) {
   if (!item) return null;
-  if (KATEGORIE_BRONI.includes(item.kategoria)) {
-    const czesci = [];
-    if (item.obrazenia) czesci.push(`Obrażenia ${item.obrazenia}`);
-    if (item.chwyt) czesci.push(`Chwyt: ${item.chwyt}`);
-    if (item.wlasciwosci) czesci.push(`Właściwości: ${item.wlasciwosci}`);
-    if (item.wymagania) czesci.push(`Wymagania: ${item.wymagania}`);
-    return czesci.length ? czesci.join(' · ') : null;
+  if (WEAPON_CATEGORIES.includes(item.kategoria)) {
+    const parts = [];
+    if (item.obrazenia) parts.push(`Obrażenia ${item.obrazenia}`);
+    if (item.chwyt) parts.push(`Chwyt: ${item.chwyt}`);
+    if (item.wlasciwosci) parts.push(`Właściwości: ${item.wlasciwosci}`);
+    if (item.wymagania) parts.push(`Wymagania: ${item.wymagania}`);
+    return parts.length ? parts.join(' · ') : null;
   }
   if (item.kategoria === 'zbroje') {
-    const czesci = [];
-    if (item.obrona) czesci.push(`Obrona: ${item.obrona}`);
-    if (item.wymagania) czesci.push(`Wymagania: ${item.wymagania}`);
-    return czesci.length ? czesci.join(' · ') : null;
+    const parts = [];
+    if (item.obrona) parts.push(`Obrona: ${item.obrona}`);
+    if (item.wymagania) parts.push(`Wymagania: ${item.wymagania}`);
+    return parts.length ? parts.join(' · ') : null;
   }
   return null;
 }
@@ -157,20 +157,20 @@ function formatujStatystykiPrzedmiotu(item) {
  * "1") na średnią liczbową, żeby dało się sortować po obrażeniach. Zwraca
  * `null` dla przedmiotów bez pola obrażeń (czyli nie-broni).
  */
-function sredniaObrazen(zapis) {
-  if (!zapis) return null;
-  const kosci = zapis.match(/(\d+)\s*k\s*(\d+)/i);
-  let baza = 0;
+function averageDamage(save) {
+  if (!save) return null;
+  const kosci = save.match(/(\d+)\s*k\s*(\d+)/i);
+  let base = 0;
   if (kosci) {
-    baza = parseInt(kosci[1], 10) * (parseInt(kosci[2], 10) + 1) / 2;
+    base = parseInt(kosci[1], 10) * (parseInt(kosci[2], 10) + 1) / 2;
   } else {
-    const plaska = parseFloat(zapis);
-    if (Number.isNaN(plaska)) return null;
-    baza = plaska;
+    const flat = parseFloat(save);
+    if (Number.isNaN(flat)) return null;
+    base = flat;
   }
-  const bonus = zapis.match(/\+\s*(\d+)/);
-  if (bonus) baza += parseInt(bonus[1], 10);
-  return baza;
+  const bonus = save.match(/\+\s*(\d+)/);
+  if (bonus) base += parseInt(bonus[1], 10);
+  return base;
 }
 
 /**
@@ -178,10 +178,10 @@ function sredniaObrazen(zapis) {
  * zależy od Zręczności postaci (np. "Zręczność + 2"), nie mają stałej
  * liczby do porównania - zwraca wtedy `null`.
  */
-function wartoscObrony(obrona) {
+function defenseValue(obrona) {
   if (obrona === null || obrona === undefined || obrona === '') return null;
-  const liczba = parseInt(obrona, 10);
-  return Number.isNaN(liczba) ? null : liczba;
+  const number = parseInt(obrona, 10);
+  return Number.isNaN(number) ? null : number;
 }
 
 /**
@@ -191,45 +191,45 @@ function wartoscObrony(obrona) {
  * zbroi), lądują zawsze na końcu listy, niezależnie od kierunku - są
  * wtedy dodatkowo posortowane alfabetycznie, żeby lista była stabilna.
  */
-function sortujPrzedmioty(lista, sortBy, sortDir) {
-  const kierunek = sortDir === 'desc' ? -1 : 1;
+function sortItems(list, sortBy, sortDir) {
+  const direction = sortDir === 'desc' ? -1 : 1;
   const wartosc = (item) => {
     switch (sortBy) {
-    case 'cena': return item.cena ? cenaNaOkrawki(item.cena) : null;
-    case 'obrazenia': return sredniaObrazen(item.obrazenia);
-    case 'obrona': return wartoscObrony(item.obrona);
-    case 'rzadkosc': return item.rzadkosc ? RZADKOSC_RANGA[item.rzadkosc] : null;
+    case 'cena': return item.cena ? priceOnCopperbits(item.cena) : null;
+    case 'obrazenia': return averageDamage(item.obrazenia);
+    case 'obrona': return defenseValue(item.obrona);
+    case 'rzadkosc': return item.rzadkosc ? RARITY_RANK[item.rzadkosc] : null;
     case 'nazwa':
     default: return null;
     }
   };
-  return lista.slice().sort((a, b) => {
-    const av = wartosc(a);
-    const bv = wartosc(b);
-    const aBrak = av === null || av === undefined;
-    const bBrak = bv === null || bv === undefined;
-    if (aBrak && bBrak) return a.nazwa.localeCompare(b.nazwa, 'pl');
-    if (aBrak) return 1;
-    if (bBrak) return -1;
-    if (av !== bv) return (av - bv) * kierunek;
+  return list.slice().sort((a, b) => {
+    const aval = wartosc(a);
+    const bval = wartosc(b);
+    const aMissing = aval === null || aval === undefined;
+    const bMissing = bval === null || bval === undefined;
+    if (aMissing && bMissing) return a.nazwa.localeCompare(b.nazwa, 'pl');
+    if (aMissing) return 1;
+    if (bMissing) return -1;
+    if (aval !== bval) return (aval - bval) * direction;
     return a.nazwa.localeCompare(b.nazwa, 'pl');
   });
 }
 
 export {
-  PRZELICZNIK_NA_OKRAWKI,
-  STAWKA_SKUPU,
-  RZADKOSC_ETYKIETY,
-  KATEGORIA_ETYKIETY,
-  pobierzPrzedmiot,
-  cenaNaOkrawki,
-  formatujCene,
-  formatujOkrawki,
-  cenaSkupuOkrawki,
-  obliczAtomyWyposazenia,
-  pobierzGwarantowanePozycje,
-  formatujStatystykiPrzedmiotu,
-  SORTOWANIE_ETYKIETY,
-  sortujPrzedmioty,
-  pobierzZamoznoscDlaRzutu
+  CONVERTER_TO_COPPERBITS,
+  BUYBACK_RATE,
+  RARITY_LABELS,
+  CATEGORY_LABELS_EQ,
+  getItem,
+  priceOnCopperbits,
+  formatPrice,
+  formatCopperbits,
+  priceBuybackCopperbits,
+  calculateAtomsGear,
+  getGuaranteedEntries,
+  formatStatsItem,
+  SORT_LABELS,
+  sortItems,
+  getWealthForRoll
 };

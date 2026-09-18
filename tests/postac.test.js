@@ -2,8 +2,8 @@
  * Testy jednostkowe dla kreatora postaci
  */
 
-import { budujPostac } from '../src/ui/logic/character.js';
-import DANE_GRY from '../src/ui/data/game-data.js';
+import { buildCharacter } from '../src/ui/logic/character.js';
+import GAME_DATA from '../src/ui/data/game-data.js';
 
 describe('Kreator postaci - Cień Władcy Demonów', () => {
 
@@ -14,7 +14,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         atrybuty: { sila: 12, zrecznosc: 10, intelekt: 14, wola: 8 }
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Człowiek');
       expect(postac.atrybuty.sila).toBe(10); // bazowe wartości
@@ -28,7 +28,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         pochodzenie: 'jotunn'
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Jotun');
       expect(postac.atrybuty.sila).toBe(13);
@@ -43,35 +43,35 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
     test('powinien rzucić błędem dla nieznanego pochodzenia', () => {
       const spec = { pochodzenie: 'nieznane_pochodzenie' };
 
-      expect(() => budujPostac(spec)).toThrow('Nieznane pochodzenie: nieznane_pochodzenie');
+      expect(() => buildCharacter(spec)).toThrow('Nieznane pochodzenie: nieznane_pochodzenie');
     });
 
     test('powinien rzucić błędem dla nieznanego poziomu', () => {
       const spec = { pochodzenie: 'czlowiek', poziom: 99 };
-      expect(() => budujPostac(spec)).toThrow('Nieznany poziom: 99');
+      expect(() => buildCharacter(spec)).toThrow('Nieznany poziom: 99');
     });
 
     test('powinien użyć domyślnego poziomu 1 gdy nie podano poziomu', () => {
       const spec = { pochodzenie: 'czlowiek' };
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
       expect(postac.poziom.nazwa).toBe('Nowicjusz');
     });
 
     test('powinien obsłużyć poziom 1 (Nowicjusz)', () => {
       const spec = { pochodzenie: 'czlowiek', poziom: 1 };
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
       expect(postac.poziom.nazwa).toBe('Nowicjusz');
     });
 
     test('powinien obsłużyć poziom 3 (Ekspert)', () => {
       const spec = { pochodzenie: 'czlowiek', poziom: 3 };
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
       expect(postac.poziom.nazwa).toBe('Ekspert');
     });
 
     test('powinien obsłużyć poziom 4 (Ekspert - korzyści pochodzenia)', () => {
       const spec = { pochodzenie: 'czlowiek', poziom: 4 };
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
       expect(postac.poziom.nazwa).toBe('Ekspert');
       expect(postac.korzysci_pochodzenia).toBeDefined();
     });
@@ -79,13 +79,13 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
     test('powinien rzucić błędem gdy brak pochodzenia', () => {
       const spec = {};
 
-      expect(() => budujPostac(spec)).toThrow('Brak pochodzenia postaci');
+      expect(() => buildCharacter(spec)).toThrow('Brak pochodzenia postaci');
     });
 
     test('powinien użyć domyślnych wartości atrybutów gdy nie podano własnych', () => {
       const spec = { pochodzenie: 'czlowiek' };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       // Sprawdź że atrybuty są równe domyślnym wartościom (10, 10, 10, 10)
       expect(postac.atrybuty.sila).toBe(10);
@@ -101,7 +101,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         poziom: 1
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.sciezka).toBeDefined();
       expect(postac.sciezka.nazwa).toBe('Wojownik');
@@ -113,7 +113,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Goblin');
       expect(postac.atrybuty.zrecznosc).toBe(12); // 10 + 2 modyfikator
@@ -129,7 +129,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Chochlik');
       expect(postac.atrybuty_drugorzedne.rozmiar).toBe('1/8');
@@ -140,7 +140,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
     test('powinien utworzyć niedźwiedzidło z losowymi atrybutami bazowymi (1k3+X)', () => {
       const spec = { pochodzenie: 'niedzwiedziadlo' };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Niedźwiedzidło');
       // Siła 1k3+12 => zakres 13-15
@@ -161,7 +161,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
       for (const [pochodzenie, zakres] of Object.entries(zakresy)) {
         for (let i = 0; i < 20; i++) {
-          const postac = budujPostac({ pochodzenie });
+          const postac = buildCharacter({ pochodzenie });
           for (const atrybut of ['sila', 'zrecznosc', 'intelekt', 'wola']) {
             expect(postac.atrybuty[atrybut]).toBeGreaterThanOrEqual(zakres[atrybut][0]);
             expect(postac.atrybuty[atrybut]).toBeLessThanOrEqual(zakres[atrybut][1]);
@@ -176,7 +176,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
         atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
       };
 
-      const postac = budujPostac(spec);
+      const postac = buildCharacter(spec);
 
       expect(postac.pochodzenie.nazwa).toBe('Elf');
       expect(postac.atrybuty.zrecznosc).toBe(10); // Bazowa wartość
@@ -188,7 +188,7 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
   describe('DANE_GRY.obliczenia', () => {
     test('losowe_atrybuty() powinien generować wartości 3-18', () => {
       for (let i = 0; i < 100; i++) {
-        const atrybuty = DANE_GRY.obliczenia.losowe_atrybuty();
+        const atrybuty = GAME_DATA.obliczenia.losowe_atrybuty();
 
         Object.values(atrybuty).forEach(wartosc => {
           expect(wartosc).toBeGreaterThanOrEqual(3);
@@ -199,9 +199,9 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
 
     test('atrybuty_drugorzedne() powinien obliczyć poprawnie', () => {
       const atrybuty = { sila: 12, zrecznosc: 14, intelekt: 10, wola: 8 };
-      const pochodzenie = DANE_GRY.pochodzenia.czlowiek;
+      const pochodzenie = GAME_DATA.pochodzenia.czlowiek;
 
-      const drugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, pochodzenie);
+      const drugorzedne = GAME_DATA.obliczenia.atrybuty_drugorzedne(atrybuty, pochodzenie);
 
       expect(drugorzedne.percepcja).toBe(10); // = Intelekt
       expect(drugorzedne.obrona).toBe(14); // = Zręczność (bez modyfikatorów rozmiaru)  
@@ -213,18 +213,18 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       const atrybuty = { sila: 10, zrecznosc: 12, intelekt: 10, wola: 10 };
       
       // Test małego rozmiaru (goblin) - bez modyfikatorów
-      const goblin = DANE_GRY.pochodzenia.goblin;
-      const goblinDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, goblin);
+      const goblin = GAME_DATA.pochodzenia.goblin;
+      const goblinDrugorzedne = GAME_DATA.obliczenia.atrybuty_drugorzedne(atrybuty, goblin);
       expect(goblinDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
 
       // Test bardzo małego rozmiaru (chochlik) - bez modyfikatorów
-      const chochlik = DANE_GRY.pochodzenia.chochlik;
-      const chochlikDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, chochlik);
+      const chochlik = GAME_DATA.pochodzenia.chochlik;
+      const chochlikDrugorzedne = GAME_DATA.obliczenia.atrybuty_drugorzedne(atrybuty, chochlik);
       expect(chochlikDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
 
       // Test dużego rozmiaru (jotunn) - bez modyfikatorów
-      const jotunn = DANE_GRY.pochodzenia.jotunn;
-      const jotunnDrugorzedne = DANE_GRY.obliczenia.atrybuty_drugorzedne(atrybuty, jotunn);
+      const jotunn = GAME_DATA.pochodzenia.jotunn;
+      const jotunnDrugorzedne = GAME_DATA.obliczenia.atrybuty_drugorzedne(atrybuty, jotunn);
       expect(jotunnDrugorzedne.obrona).toBe(12); // 12 bez modyfikatorów rozmiaru
     });
   });

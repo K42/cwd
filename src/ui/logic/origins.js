@@ -29,7 +29,7 @@ function normalizeTableKey(nazwa) {
  * Zwraca listę wszystkich pochodzeń z informacją o dostępnych tabelach
  * @returns {Object} Lista pochodzeń i statystyki
  */
-function getOriginsListUI() {
+function getOriginsListUi() {
   const pochodzenia = Object.values(ORIGINS).map(pochodzenie => ({
     id: pochodzenie.id,
     nazwa: pochodzenie.nazwa,
@@ -52,20 +52,20 @@ function getOriginsListUI() {
  * @param {string} originId - ID pochodzenia
  * @returns {Object|null} Tabele pochodzenia lub null, gdy pochodzenie nie ma tabel
  */
-function getOriginTablesUI(originId) {
+function getOriginTablesUi(originId) {
   if (!hasTables(originId)) {
     return null;
   }
 
-  const tabeleLista = getAvailableTables(originId);
+  const tablesList = getAvailableTables(originId);
   const tabele = {};
 
-  tabeleLista.forEach(tabela => {
+  tablesList.forEach(tabela => {
     const key = normalizeTableKey(tabela.klucz);
-    const tabelaDetails = getTableDetails(originId, key);
-    const opcje = Object.keys(tabelaDetails.wyniki).map(rzut => ({
+    const tableDetails = getTableDetails(originId, key);
+    const opcje = Object.keys(tableDetails.wyniki).map(rzut => ({
       rzut: parseInt(rzut),
-      wynik: tabelaDetails.wyniki[rzut].wynik
+      wynik: tableDetails.wyniki[rzut].wynik
     }));
 
     tabele[key] = {
@@ -77,4 +77,4 @@ function getOriginTablesUI(originId) {
   return tabele;
 }
 
-export { normalizeTableKey, getOriginsListUI, getOriginTablesUI, getOriginsWithTables };
+export { normalizeTableKey, getOriginsListUi, getOriginTablesUi, getOriginsWithTables };

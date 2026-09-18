@@ -11,7 +11,7 @@ import CURIOS from '../data/curios.js';
  * Zwraca kategorie i spłaszczoną listę profesji
  * @returns {Object} { kategorie, profesje }
  */
-function getProfesjeUI() {
+function getProfessionsUi() {
   const kategorie = {
     'Naukowe': { nazwa: 'Naukowe' },
     'Pospolite': { nazwa: 'Pospolite' },
@@ -31,12 +31,12 @@ function getProfesjeUI() {
       ['Koczownicze', PROFESSIONS.tables.koczownicze],
       ['Religijne', PROFESSIONS.tables.religijne]
     ];
-    map.forEach(([kat, arr]) => {
+    map.forEach(([cat, arr]) => {
       (arr || []).forEach((text, idx) => {
         profesje.push({
-          id: `${kat.toLowerCase()}_${idx + 1}`,
+          id: `${cat.toLowerCase()}_${idx + 1}`,
           nazwa: text,
-          kategoria: kat,
+          kategoria: cat,
           opis: '',
           zrodlo: 'PG'
         });
@@ -51,7 +51,7 @@ function getProfesjeUI() {
  * Zwraca kategorie i spłaszczoną listę kuriozów
  * @returns {Object} { kategorie, kurioza }
  */
-function getKuriozaUI() {
+function getCuriosUi() {
   const kategorie = {
     'Tabela 1': { nazwa: 'Tabela 1' },
     'Tabela 2': { nazwa: 'Tabela 2' },
@@ -64,7 +64,7 @@ function getKuriozaUI() {
   const kurioza = [];
   if (CURIOS && CURIOS.tables) {
     Object.entries(CURIOS.tables).forEach(([tableNum, items]) => {
-      const kat = `Tabela ${tableNum}`;
+      const cat = `Tabela ${tableNum}`;
       items.forEach((text, idx) => {
         kurioza.push({
           id: `t${tableNum}_k${idx + 1}`,
@@ -72,7 +72,7 @@ function getKuriozaUI() {
           opis: '',
           efekt: '',
           wartosc: '',
-          kategoria: kat,
+          kategoria: cat,
           zrodlo: 'PG'
         });
       });
@@ -82,4 +82,4 @@ function getKuriozaUI() {
   return { kategorie, kurioza };
 }
 
-export { getProfesjeUI, getKuriozaUI };
+export { getProfessionsUi, getCuriosUi };

@@ -11,7 +11,7 @@ import ITEMS from './items.js';
 import SPELLS from './spells.js';
 import PROGRESSION from './progression.js';
 
-const DANE_GRY = {
+const GAME_DATA = {
   // Poziomy postaci - system progresji
   poziomy: LEVELS,
 
@@ -197,4 +197,4 @@ const DANE_GRY = {
   }
 };
 
-export default DANE_GRY;
+export default GAME_DATA;

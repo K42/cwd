@@ -6,26 +6,26 @@
  * kolejnym zapisem tej samej postaci.
  */
 
-const KLUCZ_LOCALSTORAGE = 'kreatorPostaci.zapisanePostacie.v1';
+const LOCALSTORAGE_KEY = 'kreatorPostaci.zapisanePostacie.v1';
 
 /** Odczytuje wszystkie zapisane postacie jako obiekt {id: {id, savedAt, dane}}. Zwraca {} przy braku/uszkodzeniu danych. */
-function pobierzZapisanePostacie() {
+function getSavedCharacters() {
   try {
-    const surowe = localStorage.getItem(KLUCZ_LOCALSTORAGE);
-    if (!surowe) return {};
-    const dane = JSON.parse(surowe);
-    return dane && typeof dane === 'object' ? dane : {};
+    const raw = localStorage.getItem(LOCALSTORAGE_KEY);
+    if (!raw) return {};
+    const data = JSON.parse(raw);
+    return data && typeof data === 'object' ? data : {};
   } catch (e) {
     return {};
   }
 }
 
 /** Zapisuje (albo nadpisuje, jeśli `id` już istnieje) postać pod danym id. Zwraca true przy sukcesie. */
-function zapiszPostacDoCache(id, dane) {
+function saveCharacterToCache(id, data) {
   try {
-    const wszystkie = pobierzZapisanePostacie();
-    wszystkie[id] = { id, savedAt: new Date().toISOString(), dane };
-    localStorage.setItem(KLUCZ_LOCALSTORAGE, JSON.stringify(wszystkie));
+    const all = getSavedCharacters();
+    all[id] = { id, savedAt: new Date().toISOString(), data };
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(all));
     return true;
   } catch (e) {
     return false;
@@ -33,8 +33,8 @@ function zapiszPostacDoCache(id, dane) {
 }
 
 /** Generuje nowe, unikalne id zapisu (znacznik czasu + losowy sufiks). */
-function generujIdZapisu() {
+function generateSaveId() {
   return `postac-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export { KLUCZ_LOCALSTORAGE, pobierzZapisanePostacie, zapiszPostacDoCache, generujIdZapisu };
+export { LOCALSTORAGE_KEY, getSavedCharacters, saveCharacterToCache, generateSaveId };
