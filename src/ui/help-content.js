@@ -100,6 +100,20 @@ function getStartContent() {
     <div class="help-step">
       <div class="help-step-header">
         <span class="help-step-number">7</span>
+        <h5>Ekwipunek</h5>
+      </div>
+      <p>Ustalasz początkowe wyposażenie postaci zgodnie z zasadami podręcznika głównego (kurioza są ustalane osobno, w Kroku 5):</p>
+      <ul>
+        <li><strong>Zamożność</strong> - wybierz kafelek ręcznie albo kliknij <strong>"🎲 Losuj (3k6)"</strong>, by wylosować ją zgodnie z tabelą z podręcznika. Każdy poziom Zamożności przyznaje inny zestaw sprzętu i losową startową gotówkę</li>
+        <li><strong>Wyposażenie startowe</strong> - gwarantowane pozycje pojawiają się automatycznie; tam, gdzie podręcznik daje wybór (np. kostur / pałka / proca), klikasz jedną z kafelkowych opcji. Jedna z opcji wyższych poziomów Zamożności to zwój z zaklęciem kręgu 0 - otwiera ten sam popup wyboru tradycji/zaklęcia co Krok 6</li>
+        <li><strong>Sklep</strong> - po otrzymaniu wyposażenia startowego możesz sprzedać dowolną pozycję za połowę jej ceny bazowej albo kliknąć <strong>"🛒 Przeglądaj katalog"</strong>, by kupić cokolwiek innego z pełnej listy przedmiotów (z filtrami na kategorię i rzadkość). Gotówka uwzględnia startową sakiewkę, wpływy ze sprzedaży oraz srebrniki wylosowane w Kroku 2 (jeśli poziom postaci jest wyższy niż 0)</li>
+        <li>Zakupione przedmioty można w każdej chwili zwrócić za pełną cenę przyciskiem "Zwróć"</li>
+      </ul>
+    </div>
+
+    <div class="help-step">
+      <div class="help-step-header">
+        <span class="help-step-number">8</span>
         <h5>Podgląd i Eksport</h5>
       </div>
       <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
@@ -296,14 +310,14 @@ function getFAQContent() {
       <div class="faq-item">
         <div class="faq-question">Czy mogę zapisać postać w trakcie tworzenia?</div>
         <div class="faq-answer">
-          Musisz najpierw dotrzeć do Kroku 7 (co wymaga ukończenia wymaganych wyborów po drodze), ale stamtąd możesz w każdej chwili wyeksportować postać do pliku JSON - podgląd aktualizuje się na bieżąco, bez osobnego "zatwierdzania". Zapisany plik możesz później wczytać przyciskiem "📂 Importuj postać" w Kroku 1, żeby kontynuować od tego samego miejsca.
+          Musisz najpierw dotrzeć do Kroku 8 (co wymaga ukończenia wymaganych wyborów po drodze), ale stamtąd możesz w każdej chwili wyeksportować postać do pliku JSON - podgląd aktualizuje się na bieżąco, bez osobnego "zatwierdzania". Zapisany plik możesz później wczytać przyciskiem "📂 Importuj postać" w Kroku 1, żeby kontynuować od tego samego miejsca.
         </div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question">Czy mogę edytować postać po utworzeniu?</div>
         <div class="faq-answer">
-          Tak - wyeksportuj postać do JSON (Krok 7), a następnie zaimportuj ją ponownie przyciskiem "📂 Importuj postać" w Kroku 1. Wszystkie wybory zostaną odtworzone i możesz przejść przez dowolny krok, żeby je zmienić.
+          Tak - wyeksportuj postać do JSON (Krok 8), a następnie zaimportuj ją ponownie przyciskiem "📂 Importuj postać" w Kroku 1. Wszystkie wybory zostaną odtworzone i możesz przejść przez dowolny krok, żeby je zmienić.
         </div>
       </div>
 
