@@ -207,6 +207,15 @@ Ustalono realne dane z `sources/Rozkoszna_Agonia/rozkoszna-agonia-digital-090120
 
 Status zmieniony na `kompletne`, strona źródłowa poprawiona 30→55.
 
+**Korekta (2026-09-21):** strona 55 była błędna - to nie treść origin-u, a
+okładka reklamowa innej książki wydawcy (*Głód w Pustce*) na samym końcu
+PDF-a Rozkosznej Agonii, bez żadnej numeracji stron. Zweryfikowane wprost
+w PDF-ie i w spisie treści książki (str. 2): Rozdział 3 "Postaci z Piekła
+rodem" → Kambion zaczyna się na **str. 44** (nagłówek + opis fabularny), a
+sekcja "Tworzenie postaci: Kambion" wraz z 6 tabelami losowania (Wiek,
+Budowa Ciała, Wygląd, Wychowanie, Osobowość, Przeszłość) zajmuje strony
+44-46 - nie 55. `strona_zrodlowa` w `data/origins.js` poprawiona 55→44.
+
 **Weryfikacja:** pełne zbudowanie postaci Kambiona (`budujPostac`) i wyświetlenie kafelka w przeglądarce - 6 tabel, wszystkie rzucone, zero błędów.
 
 **Status:** ✅ Gotowe. Testy: 98/98, lint czysty.
