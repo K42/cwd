@@ -63,6 +63,9 @@ let equipmentSold = []; // klucze startowych pozycji (kluczStart) sprzedanych w 
 let equipmentPurchased = []; // { itemId, ilosc } kupione w sklepie
 let equipmentDescriptionExpanded = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
 
+// --- Krok 8: Imię postaci ---
+let characterName = ''; // opcjonalne imię wpisane w Kroku 8; trafia do eksportu i nazwy pliku
+
 // --- Zapis w pamięci przeglądarki (localStorage) ---
 let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
 
@@ -200,6 +203,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-randomize-character-confirm')?.addEventListener('click', () => {
     closeRandomizeCharacterPopup();
     randomizeWholeCharacter(randomizeCharacterLevel);
+  });
+  document.getElementById('character-name')?.addEventListener('input', (e) => {
+    characterName = e.target.value;
+    updatePreviewCharacter();
   });
   initializeTooltips();
 });
@@ -2577,7 +2584,8 @@ function updatePreviewCharacter() {
   if (!selectedOrigin) return;
   const container = document.getElementById('character-preview');
   if (!container) return;
-  container.innerHTML = `<h4>${icon('scroll')} Podgląd Postaci</h4>${generateCardCharacterHtml()}`;
+  const title = characterName ? `Podgląd Postaci: ${characterName}` : 'Podgląd Postaci';
+  container.innerHTML = `<h4>${icon('scroll')} ${title}</h4>${generateCardCharacterHtml()}`;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -2848,6 +2856,7 @@ function buildExportData() {
     utworzono: new Date().toISOString(),
     // Surowe wybory gracza - jedyna sekcja odczytywana przy imporcie.
     wybory: {
+      imie: characterName || '',
       pochodzenie: selectedOrigin,
       bonusoweAtrybutyPochodzenia: getSelectedAttributesBonus(),
       opcjaPoziom4: getCurrentSelectedLevel4Option(),
@@ -2879,6 +2888,7 @@ function buildExportData() {
     // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
     // jest odczytywane przy imporcie.
     podsumowanie: {
+      imie: characterName || null,
       pochodzenie: pochodzenie.nazwa,
       poziom: selectedLevel,
       poziomNazwa: nameTierLevel(selectedLevel),
@@ -2926,6 +2936,22 @@ function buildExportData() {
 }
 
 /**
+ * Sprowadza tekst do postaci bezpiecznej jako fragment nazwy pliku: usuwa
+ * polskie znaki diakrytyczne, zamienia wszystko poza literami/cyframi na
+ * myślniki i przycina wielokrotne/skrajne myślniki. Zwraca '' dla pustego
+ * lub samych znaków specjalnych wejścia (wywołujący ma wtedy własny fallback).
+ */
+function sanitizeForFilename(text) {
+  if (!text) return '';
+  return text
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // usuń diakrytyki (ą -> a, ł zostaje, bo to nie akcent)
+    .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Eksportuje postać jako JSON - pełny, wersjonowany zrzut wszystkich
  * wyborów dokonanych w kreatorze (zob. zbudujDaneEksportu()).
  */
@@ -2940,7 +2966,8 @@ function exportJSON() {
   const dataStr = JSON.stringify(currentCharacter, null, 2);
   const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
 
-  const exportFileDefaultName = `postac-${currentCharacter.wybory.pochodzenie}-${new Date().toISOString().split('T')[0]}.json`;
+  const namePart = sanitizeForFilename(currentCharacter.wybory.imie) || currentCharacter.wybory.pochodzenie;
+  const exportFileDefaultName = `postac-${namePart}-${new Date().toISOString().split('T')[0]}.json`;
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
@@ -3160,6 +3187,12 @@ function restoreTableResultsToDom(originId) {
  */
 async function importCharacter(data) {
   const w = data.wybory;
+
+  // 0. Imię postaci (Krok 8) - niezależne od pochodzenia/poziomu/itd.,
+  // więc może być przywrócone w dowolnym miejscu tej sekwencji.
+  characterName = w.imie || '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = characterName;
 
   // 1. Pochodzenie
   selectOrigin(w.pochodzenie, { autoScroll: false });
@@ -5337,6 +5370,9 @@ function newCharacter() {
   const importFeedback = document.getElementById('import-feedback');
   if (importFeedback) importFeedback.innerHTML = '';
   currentSaveCacheId = null;
+  characterName = '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = '';
   showStep(1);
   updatePreviewCharacter();
 }
