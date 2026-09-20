@@ -96,6 +96,13 @@ wobec podręczników.
   podręczników; 19 zaklęć z Chwalebnej Śmierci sprawdzone bezpośrednio w PDF-ie,
   bo ta książka nie ma transkrypcji. Poza pięcioma dodanymi wszystkie zgadzają
   się co do tradycji, kręgu i kategorii.
+- **Pochodzenia**: wszystkie 17 zweryfikowanych pozycja po pozycji (atrybuty
+  bazowe, rozmiar, prędkość, języki) - **zero rozbieżności**. Trzy przypadki
+  wymagały ręcznego sprawdzenia, bo automat je zgłosił fałszywie: Automaton ma
+  w PG dwa warianty atrybutów (losowy 7/6/7/7 i nielosowy 9/8/9/9 - aplikacja
+  używa poprawnie nielosowego), transkrypcja Suplementu zniekształciła nagłówek
+  Niziołka, a Chwalebna Śmierć nie ma transkrypcji, więc Jotun został
+  porównany z PDF-em.
 
 ## Wpływ na eksport/import
 
