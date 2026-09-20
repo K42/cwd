@@ -147,7 +147,9 @@ describe('Kreator postaci - Cień Władcy Demonów', () => {
       expect(postac.atrybuty.sila).toBeGreaterThanOrEqual(13);
       expect(postac.atrybuty.sila).toBeLessThanOrEqual(15);
       expect(postac.atrybuty_drugorzedne.zdrowie).toBe(postac.atrybuty.sila);
-      expect(postac.profesje).toContain('dowolna');
+      // Głód w Pustce str. 48: "Języki i profesje: Niedźwiedzidło umie mówić
+      // w mrocznej mowie." - żadnej profesji to pochodzenie nie przyznaje.
+      expect(postac.profesje).toEqual([]);
     });
 
     test('powinien wylosować różne atrybuty bazowe dla pochodzeń z atrybuty_bazowe_losowe', () => {
