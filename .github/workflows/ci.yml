@@ -1,0 +1,35 @@
+name: CI
+
+# Kreator Postaci nie ma kroku budowania - to statyczna aplikacja w vanilla JS.
+# CI pilnuje więc dwóch rzeczy, które do tej pory trzeba było pamiętać ręcznie:
+# że testy jednostkowe przechodzą i że lint jest czysty.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Testy i lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Ustaw Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Zainstaluj zależności
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testy jednostkowe
+        run: npm test
