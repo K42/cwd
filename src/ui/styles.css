@@ -434,19 +434,33 @@ button:active {
     display: none !important;
 }
 
-/* Stan rozwinięty */
+/* Stan rozwinięty - kafelek wraca do normalnego układu blokowego (nie flex),
+   żeby obrazek mógł być elementem "unoszącym się" (float) tylko w obrębie
+   nagłówka, a cała pozostała treść (opis rozwinięty, tabele, cechy) mogła
+   swobodnie zająć pełną szerokość kafelka, zamiast być zwężona przez kolumnę
+   obrazka na całej, często bardzo dużej, wysokości rozwiniętej karty. */
+.origin-tile.expanded {
+    display: block;
+}
+
 .origin-tile.expanded .tile-body {
     padding: 20px;
     min-height: 400px;
 }
 
-/* W stanie rozwiniętym kafelek bywa bardzo wysoki (długi opis, tabele
-   losowania) - rozciąganie tej samej, niewielkiej miniatury na całą tę
-   wysokość rozmyłoby ją. Zamiast tego zostaje przy naturalnym rozmiarze,
-   przypięta u góry lewej strony. */
+/* Naturalny rozmiar (nie rozciągnięty na całą wysokość, żeby nie rozmyć
+   miniatury) - tekst nagłówka opływa go z prawej strony jak w gazecie. */
 .origin-tile.expanded .origin-thumb {
-    align-self: flex-start;
+    float: left;
+    width: 190px;
     height: 220px;
+    margin: 0 0 15px 0;
+}
+
+/* Zawsze zaczyna się od nowego, pełnoszerokościowego wiersza pod obrazkiem -
+   nigdy nie jest zawijana wzdłuż jego prawej strony. */
+.origin-tile.expanded .tile-content-expanded {
+    clear: both;
 }
 
 .origin-tile.expanded .tile-content-collapsed {
