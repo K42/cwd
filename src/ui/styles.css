@@ -343,6 +343,8 @@ button:active {
 
 /* Origin Tiles */
 .origin-tile {
+    display: flex;
+    align-items: stretch;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -353,10 +355,26 @@ button:active {
     user-select: none;
 }
 
+/* Miniatura pochodzenia - cała lewa strona kafelka, na pełną wysokość.
+   Bez własnego border-radius: to overflow:hidden kafelka nadaje jej
+   zaokrąglone rogi po lewej, dokładnie takie jak ma cały kafelek. */
+.origin-thumb {
+    width: 190px;
+    flex-shrink: 0;
+    align-self: stretch;
+    object-fit: cover;
+    background: var(--bg-1);
+}
+
+/* Reszta treści kafelka - zawsze na prawo od miniatury */
+.tile-body {
+    flex: 1;
+    min-width: 0;
+}
+
 /* Stan zwinięty */
-.origin-tile.compact {
+.origin-tile.compact .tile-body {
     padding: 15px;
-    min-height: auto;
 }
 
 .origin-tile.compact .tile-content-expanded {
@@ -364,9 +382,18 @@ button:active {
 }
 
 /* Stan rozwinięty */
-.origin-tile.expanded {
+.origin-tile.expanded .tile-body {
     padding: 20px;
     min-height: 400px;
+}
+
+/* W stanie rozwiniętym kafelek bywa bardzo wysoki (długi opis, tabele
+   losowania) - rozciąganie tej samej, niewielkiej miniatury na całą tę
+   wysokość rozmyłoby ją. Zamiast tego zostaje przy naturalnym rozmiarze,
+   przypięta u góry lewej strony. */
+.origin-tile.expanded .origin-thumb {
+    align-self: flex-start;
+    height: 220px;
 }
 
 .origin-tile.expanded .tile-content-collapsed {
@@ -401,6 +428,7 @@ button:active {
 .tile-header {
     display: flex;
     align-items: center;
+    gap: 12px;
     margin-bottom: 15px;
     position: relative;
 }
@@ -2423,6 +2451,16 @@ kbd {
        nie zasłaniało przycisków "Wstecz"/"Dalej" na dole każdego kroku. */
     .step-navigation {
         margin-bottom: 70px;
+    }
+
+    .origin-thumb {
+        width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .origin-thumb {
+        width: 88px;
     }
 }
 

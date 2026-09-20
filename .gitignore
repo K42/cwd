@@ -156,5 +156,10 @@ build/
 sources/
 dodatki/
 
+# Miniatury pochodzeń wykadrowane z ilustracji podręczników - komercyjna
+# grafika, trzymana lokalnie do własnego użytku, nie wersjonowana razem z
+# kodem (kod, który je wyświetla w UI, jest w gicie normalnie).
+src/ui/assets/origins/
+
 # Prywatne notatki robocze (nie wersjonowane)
 .claude/TODO.md

@@ -869,6 +869,8 @@ function generateTilesOrigins(pochodzenia) {
     const allTraits = getAllTraits(pochodzenie.cechy_specjalne);
 
     tile.innerHTML = `
+            <img class="origin-thumb" src="assets/origins/${pochodzenie.id}.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <div class="tile-body">
             <div class="tile-header">
                 <div class="badges-container">
                     <div class="feature-desc">rozmiar:</div><div class="size-badge">${pochodzenie.rozmiar}</div>
@@ -876,7 +878,7 @@ function generateTilesOrigins(pochodzenia) {
                 </div>
                 <h4>${pochodzenie.nazwa}</h4>
             </div>
-            
+
             <!-- Stan zwinięty -->
             <div class="tile-content-collapsed">
                 <div class="description">${shortDescription}</div>
@@ -1030,6 +1032,7 @@ function generateTilesOrigins(pochodzenia) {
                         Wybierz ${pochodzenie.nazwa}
                     </button>
                 </div>
+            </div>
             </div>
         `;
 
