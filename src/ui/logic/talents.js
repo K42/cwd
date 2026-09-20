@@ -4,7 +4,7 @@
  * Treść przepisana z polskich wydań podręczników (kod źródła w komentarzu przy
  * każdym wpisie: PG - Podręcznik Główny, SUP - Suplement Władcy Demonów,
  * NW - Niepewna Wiara, RA - Rozkoszna Agonia, SP - Straszliwe Piękno,
- * GWP - Głód W Pustce, GP - Grobowce Pustkowia). Wpisy są posortowane
+ * GP - Głód w Pustce, GWP - Grobowce Pustkowia). Wpisy są posortowane
  * alfabetycznie, żeby dopisanie nowego talentu było jednoznaczne.
  *
  * UWAGA: nazwy kluczy muszą dokładnie odpowiadać nazwom talentów w
@@ -58,8 +58,10 @@ const TALENT_DESCRIPTIONS = {
   'Grymuar': 'Posiadasz księgę wypełnioną wiedzą magiczną. Zapewnia ci ona 1 ułatwienie we wszystkich testach Intelektu związanych z przywoływaniem informacji na temat magii. Zawiera także zaklęcia, które poznałeś w swoich podróżach.', // PG
   'Grzmotnięcie tarczą': 'Gdy uzyskasz sukces, atakując tarczą, twoje rzuty na atak przeciwko temu samemu celowi zyskują 2 ułatwienia do końca następnej rundy.', // PG
   'Góra trupów': 'Możesz wykorzystać akcję, by wykonać zamaszysty cios swoją bronią ciężką. Wybierz dowolną liczbę celów w odległości do 1 metra od siebie. Każdy cel o Zdrowiu 20 lub mniejszym otrzymuje obrażenia równe swojemu Zdrowiu.', // PG
+  'Hart ducha': 'W swojej turze możesz zdecydować się otrzymać 1 punkt Szaleństwa. Nie stajesz się z tego powodu przestraszony. Zamiast tego przez liczbę rund równą nowej sumie twojego Szaleństwa odnosisz poniższe korzyści. • Rzuty na atak i testy wykonujesz z 1 ułatwieniem. • Otrzymujesz połowę obrażeń od ognia i broni. • Na koniec każdej rundy rzuć k6. Przy wyniku 1 MG przejmuje kontrolę nad twoją postacią do końca kolejnej rundy. Przy wynikach 2-5 działasz normalnie do końca kolejnej rundy. Przy wyniku 6 działasz normalnie do końca kolejnej rundy, a twoje ataki bronią zadają dodatkowe 1k6 obrażeń.', // CS
   'Hymn bitewny': 'Podczas swojej tury możesz wykorzystać akcję lub reakcję, by zaintonować hymn trwający 1 rundę. Co rundę możesz przedłużyć jego trwanie o kolejną, wykorzystując w swojej turze reakcję. Efekt ten zostaje natychmiast zakończony, jeśli stracisz możliwość mówienia.', // PG
   'Inspirująca modlitwa': 'Gdy używasz Modlitwy na innym stworzeniu, przez 1 rundę wykonujesz rzuty na atak i testy z 1 ułatwieniem.', // NW
+  'Jeszcze nie pora': 'Kiedy stworzenie w średnim zasięgu miałoby zostać obezwładnione, możesz w ramach reakcji sprawić, że uleczy ono obrażenia równe swojej Szybkości Zdrowienia. Następnie rzuć k6. Przy wyniku 1 istota otrzymuje obrażenia równe swojej Szybkości Zdrowienia, a ty stajesz się oszołomiony na 1 minutę. Przy wynikach 2-5 nie możesz użyć tego talentu ponownie, dopóki nie odbędziesz pełnego odpoczynku. Przy wyniku 6 przez 1 rundę wykonujesz rzuty na atak i testy z 1 ułatwieniem.', // CS
   'Jeździectwo bojowe': 'Walcząc z grzbietu wierzchowca, zyskujesz 1 ułatwienie w rzutach na atak przeciwko celom mniejszym niż ujeżdżane przez ciebie stworzenie.', // PG
   'Kamienna ochrona': 'Możesz wykorzystać akcję i poświęcić użycie zaklęcia Ziemi 1 lub wyższego kręgu, by rzucić tyloma k6, ile wynosi krąg czaru i zsumować wyniki. Suma ta stanowi twoją pulę Kamiennej ochrony, która pochłania obrażenia. Dopóki masz w niej co najmniej 1 punkt, to otrzymane obrażenia w pierwszej kolejności odejmujesz od tej puli, a dopiero później od swojego Zdrowia. Efekt dobiega końca, gdy pula się wyczerpie, użyjesz tego talentu ponownie lub odbędziesz pełny odpoczynek.', // PG
   'Kojące słowa': 'Możesz wykorzystać akcję, by sprawić, że stworzenie w twoim bezpośrednim zasięgu pozbędzie się jednego z następujących stanów: zauroczenia, zniewolenia, zamroczenia lub przestraszenia.', // PG
@@ -68,11 +70,12 @@ const TALENT_DESCRIPTIONS = {
   'Kontrolowany szał': 'Kiedy znajdujesz się pod wpływem Szału, możesz w swojej turze wykorzystać reakcję, aby wykonać test Woli. Sukces oznacza, że efekty Szału dobiegają końca, a ty na 1 minutę tracisz tę cechę.', // SP
   'Kradzież kieszonkowa': 'Podczas swojej tury możesz wykorzystać akcję lub reakcję, by ukraść obiekt stworzeniu w bezpośrednim zasięgu. Przedmiot ten musi być czymś, co zdołasz trzymać w jednej ręce, a istota sama nie może dzierżyć go w rękach (lub podobnych kończynach). Jeśli widzisz ten obiekt, zabierasz go. Jeśli go nie widzisz, ponieważ sięgasz do sakiewki czy plecaka, MG ustala, jaki przedmiot ukradłeś.', // PG
   'Kradzież zaklęcia': 'Gdy stworzenie w średnim zasięgu rzuca zaklęcie, możesz wykorzystać reakcję, by spróbować je ukraść. Wykonaj oparty na Intelekcie rzut na atak Ścieżki eksperckie 4 przeciwko Intelektowi czarującego. Sukces oznacza, że zaklęcie nie wywołuje żadnego efektu. Jeśli twoja Moc jest dostatecznie wysoka, byś mógł je rzucić, zyskujesz jedno jego użycie. Zachowujesz je, dopóki nie rzucisz tego czaru lub nie odbędziesz pełnego odpoczynku. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim będziesz mógł użyć go ponownie.', // PG
-  'Krew olbrzymów': 'Za każdym razem, kiedy uleczysz obrażenia, przez 1 rundę wykonujesz oparte na Sile rzuty na atak i testy z 1 ułatwieniem.', // PG
+  'Krew olbrzymów': 'Za każdym razem, kiedy uleczysz obrażenia, przez 1 rundę wykonujesz oparte na Sile rzuty na atak i testy z 1 ułatwieniem.', // CS
   'Krwotok': 'Twoje ataki sztyletami, nożami i podobnymi rodzajami broni mogą powodować broczące krwią rany. Gdy wynik twojego rzutu na atak tego typu bronią wyniesie 20 i przekroczy poziom trudności o co najmniej 5, zadajesz ranę, która krwawi, dopóki cel nie otrzyma leczenia lub nie poświęci akcji, by zatamować upływ krwi. Przeciwnik z krwotokiem jest wyczerpany i otrzymuje 1k6 obrażeń na zakończenie każdej rundy.', // PG
   'Krzepa': 'Zyskujesz 1 ułatwienie w rzutach na atak i testach opartych na Sile.', // PG
   'Leczenie na odległość': 'Kiedy rzucasz zaklęcie Życia, którego celem jest stworzenie w bezpośrednim zasięgu, możesz zamiast tego wybrać cel w bliskim zasięgu.', // PG
   'Litość': 'Gdy stworzenie uzyska sukces w rzucie na atak przeciwko tobie, możesz wykorzystać reakcję, by prosić o litość. Jeśli ów przeciwnik cię słyszy i rozumie, wykonaj oparty na Woli rzut na atak przeciwko jego Woli. Sukces oznacza, że zamiast cię trafić, atak chybia, a samo stworzenie zostaje zauroczone na 1 minutę lub dopóki nie zostanie zaatakowane. Porażka oznacza, że cel staje się niewrażliwy na efekty tego talentu, dopóki nie odbędzie pełnego odpoczynku.', // PG
+  'Lodowa wędrówka': 'Ignorujesz efekty trudnego terenu spowodowane przez śnieg lub lód.', // CS
   'Lustracja': 'Możesz wykorzystać akcję, by poddać obserwacji jedno stworzenie w średnim zasięgu, które widzisz. Wykonaj oparty na Percepcji rzut na atak przeciwko Intelektowi celu. Sukces oznacza, że istota liczy się jako zlustrowana, dopóki nie odbędzie pełnego odpoczynku, nie stracisz jej z oczu lub nie użyjesz tego talentu ponownie. Porażka oznacza, że staje się niewrażliwa na ten talent, dopóki nie odbędzie pełnego odpoczynku.', // PG
   'Magia egzorcysty': 'Poznajesz opisane poniżej zaklęcie egzorcyzm.', // PG
   'Magiczna broń': 'Gdy wykonujesz atak orężem, na który rzuciłeś zaklętą broń, zyskujesz 1 ułatwienie w rzucie na atak, a trafienie zadaje dodatkowe 1k6 obrażeń.', // PG
@@ -90,19 +93,23 @@ const TALENT_DESCRIPTIONS = {
   'Mistrz trucizn': 'Możesz wykorzystać akcję i posłużyć się zestawem alchemika, by przygotować dawkę trucizny (patrz Rozdział 6). Musisz spędzić co najmniej 1 minutę na koncentracji i zużyć porcję specjalnych składników wartą 5 miedziaków.', // PG
   'Mistrz ucieczek': 'Gdy zostaniesz pochwycony, możesz wykorzystać reakcję, by się wyswobodzić.', // PG
   'Mistrzostwo bojowe': 'Gdy wykorzystujesz akcję, by wykonać atak bronią, możesz nim zadać dodatkowe 1k6 obrażeń lub wykonać kolejny atak przeciwko innemu celowi w dowolnym momencie przed końcem swojej tury. Talent ten kumuluje się z Doświadczeniem bojowym. Każdy atak musisz wykonać przeciwko innemu celowi.', // PG
+  'Mistrzostwo magii lodu': 'Kiedy rzucasz zaklęcie ataku Wody, wykonujesz rzut na atak z 1 ułatwieniem, a testy na opieranie się tego ataku otrzymują 1 utrudnienie. Dodatkowo jeśli czar zadaje obrażenia, traktujesz wynik 1 na kościach obrażeń jako 3.', // CS
   'Mistrzostwo w dwóch broniach': 'Gdy atakujesz dwiema broniami, rzut na atak wykonujesz z 1 ułatwieniem. Jeśli i jednym, i drugim orężem atakujesz ten sam cel, zadajesz dodatkowe 1k6 obrażeń.', // PG
   'Mistrzostwo w magii': 'Opanowałeś do perfekcji sztukę rzucania zaklęć. Zyskujesz 6 punktów zaklęć; gdy posługujesz się magią, możesz wydać liczbę punktów zaklęć równą kręgowi danego czaru (minimum 1 punkt), by rzucić go, nie poświęcając jego użycia (także w sytuacji, gdy nie masz już użyć). Wykorzystane punkty odzyskujesz po odbyciu pełnego odpoczynku.', // PG
   'Mistrzostwo w Sztukach Tajemnych': 'Możesz wykorzystać akcję i poświęcić jedno użycie znanego ci zaklęcia Sztuk Tajemnych, by rzucić inny znany ci czar z tego samego lub niższego kręgu bez poświęcania jego użycia – nawet jeśli nie masz już dostępnych użyć tegoż zaklęcia.', // PG
   'Mobilność': 'Gdy podejmujesz turę krótką, możesz zarówno poruszyć się, jak i wykonać akcję. Twój ruch nigdy nie prowokuje darmowych ataków.', // PG
   'Modlitwa': 'Gdy stworzenie w bliskim zasięgu wykonuje rzut na atak lub test, starowierca może wykorzystać reakcję, by zapewnić mu w tym rzucie 1 ułatwienie.', // PG
+  'Mój wróg moją bronią': 'Jeśli trzymasz pochwycone przez siebie stworzenie, możesz wykorzystać akcję, aby wydłużyć pochwycenie do końca następnej rundy. Jeśli ofiara jest od ciebie mniejsza, możesz następnie zamachnąć się nią jak bronią. Wybierz cel w swoim bezpośrednim zasięgu i wykonaj test Siły przeciwko jego Zręczności. Sukces oznacza, że istota, którą pochwyciłeś, oraz ta będąca celem otrzymują obrażenia, jakbyś uderzył każdą z nich atakiem bez broni zadającym dodatkowe 1k6 obrażeń. Jeśli pochwycone stworzenie umrze, staje się improwizowaną bronią według zwykłych zasad.', // CS
   'Na pohybel nieczystym': 'Rzuty na atak przeciwko demonom, diabłom, faerie, duchom i nieumarłym wykonujesz z 1 ułatwieniem. Stworzenia te otrzymują 1 utrudnienie we wszystkich testach wykonywanych, by odeprzeć efekty twoich ataków.', // PG
   'Nadludzkie zmysły': 'Zyskujesz 1 ułatwienie we wszystkich testach Percepcji.', // PG
   'Nie do zdarcia': 'Możesz użyć akcji, by uleczyć tyle obrażeń, ile wynosi twoja Szybkość Zdrowienia, a także pozbyć się jednego z następujących stanów: wyczerpanie, osłabienie lub zatrucie. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim zdołasz użyć go ponownie.', // PG
+  'Niechęć do pancerza': 'Kiedy nie nosisz zbroi ani nie używasz tarczy, otrzymujesz premię +2 do Obrony.', // CS
   'Nieczysta walka': 'Podczas swojej tury możesz wykorzystać akcję lub reakcję, by wykonać oparty na Zręczności rzut na atak przeciwko Percepcji jednego celu w bliskim zasięgu. Sukces oznacza, że ofiara zostaje osłabiona na 1 rundę. Porażka oznacza, że staje się niewrażliwa na twoje techniki Nieczystej walki, dopóki nie odbędzie pełnego odpoczynku.', // PG
   'Nieczyste zagrania': 'Jeśli wykonujesz rzut na atak z co najmniej 1 ułatwieniem, atak ten zadaje dodatkowe 1k6 obrażeń.', // PG
   'Niedźwiedzi uścisk': 'Niedźwiedzidło może w swojej turze wykorzystać reakcję, aby pochwycić stworzenie w swoim bezpośrednim zasięgu.', // GWP
   'Nieoczekiwany sojusznik': 'Gdy uzyskasz sukces w rzucie na atak, używając talentu Litość, twój cel zostaje zniewolony na 1 minutę lub dopóki nie zostanie zaatakowany.', // PG
   'Niepohamowany obłęd': 'Gdy popadasz w obłęd, efektem zawsze jest agresja (patrz Popadnięcie w obłęd w Rozdziale 2).', // PG
+  'Niepowstrzymany': 'Jeśli jesteś unieruchomiony lub spowolniony, możesz wykorzystać w swojej turze akcję lub reakcję, aby pozbyć się tego stanu.', // CS
   'Nieubłagany pościg': 'Kiedy stworzenie oznaczone jako zdobycz warga poruszy się, warg może wykorzystać reakcję, aby przemieścić się na odległość równą połowie swojej Prędkości lub mniejszą.', // GWP
   'Niewzruszony': 'Jeśli jesteś przytomny i stoisz na twardym podłożu, nie możesz zostać przemieszczony wbrew swojej woli.', // PG
   'Niezrównany myśliwy': 'Stworzenia, które oznaczyłeś jako swoją zdobycz za pomocą talentu Polowanie, nie mogą się przed tobą ukrywać i otrzymują dodatkowe 1k6 obrażeń od twoich ataków.', // PG
@@ -117,6 +124,7 @@ const TALENT_DESCRIPTIONS = {
   'Obyty ze śmiercią': 'Jesteś niewrażliwy na choroby i trucizny i nie otrzymujesz z tych źródeł żadnych obrażeń. Wykonując rzut podczas próby przeznaczenia, gdy zostaniesz wyeliminowany, rzucasz dwukrotnie i wybierasz dowolny z wyników.', // PG
   'Odepchnięcie tarczą': 'Gdy uzyskasz sukces w rzucie na atak z użyciem tarczy, możesz odepchnąć cel na 1k6 metrów od siebie.', // PG
   'Odporność na broń': 'Mając na sobie ciężki pancerz, otrzymujesz tylko połowę obrażeń od ataków z użyciem broni.', // PG
+  'Odporność na zimno': 'Otrzymujesz połowę obrażeń od zimna. Jeśli wcześniej podzieliłeś już ten rodzaj obrażeń na pół, nie otrzymujesz ich w ogóle.', // CS
   'Odporność na żywioły': 'Nigdy nie musisz się obawiać wyczerpania spowodowanego wystawieniem na działanie żywiołów. Otrzymujesz tylko połowę obrażeń od zimna, elektryczności, grzmotu i ognia.', // PG
   'Odskok': 'Gdy stworzenie, które widzisz, chybi, atakując twoją Obronę lub Zręczność, możesz użyć reakcji, by wykonać odwrót.', // PG
   'Odwet': 'Gdy stworzenie w bezpośrednim zasięgu zaatakuje cel inny niż ty, możesz wykorzystać reakcję, by je zaatakować.', // PG
@@ -136,11 +144,13 @@ const TALENT_DESCRIPTIONS = {
   'Pierwotna więź': 'Tworzysz więź ze zwierzętami zauroczonymi przez ciebie za pomocą zaklęcia zwierzęcy towarzysz. Zyskujesz wszystkie poniższe korzyści. • Gdy stajesz się celem jakiegoś zaklęcia, możesz sprawić, że jego efekty zadziałają również na jedno z zauroczonych przez ciebie zwierząt znajdujące się w średnim zasięgu. • Gdy znajdujesz się w średnim zasięgu od zauroczonego przez siebie zwierzęcia, zarówno ty, jak i ono zyskujecie 1 ułatwienie w testach Percepcji. • Możesz komunikować się telepatycznie z zauroczonymi przez siebie zwierzętami na odległość do 1 kilometra, nawet jeśli nie mówicie żadnym wspólnym językiem.', // PG
   'Podstęp': 'Raz na rundę możesz uzyskać 1 ułatwienie w rzucie na atak lub teście. Jeśli ułatwienie to wykorzystasz przy ataku, zadajesz nim dodatkowe 1k6 obrażeń.', // PG
   'Polowanie': 'W swojej turze możesz wykorzystać akcję lub reakcję, by wskazać jedno stworzenie, które widzisz. Cel staje się twoją zdobyczą, dopóki nie użyjesz tego talentu ponownie, nie zostaniesz pozbawiony przytomności lub nie odbędziesz pełnego odpoczynku. Wszystkie rzuty związane z atakowaniem, poszukiwaniem lub tropieniem zdobyczy wykonujesz z 1 ułatwieniem.', // PG
+  'Poruszający występ': 'Możesz wykorzystać akcję, aby wygłosić przemowę, wyrecytować wiersz lub opowiedzieć historię. Jeśli będziesz to robił przez 1 minutę i utrzymasz w tym czasie koncentrację, zapewniasz na 1 godzinę 1 ułatwienie w rzutach na atak i premię +5 do Zdrowia maksymalnie pięciu stworzeniom innym niż ty, które były obecne podczas całego twojego wystąpienia. Pojedyncza istota może odnieść korzyści wynikające z Poruszającego występu tylko raz na pełny odpoczynek.', // CS
   'Postawa bojowa': 'Podczas swojej tury możesz wykorzystać akcję lub reakcję, by przyjąć postawę bojową, w której pozostajesz, dopóki się nie poruszysz lub nie stracisz przytomności. W postawie bojowej wszystkie ataki wykonujesz z 1 ułatwieniem, a ataki przeciwko tobie otrzymują 1 utrudnienie.', // PG
   'Potęga natury': 'Będąc pod wpływem zaklęcia Natury dębowa skóra, otrzymujesz tylko połowę obrażeń od ognia.', // PG
   'Potęga zagnana w kozi róg': 'Kiedy fomor jest przestraszony, jego ataki z użyciem broni zadają dodatkowe 1k6 obrażeń.', // GWP
   'Potężna szarża': 'Gdy podejmujesz akcję szarży, twój ruch nie prowokuje darmowych ataków, a atak zadaje dodatkowe 1k6 obrażeń.', // PG
   'Potężne muskuły': 'Dodajesz swój modyfikator z Siły do obrażeń zadawanych przy użyciu broni prostych, wojskowych lub ciężkich.', // PG
+  'Potężne pięści': 'Twoje ataki bez broni zadają dodatkowe 1k6 obrażeń. Dodatkowo kiedy atakujesz bez broni cel, który jest mniejszy od ciebie, lub próbujesz go pochwycić, zyskujesz 1 ułatwienie w rzucie na atak.', // CS
   'Potężne uderzenie': 'Gdy całkowity wynik twojego rzutu na atak wyniesie 20 lub więcej i jednocześnie przewyższy poziom trudności o co najmniej 5, atak ten zadaje dodatkowe 1k6 obrażeń.', // PG
   'Potężny eidolon': 'Zdrowie eidolona zwiększa się o 25, a jego Obrona o 2.', // PG
   'Powietrzny krok': 'Gdy rzucasz zaklęcie z tradycji Powietrza, po rozpatrzeniu jego efektów możesz przemieścić się lotem o tyle metrów, ile wynosi krąg czaru +1. Na koniec tego ruchu bezpiecznie lądujesz.', // PG
@@ -150,6 +160,7 @@ const TALENT_DESCRIPTIONS = {
   'Preferowane tradycje': 'Wybierz do dwóch tradycji, które już poznałeś. Ataki zaklęciami tych tradycji wykonujesz z 1 ułatwieniem, a inne stworzenia otrzymują 1 utrudnienie w testach wykonywanych, by odeprzeć ich efekty.', // PG
   'Prymat sobowtóra': 'W trakcie swojej tury możesz użyć Kradzieży tożsamości jako reakcji. Ponadto gdy skradniesz tożsamość jakiejś istoty, to dopóki naśladujesz jej wygląd, wszelkie ataki przeciw niej wykonujesz z 1 ułatwieniem.', // PG
   'Przednia straż': 'Gdy wykonujesz test, by się ukryć lubskradać, i znajdujesz się dalej niż w bliskim zasięgu od reszty drużyny, zyskujesz 1 ułatwienie.', // PG
+  'Przepowiedzenie wyrdu': 'Możesz wykorzystać akcję, aby poświęcić użycie zaklęcia. Wybierz jedno stworzenie w średnim zasięgu, musi wykonać test Woli. Sukces oznacza, że istota otrzymuje 1 ułatwienie do rzutów na atak i testów, porażka zaś, że staje się przestraszona. Efekt utrzymuje się przez liczbę rund równą kręgowi poświęconego zaklęcia (minimum 1 runda).', // CS
   'Przerażające gesty': 'Gdy rzucasz zaklęcie z tradycji Sztuk Zakazanych, wybierz jedno stworzenie w bliskim zasięgu, które cię widzi. Cel musi wykonać test Woli; porażka oznacza, że jest on przestraszony przez liczbę rund równą twojej Mocy.', // PG
   'Przerażające wynaturzenia': 'Stworzone przez ciebie za pomocą zaklęć Przywołań potwory posiadają cechę przerażające.', // PG
   'Przerażający szał': 'Gdy wpadasz w berserk, każde stworzenie w bliskim zasięgu, które nie jest członkiem twojej drużyny, musi wykonać test Woli, w którym porażka oznacza, że staje się ono przestraszone na 1 rundę.', // PG
@@ -188,7 +199,9 @@ const TALENT_DESCRIPTIONS = {
   'Tajemnice druidów': 'Podczas swojej inicjacji poznałeś odwieczne tajemnice druidów. Pozwalają ci one: • Zidentyfikować dowolne zwierzę lub roślinę, które widzisz. • Ocenić, czy woda lub jedzenie są bezpieczne do spożycia. • Przewidzieć pogodę do 24 godzin naprzód, pod warunkiem że znajdujesz się na zewnątrz i widzisz niebo. • Poruszać się z pełną Prędkością po trudnym terenie, pod warunkiem że powstał on w efekcie naturalnego kształtowania. • Zdecydować, czy chcesz zostawiać ślady, gdy poruszasz się w naturalnym środowisku.', // PG
   'Tajniki natury': 'Testy związane z przypominaniem sobie użytecznych informacji o zwierzętach, roślinach, geografii i naturze wykonujesz z 1 ułatwieniem.', // PG
   'Talent zbrojnego': 'Wybierz jeden z talentów zbrojnego opisanych poniżej.', // PG
+  'To wcale nie boli': 'Będąc poważnie rannym, otrzymujesz połowę obrażeń od broni.', // CS
   'Trwała więź': 'Możesz wykorzystać akcję, by stworzyć więź z jednym stworzeniem w bliskim zasięgu, które cię widzi i słyszy. Jeśli nie stawia ono oporu, więź trwa, dopóki jedno z was nie umrze lub dopóki nie użyjesz tego talentu ponownie.', // PG
+  'Trwałe morale': 'Korzyści wynikające z twojego talentu Zagranie do boju utrzymują się, dopóki stworzenie nie zostanie obezwładnione lub nie odbędzie pełnego odpoczynku.', // CS
   'Uderzenie na oślep': 'Gdy atakujesz bronią białą, rzut na atak możesz wykonać z 1 utrudnieniem, by w razie trafienia zadać dodatkowe 2k6 obrażeń.', // PG
   'Uderzenie trzonkiem': 'Gdy atakujesz bronią drzewcową lub kosturem, możesz wykorzystać reakcję, by zaatakować drugim końcem tej broni. Wykonujesz rzut na atak z 1 utrudnieniem i w razie trafienia zadajesz 1k6 obrażeń.', // PG
   'Udoskonalona wspólna odnowa': 'Możesz użyć Wspólnej odnowy dwukrotnie na każdy pełny odpoczynek.', // NW
@@ -205,6 +218,7 @@ const TALENT_DESCRIPTIONS = {
   'Wiarygodne iluzje': 'Istoty próbujące wykryć iluzje stworzone przez twoje zaklęcia wykonują testy Percepcji z 2 utrudnieniami. Ponadto gdy atakujesz zaklęciami Iluzji, rzuty na atak wykonujesz z 1 ułatwieniem.', // PG
   'Wiedza ezoteryczna': 'Wiesz co nieco na każdy temat. Zyskujesz 1 ułatwienie we wszystkich testach Intelektu związanych z przywoływaniem informacji.', // PG
   'Wiedźmi ogień': 'Poznajesz opisane niżej zaklęcie wiedźmi ogień.', // PG
+  'Wielki hart ducha': 'Kiedy jesteś pod wpływem efektu Szaleństwa wynikającego z talentu Hart ducha, twoje ataki bronią zadają dodatkowe 1k6 obrażeń. Poza tym premia do Obrony wynikająca z talentu Niechęć do pancerza wzrasta do +4.', // CS
   'Wprawna charakteryzacja': 'Jeśli masz zestaw do charakteryzacji, możesz wykorzystać akcję i jedno użycie zestawu, by zmienić swój wygląd.', // PG
   'Wprawny przewodnik': 'Zawsze wiesz, gdzie leży północ, i zawsze jesteś w stanie wrócić po swoich śladach, tam skąd przybyłeś. Ponadto podczas podróży wszyscy członkowie drużyny o Prędkości niższej niż twoja poruszają się z twoją Prędkością.', // PG
   'Wprawny pływak': 'Pływając, ignorujesz efekty związane z przemieszczaniem się przez trudny teren.', // PG
@@ -218,6 +232,7 @@ const TALENT_DESCRIPTIONS = {
   'Wynalazek': 'Gdy rzucasz zaklęcie Technomancji, tworzysz także drobne urządzenie nasycone magiczną mocą, które możesz trzymać w jednej ręce. Zachowujesz je, dopóki go nie wykorzystasz lub nie odbędziesz pełnego odpoczynku. Wykonując rzut na atak lub test, możesz użyć zgromadzonej w wynalazku mocy, by zyskać w tym rzucie 1 ułatwienie.', // PG
   'Wyostrzone zmysły': 'Zyskujesz 1 ułatwienie we wszystkich testach Percepcji.', // PG
   'Wyrok inkwizytora': 'Twoje ataki z użyciem broni przeciw zlustrowanym stworzeniom zadają dodatkowe 1k6 obrażeń.', // PG
+  'Wysokie morale': 'Stworzenia będące pod wpływem twojego talentu Zagranie do boju nie mogą zostać przestraszone.', // CS
   'Wysokie obroty': 'W tej turze zyskujesz jedną dodatkową akcję. Na koniec tury rzuć k6. Jeśli wynik jest nieparzysty, na koniec rundy twój mechanizm zatrzymuje się i stajesz się obiektem.', // PG
   'Wyszkolenie w walce': 'Atakując z użyciem broni, stworzenie zyskuje 1 ułatwienie w rzucie na atak i w razie trafienia zadaje 1 dodatkowy punkt obrażeń.', // PG
   'Wytchnienie': 'Możesz poświęcić 1 godzinę na odprężenie się. Po tym czasie ty oraz każdy członek drużyny, który wraz z tobą zdecydował się na wytchnienie, leczycie tyle punktów obrażeń, ile wynosi wasza Szybkość Zdrowienia. Po wykorzystaniu tego talentu musisz odbyć pełny odpoczynek, zanim będziesz mógł użyć go ponownie.', // PG
@@ -229,6 +244,7 @@ const TALENT_DESCRIPTIONS = {
   'Wyćwiczony atak': 'Gdy uzyskasz sukces w rzucie na atak z użyciem broni, możesz wykorzystać reakcję, by zadać maksymalne obrażenia przewidziane dla tego oręża.', // PG
   'Władanie nieumarłymi': 'Poznajesz opisane poniżej zaklęcie władanie nieumarłymi.', // PG
   'Za wszelką cenę': 'Twoje ataki zadają dodatkowe 1k6 obrażeń osłabionym celom.', // PG
+  'Zagranie do boju': 'Kiedy uzyskasz sukces w rzucie na atak, możesz w ramach reakcji zapewnić 2 ułatwienia w rzucie na atak stworzeniu w bliskim zasięgu, które jest w stanie cię widzieć.', // CS
   'Zagrzewająca pieśń': 'Stworzenia będące pod wpływem twojego Hymnu bitewnego zadają dodatkowe 1k6 obrażeń atakami przy użyciu broni.', // PG
   'Zahartowany': 'Testy na opieranie się atakom wykonujesz z 1 ułatwieniem.', // PG
   'Zakuty w stal': 'Możesz zignorować wymagania dotyczące noszenia ciężkiego pancerza, a używając go, zyskujesz premię +1 do Obrony.', // PG

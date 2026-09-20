@@ -510,14 +510,29 @@ function renderPathSummary(levelChoice, sciezka) {
   box.innerHTML = `<div class="inline-box">Wybrana ścieżka: <strong>${sciezka.nazwa}</strong> – zastosowano korzyści poziomu ${levelChoice}</div>`;
 }
 
-function addBenefits(pkt) {
-  // Modyfikatory atrybutów podstawowych
-  if (pkt.mod_atrybuty) {
-    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
-    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
-      const el = document.getElementById(map[k]);
-      if (el) el.textContent = (parseInt(el.textContent)||0) + v;
+/**
+ * Sumuje wymuszone podwyżki atrybutów głównych ze wszystkich aktualnie
+ * wybranych ścieżek. Liczone od zera przy każdym przeliczeniu - inaczej
+ * ponowne kliknięcie tej samej ścieżki dodawałoby bonus drugi raz.
+ */
+function sumAttributeBonusesFromPaths() {
+  const suma = { sila: 0, zrecznosc: 0, intelekt: 0, wola: 0 };
+  Object.values(grantedBenefitsWithPaths).forEach(wpis => {
+    const mod = wpis && wpis.pkt && wpis.pkt.mod_atrybuty;
+    if (!mod) return;
+    Object.entries(mod).forEach(([atrybut, wartosc]) => {
+      if (atrybut in suma) suma[atrybut] += wartosc;
     });
+  });
+  return suma;
+}
+
+function addBenefits(pkt) {
+  // Atrybuty główne zależą od wybranych ścieżek, więc przelicz je od zera
+  // (updateCalculatedAttributes() dolicza sumAttributeBonusesFromPaths()).
+  if (pkt.mod_atrybuty) {
+    updateCalculatedAttributes();
+    return;
   }
   // Atrybuty drugorzędne – przeliczenie przez naszą funkcję
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
@@ -534,12 +549,11 @@ function addBenefits(pkt) {
 
 function subtractBenefits(prev) {
   const pkt = prev.pkt || {};
+  // Podobnie jak przy dodawaniu: atrybuty główne przelicza od zera
+  // updateCalculatedAttributes(), po wyczyszczeniu wpisu ścieżki.
   if (pkt.mod_atrybuty) {
-    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
-    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
-      const el = document.getElementById(map[k]);
-      if (el) el.textContent = (parseInt(el.textContent)||0) - v;
-    });
+    updateCalculatedAttributes();
+    return;
   }
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
@@ -1776,6 +1790,13 @@ function updateCalculatedAttributes() {
     const zwiekszony = document.getElementById('attribute-increased').value;
     attributesFinal = calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes);
   }
+
+  // Dolicz wymuszone podwyżki atrybutów przyznane przez wybrane ścieżki
+  // (np. Moloch: sztywne +1 do Siły obok jednej podwyżki do wyboru).
+  const bonusySciezek = sumAttributeBonusesFromPaths();
+  Object.entries(bonusySciezek).forEach(([atrybut, wartosc]) => {
+    if (wartosc) attributesFinal[atrybut] += wartosc;
+  });
 
   // Zsynchronizuj ukryte pola z finalnymi wartościami atrybutów głównych
   ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {

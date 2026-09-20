@@ -192,6 +192,31 @@ const PATHS = {
 
   // Ścieżki eksperckie (poziom 3) - PG rozdział 4, 16 ścieżek w 4 kategoriach
   sciezki_ekspertow: {
+    // Chwalebna Śmierć str. 9-10
+    moloch: {
+      id: 'moloch',
+      nazwa: 'Moloch',
+      zrodlo: 'CS',
+      opis: 'Wojownik, który miażdży wrogów gołymi pięściami, wykorzystując potężny rozmiar i siłę.',
+      poziom_1: {
+        // PG-owy zapis "Zwiększ Siłę o 1 i jeden inny atrybut o 1": jedna
+        // podwyżka jest wymuszona, druga do wyboru gracza.
+        mod_atrybuty: { sila: 1 },
+        atrybuty_glowne: { typ: 'wybor', ilosc: 1, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
+        zdrowie: '+6',
+        talenty: ['Potężne pięści', 'Niepowstrzymany']
+      },
+      poziom_6: {
+        zdrowie: '+6',
+        talenty: ['Mój wróg moją bronią']
+      },
+      poziom_9: {
+        zdrowie: '+6',
+        talenty: ['To wcale nie boli']
+      },
+      strona_zrodlowa: 9
+    },
+
     berserker: {
       id: 'berserker',
       nazwa: 'Berserker',
@@ -594,6 +619,84 @@ const PATHS = {
 
   // Ścieżki mistrzowskie (poziom 7) - PG rozdział 5, 64 ścieżki w porządku alfabetycznym
   sciezki_mistrzow: {
+    // Chwalebna Śmierć str. 10
+    duch_walki: {
+      id: 'duch_walki',
+      nazwa: 'Duch walki',
+      zrodlo: 'CS',
+      opis: 'Wojownik, który oddaje się bitewnemu szaleństwu i czerpie z niego moc.',
+      poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
+        zdrowie: '+5',
+        talenty: ['Niechęć do pancerza', 'Hart ducha']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Wielki hart ducha']
+      },
+      strona_zrodlowa: 10
+    },
+
+    // Chwalebna Śmierć str. 10-11
+    kriomanta: {
+      id: 'kriomanta',
+      nazwa: 'Kriomanta',
+      zrodlo: 'CS',
+      opis: 'Mag ujarzmiający magię Wody, by przemieniać ją w lód i śnieg.',
+      poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
+        zdrowie: '+2', moc: '+1',
+        jezyki_profesje: { typ: 'wybor', kategorie: ['dowolna'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję.' },
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], tradycjaNazwa: 'woda', ilosc: 1 },
+        talenty: ['Odporność na zimno', 'Lodowa wędrówka']
+      },
+      poziom_10: {
+        zdrowie: '+2',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Mistrzostwo magii lodu']
+      },
+      strona_zrodlowa: 10
+    },
+
+    // Chwalebna Śmierć str. 11
+    skald: {
+      id: 'skald',
+      nazwa: 'Skald',
+      zrodlo: 'CS',
+      opis: 'Poeta i historyk klanu, który pieśnią zagrzewa wojowników do boju.',
+      poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
+        zdrowie: '+5',
+        jezyki_profesje: { typ: 'wybor', kategorie: ['naukowe'], opis: 'Uczysz się mówić nowym językiem bądź zyskujesz profesję naukową.' },
+        talenty: ['Zagranie do boju', 'Poruszający występ']
+      },
+      poziom_10: {
+        zdrowie: '+5',
+        talenty: ['Wysokie morale', 'Trwałe morale']
+      },
+      strona_zrodlowa: 11
+    },
+
+    // Chwalebna Śmierć str. 11
+    wieszcz: {
+      id: 'wieszcz',
+      nazwa: 'Wieszcz',
+      zrodlo: 'CS',
+      opis: 'Obdarzony darem widzenia przyszłości, ogłasza przeznaczenie otaczających go istot.',
+      poziom_1: {
+        atrybuty_glowne: { typ: 'wybor', ilosc: 3, wartosc: 1, dostepne: ['sila', 'zrecznosc', 'intelekt', 'wola'] },
+        zdrowie: '+3', moc: '+1',
+        magia: { typ: 'wybor', opcje: ['tradycja', 'zaklecie'], tradycjaNazwa: 'jasnowidzenie', ilosc: 1 },
+        talenty: ['Przepowiedzenie wyrdu']
+      },
+      poziom_10: {
+        zdrowie: '+3',
+        magia: { typ: 'zaklecie', ilosc: 1 },
+        talenty: ['Jeszcze nie pora']
+      },
+      strona_zrodlowa: 11
+    },
+
     aeromanta: {
       id: 'aeromanta',
       nazwa: 'Aeromanta',
