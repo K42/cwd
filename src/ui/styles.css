@@ -259,6 +259,24 @@ button:active {
     color: var(--info-bright);
 }
 
+/* Przypomnienie wybranego pochodzenia na górze Kroku 2 */
+.origin-summary {
+    background: var(--bg-2);
+    border-left: 4px solid var(--gold);
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: var(--radius);
+}
+
+.origin-summary h4 {
+    color: var(--gold-bright);
+    margin: 0 0 10px 0;
+}
+
+.origin-summary p {
+    margin: 6px 0;
+}
+
 .path-benefit-item {
     margin: 12px 0;
     padding-top: 10px;
@@ -300,12 +318,47 @@ button:active {
     margin: 15px 0;
 }
 
+/* Karta atrybutu w podglądzie postaci (Krok 8) - nazwa nad wartością */
 .attribute-box {
     background: var(--bg-2);
     border: 1px solid var(--border);
     padding: 10px;
     text-align: center;
     border-radius: var(--radius);
+}
+
+/* Kompaktowy wiersz atrybutu w Kroku 2 - nazwa i wartość w jednej linii */
+.attribute-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+}
+
+.attribute-display label {
+    flex: 1;
+    margin: 0;
+    font-weight: normal;
+    font-size: 0.95em;
+    color: var(--ink-dim);
+}
+
+.attribute-value {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--gold-bright);
+    text-align: right;
+    min-width: 1.4em;
+}
+
+.attribute-display .modifier {
+    font-size: 0.85em;
+    color: var(--ink-dim);
+    min-width: 2em;
+    text-align: right;
 }
 
 .error {
@@ -556,6 +609,22 @@ button:active {
 }
 
 .level-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--gold);
+    font-size: 18px;
+}
+
+/* Style dla sekcji obliczonych atrybutów (Krok 2) */
+.calculated-attributes {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: var(--radius-lg);
+}
+
+.calculated-attributes h4 {
     margin: 0 0 15px 0;
     color: var(--gold);
     font-size: 18px;

@@ -2016,31 +2016,31 @@ function updateAttributesSecondary(atrybuty, pochodzenie) {
         <div class="attributes-grid">
           <div class="attribute-display">
             <label>Percepcja:</label>
-            <span id="perception-final">${attributesSecondary.percepcja}</span>
+            <span class="attribute-value" id="perception-final">${attributesSecondary.percepcja}</span>
           </div>
           <div class="attribute-display">
             <label>Obrona:</label>
-            <span id="defense-final">${attributesSecondary.obrona}</span>
+            <span class="attribute-value" id="defense-final">${attributesSecondary.obrona}</span>
           </div>
           <div class="attribute-display">
             <label>Zdrowie:</label>
-            <span id="health-final">${attributesSecondary.zdrowie}</span>
+            <span class="attribute-value" id="health-final">${attributesSecondary.zdrowie}</span>
           </div>
           <div class="attribute-display">
             <label>Szybkość Zdrowienia:</label>
-            <span id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
+            <span class="attribute-value" id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
           </div>
           <div class="attribute-display">
             <label>Prędkość:</label>
-            <span id="speed-final">${attributesSecondary.predkosc}</span>
+            <span class="attribute-value" id="speed-final">${attributesSecondary.predkosc}</span>
           </div>
           <div class="attribute-display">
             <label>Moc:</label>
-            <span id="power-final">${attributesSecondary.moc}</span>
+            <span class="attribute-value" id="power-final">${attributesSecondary.moc}</span>
           </div>
           <div class="attribute-display">
             <label>Splugawienie:</label>
-            <span id="corruption-final">${attributesSecondary.splugawienie}</span>
+            <span class="attribute-value" id="corruption-final">${attributesSecondary.splugawienie}</span>
           </div>
         </div>
       `;
