@@ -1275,10 +1275,12 @@ function selectOrigin(originId, { autoScroll = true } = {}) {
   // Pokaż komunikat o wyborze
   showMessageChoice(originId);
 
-  // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
+  // Przewiń do wybranego (teraz zwiniętego) kafelka, żeby użytkownik widział
+  // potwierdzenie wyboru - collapseAllTiles() wyżej zmienia wysokość strony,
+  // więc bez tego widok mógłby zostać w losowym miejscu.
   if (autoScroll) {
     requestAnimationFrame(() => {
-      nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      selectedTile?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
 }
