@@ -2626,13 +2626,19 @@ async function loadBenefitsLevel(poziom) {
   }
 
   try {
-    const benefits = calculateBenefitsLevel(poziom, {
+    const spec = {
       pochodzenie: selectedOrigin,
       sciezka_nowicjusza: selectedPaths.nowicjusz || null,
       sciezka_ekspercka: selectedPaths.ekspert || null,
       sciezka_mistrzowska: selectedPaths.mistrz || null
-    });
-    displayBenefitsLevel(benefits);
+    };
+    // Korzyści są skumulowane - pokazujemy każdy poziom od 1 do wybranego,
+    // nie tylko sam wybrany, żeby postać widziała cały swój dotychczasowy rozwój.
+    const benefitsAllLevels = [];
+    for (let p = 1; p <= poziom; p++) {
+      benefitsAllLevels.push(calculateBenefitsLevel(p, spec));
+    }
+    displayBenefitsLevel(benefitsAllLevels, poziom);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Błąd ładowania korzyści:', error);
@@ -2720,22 +2726,38 @@ function displayLevelBenefitsFallback(poziom) {
 }
 
 /**
- * Wyświetla korzyści poziomu
+ * Wyświetla skumulowane korzyści postaci od poziomu 1 do wybranego poziomu -
+ * jeden blok `.path-benefit-item` (z nagłówkiem "Poziom N - ...") na każdy
+ * poziom z tej listy, w kolejności rosnącej.
+ * @param {Object[]} benefitsAllLevels - wynik calculateBenefitsLevel() dla każdego poziomu 1..poziom
+ * @param {number} poziom - wybrany (docelowy) poziom postaci
  */
-function displayBenefitsLevel(benefits) {
+function displayBenefitsLevel(benefitsAllLevels, poziom) {
   const section = document.getElementById('level-benefits-section');
   const levelName = document.getElementById('selected-level-name');
   const content = document.getElementById('level-benefits-content');
   if (!section || !content) return;
 
   section.style.display = 'block';
+  if (levelName) levelName.textContent = poziom;
 
+  content.innerHTML = benefitsAllLevels.map(renderOneLevelBenefitsBlock).join('');
+}
+
+/**
+ * Renderuje blok korzyści jednego poziomu w skumulowanej liście (nagłówek
+ * "Poziom N - Nazwa (Źródło)" + kategorie korzyści tego poziomu).
+ */
+function renderOneLevelBenefitsBlock(benefits) {
   const nameLevel = benefits.nazwa_poziomu || 'Nieznany poziom';
   const sourceName = benefits.nazwa_sciezki
     || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
-  if (levelName) levelName.textContent = `${nameLevel} (${sourceName})`;
-
-  content.innerHTML = renderBenefitsLevelHtml(benefits.korzyści || {}, benefits);
+  return `
+    <div class="path-benefit-item">
+      <h6>Poziom ${benefits.poziom} - ${nameLevel} (${sourceName})</h6>
+      ${renderBenefitsLevelHtml(benefits.korzyści || {}, benefits)}
+    </div>
+  `;
 }
 
 /**
@@ -2793,7 +2815,7 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
 
   if (korzysci.jezyki_profesje) {
     blocks.push(block('Języki i profesje', `
-      <p>${korzysci.jezyki_profesje}</p>
+      <p>${korzysci.jezyki_profesje.opis}</p>
       <p class="hint">Sloty rozdasz w Kroku 5 (Profesje i Kurioza).</p>
     `));
   }
@@ -2822,7 +2844,7 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
   // wybrana - inaczej brak korzyści znaczy po prostu "nie ma jeszcze z czego".
   return benefits.nazwa_sciezki
     ? `<p class="hint">Dla ${tier} <strong>${benefits.nazwa_sciezki}</strong> nie mamy jeszcze zapisanych korzyści na tym poziomie.</p>`
-    : `<p class="hint">Korzyści tego poziomu pochodzą ze ${tier} - wybierz ją w Kroku 3, żeby je tutaj zobaczyć.</p>`;
+    : '<p class="hint">Korzyść ze ścieżki</p>';
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
