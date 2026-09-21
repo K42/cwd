@@ -1275,12 +1275,10 @@ function selectOrigin(originId, { autoScroll = true } = {}) {
   // Pokaż komunikat o wyborze
   showMessageChoice(originId);
 
-  // Przewiń do wybranego (teraz zwiniętego) kafelka, żeby użytkownik widział
-  // potwierdzenie wyboru - collapseAllTiles() wyżej zmienia wysokość strony,
-  // więc bez tego widok mógłby zostać w losowym miejscu.
+  // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
   if (autoScroll) {
     requestAnimationFrame(() => {
-      selectedTile?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     });
   }
 }
@@ -2204,6 +2202,15 @@ function expandTile(tile) {
   if (expandedExtra) {
     expandedExtra.style.display = 'block';
   }
+
+  // Przewiń do nagłówka rozwijanego kafelka, żeby było od razu widać, które
+  // pochodzenie zostało kliknięte - bez tego, jeśli kliknięcie trafiło w
+  // dolną część zwiniętego kafelka blisko dołu ekranu, po rozwinięciu widać
+  // by było środek nowej, długiej treści, a nie nazwę pochodzenia.
+  const header = tile.querySelector('.tile-header');
+  requestAnimationFrame(() => {
+    header?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 /**
