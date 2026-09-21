@@ -16,4 +16,4 @@ RewriteRule ^\.git(/|$) - [F,L]
 # Wszystko poza /src/ui/ (i samym plikiem .htaccess) przekieruj do aplikacji.
 RewriteCond %{REQUEST_URI} !^/src/ui(/|$)
 RewriteCond %{REQUEST_URI} !^/\.htaccess$
-RewriteRule ^(.*)$ /src/ui/ [R=302,L]
+RewriteRule ^(.*)$ /demon/cc/src/ui/ [R=302,L]
