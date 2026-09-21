@@ -396,8 +396,6 @@ button:active {
 
 /* Origin Tiles */
 .origin-tile {
-    display: flex;
-    align-items: stretch;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -408,9 +406,20 @@ button:active {
     user-select: none;
 }
 
-/* Miniatura pochodzenia - cała lewa strona kafelka, na pełną wysokość.
-   Bez własnego border-radius: to overflow:hidden kafelka nadaje jej
-   zaokrąglone rogi po lewej, dokładnie takie jak ma cały kafelek. */
+/* Górna część kafelka - obrazek + nagłówek/opis/atrybuty, ZAWSZE w tym samym
+   układzie flex (obrazek na pełną wysokość tej części), niezależnie od tego,
+   czy kafelek jest zwinięty czy rozwinięty. Tylko dodatkowa treść rozwinięta
+   (tabele, cechy, mechanika) wychodzi poniżej na pełną szerokość - zob.
+   .tile-content-expanded-extra. */
+.tile-top {
+    display: flex;
+    align-items: stretch;
+}
+
+/* Miniatura pochodzenia - cała lewa strona górnej części kafelka, na pełną
+   wysokość tej części (rozciąga się razem z opisem/atrybutami, więc nigdy
+   nie zostaje puste miejsce obok niej). Bez własnego border-radius: to
+   overflow:hidden kafelka nadaje jej zaokrąglone rogi po lewej. */
 .origin-thumb {
     width: 190px;
     flex-shrink: 0;
@@ -419,7 +428,7 @@ button:active {
     background: var(--bg-1);
 }
 
-/* Reszta treści kafelka - zawsze na prawo od miniatury */
+/* Reszta treści górnej części - zawsze na prawo od miniatury */
 .tile-body {
     flex: 1;
     min-width: 0;
@@ -430,41 +439,27 @@ button:active {
     padding: 15px;
 }
 
-.origin-tile.compact .tile-content-expanded {
+.origin-tile.compact .tile-content-expanded-top,
+.origin-tile.compact .tile-content-expanded-extra {
     display: none !important;
 }
 
-/* Stan rozwinięty - kafelek wraca do normalnego układu blokowego (nie flex),
-   żeby obrazek mógł być elementem "unoszącym się" (float) tylko w obrębie
-   nagłówka, a cała pozostała treść (opis rozwinięty, tabele, cechy) mogła
-   swobodnie zająć pełną szerokość kafelka, zamiast być zwężona przez kolumnę
-   obrazka na całej, często bardzo dużej, wysokości rozwiniętej karty. */
-.origin-tile.expanded {
-    display: block;
-}
-
+/* Stan rozwinięty - górna część (obrazek + opis + atrybuty) zostaje w tym
+   samym układzie co w stanie zwiniętym, tylko z dłuższym opisem. */
 .origin-tile.expanded .tile-body {
     padding: 20px;
-    min-height: 400px;
-}
-
-/* Naturalny rozmiar (nie rozciągnięty na całą wysokość, żeby nie rozmyć
-   miniatury) - tekst nagłówka opływa go z prawej strony jak w gazecie. */
-.origin-tile.expanded .origin-thumb {
-    float: left;
-    width: 190px;
-    height: 220px;
-    margin: 0 0 15px 0;
-}
-
-/* Zawsze zaczyna się od nowego, pełnoszerokościowego wiersza pod obrazkiem -
-   nigdy nie jest zawijana wzdłuż jego prawej strony. */
-.origin-tile.expanded .tile-content-expanded {
-    clear: both;
 }
 
 .origin-tile.expanded .tile-content-collapsed {
     display: none !important;
+}
+
+/* Dodatkowa treść rozwinięta (mechanika, informacje kulturowe, cechy
+   specjalne, tabele losowania, przycisk wyboru) - pod górną częścią, na
+   pełną szerokość całego kafelka, nie zwężona przez kolumnę obrazka. */
+.tile-content-expanded-extra {
+    padding: 20px;
+    border-top: 1px solid var(--border);
 }
 
 .origin-tile:hover {
@@ -526,8 +521,10 @@ button:active {
     color: var(--ink);
 }
 
-/* Zawartość rozwinięta */
-.tile-content-expanded {
+/* Zawartość rozwinięta (obie części domyślnie skryte - JS przełącza display
+   przy rozwijaniu/zwijaniu, zob. expandTile()/collapseTile()) */
+.tile-content-expanded-top,
+.tile-content-expanded-extra {
     display: none;
 }
 

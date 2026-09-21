@@ -876,6 +876,7 @@ function generateTilesOrigins(pochodzenia) {
     const allTraits = getAllTraits(pochodzenie.cechy_specjalne);
 
     tile.innerHTML = `
+            <div class="tile-top">
             <img class="origin-thumb" src="assets/origins/${pochodzenie.id}.jpg" alt="" loading="lazy" onerror="this.remove()">
             <div class="tile-body">
             <div class="tile-header">
@@ -912,40 +913,46 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                 </div>
             </div>
-            
-            <!-- Stan rozwinięty -->
-            <div class="tile-content-expanded">
+
+            <!-- Górna część stanu rozwiniętego - obok obrazka, tak jak w stanie
+                 zwiniętym (ten sam układ: obrazek | opis + atrybuty) -->
+            <div class="tile-content-expanded-top">
                 <div class="expanded-description">${extendedDescription}</div>
-                
-                <div class="tile-sections">
-                    <div class="tile-section attributes-section">
-                        <h5>${icon('swords')} Atrybuty</h5>
-                        <div class="attributes-grid">
-                            <div class="attribute-item">
-                                <span class="attr-name">Siła</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Zręczność</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Intelekt</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Wola</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
-                            </div>
+                <div class="tile-section attributes-section">
+                    <h5>${icon('swords')} Atrybuty</h5>
+                    <div class="attributes-grid">
+                        <div class="attribute-item">
+                            <span class="attr-name">Siła</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Zręczność</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Intelekt</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Wola</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
                         </div>
                     </div>
-                    
+                </div>
+            </div>
+            </div>
+            </div>
+
+            <!-- Dolna część stanu rozwiniętego - na całą szerokość kafelka,
+                 pod obrazkiem, żadna sekcja tu nie jest zwężana przez jego kolumnę -->
+            <div class="tile-content-expanded-extra">
+                <div class="tile-sections">
                     <div class="tile-section mechanics-section">
-                        <h5>${icon('dice')} Mechanika</h5>
+                        <h5>${icon('dice')} Atrybuty drugorzędne</h5>
                         <div class="mechanics-grid">
                             <div class="mechanics-item">
                                 <span class="mech-label">Obrona:</span>
@@ -961,7 +968,7 @@ function generateTilesOrigins(pochodzenia) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="tile-section cultural-section">
                         <h5>${icon('compass')} Kulturowe</h5>
                         <div class="cultural-info">
@@ -975,7 +982,7 @@ function generateTilesOrigins(pochodzenia) {
                             </div>
                         </div>
                     </div>
-                    
+
                     ${allTraits ? `
                     <div class="tile-section features-section">
                         <h5>${icon('sparkle')} Cechy Specjalne</h5>
@@ -989,7 +996,7 @@ function generateTilesOrigins(pochodzenia) {
                         </div>
                     </div>
                     ` : ''}
-                    
+
                     ${pochodzenie.tabele && Object.keys(pochodzenie.tabele).length > 0 ? `
                     <div class="tile-section tables-section">
                         <h5>${icon('dice')} Tabele Losowania</h5>
@@ -1001,7 +1008,7 @@ function generateTilesOrigins(pochodzenia) {
                                         <span class="table-type">${tabela.typ}</span>
                                     </div>
                                     <div class="table-description">${tabela.opis}</div>
-                                    
+
                                     <div class="table-controls">
                                         <div class="table-options">
                                             <label for="table-select-${pochodzenie.id}-${nameTable}">Wybierz opcję:</label>
@@ -1012,7 +1019,7 @@ function generateTilesOrigins(pochodzenia) {
                                                 `).join('') : ''}
                                             </select>
                                         </div>
-                                        
+
                                         <div class="table-buttons">
                                             <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
                                                 ${icon('dice')} Losuj
@@ -1022,7 +1029,7 @@ function generateTilesOrigins(pochodzenia) {
                                             </button>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="roll-result" id="roll-result-${pochodzenie.id}-${nameTable}" style="display: none;">
                                         <!-- Wynik losowania będzie wyświetlany tutaj -->
                                     </div>
@@ -1032,14 +1039,13 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                     ` : ''}
                 </div>
-                
+
                 <!-- Przycisk wyboru -->
                 <div class="tile-select-section">
                     <button class="tile-select-btn" data-origin-id="${pochodzenie.id}">
                         Wybierz ${pochodzenie.nazwa}
                     </button>
                 </div>
-            </div>
             </div>
         `;
 
@@ -2178,15 +2184,19 @@ function expandTile(tile) {
   tile.classList.remove('compact');
   tile.classList.add('expanded');
 
-  // Pokaż rozwinięty kontent, ukryj zwinięty
+  // Pokaż rozwinięty kontent (górę obok obrazka i dół na całą szerokość), ukryj zwinięty
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
-  const expandedContent = tile.querySelector('.tile-content-expanded');
-    
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
   if (collapsedContent) {
     collapsedContent.style.display = 'none';
   }
-  if (expandedContent) {
-    expandedContent.style.display = 'block';
+  if (expandedTop) {
+    expandedTop.style.display = 'block';
+  }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'block';
   }
 }
 
@@ -2198,15 +2208,19 @@ function collapseTile(tile) {
   tile.classList.remove('expanded');
   tile.classList.add('compact');
 
-  // Pokaż zwinięty kontent, ukryj rozwinięty
+  // Pokaż zwinięty kontent, ukryj obie części rozwiniętego
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
-  const expandedContent = tile.querySelector('.tile-content-expanded');
-    
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
   if (collapsedContent) {
     collapsedContent.style.display = 'block';
   }
-  if (expandedContent) {
-    expandedContent.style.display = 'none';
+  if (expandedTop) {
+    expandedTop.style.display = 'none';
+  }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'none';
   }
 }
 
