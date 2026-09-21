@@ -1354,6 +1354,10 @@ function resetStateAfterOriginChange() {
   // Ukryj/pokaż sekcje zależne od poziomu na start (0)
   updateWealthSection(0);
   updateOriginBenefits(0);
+  // Radio poziomu 0 jest zaznaczane wyżej przez ustawienie .checked wprost,
+  // co NIE odpala eventu 'change' (a to on normalnie woła loadBenefitsLevel) -
+  // bez tego wywołania "Korzyści Poziomu" zostawałyby z treścią poprzedniej postaci.
+  loadBenefitsLevel(0);
   
   // Reset sekcji ścieżek
   renderPathSectionsVisibility();
