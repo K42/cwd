@@ -118,6 +118,7 @@ function getStartContent() {
       </div>
       <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
       <ul>
+        <li>Jeśli coś zostało pominięte (np. bonus do atrybutu z pochodzenia, korzyść z pochodzenia na poziomie 4, losowanie srebrników, wybór ścieżki, magii albo Zamożności/wyposażenia), na samej górze zobaczysz listę <strong>"Możliwe przeoczenia"</strong> - to tylko informacja, nic nie blokuje; możesz wrócić do wskazanego kroku albo zignorować listę, jeśli dany element rzeczywiście ma być pusty</li>
         <li>Możesz opcjonalnie wpisać <strong>imię postaci</strong> - trafia do nagłówka podglądu, do eksportu (i jest odtwarzane przy imporcie), a jeśli je wypełnisz, zostanie też użyte w nazwie eksportowanego pliku (zamiast pochodzenia)</li>
         <li>Podgląd aktualizuje się na bieżąco - nie trzeba niczego "zatwierdzać"</li>
         <li>Kliknij <strong>"<svg class="icon"><use href="#icon-page"></use></svg> Eksportuj do JSON"</strong> aby zapisać postać na dysku</li>
