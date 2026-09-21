@@ -2755,6 +2755,7 @@ function renderOneLevelBenefitsBlock(benefits) {
   return `
     <div class="path-benefit-item">
       <h6>Poziom ${benefits.poziom} - ${nameLevel} (${sourceName})</h6>
+      ${benefits.opis_poziomu ? `<p class="hint">${benefits.opis_poziomu}</p>` : ''}
       ${renderBenefitsLevelHtml(benefits.korzyści || {}, benefits)}
     </div>
   `;
@@ -2844,7 +2845,7 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
   // wybrana - inaczej brak korzyści znaczy po prostu "nie ma jeszcze z czego".
   return benefits.nazwa_sciezki
     ? `<p class="hint">Dla ${tier} <strong>${benefits.nazwa_sciezki}</strong> nie mamy jeszcze zapisanych korzyści na tym poziomie.</p>`
-    : '<p class="hint">Korzyść ze ścieżki</p>';
+    : `<p class="hint">Korzyść ze ${tier}</p>`;
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
