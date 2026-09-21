@@ -1,0 +1,19 @@
+# Katalog główny na serwerze to korzeń tego repozytorium (struktura folderów
+# 1:1 jak lokalnie) - realna aplikacja żyje w src/ui/, resztę (docs/, tests/,
+# node_modules/, .git/ itd.) trzeba schować przed odwiedzającymi.
+
+# Wyłącz listowanie zawartości katalogów (dotyczy też podkatalogów, o ile
+# nie mają własnego .htaccess z inną regułą Options).
+Options -Indexes
+
+RewriteEngine On
+RewriteBase /
+
+# Zawsze blokuj .git - nawet gdyby reguła przekierowania poniżej z
+# jakiegoś powodu nie zadziałała, katalog .git nigdy nie może wyciekać.
+RewriteRule ^\.git(/|$) - [F,L]
+
+# Wszystko poza /src/ui/ (i samym plikiem .htaccess) przekieruj do aplikacji.
+RewriteCond %{REQUEST_URI} !^/src/ui(/|$)
+RewriteCond %{REQUEST_URI} !^/\.htaccess$
+RewriteRule ^(.*)$ /src/ui/ [R=302,L]
