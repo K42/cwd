@@ -21,8 +21,14 @@ Sekcja teraz pokazuje **wszystkie poziomy od 1 do wybranego, po kolei**:
   na każdy poziom, oddzielone od siebie subtelną linią.
 - Gdy poziom czerpie korzyści ze ścieżki (nowicjusza/eksperckiej/
   mistrzowskiej), a żadna ścieżka nie jest jeszcze wybrana, treść bloku to
-  teraz prosty tekst **"Korzyść ze ścieżki"** zamiast poprzedniego dłuższego
-  zdania z odsyłaczem do Kroku 3.
+  teraz prosty tekst **"Korzyść ze ścieżki nowicjusza/eksperckiej/
+  mistrzowskiej"** (nazwana konkretna ścieżka-kategoria, nie tylko "ze
+  ścieżki") zamiast poprzedniego dłuższego zdania z odsyłaczem do Kroku 3.
+- Każdy blok poziomu pokazuje teraz też `opis_poziomu` z danych (`data/levels.js`)
+  - dla poziomów 1, 3 i 7 to wprost "Wybierz ścieżkę nowicjusza/ekspercką/
+  mistrzowską spośród przedstawionych w Rozdziale N...", więc widać jasno,
+  na których poziomach jest wybór nowej ścieżki, a na których to tylko
+  kontynuacja już wybranej.
 - Poziom 0 (postać startowa) bez zmian - to wciąż osobny, jednorazowy widok
   ("Postać startowa"), nie wchodzi w skumulowaną listę.
 - Nagłówek sekcji zmieniony z "Korzyści dla poziomu X:" na "Korzyści postaci
@@ -41,18 +47,24 @@ dużo łatwiej zauważyć niż przy jednym poziomie na raz.
 Prośba użytkownika: "w sekcji 'Korzyści Poziomu' wypisz wszystkie korzyści
 jakie ma dana postać na tym poziomie uwzględniając również poprzednie
 poziomy. opisz je po kolei poziomami. jeśli nie ma wybranej ścieżki to napisz
-po prostu 'Korzyść ze ścieżki'."
+po prostu 'Korzyść ze ścieżki'.", a następnie doprecyzowanie: "w liście
+korzyści dodaj jeszcze informacje jeśli na którymś poziomie jest możliwość
+wyboru ścieżki i na jakim poziomie oraz przy opisie 'Korzyść ze ścieżki'
+opisz o którą ścieżkę chodzi".
 
 ## Jak przetestowano
 
 - **Jednostkowo / lint**: `npm test` (155/155), `npm run lint` (czysto).
-- **Empirycznie (Playwright)**: poziom 3 bez wybranych ścieżek - 3 bloki
-  (Poziom 1/2/3), każdy z tekstem "Korzyść ze ścieżki". Postać wylosowana na
-  poziomie 5 z realnymi ścieżkami (nowicjusz + ekspert) - 5 bloków z
-  poprawną, rzeczywistą treścią na każdym poziomie (atrybuty, talenty,
-  magia, języki/profesje - w tym potwierdzenie, że "Języki i profesje" nie
-  pokazuje już `[object Object]`), poziom 4 poprawnie oznaczony jako
-  "(Pochodzenie)". Zero błędów konsoli w obu scenariuszach.
+- **Empirycznie (Playwright)**: poziom 7 bez wybranych ścieżek - 7 bloków
+  (Poziom 1-7), każdy z opisem poziomu z danych i poprawną nazwą
+  ścieżki-kategorii ("Korzyść ze ścieżki nowicjusza/eksperckiej/
+  mistrzowskiej"); poziomy 1, 3 i 7 poprawnie oznaczone jako "Wybierz
+  ścieżkę...". Postać wylosowana na poziomie 5 z realnymi ścieżkami
+  (nowicjusz + ekspert) - 5 bloków z poprawną, rzeczywistą treścią na każdym
+  poziomie (atrybuty, talenty, magia, języki/profesje - w tym potwierdzenie,
+  że "Języki i profesje" nie pokazuje już `[object Object]`), poziom 4
+  poprawnie oznaczony jako "(Pochodzenie)". Zero błędów konsoli w obu
+  scenariuszach.
 
 ## Wpływ na eksport/import
 
