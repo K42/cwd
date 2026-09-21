@@ -149,7 +149,7 @@ function getTraditionsForCategory(kategoria, knownTraditions) {
   }
   return dozwolone
     .filter(id => !knownTraditions.has(id))
-    .map(id => ({ id, nazwa: TRADITIONS[id].nazwa, czarnaMagia: !!TRADITIONS[id].czarnaMagia }))
+    .map(id => ({ id, nazwa: TRADITIONS[id].nazwa, czarnaMagia: !!TRADITIONS[id].czarnaMagia, opis: TRADITIONS[id].opis || null }))
     .sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
 }
 

@@ -63,8 +63,12 @@ let equipmentSold = []; // klucze startowych pozycji (kluczStart) sprzedanych w 
 let equipmentPurchased = []; // { itemId, ilosc } kupione w sklepie
 let equipmentDescriptionExpanded = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
 
+// --- Krok 8: Imię postaci ---
+let characterName = ''; // opcjonalne imię wpisane w Kroku 8; trafia do eksportu i nazwy pliku
+
 // --- Zapis w pamięci przeglądarki (localStorage) ---
 let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
+let lastSavedSnapshot = null; // zrzut `wybory` z chwili ostatniego zapisu - służy do wykrywania niezapisanych zmian
 
 // --- Popup "Wylosuj postać" (boczne menu) ---
 let randomizeCharacterLevel = 0; // poziom wybrany w popupie - jedyna rzecz, którą wybiera użytkownik, reszta jest losowana
@@ -201,8 +205,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeRandomizeCharacterPopup();
     randomizeWholeCharacter(randomizeCharacterLevel);
   });
+  document.getElementById('character-name')?.addEventListener('input', (e) => {
+    characterName = e.target.value;
+    updatePreviewCharacter();
+  });
+  document.getElementById('btn-save-character')?.addEventListener('click', saveCharacterOnDemand);
+  document.getElementById('btn-promote-character')?.addEventListener('click', promoteCharacter);
+  initializeCollapsibleSections();
+  initializeScrollTopButton();
   initializeTooltips();
 });
+
+/**
+ * Podpina zwijanie/rozwijanie sekcji oznaczonych klasą `.collapsible-section`
+ * (obecnie "Korzyści Poziomu" w Kroku 2, domyślnie zwinięta w index.html).
+ */
+function initializeCollapsibleSections() {
+  document.querySelectorAll('.collapsible-section-header').forEach(header => {
+    const section = header.closest('.collapsible-section');
+    if (!section) return;
+    const toggle = () => {
+      const collapsed = section.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', String(!collapsed));
+    };
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+}
+
+/**
+ * Zwraca element, który aktualnie się przewija: treść otwartego popupu
+ * (jeśli jakiś jest otwarty) albo całą stronę.
+ * @returns {{scroller: Element|Window, top: number}}
+ */
+function getActiveScrollContext() {
+  const openModalBody = [...document.querySelectorAll('.modal-overlay:not([hidden])')]
+    .map(overlay => overlay.querySelector('.modal-body'))
+    .find(Boolean);
+  if (openModalBody) return { scroller: openModalBody, top: openModalBody.scrollTop };
+  return { scroller: window, top: window.scrollY };
+}
+
+/**
+ * Przycisk "przewiń na górę" (prawy dolny róg) - działa zarówno dla całej
+ * strony, jak i dla treści otwartego popupu (wyboru zaklęcia, tradycji,
+ * ekwipunku itd.), bo te przewijają się niezależnie od strony pod spodem.
+ * Pokazuje się dopiero, gdy jest co przewijać.
+ */
+function initializeScrollTopButton() {
+  const btn = document.getElementById('btn-scroll-top');
+  if (!btn) return;
+
+  const refresh = () => {
+    btn.hidden = getActiveScrollContext().top <= 200;
+  };
+
+  btn.addEventListener('click', () => {
+    const { scroller } = getActiveScrollContext();
+    scroller.scrollTo({ top: 0, behavior: 'smooth' });
+    btn.hidden = true;
+  });
+
+  window.addEventListener('scroll', refresh, { passive: true });
+  document.querySelectorAll('.modal-body').forEach(body => {
+    body.addEventListener('scroll', refresh, { passive: true });
+  });
+  // Otwarcie/zamknięcie popupu zmienia kontekst przewijania, a samo w sobie
+  // nie generuje zdarzenia scroll - obserwuj więc atrybut [hidden] overlayów.
+  const observer = new MutationObserver(refresh);
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    observer.observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+  });
+  refresh();
+}
 
 /**
  * Ładuje dostępne opcje z serwera
@@ -264,24 +344,7 @@ function initializeLevels() {
   // Dodaj event listenery dla radio buttonów poziomów
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
   levelInputs.forEach(input => {
-    input.addEventListener('change', async (e) => {
-      selectedLevel = parseInt(e.target.value);
-      updatePathsVisibility(selectedLevel);
-      updatePathsLevel(selectedLevel);
-      updatePathsSectionTitle(selectedLevel);
-      updateWealthSection(selectedLevel);
-      updateOriginBenefits(selectedLevel);
-
-      // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
-      // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
-      renderPathSectionsVisibility();
-      await renderPathSection(1);
-      await renderPathSection(3);
-      await renderPathSection(7);
-
-      // Załaduj korzyści dla wybranego poziomu
-      await loadBenefitsLevel(selectedLevel);
-    });
+    input.addEventListener('change', (e) => applyLevelChange(parseInt(e.target.value)));
   });
 
   // Inicjalizuj ścieżki dla poziomu 0 (domyślnego)
@@ -300,6 +363,124 @@ function initializeLevels() {
       randomizeToStep(step);
     });
   });
+}
+
+/**
+ * Ustawia nowy poziom postaci i odświeża wszystko, co od niego zależy.
+ * Wywoływana zarówno przez radio poziomu w Kroku 2, jak i przez przycisk
+ * "Awans" w Kroku 8 - dzięki temu obie drogi przechodzą przez to samo
+ * przycinanie stanu (zob. pruneStateForLevel()).
+ * @param {number} poziom - nowy poziom postaci (0-10)
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - czy zachować wylosowane
+ *   srebrniki. Domyślnie nie, bo ich liczba zależy od poziomu; wyjątkiem jest
+ *   awans w trakcie gry (zob. promoteCharacter()), gdzie postać po prostu ma
+ *   już swój majątek i nie przelicza go od nowa.
+ */
+async function applyLevelChange(poziom, { keepSilverRoll = false } = {}) {
+  const poprzedniPoziom = selectedLevel;
+  selectedLevel = poziom;
+
+  // Wybory z wyższych poziomów (ścieżki, sloty, kurioza, magia...) przestają
+  // obowiązywać, gdy poziom spadnie - inaczej zostawałyby w postaci mimo
+  // tego, że nowy poziom ich nie przyznaje.
+  pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll });
+
+  updatePathsVisibility(poziom);
+  updatePathsLevel(poziom);
+  updatePathsSectionTitle(poziom);
+  updateWealthSection(poziom);
+  updateOriginBenefits(poziom);
+
+  // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
+  // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+
+  // Kroki zależne od poziomu i ścieżek - przerenderuj, żeby pokazywały stan
+  // po przycięciu, a nie nieaktualne wybory z poprzedniego poziomu.
+  renderAttributesSlotsSection();
+  renderProfessionsSection();
+  renderCuriosSection();
+  renderSpellsSection();
+  renderEquipmentSection();
+  updateStep3NextButton();
+  updateStep5NextButton();
+
+  // Załaduj korzyści dla wybranego poziomu
+  await loadBenefitsLevel(poziom);
+  updateCalculatedAttributes();
+  updatePreviewCharacter();
+}
+
+/**
+ * Usuwa z postaci wybory, których nowy poziom już nie przyznaje: ścieżki
+ * powyżej progu, sloty atrybutów i profesji z usuniętych ścieżek, nadmiarowe
+ * kurioza, wybory magii dla nieistniejących już korzyści, opcję z poziomu 4
+ * pochodzenia oraz wylosowane srebrniki (ich liczba zależy od poziomu).
+ * @param {number} poziom - nowy poziom postaci
+ * @param {number} poprzedniPoziom - poziom sprzed zmiany
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - pomiń zerowanie rzutu na srebrniki
+ */
+function pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll = false } = {}) {
+  if (poziom === poprzedniPoziom) return;
+
+  // 1. Ścieżki, do których nowy poziom nie daje już dostępu (resetSciezke()
+  //    odejmuje też przyznane przez nie korzyści).
+  if (poziom < 1 && selectedPaths.nowicjusz) resetPath('nowicjusz');
+  if (poziom < 3 && selectedPaths.ekspert) resetPath('ekspert');
+  if (poziom < 7 && selectedPaths.mistrz) resetPath('mistrz');
+
+  // 2. Sloty zwiększenia atrybutów (Krok 4) przyznane przez ścieżki, których
+  //    postać już nie ma.
+  const idsSlotowAtrybutow = new Set(calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  }).map(s => s.id));
+  Object.keys(selectedAttributesSlots).forEach(id => {
+    if (!idsSlotowAtrybutow.has(id)) delete selectedAttributesSlots[id];
+  });
+
+  // 3. Sloty profesji i języków (Krok 5) z usuniętych ścieżek.
+  const idsSlotowProfesji = new Set(calculateSlotsCharacter().slots.map(s => s.id));
+  Object.keys(answersSlots).forEach(id => {
+    if (!idsSlotowProfesji.has(id)) delete answersSlots[id];
+  });
+
+  // 4. Kurioza ponad limit nowego poziomu (progi 1/3/7).
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length > kurioza) selectedCurios = selectedCurios.slice(0, kurioza);
+
+  // 5. Opcja korzyści z pochodzenia na poziomie 4 - poniżej tego poziomu
+  //    postać jej nie ma, więc zaznaczony radiobutton trzeba wyczyścić
+  //    (pobierzAktualnieWybranaOpcjePoziom4() czyta go wprost z DOM).
+  if (poziom < 4 && selectedOrigin) {
+    document.querySelectorAll(`input[name="origin-option-${selectedOrigin}"]`).forEach(radio => { radio.checked = false; });
+  }
+
+  // 6. Wybory magii dla korzyści, których na nowym poziomie już nie ma
+  //    (liczone po przycięciu ścieżek i opcji poziomu 4 powyżej).
+  const idsAtomowMagii = new Set(getCurrentAtomsMagic().map(a => a.id));
+  Object.keys(magicChoices).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicChoices[id];
+  });
+  Object.keys(magicRiskResults).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicRiskResults[id];
+  });
+
+  // 7. Srebrniki - ich liczba to 2k6 za każdy poziom powyżej 0, więc przy
+  //    ręcznej zmianie poziomu (tworzenie/poprawianie postaci) poprzedni rzut
+  //    przestaje pasować i trzeba go powtórzyć. Awans w trakcie gry jest
+  //    wyjątkiem: postać ma już swój majątek i nie przelicza go od nowa.
+  if (!keepSilverRoll) {
+    randomizedSilver = null;
+    const wealthSpan = document.getElementById('wealth-summary');
+    if (wealthSpan) wealthSpan.textContent = 'Srebrniki: 0 (nie wylosowano)';
+  }
 }
 
 /**
@@ -510,14 +691,29 @@ function renderPathSummary(levelChoice, sciezka) {
   box.innerHTML = `<div class="inline-box">Wybrana ścieżka: <strong>${sciezka.nazwa}</strong> – zastosowano korzyści poziomu ${levelChoice}</div>`;
 }
 
-function addBenefits(pkt) {
-  // Modyfikatory atrybutów podstawowych
-  if (pkt.mod_atrybuty) {
-    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
-    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
-      const el = document.getElementById(map[k]);
-      if (el) el.textContent = (parseInt(el.textContent)||0) + v;
+/**
+ * Sumuje wymuszone podwyżki atrybutów głównych ze wszystkich aktualnie
+ * wybranych ścieżek. Liczone od zera przy każdym przeliczeniu - inaczej
+ * ponowne kliknięcie tej samej ścieżki dodawałoby bonus drugi raz.
+ */
+function sumAttributeBonusesFromPaths() {
+  const suma = { sila: 0, zrecznosc: 0, intelekt: 0, wola: 0 };
+  Object.values(grantedBenefitsWithPaths).forEach(wpis => {
+    const mod = wpis && wpis.pkt && wpis.pkt.mod_atrybuty;
+    if (!mod) return;
+    Object.entries(mod).forEach(([atrybut, wartosc]) => {
+      if (atrybut in suma) suma[atrybut] += wartosc;
     });
+  });
+  return suma;
+}
+
+function addBenefits(pkt) {
+  // Atrybuty główne zależą od wybranych ścieżek, więc przelicz je od zera
+  // (updateCalculatedAttributes() dolicza sumAttributeBonusesFromPaths()).
+  if (pkt.mod_atrybuty) {
+    updateCalculatedAttributes();
+    return;
   }
   // Atrybuty drugorzędne – przeliczenie przez naszą funkcję
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
@@ -534,12 +730,11 @@ function addBenefits(pkt) {
 
 function subtractBenefits(prev) {
   const pkt = prev.pkt || {};
+  // Podobnie jak przy dodawaniu: atrybuty główne przelicza od zera
+  // updateCalculatedAttributes(), po wyczyszczeniu wpisu ścieżki.
   if (pkt.mod_atrybuty) {
-    const map = { sila:'strength-final', zrecznosc:'agility-final', intelekt:'intellect-final', wola:'will-final' };
-    Object.entries(pkt.mod_atrybuty).forEach(([k,v]) => {
-      const el = document.getElementById(map[k]);
-      if (el) el.textContent = (parseInt(el.textContent)||0) - v;
-    });
+    updateCalculatedAttributes();
+    return;
   }
   const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
   if (pochodzenie) {
@@ -649,7 +844,13 @@ function updateOriginBenefitsContent() {
   if (!pochodzenie || !pochodzenie.poziom_4) return;
   
   const benefits = pochodzenie.poziom_4;
-  
+
+  // Wybrana opcja żyje wyłącznie w DOM (zob. getCurrentSelectedLevel4Option()),
+  // a ta funkcja przebudowuje radiobuttony od zera - bez zapamiętania i
+  // przywrócenia zaznaczenia postać po każdej zmianie poziomu po cichu traciła
+  // korzyść z poziomu 4 (a wraz z nią np. przyznane przez nią zaklęcie).
+  const wybranaOpcja = getCurrentSelectedLevel4Option();
+
   // Wyświetl korzyści z pochodzenia dla poziomu 4
   content.innerHTML = `
     <div class="benefit-item">
@@ -668,7 +869,7 @@ function updateOriginBenefitsContent() {
           <div class="options-list">
             ${benefits.opcje.map(opcja => `
               <label class="option-choice">
-                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}">
+                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}"${opcja === wybranaOpcja ? ' checked' : ''}>
                 <span class="option-text">${opcja}</span>
               </label>
             `).join('')}
@@ -855,6 +1056,9 @@ function generateTilesOrigins(pochodzenia) {
     const allTraits = getAllTraits(pochodzenie.cechy_specjalne);
 
     tile.innerHTML = `
+            <div class="tile-top">
+            <img class="origin-thumb" src="assets/origins/${pochodzenie.id}.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <div class="tile-body">
             <div class="tile-header">
                 <div class="badges-container">
                     <div class="feature-desc">rozmiar:</div><div class="size-badge">${pochodzenie.rozmiar}</div>
@@ -862,7 +1066,7 @@ function generateTilesOrigins(pochodzenia) {
                 </div>
                 <h4>${pochodzenie.nazwa}</h4>
             </div>
-            
+
             <!-- Stan zwinięty -->
             <div class="tile-content-collapsed">
                 <div class="description">${shortDescription}</div>
@@ -889,40 +1093,46 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                 </div>
             </div>
-            
-            <!-- Stan rozwinięty -->
-            <div class="tile-content-expanded">
+
+            <!-- Górna część stanu rozwiniętego - obok obrazka, tak jak w stanie
+                 zwiniętym (ten sam układ: obrazek | opis + atrybuty) -->
+            <div class="tile-content-expanded-top">
                 <div class="expanded-description">${extendedDescription}</div>
-                
-                <div class="tile-sections">
-                    <div class="tile-section attributes-section">
-                        <h5>${icon('swords')} Atrybuty</h5>
-                        <div class="attributes-grid">
-                            <div class="attribute-item">
-                                <span class="attr-name">Siła</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Zręczność</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Intelekt</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
-                            </div>
-                            <div class="attribute-item">
-                                <span class="attr-name">Wola</span>
-                                <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
-                                <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
-                            </div>
+                <div class="tile-section attributes-section">
+                    <h5>${icon('swords')} Atrybuty</h5>
+                    <div class="attributes-grid">
+                        <div class="attribute-item">
+                            <span class="attr-name">Siła</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Zręczność</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Intelekt</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">Wola</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
                         </div>
                     </div>
-                    
+                </div>
+            </div>
+            </div>
+            </div>
+
+            <!-- Dolna część stanu rozwiniętego - na całą szerokość kafelka,
+                 pod obrazkiem, żadna sekcja tu nie jest zwężana przez jego kolumnę -->
+            <div class="tile-content-expanded-extra">
+                <div class="tile-sections">
                     <div class="tile-section mechanics-section">
-                        <h5>${icon('dice')} Mechanika</h5>
+                        <h5>${icon('dice')} Atrybuty drugorzędne</h5>
                         <div class="mechanics-grid">
                             <div class="mechanics-item">
                                 <span class="mech-label">Obrona:</span>
@@ -938,7 +1148,7 @@ function generateTilesOrigins(pochodzenia) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="tile-section cultural-section">
                         <h5>${icon('compass')} Kulturowe</h5>
                         <div class="cultural-info">
@@ -952,7 +1162,7 @@ function generateTilesOrigins(pochodzenia) {
                             </div>
                         </div>
                     </div>
-                    
+
                     ${allTraits ? `
                     <div class="tile-section features-section">
                         <h5>${icon('sparkle')} Cechy Specjalne</h5>
@@ -966,7 +1176,7 @@ function generateTilesOrigins(pochodzenia) {
                         </div>
                     </div>
                     ` : ''}
-                    
+
                     ${pochodzenie.tabele && Object.keys(pochodzenie.tabele).length > 0 ? `
                     <div class="tile-section tables-section">
                         <h5>${icon('dice')} Tabele Losowania</h5>
@@ -978,7 +1188,7 @@ function generateTilesOrigins(pochodzenia) {
                                         <span class="table-type">${tabela.typ}</span>
                                     </div>
                                     <div class="table-description">${tabela.opis}</div>
-                                    
+
                                     <div class="table-controls">
                                         <div class="table-options">
                                             <label for="table-select-${pochodzenie.id}-${nameTable}">Wybierz opcję:</label>
@@ -989,7 +1199,7 @@ function generateTilesOrigins(pochodzenia) {
                                                 `).join('') : ''}
                                             </select>
                                         </div>
-                                        
+
                                         <div class="table-buttons">
                                             <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
                                                 ${icon('dice')} Losuj
@@ -999,7 +1209,7 @@ function generateTilesOrigins(pochodzenia) {
                                             </button>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="roll-result" id="roll-result-${pochodzenie.id}-${nameTable}" style="display: none;">
                                         <!-- Wynik losowania będzie wyświetlany tutaj -->
                                     </div>
@@ -1009,7 +1219,7 @@ function generateTilesOrigins(pochodzenia) {
                     </div>
                     ` : ''}
                 </div>
-                
+
                 <!-- Przycisk wyboru -->
                 <div class="tile-select-section">
                     <button class="tile-select-btn" data-origin-id="${pochodzenie.id}">
@@ -1083,54 +1293,56 @@ function generateTilesOrigins(pochodzenia) {
  */
 function createShortCollapsedDescription(pochodzenie) {
   const descriptions = {
-    'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach.',
-    'automaton': 'Mechaniczne istoty stworzone przez dawnych magów.',
-    'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości.',
-    'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła.',
-    'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach.',
-    'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki.',
-    'faun': 'Leśne istoty o kozich nogach związane z naturą.',
-    'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu.',
-    'chochlik': 'Maleńkie istoty magiczne znane z psot.',
-    'elf': 'Długowieczne istoty o niezwykłej urodzie.',
-    'hobgoblin': 'Większe i bardziej wojownicze niż gobliny.',
-    'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie.',
-    'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły.',
-    'warg': 'Wilcze istoty o niezwykłej zwinności.',
-    'inkarnacja': 'Istoty wcielone z innych płaszczyzn.',
-    'kambion': 'Potomkowie demonów o mrocznych mocach.',
-    'jotunn': 'Potężni giganci z północnych krain.'
+    'czlowiek': 'Wszechstronni, zaradni i niezwykle liczni, ludzie zdominowali świat mimo prymitywnych początków, osiedlając się od gór po pustkowia.',
+    'automaton': 'Mechaniczne istoty złożone z blachy, śrub i trybów, ożywione duszami wyrwanymi z Zaświatów.',
+    'goblin': 'Wygnane przez Królową Faerie z krainy nieśmiertelnych, drobne i przemyślne istoty żyjące na śmietniskach i w kanałach ludzkich miast.',
+    'krasnolud': 'Krzepcy, nieufni górnicy i rzemieślnicy mieszkający w wykutych w skale miastach, gdzie strzegą swoich skarbców przed siłami cienia.',
+    'odmieniec': 'Magiczne podrzutki stworzone przez faerie, by ukryć porwanie ludzkiego dziecka, czasem żyjące na tyle długo, by stać się naprawdę sobą.',
+    'ork': 'Stworzeni czarną magią z pojmanych jotunów żołnierze Imperium, którzy niedawno powstali przeciw swoim panom i utopili tron we krwi.',
+    'faun': 'Potomkowie ludzi dotknięci magią faerie, o kozich nogach i rogach, nienależący w pełni ani do świata śmiertelników, ani do Pięknego Ludu.',
+    'niziol': 'Niewielcy, pełni szczęścia osadnicy, których niewzruszona nieustraszoność wynika z wiary, że obecne życie jest tylko jednym z wielu.',
+    'chochlik': 'Maleńkie, naturalnie niewidzialne faerie-psotniki, które dla zabawy płatają figle znacznie większym od siebie istotom.',
+    'elf': 'Nieśmiertelni panowie i damy krain faerie, którzy z rzadka miewają potomstwo i dlatego czasem porywają śmiertelne dzieci.',
+    'hobgoblin': 'Identyczni co do centymetra żołnierze stworzeni przez faerie z goblinów odartych z nieśmiertelności, wierzący, że wszyscy dzielą jedną duszę.',
+    'fomor': 'Najbardziej ludzkie z zwierzoludzi, kozłogłowe istoty poniewierane przez własnych, silniejszych pobratymców jako mięso armatnie.',
+    'niedzwiedziadlo': 'Potężne, niedźwiedziopodobne zwierzoludzie o niezwykłej sile, których najgroźniejsi łowcy głów zdobią pasy trofeami wrogów.',
+    'warg': 'Zaciekłe, wilczogłowe zwierzoludzie służące jako brutalna siła napędowa armii, gotowe mordować równie chętnie sojuszników, co wrogów.',
+    'inkarnacja': 'Bezcielesne fragmenty dawnych dżinnów, które zatraciły własną osobowość, wplatając swoje jestestwo w barierę chroniącą świat przed demonami.',
+    'kambion': 'Potomkowie diabłów i ludzi skazani na Piekło od chwili narodzin, choć niektórzy walczą z mrokiem czającym się w ich sercach.',
+    'jotunn': 'Olbrzymi z Mroźnego Bezdroża, którzy przez stulecia czekali na zemstę za niewolę i za przodków obróconych w orków.'
   };
-    
+
   return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
 /**
- * Tworzy rozszerzony opis pochodzenia (3 zdania) dla stanu rozwiniętego
+ * Tworzy rozszerzony opis pochodzenia dla stanu rozwiniętego - kilka zdań
+ * osnutych wokół konkretnych ciekawostek zaczerpniętych z podręczników
+ * (nie ogólnikowych fantasy sztampek), zachowujących ich ponury, surowy ton.
  * @param {Object} pochodzenie - Obiekt pochodzenia
  * @returns {string} Rozszerzony opis
  */
 function createExtendedDescription(pochodzenie) {
   const descriptions = {
-    'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję i szybko dostosowują się do nowych wyzwań. Ich społeczeństwa opierają się na handlu, wiedzy i eksploracji.',
-    'automaton': 'Mechaniczne istoty stworzone przez dawnych magów, poszukujące własnej tożsamości. Nie oddychają, nie śpią i są odporne na choroby oraz trucizny. Zbudowane z metalu i magii, wykazują zdolności analityczne i precyzyjne wykonanie zadań.',
-    'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości, znane z zamiłowania do mechaniki i psot. Gobliny tworzą skomplikowane urządzenia z dostępnych materiałów, często niebezpieczne i nieprzewidywalne. Ich społeczeństwa opierają się na hierarchii opartej na wynalazczości i sprycie.',
-    'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła, odporni na magię i posiadający widzenie w ciemności. Ich długowieczność pozwala im doskonalić umiejętności przez wieki, tworząc arcydzieła metalurgii i kamieniarstwa. Krasnoludy cenią tradycję, honor i solidną pracę.',
-    'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach, posiadające częściową odporność na efekty magiczne. Odmieniący często wyglądają inaczej niż ich przodkowie, zyskując fizyczne i magiczne zdolności. Ich społeczeństwa są tolerancyjne wobec różnorodności, ale niektórzy postrzegają ich jako zagrożenie.',
-    'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki, mogące wpadać w szał bojowy. Orki organizują się w klany oparte na hierarchii wojennej, gdzie pozycja zależy od umiejętności bojowych. Mimo dzikiej reputacji, potrafią być lojalnymi sojusznikami i mądrymi strategami.',
-    'faun': 'Leśne istoty o kozich nogach związane z naturą, potrafiące porozumiewać się ze zwierzętami. Fauny żyją w harmonii z przyrodą i są strażnikami lasów. Ich społeczeństwa są egalitarne i oparte na szacunku dla naturalnego porządku.',
-    'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu, posiadające naturalne szczęście i zwinność. Nizioły są mistrzami architektury i inżynierii, tworząc imponujące konstrukcje. Ich społeczeństwa cenią współpracę, uczciwość i dbałość o szczegóły.',
-    'chochlik': 'Maleńkie istoty magiczne znane z psot, mogące latać i mające dostęp do chaotycznych zaklęć. Chochliki uwielbiają żarty i psikusy, ale potrafią być niezwykle pomocne. Ich mały rozmiar kompensują sprytem, magią i umiejętnością ukrywania się.',
-    'elf': 'Długowieczne istoty o niezwykłej urodzie, posiadające zdolności magiczne i widzenie w ciemności. Ich społeczeństwa są zorganizowane wokół magii i sztuki, żyjąc w harmonii z naturą. Elfy posiadają głęboką wiedzę o starożytnych tajemnicach i są mistrzami w dziedzinie łuku i magii.',
-    'hobgoblin': 'Większe i bardziej wojownicze niż gobliny, znane z dyscypliny bojowej i odporności na strach. Hobgobliny organizują się w struktury wojskowe, ceniąc dyscyplinę, strategię i taktykę. Ich społeczeństwa są hierarchiczne i oparte na zasadach wojskowych, z silnym naciskiem na honor i lojalność.',
-    'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie, mogące oddychać pod wodą i mające mroczne moce. Fomory często mają zdeformowane ciała i umysły, ale potężne zdolności magiczne. Ich społeczeństwa są chaotyczne i oparte na sile, gdzie tylko najsilniejsi przetrwają.',
-    'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły, posiadające naturalne pazury i mogące hibernować. Niedźwiedziadła żyją w surowym środowisku gór i lasów, gdzie ich siła i wytrzymałość są kluczowe. Ich społeczeństwa opierają się na hierarchii siły i szacunku dla natury.',
-    'warg': 'Wilcze istoty o niezwykłej zwinności, mające wyczulone zmysły i zdolności tropienia. Wargowie żyją w stadach, gdzie współpraca i komunikacja są kluczowe dla przetrwania. Ich społeczeństwa są oparte na lojalności wobec stada i szacunku dla hierarchii.',
-    'inkarnacja': 'Istoty wcielone z innych płaszczyzn, posiadające zdolności płaszczyznowe i odporność na magię. Inkarnacje mogą przybierać różne kształty, dostosowując się do potrzeb sytuacji. Ich społeczeństwa są płynne i adaptacyjne, gdzie tożsamość może być zmienna.',
-    'kambion': 'Potomkowie demonów o mrocznych mocach, odporni na ogień i mogący wywołać strach u wrogów. Kambionowie często czują się wyobcowani, nie należąc w pełni do żadnego świata. Ich społeczeństwa są tajemne i oparte na wzajemnym wsparciu w obliczu prześladowań.',
-    'jotunn': 'Potężni giganci z północnych krain, znani z siły, honoru bojowego i odporności na zimno. Jotunowie żyją w surowym środowisku, gdzie ich rozmiar i wytrzymałość są kluczowe. Ich społeczeństwa opierają się na tradycji, honorze i szacunku dla siły naturalnej.'
+    'czlowiek': 'Determinacja, zaradność i sama liczebność sprawiły, że ludzkość stała się największą i najbardziej rozprzestrzenioną populacją świata, a jej osady spotyka się od gór po moczary i pustkowia. Kolory skóry ludzi bywają zielone, niebieskie czy różowe, a wzrost i waga wahają się od 1 do ponad 2 metrów i od 25 do ponad 250 kilogramów. W plemiennej kulturze siła tkwi we wspólnocie, co bywa źródłem potęgi, ale też zarzewiem konfliktów między rywalizującymi grupami.',
+    'automaton': 'Automatony zbudowano z blachy, śrub, drutów, sprężyn i trybów, a ożywia je magia wiążąca z ciałem duszę wyrwaną z Zaświatów - działa ona jednak tylko, gdy pracują wewnętrzne mechanizmy. Każdy nosi gdzieś na ciele klucz, którym trzeba go nakręcić; gdy mechanizm stanie, automaton zapada w uśpienie i staje się bezdusznym przedmiotem. Imię zwykle nadaje im stwórca, choć niektóre wybierają je same, opierając się na wspomnieniach duszy zamkniętej w ich wnętrzu.',
+    'goblin': 'Dawno temu Królowa Faerie odebrała goblinom nieśmiertelność i wygnała ich do świata śmiertelników za przewinienia, które dziś pamięta już tylko ona. Żaden goblin nie wygląda jak drugi - świńskie ryje, wydatne kły, rogi czy wędrujące po ciele brodawki to tylko część ich fizycznych dziwactw. Wiele z nich ma przy tym osobliwe zwyczaje, jak przechowywanie obciętych paznokci w słoikach, by żadna wiedźma nie ukradła im imienia.',
+    'krasnolud': 'Krasnoludy żyją w okazałych miastach wydrążonych pod górami, skąd wypuszczają się na wyprawy w głąb ziemi po złoto i srebro, które potem chomikują w wielkich skarbcach. Zarówno mężczyźni, jak i kobiety noszą wymyślne brody zaplatane w symbole klanów i zdobione srebrnymi pierścieniami. Gburowate i podejrzliwe z natury, powstrzymują własną chciwość przekonaniem, że nieustannie obserwują je duchy przodków - dlatego cenią honor nad wszystko, by nie przynieść wstydu swojemu klanowi.',
+    'odmieniec': 'Faerie tworzą odmieńców z ożywionej magią ziemi, patyków i kamieni, by nadać im wygląd dziecka, które właśnie porwały - czar zwykle trwa tylko kilka tygodni, choć zdarza się, że utrzymuje się na tyle długo, że podrzutek wyrasta na prawdziwą osobę. Odarci z przebrania, odmieńcy mają pozbawione rysów twarze bez cech szczególnych, z wyjątkiem świecących zielono oczu. Ciągłe przybieranie cudzych tożsamości niszczy ich własną osobowość do tego stopnia, że wielu z nich nie pamięta, kim właściwie jest ani kim chciałoby być.',
+    'ork': 'Parający się czarną magią czarodzieje Imperium stworzyli orków z pojmanych jotunów sprowadzonych na sąd przed Alabastrowy Tron, odzierając tych dumnych wojowników z człowieczeństwa mrocznymi zaklęciami - dlatego w żyłach orków wciąż płynie krew olbrzymów. Po stuleciach niewolniczej służby orki powstały przeciw swoim panom; plotki głoszą, że ich król Katorżnik gołymi rękami udusił cesarza. Ich plamista skóra, poznaczona bliznami i pęcherzami po wadliwej magii, w połączeniu z bestialskimi rysami twarzy budzi grozę na polach bitew całego Imperium.',
+    'faun': 'Fauny zawdzięczają swój wygląd - kudłate nogi, kopyta i drobne rogi - domieszce krwi faerie lub śladom ich magii, nie zaś demonicznemu splugawieniu jak u zwierzoludzi, z którymi bywają mylone. Pośród Pięknego Ludu mają niski status błaznów, posłańców i zabawek dla elfich panów, dlatego wiele z nich żyje na mglistych granicach ukrytych królestw albo ucieka w odosobnione ludzkie osady. Ich ciekawość bywa zgubna, bo niektórzy podli magowie płacą wysoką cenę za faunią krew.',
+    'niziol': 'Niziołczy osadnicy przybyli do Imperium około sześciuset lat temu z zachodu, zawierając pokój z lokalnymi władcami i płacąc za ziemię złotymi monetami o niecodziennym biciu - w zamian zachowali wolność w zarządzaniu własnymi sprawami. Wierzą, że obecne życie jest tylko jednym z wielu, co czyni ich niemal nieczułymi na strach i sprawia, że rzadko popełniają krytyczne błędy - inni odczytują to jako niezwykłe szczęście, a niektóre skażone mrokiem dusze trzymają niziołki jako żywe amulety na fart. Powstanie orków na południu zaczęło jednak niszczyć ich sielskie ziemie, zmuszając coraz więcej niziołków do szukania nowego, bezpieczniejszego domu.',
+    'chochlik': 'Chochliki są naturalnie niewidzialne dla większości stworzeń - widzą je tylko dzieci, zwierzęta i istoty owładnięte szaleństwem, a samą zdolność tracą na chwilę w południe, o północy oraz o świcie i zmierzchu. Uwielbiają płatać figle, od podkradania drobiazgów po sprowadzanie drwali na obozowiska zwierzoludzi, tylko by zobaczyć, co się stanie. Ich mały wzrost i słodki głos bywają zgubne - bezwzględne gobliny czasem więzią je w klatkach, by sprzedać jako składnik mrocznych inkantacji.',
+    'elf': 'Elfy żyją wiecznie, o ile nie padną ofiarą przemocy lub katastrofy, a gdy dorosną, przestają się starzeć i zachowują niezmienną postać aż do śmierci. Mając potomstwo raz lub dwa razy w całym swoim życiu, niekiedy porywają śmiertelne dzieci i wychowują je przez kilka lat - jeśli dziecko okaże się zbyt prostackie, porzucają je własnemu, okrutnemu losowi. Swoich prawdziwych imion strzegą w tajemnicy, przyjmując na co dzień przydomki takie jak Księżyc na Nocnym Niebie czy Zimowy Dech, by żaden wścibski śmiertelnik nie zdołał ich przyzwać.',
+    'hobgoblin': 'Wysokie faerie stworzyły hobgobliny z goblinów, odbierając im nieśmiertelność i obdarzając siłą oraz odwagą potrzebną żołnierzom - w efekcie każdy hobgoblin mierzy dokładnie 164 centymetry i waży 75,3 kilograma, niezależnie od tego, jak dużo lub jak mało zjada. Wierzą, że wszyscy dzielą jedną duszę, więc nie boją się śmierci, dopóki żyje choć jeden z ich rodu, i przywołują imiona swoich panów - Królowej Faerie, Króla Goblinów czy Księcia Drozdów - gdy są zaskoczeni lub wściekli. Ich imię składa się z trzech liczb wyliczanych z imion przodków, a na co dzień zwracają się do siebie ostatnią z nich.',
+    'fomor': 'Fomory stanowią większość armii zwierzoludzi, ale wargi traktują je jak mięso armatnie, biczując, by szły na czele szarży - ich krótkie, pełne grozy życie kończą zwykle albo wrogowie, albo własni pobratymcy, którzy z nudy je torturują lub zjadają, gdy nie ma nic innego pod ręką. Mierzą około półtora metra i mają w większości ludzkie ciała, jeśli nie liczyć kozich głów z rogami i wyłupiastych oczu, a swoje słabe zbroje wykonują ze skóry ofiar. Mimo swojej pozycji na dole hierarchii są zdolne do tej samej okrutnej zaciekłości co inni zwierzoludzie.',
+    'niedzwiedziadlo': 'Niedźwiedzidła wyróżniają się wśród zwierzoludzi niezwykłą siłą i umiejętnością pochwycenia przeciwnika bez poświęcania na to akcji w walce. Najniebezpieczniejsze z nich, znane jako łowcy głów, ucinają głowy pokonanych wrogów i przywiązują je do pasa za włosy, często współpracując z armiami zwierzoludzi w zamian za najwyborniejszych niewolników. Podobnie jak inne istoty tego rodzaju, mówią mroczną mową i noszą ciężkie, utwardzone skórznie zdarte z ofiar.',
+    'warg': 'Wargi poganiają słabszych pobratymców szczeknięciami i pogróżkami, a na wrogów opadają, szarpiąc ich na strzępy - wielu z nich spędza tyle samo czasu, mordując niewinnych, co szlachtując własnych sojuszników, którzy wejdą im w drogę. Ich humanoidalne ciała pokrywa nierówne, zwykle brązowe futro, a wilcze pyski pełne są ostrych zębów przydatnych do rozdzierania mięsa; nie dbając o własny ekwipunek, po każdej bitwie przetrząsają ciała ofiar w poszukiwaniu zamienników. Berserkowie pośród nich, gdy nie walczą, ryją sobie w skórze wzory połamanymi kośćmi zabitych wrogów.',
+    'inkarnacja': 'Inkarnacje powstały, gdy liczne dżinny poświęciły się, by wykuć niewidzialną barierę odporną na demoniczne najazdy, i wplotły w nią swoje jestestwo tak głęboko, że zatraciły pamięć o tym, kim niegdyś były. Nie mając własnej fizycznej formy, muszą pożyczać ciała żywych, śmiertelnych istot - wchodzą do nich niczym podczas demonicznego opętania, spychając duszę gospodarza na bok, choć nie mogą wejść w faerie, trolle ani istoty bez duszy. Nie znając pojęć dobra i zła, robią to, co uznają za konieczne do ochrony rzeczywistości, nawet jeśli wymaga to poświęcenia niewinnych istot.',
+    'kambion': 'Diabły uwodzą śmiertelników obietnicą bogactwa, władzy lub cielesnych przyjemności, a jeśli taka schadzka skończy się ciążą - wyłącznie w relacji z ludźmi - potomek zawsze okazuje się kambionem. Niemal identyczne ze swoimi śmiertelnymi rodzicami, wszystkie noszą jakiś znak zdradzający piekielne pochodzenie duszy, od subtelnego wzoru symboli na karku do wyrastających z czoła rogów. Ponieważ dusze zrodzone z mroku można oczyścić jedynie w Piekle, wiele kambionów poddaje się swojej złej naturze w nadziei na lepsze miejsce w piekielnej hierarchii, choć nieliczne trzymają te impulsy w karbach i zwracają wewnętrzny mrok przeciw samemu Piekłu.',
+    'jotunn': 'W żyłach jotunów płynie krew olbrzymów, dzięki której dorastają do 2,5, a nawet 3 metrów wzrostu i ważą do 360 kilogramów, górując nawet nad najpotężniej zbudowanymi ludźmi. Wieki temu cesarscy żołnierze i magowie bitewni pokonali ich w wojnie, a z części jeńców czarną magią stworzono pierwsze orki, które przez stulecia służyły kolejnym cesarzom - dlatego jotunowie czekają na dzień, gdy Wielki Wilk pochłonie słońce i da im znak do podniesienia żagli po Imperium krwią. Wierzą w wyrd: nieodwołany, zapisany przez boga Grimnira los każdej istoty, dlatego przyjmują go bez oporu i gonią za chwałą aż do samego końca.'
   };
-    
+
   return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
@@ -1324,6 +1536,10 @@ function resetStateAfterOriginChange() {
   // Ukryj/pokaż sekcje zależne od poziomu na start (0)
   updateWealthSection(0);
   updateOriginBenefits(0);
+  // Radio poziomu 0 jest zaznaczane wyżej przez ustawienie .checked wprost,
+  // co NIE odpala eventu 'change' (a to on normalnie woła loadBenefitsLevel) -
+  // bez tego wywołania "Korzyści Poziomu" zostawałyby z treścią poprzedniej postaci.
+  loadBenefitsLevel(0);
   
   // Reset sekcji ścieżek
   renderPathSectionsVisibility();
@@ -1402,10 +1618,10 @@ function showStep(stepNumber) {
   // aktualnyKrok = stepNumber; // Obecnie nieużywane
   updateBreadcrumbs(stepNumber);
 
-  // Każde dotarcie do Kroku 8 (Podgląd) zapisuje/nadpisuje bieżącą postać
-  // w pamięci przeglądarki - niezależnie od tego, czy trafiono tu przyciskiem
-  // "Dalej", z górnego menu, czy programowo (zob. losujCalaPostac()).
-  if (stepNumber === 8) saveCurrentCharacterToCache();
+  // Krok 8 nie zapisuje już postaci automatycznie - zapis następuje wyłącznie
+  // po kliknięciu "Zapisz postać" (zob. zapiszPostacNaZadanie()), żeby samo
+  // zajrzenie do podsumowania nie nadpisywało wcześniejszego zapisu.
+  if (stepNumber === 8) updateSaveButtonState();
 }
 
 /**
@@ -1413,12 +1629,127 @@ function showStep(stepNumber) {
  * cache - np. po imporcie) bieżącą postać w localStorage, w tym samym
  * formacie co eksport do JSON. Nic nie robi, jeśli postać jest niekompletna
  * (zbudujDaneEksportu() zwraca wtedy null).
+ * @returns {boolean} czy zapis faktycznie nastąpił
  */
 function saveCurrentCharacterToCache() {
   const data = buildExportData();
-  if (!data) return;
-  if (!currentSaveCacheId) currentSaveCacheId = generateSaveId();
-  saveCharacterToCache(currentSaveCacheId, data);
+  if (!data) return false;
+  const id = currentSaveCacheId || generateSaveId();
+  // zapiszPostacDoCache() zwraca false, gdy localStorage odmówi zapisu
+  // (przepełniony limit, tryb prywatny, zablokowane dane witryny). Bez
+  // sprawdzenia tego wyniku postać byłaby oznaczona jako zapisana, mimo że
+  // w pamięci przeglądarki nic nie wylądowało.
+  if (!saveCharacterToCache(id, data)) return false;
+  currentSaveCacheId = id;
+  lastSavedSnapshot = snapshotForComparison(data);
+  return true;
+}
+
+/**
+ * Zrzut danych postaci używany wyłącznie do wykrywania zmian od ostatniego
+ * zapisu. Pomija `utworzono` (znacznik czasu generowany przy każdym
+ * wywołaniu zbudujDaneEksportu()) i całe `podsumowanie` (wyliczane z
+ * `wybory`, więc nie niesie własnej informacji).
+ * @param {Object} data - wynik buildExportData()
+ * @returns {string}
+ */
+function snapshotForComparison(data) {
+  return JSON.stringify({ wersjaEksportu: data.wersjaEksportu, wybory: data.wybory });
+}
+
+/** Czy od ostatniego zapisu w pamięci przeglądarki coś się w postaci zmieniło. */
+function hasUnsavedChanges() {
+  const data = buildExportData();
+  if (!data) return false;
+  return snapshotForComparison(data) !== lastSavedSnapshot;
+}
+
+/**
+ * Włącza/wyłącza przycisk "Zapisz postać" w Kroku 8 zależnie od tego, czy
+ * jest co zapisywać, i opisuje aktualny stan zapisu obok przycisku.
+ */
+function updateSaveButtonState() {
+  const btn = document.getElementById('btn-save-character');
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!btn) return;
+
+  const zmiany = hasUnsavedChanges();
+  btn.disabled = !zmiany;
+  if (!feedback) return;
+  if (zmiany) {
+    feedback.className = 'final-actions-feedback';
+    feedback.textContent = lastSavedSnapshot ? 'Masz niezapisane zmiany.' : 'Postać nie jest jeszcze zapisana.';
+  } else {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.textContent = 'Wszystkie zmiany zapisane.';
+  }
+}
+
+/** Obsługa przycisku "Zapisz postać" w Kroku 8 - zapisuje do tego samego slotu w cache. */
+function saveCharacterOnDemand() {
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!hasUnsavedChanges()) {
+    if (feedback) {
+      feedback.className = 'final-actions-feedback ok';
+      feedback.textContent = 'Brak zmian do zapisania.';
+    }
+    updateSaveButtonState();
+    return;
+  }
+  if (!saveCurrentCharacterToCache()) {
+    // Zapis się nie udał - przycisk zostaje aktywny, a stan "niezapisane
+    // zmiany" nietknięty, żeby gracz nie stracił postaci w przekonaniu, że
+    // jest bezpieczna. Eksport do JSON działa niezależnie od localStorage.
+    if (feedback) {
+      feedback.className = 'final-actions-feedback error';
+      feedback.innerHTML = `${icon('warning')} Nie udało się zapisać w pamięci przeglądarki (może być pełna albo zablokowana). Użyj "Eksportuj do JSON", żeby nie stracić postaci.`;
+    }
+    return;
+  }
+  updateSaveButtonState();
+  if (feedback) {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.innerHTML = `${icon('check')} Zapisano w pamięci przeglądarki.`;
+  }
+}
+
+/**
+ * Obsługa przycisku "Awans" w Kroku 8: podnosi poziom postaci o 1 (maksimum
+ * to 10, bo tam kończy się Tabela Rozwoju w PG) i od razu pokazuje, co nowy
+ * poziom daje do wybrania - korzystając z tej samej listy "Możliwe
+ * przeoczenia", która pilnuje kompletności postaci (zob. calculateMissingItems()).
+ */
+async function promoteCharacter() {
+  const feedback = document.getElementById('final-actions-feedback');
+  const setFeedback = (klasa, tekst) => {
+    if (!feedback) return;
+    feedback.className = `final-actions-feedback ${klasa}`;
+    feedback.textContent = tekst;
+  };
+
+  if (!selectedOrigin) {
+    setFeedback('', 'Najpierw wybierz pochodzenie w Kroku 1.');
+    return;
+  }
+  if (selectedLevel >= 10) {
+    setFeedback('', 'Postać jest już na 10 poziomie - to maksimum Tabeli Rozwoju.');
+    return;
+  }
+
+  const nowyPoziom = selectedLevel + 1;
+  const radio = document.querySelector(`input[name="poziom"][value="${nowyPoziom}"]`);
+  if (radio) radio.checked = true;
+  // Awans zakłada postać już używaną w grze, która ma swój majątek - w
+  // przeciwieństwie do ręcznej zmiany poziomu nie każemy więc losować
+  // srebrników od nowa.
+  await applyLevelChange(nowyPoziom, { keepSilverRoll: true });
+
+  const doWyboru = calculateMissingItems();
+  if (doWyboru.length > 0) {
+    setFeedback('info', `Awans na poziom ${nowyPoziom}. Do wybrania: ${doWyboru.length} ${doWyboru.length === 1 ? 'rzecz' : 'rzeczy'} - lista poniżej.`);
+  } else {
+    setFeedback('ok', `Awans na poziom ${nowyPoziom}. Ten poziom nie wymaga żadnych dodatkowych wyborów.`);
+  }
 }
 
 /**
@@ -1777,6 +2108,13 @@ function updateCalculatedAttributes() {
     attributesFinal = calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes);
   }
 
+  // Dolicz wymuszone podwyżki atrybutów przyznane przez wybrane ścieżki
+  // (np. Moloch: sztywne +1 do Siły obok jednej podwyżki do wyboru).
+  const bonusySciezek = sumAttributeBonusesFromPaths();
+  Object.entries(bonusySciezek).forEach(([atrybut, wartosc]) => {
+    if (wartosc) attributesFinal[atrybut] += wartosc;
+  });
+
   // Zsynchronizuj ukryte pola z finalnymi wartościami atrybutów głównych
   ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {
     const input = document.getElementById(`${atr}-base`);
@@ -1985,31 +2323,31 @@ function updateAttributesSecondary(atrybuty, pochodzenie) {
         <div class="attributes-grid">
           <div class="attribute-display">
             <label>Percepcja:</label>
-            <span id="perception-final">${attributesSecondary.percepcja}</span>
+            <span class="attribute-value" id="perception-final">${attributesSecondary.percepcja}</span>
           </div>
           <div class="attribute-display">
             <label>Obrona:</label>
-            <span id="defense-final">${attributesSecondary.obrona}</span>
+            <span class="attribute-value" id="defense-final">${attributesSecondary.obrona}</span>
           </div>
           <div class="attribute-display">
             <label>Zdrowie:</label>
-            <span id="health-final">${attributesSecondary.zdrowie}</span>
+            <span class="attribute-value" id="health-final">${attributesSecondary.zdrowie}</span>
           </div>
           <div class="attribute-display">
             <label>Szybkość Zdrowienia:</label>
-            <span id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
+            <span class="attribute-value" id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
           </div>
           <div class="attribute-display">
             <label>Prędkość:</label>
-            <span id="speed-final">${attributesSecondary.predkosc}</span>
+            <span class="attribute-value" id="speed-final">${attributesSecondary.predkosc}</span>
           </div>
           <div class="attribute-display">
             <label>Moc:</label>
-            <span id="power-final">${attributesSecondary.moc}</span>
+            <span class="attribute-value" id="power-final">${attributesSecondary.moc}</span>
           </div>
           <div class="attribute-display">
             <label>Splugawienie:</label>
-            <span id="corruption-final">${attributesSecondary.splugawienie}</span>
+            <span class="attribute-value" id="corruption-final">${attributesSecondary.splugawienie}</span>
           </div>
         </div>
       `;
@@ -2147,16 +2485,29 @@ function expandTile(tile) {
   tile.classList.remove('compact');
   tile.classList.add('expanded');
 
-  // Pokaż rozwinięty kontent, ukryj zwinięty
+  // Pokaż rozwinięty kontent (górę obok obrazka i dół na całą szerokość), ukryj zwinięty
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
-  const expandedContent = tile.querySelector('.tile-content-expanded');
-    
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
   if (collapsedContent) {
     collapsedContent.style.display = 'none';
   }
-  if (expandedContent) {
-    expandedContent.style.display = 'block';
+  if (expandedTop) {
+    expandedTop.style.display = 'block';
   }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'block';
+  }
+
+  // Przewiń do nagłówka rozwijanego kafelka, żeby było od razu widać, które
+  // pochodzenie zostało kliknięte - bez tego, jeśli kliknięcie trafiło w
+  // dolną część zwiniętego kafelka blisko dołu ekranu, po rozwinięciu widać
+  // by było środek nowej, długiej treści, a nie nazwę pochodzenia.
+  const header = tile.querySelector('.tile-header');
+  requestAnimationFrame(() => {
+    header?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 /**
@@ -2167,15 +2518,19 @@ function collapseTile(tile) {
   tile.classList.remove('expanded');
   tile.classList.add('compact');
 
-  // Pokaż zwinięty kontent, ukryj rozwinięty
+  // Pokaż zwinięty kontent, ukryj obie części rozwiniętego
   const collapsedContent = tile.querySelector('.tile-content-collapsed');
-  const expandedContent = tile.querySelector('.tile-content-expanded');
-    
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
   if (collapsedContent) {
     collapsedContent.style.display = 'block';
   }
-  if (expandedContent) {
-    expandedContent.style.display = 'none';
+  if (expandedTop) {
+    expandedTop.style.display = 'none';
+  }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'none';
   }
 }
 
@@ -2551,9 +2906,127 @@ function generateCardCharacterHtml() {
  */
 function updatePreviewCharacter() {
   if (!selectedOrigin) return;
+  renderMissingItemsWarning();
+  updateSaveButtonState();
   const container = document.getElementById('character-preview');
   if (!container) return;
-  container.innerHTML = `<h4>${icon('scroll')} Podgląd Postaci</h4>${generateCardCharacterHtml()}`;
+  const title = characterName ? `Podgląd Postaci: ${characterName}` : 'Podgląd Postaci';
+  container.innerHTML = `<h4>${icon('scroll')} ${title}</h4>${generateCardCharacterHtml()}`;
+}
+
+/**
+ * Sprawdza wybory, które w tej aplikacji nigdzie nie są wymuszone (Kroki 6
+ * i 7 są w pełni opcjonalne z punktu widzenia nawigacji, a Krok 2 ma kilka
+ * pomocniczych wyborów bez blokady "Dalej"), a które w praktyce są ważne
+ * dla kompletności postaci wg podręcznika. Wywoływana wyłącznie do
+ * poinformowania gracza w Kroku 8 - nigdy do blokowania nawigacji między
+ * krokami.
+ * @returns {string[]} lista opisów brakujących elementów (pusta = nic nie brakuje)
+ */
+function calculateMissingItems() {
+  if (!selectedOrigin) return [];
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return [];
+
+  const missing = [];
+
+  // Ścieżki (Krok 3)
+  if (selectedLevel >= 1 && !selectedPaths.nowicjusz) {
+    missing.push('Nie wybrano ścieżki nowicjusza (Krok 3).');
+  }
+  if (selectedLevel >= 3 && !selectedPaths.ekspert) {
+    missing.push('Nie wybrano ścieżki eksperckiej (Krok 3).');
+  }
+  if (selectedLevel >= 7 && !selectedPaths.mistrz) {
+    missing.push('Nie wybrano ścieżki mistrzowskiej (Krok 3).');
+  }
+
+  // Bonus do atrybutu z pochodzenia (Krok 2, np. Człowiek +1, Elf +1 i +1)
+  if (pochodzenie.wybor_atrybutu && getSelectedAttributesBonus().length < pochodzenie.wybor_atrybutu.ilosc) {
+    missing.push(`Nie wybrano bonusu do atrybutu z pochodzenia ${pochodzenie.nazwa} (Krok 2).`);
+  }
+
+  // Atrybuty główne do rozdania (Krok 4)
+  const slotsAttr = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+  if (!slotsAttr.every(slotAttributesComplete)) {
+    missing.push('Nie rozdano wszystkich punktów zwiększenia atrybutów głównych (Krok 4).');
+  }
+
+  // Korzyść z Pochodzenia na poziomie 4 (Krok 2)
+  if (selectedLevel >= 4 && pochodzenie.poziom_4?.opcje?.length > 0 && !getCurrentSelectedLevel4Option()) {
+    missing.push('Nie wybrano korzyści z pochodzenia na poziomie 4 (Krok 2, sekcja "Korzyści z Pochodzenia").');
+  }
+
+  // Srebrniki za poziom (Krok 2, sekcja "Zasoby")
+  if (selectedLevel > 0 && randomizedSilver === null) {
+    missing.push('Nie wylosowano srebrników za poziom (Krok 2, sekcja "Zasoby na wyższym poziomie").');
+  }
+
+  // Profesje i języki (Krok 5)
+  const { slots } = calculateSlotsCharacter();
+  if (!slots.every(slot => slotAnswerComplete(slot))) {
+    missing.push('Nie wszystkie sloty profesji/języków są wypełnione (Krok 5).');
+  }
+
+  // Kurioza (Krok 5)
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length < kurioza) {
+    missing.push(`Nie wybrano wszystkich kuriozów (${selectedCurios.length}/${kurioza}) (Krok 5).`);
+  }
+
+  // Magia (Krok 6) - tylko jeśli pochodzenie/ścieżki faktycznie coś przyznają
+  const atomsMagic = getCurrentAtomsMagic();
+  if (atomsMagic.length > 0) {
+    const { resolutions } = calculateResolutionMagic(atomsMagic, magicChoices);
+    if (resolutions.some(r => !r.complete)) {
+      missing.push('Postać ma nierozwiązane wybory magii - tradycje lub zaklęcia (Krok 6).');
+    }
+  }
+
+  // Zamożność i wyposażenie startowe (Krok 7)
+  if (!equipmentWealthId) {
+    missing.push('Nie wybrano Zamożności - postać nie ma wyposażenia startowego (Krok 7).');
+  } else {
+    const incompleteGear = calculateAtomsGear(equipmentWealthId).some(atom => {
+      const wybor = equipmentChoices[atom.id];
+      if (atom.rodzaj === 'wybor_przedmiotu') return !wybor?.itemId;
+      if (!wybor) return true;
+      if (wybor.typ === 'zwoj_zaklecie') return !wybor.spellId;
+      if (wybor.typ === 'przedmiot') return !wybor.itemId;
+      return false;
+    });
+    if (incompleteGear) {
+      missing.push('Nie dokonano wszystkich wyborów wyposażenia startowego (Krok 7).');
+    }
+  }
+
+  return missing;
+}
+
+/**
+ * Renderuje na górze Kroku 8 listę rzeczy, które gracz mógł przeoczyć (zob.
+ * calculateMissingItems()) - czysto informacyjnie, nie blokuje eksportu.
+ */
+function renderMissingItemsWarning() {
+  const container = document.getElementById('missing-items-warning');
+  if (!container) return;
+
+  const missing = calculateMissingItems();
+  if (missing.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="missing-items-warning">
+      <h4>${icon('warning')} Możliwe przeoczenia</h4>
+      <ul>${missing.map(item => `<li>${item}</li>`).join('')}</ul>
+    </div>
+  `;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -2580,13 +3053,19 @@ async function loadBenefitsLevel(poziom) {
   }
 
   try {
-    const benefits = calculateBenefitsLevel(poziom, {
+    const spec = {
       pochodzenie: selectedOrigin,
       sciezka_nowicjusza: selectedPaths.nowicjusz || null,
       sciezka_ekspercka: selectedPaths.ekspert || null,
       sciezka_mistrzowska: selectedPaths.mistrz || null
-    });
-    displayBenefitsLevel(benefits);
+    };
+    // Korzyści są skumulowane - pokazujemy każdy poziom od 1 do wybranego,
+    // nie tylko sam wybrany, żeby postać widziała cały swój dotychczasowy rozwój.
+    const benefitsAllLevels = [];
+    for (let p = 1; p <= poziom; p++) {
+      benefitsAllLevels.push(calculateBenefitsLevel(p, spec));
+    }
+    displayBenefitsLevel(benefitsAllLevels, poziom);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Błąd ładowania korzyści:', error);
@@ -2674,22 +3153,39 @@ function displayLevelBenefitsFallback(poziom) {
 }
 
 /**
- * Wyświetla korzyści poziomu
+ * Wyświetla skumulowane korzyści postaci od poziomu 1 do wybranego poziomu -
+ * jeden blok `.path-benefit-item` (z nagłówkiem "Poziom N - ...") na każdy
+ * poziom z tej listy, w kolejności rosnącej.
+ * @param {Object[]} benefitsAllLevels - wynik calculateBenefitsLevel() dla każdego poziomu 1..poziom
+ * @param {number} poziom - wybrany (docelowy) poziom postaci
  */
-function displayBenefitsLevel(benefits) {
+function displayBenefitsLevel(benefitsAllLevels, poziom) {
   const section = document.getElementById('level-benefits-section');
   const levelName = document.getElementById('selected-level-name');
   const content = document.getElementById('level-benefits-content');
   if (!section || !content) return;
 
   section.style.display = 'block';
+  if (levelName) levelName.textContent = poziom;
 
+  content.innerHTML = benefitsAllLevels.map(renderOneLevelBenefitsBlock).join('');
+}
+
+/**
+ * Renderuje blok korzyści jednego poziomu w skumulowanej liście (nagłówek
+ * "Poziom N - Nazwa (Źródło)" + kategorie korzyści tego poziomu).
+ */
+function renderOneLevelBenefitsBlock(benefits) {
   const nameLevel = benefits.nazwa_poziomu || 'Nieznany poziom';
   const sourceName = benefits.nazwa_sciezki
     || (benefits.zrodlo_korzysci === 'pochodzenie' ? 'Pochodzenie' : 'Brak ścieżki');
-  if (levelName) levelName.textContent = `${nameLevel} (${sourceName})`;
-
-  content.innerHTML = renderBenefitsLevelHtml(benefits.korzyści || {}, benefits);
+  return `
+    <div class="path-benefit-item">
+      <h6>Poziom ${benefits.poziom} - ${nameLevel} (${sourceName})</h6>
+      ${benefits.opis_poziomu ? `<p class="hint">${benefits.opis_poziomu}</p>` : ''}
+      ${renderBenefitsLevelHtml(benefits.korzyści || {}, benefits)}
+    </div>
+  `;
 }
 
 /**
@@ -2747,7 +3243,7 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
 
   if (korzysci.jezyki_profesje) {
     blocks.push(block('Języki i profesje', `
-      <p>${korzysci.jezyki_profesje}</p>
+      <p>${korzysci.jezyki_profesje.opis}</p>
       <p class="hint">Sloty rozdasz w Kroku 5 (Profesje i Kurioza).</p>
     `));
   }
@@ -2776,7 +3272,7 @@ function renderBenefitsLevelHtml(korzysci, benefits = {}) {
   // wybrana - inaczej brak korzyści znaczy po prostu "nie ma jeszcze z czego".
   return benefits.nazwa_sciezki
     ? `<p class="hint">Dla ${tier} <strong>${benefits.nazwa_sciezki}</strong> nie mamy jeszcze zapisanych korzyści na tym poziomie.</p>`
-    : `<p class="hint">Korzyści tego poziomu pochodzą ze ${tier} - wybierz ją w Kroku 3, żeby je tutaj zobaczyć.</p>`;
+    : `<p class="hint">Korzyść ze ${tier}</p>`;
 }
 
 /** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
@@ -2824,6 +3320,7 @@ function buildExportData() {
     utworzono: new Date().toISOString(),
     // Surowe wybory gracza - jedyna sekcja odczytywana przy imporcie.
     wybory: {
+      imie: characterName || '',
       pochodzenie: selectedOrigin,
       bonusoweAtrybutyPochodzenia: getSelectedAttributesBonus(),
       opcjaPoziom4: getCurrentSelectedLevel4Option(),
@@ -2855,6 +3352,7 @@ function buildExportData() {
     // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
     // jest odczytywane przy imporcie.
     podsumowanie: {
+      imie: characterName || null,
       pochodzenie: pochodzenie.nazwa,
       poziom: selectedLevel,
       poziomNazwa: nameTierLevel(selectedLevel),
@@ -2902,6 +3400,22 @@ function buildExportData() {
 }
 
 /**
+ * Sprowadza tekst do postaci bezpiecznej jako fragment nazwy pliku: usuwa
+ * polskie znaki diakrytyczne, zamienia wszystko poza literami/cyframi na
+ * myślniki i przycina wielokrotne/skrajne myślniki. Zwraca '' dla pustego
+ * lub samych znaków specjalnych wejścia (wywołujący ma wtedy własny fallback).
+ */
+function sanitizeForFilename(text) {
+  if (!text) return '';
+  return text
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // usuń diakrytyki (ą -> a, ł zostaje, bo to nie akcent)
+    .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Eksportuje postać jako JSON - pełny, wersjonowany zrzut wszystkich
  * wyborów dokonanych w kreatorze (zob. zbudujDaneEksportu()).
  */
@@ -2916,7 +3430,8 @@ function exportJSON() {
   const dataStr = JSON.stringify(currentCharacter, null, 2);
   const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
 
-  const exportFileDefaultName = `postac-${currentCharacter.wybory.pochodzenie}-${new Date().toISOString().split('T')[0]}.json`;
+  const namePart = sanitizeForFilename(currentCharacter.wybory.imie) || currentCharacter.wybory.pochodzenie;
+  const exportFileDefaultName = `postac-${namePart}-${new Date().toISOString().split('T')[0]}.json`;
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
@@ -3137,6 +3652,12 @@ function restoreTableResultsToDom(originId) {
 async function importCharacter(data) {
   const w = data.wybory;
 
+  // 0. Imię postaci (Krok 8) - niezależne od pochodzenia/poziomu/itd.,
+  // więc może być przywrócone w dowolnym miejscu tej sekwencji.
+  characterName = w.imie || '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = characterName;
+
   // 1. Pochodzenie
   selectOrigin(w.pochodzenie, { autoScroll: false });
 
@@ -3260,11 +3781,19 @@ function handleFileImport(file) {
     try {
       await importCharacter(data);
       // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
-      // id - dalsze zmiany, aż do ponownego dotarcia do Kroku 8, nadpiszą
-      // ten sam zapis (zob. zapiszAktualnaPostacDoCache()).
-      currentSaveCacheId = generateSaveId();
-      saveCharacterToCache(currentSaveCacheId, data);
-      showImportMessage('success', `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
+      // id - dalsze zmiany trafią do tego samego zapisu po kliknięciu
+      // "Zapisz postać" w Kroku 8 (zob. zapiszPostacNaZadanie()). Gdy
+      // localStorage odmówi zapisu, sam import i tak się udał, więc mówimy
+      // o tym wprost zamiast udawać, że postać jest już w pamięci.
+      const nowyId = generateSaveId();
+      const zapisano = saveCharacterToCache(nowyId, data);
+      if (zapisano) {
+        currentSaveCacheId = nowyId;
+        lastSavedSnapshot = snapshotForComparison(data);
+      }
+      showImportMessage('success', zapisano
+        ? `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`
+        : `${icon('check')} Postać została pomyślnie zaimportowana, ale nie udało się jej zapisać w pamięci przeglądarki (może być pełna albo zablokowana) - pracujesz na danych z pliku.`);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);
@@ -4216,7 +4745,7 @@ function renderCardMagic(resolution) {
   } else if (atom.rodzaj === 'wybor_fixed') {
     const traditionName = TRADITIONS[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
     if (mode === 'tradycja') {
-      bodyHtml = `<p class="magic-slot-status ok">Tradycja ${traditionName} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
+      bodyHtml = `<p class="magic-slot-status ok">${icon('book')} Tradycja ${traditionName} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
       bodyHtml += renderChoiceFreeSpells(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
     } else {
       bodyHtml = renderChoiceSpells(atom.id, spellId, atom.tradycjaNazwa);
@@ -4224,8 +4753,14 @@ function renderCardMagic(resolution) {
   } else if (atom.rodzaj === 'wybor') {
     bodyHtml = `
       <div class="magic-slot-mode-toggle">
-        <button type="button" class="btn-secondary small ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">Nowa tradycja</button>
-        <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
+        <button type="button" class="magic-mode-option magic-mode-option--tradition ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">
+          ${icon('book')}
+          <span class="magic-mode-option-text"><strong>Nowa tradycja</strong><small>poznaj całą szkołę magii</small></span>
+        </button>
+        <button type="button" class="magic-mode-option magic-mode-option--spell ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">
+          ${icon('sparkle')}
+          <span class="magic-mode-option-text"><strong>Zaklęcie</strong><small>naucz się jednego czaru</small></span>
+        </button>
       </div>
     `;
     if (mode === 'tradycja') {
@@ -4258,7 +4793,8 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
   const nazwa = currentChoice ? (TRADITIONS[currentChoice]?.nazwa || currentChoice) : null;
   const black = currentChoice && isBlackMagic(currentChoice);
   return `
-    <div class="magic-slot-picker">
+    <div class="magic-slot-picker magic-slot-picker--tradition">
+      <span class="magic-slot-picker-label">${icon('book')} Tradycja</span>
       ${nazwa ? `
         <div class="magic-picked-chip">${nazwa}${black ? ` ${icon('warning')}` : ''}
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">${icon('x')}</button>
@@ -4279,7 +4815,8 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
 function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) {
   const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
-    <div class="magic-slot-picker">
+    <div class="magic-slot-picker magic-slot-picker--spell">
+      <span class="magic-slot-picker-label">${icon('sparkle')} Zaklęcie</span>
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ` ${icon('warning')}` : ''}
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">${icon('x')}</button>
@@ -4300,7 +4837,8 @@ function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) 
 function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
   const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
-    <div class="magic-slot-picker magic-slot-picker-secondary">
+    <div class="magic-slot-picker magic-slot-picker--spell magic-slot-picker-secondary">
+      <span class="magic-slot-picker-label">${icon('sparkle')} Darmowe zaklęcie (krąg 0)</span>
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (krąg 0)
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">${icon('x')}</button>
@@ -4495,6 +5033,7 @@ function renderTraditionPickerDynamicHtml() {
   const tiles = wynik.map(t => `
     <button type="button" class="picker-tile" data-pick-tradition="${t.id}">
       <div class="picker-tile-header"><span>${t.nazwa}</span></div>
+      ${t.opis ? `<p class="picker-tile-description">${t.opis}</p>` : ''}
       ${t.czarnaMagia ? `<div class="picker-tile-warning">${icon('warning')} Czarna magia - poznanie przyznaje 1 Splugawienie</div>` : ''}
     </button>
   `).join('') || '<p class="hint">Brak tradycji spełniających kryteria wyszukiwania.</p>';
@@ -5312,7 +5851,18 @@ function newCharacter() {
   renderEquipmentSection();
   const importFeedback = document.getElementById('import-feedback');
   if (importFeedback) importFeedback.innerHTML = '';
+  const missingItemsWarning = document.getElementById('missing-items-warning');
+  if (missingItemsWarning) missingItemsWarning.innerHTML = '';
+  const finalFeedback = document.getElementById('final-actions-feedback');
+  if (finalFeedback) {
+    finalFeedback.className = 'final-actions-feedback';
+    finalFeedback.textContent = '';
+  }
   currentSaveCacheId = null;
+  lastSavedSnapshot = null;
+  characterName = '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = '';
   showStep(1);
   updatePreviewCharacter();
 }
@@ -5339,7 +5889,7 @@ function renderLoadCharacterList() {
   const all = Object.values(getSavedCharacters()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 
   if (all.length === 0) {
-    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisuje się automatycznie, gdy dotrzesz do Kroku 8 (Podgląd), oraz przy imporcie z pliku JSON.</p>';
+    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisujesz przyciskiem "Zapisz postać" w Kroku 8 (Podgląd); zapis powstaje też automatycznie przy imporcie z pliku JSON.</p>';
     return;
   }
 
@@ -5353,10 +5903,11 @@ function renderLoadCharacterList() {
     const originId = entry.data?.wybory?.pochodzenie;
     const pochodzenie = availableOrigin.find(p => p.id === originId)?.nazwa || originId || 'Nieznane pochodzenie';
     const poziom = entry.data?.wybory?.poziom ?? '?';
+    const imie = entry.data?.wybory?.imie;
     const data = entry.savedAt ? new Date(entry.savedAt).toLocaleString('pl-PL') : '';
     return `
           <div class="selected-item">
-            <span>${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
+            <span>${imie ? `<strong>${imie}</strong> - ` : ''}${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
             <button type="button" class="btn-secondary small" data-load-character="${entry.id}">Wczytaj</button>
           </div>
         `;
@@ -5385,6 +5936,7 @@ async function loadCharacterWithCache(id) {
   currentSaveCacheId = id;
   try {
     await importCharacter(entry.data);
+    lastSavedSnapshot = snapshotForComparison(entry.data);
     showImportMessage('success', `${icon('check')} Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -5463,21 +6015,11 @@ async function randomizeWholeCharacter(poziom) {
   });
 
   // 3. Poziom (0-10) - jedyna wartość niewylosowana, wybrana przez użytkownika
-  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama sekwencja co
-  //    listener zmiany radiobuttona (Krok 2)
-  selectedLevel = poziom;
-  const levelInput = document.querySelector(`input[name="poziom"][value="${selectedLevel}"]`);
+  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama ścieżka co zmiana
+  //    radiobuttona w Kroku 2
+  const levelInput = document.querySelector(`input[name="poziom"][value="${poziom}"]`);
   if (levelInput) levelInput.checked = true;
-  updatePathsVisibility(selectedLevel);
-  await updatePathsLevel(selectedLevel);
-  updatePathsSectionTitle(selectedLevel);
-  updateWealthSection(selectedLevel);
-  updateOriginBenefits(selectedLevel);
-  renderPathSectionsVisibility();
-  await renderPathSection(1);
-  await renderPathSection(3);
-  await renderPathSection(7);
-  await loadBenefitsLevel(selectedLevel);
+  await applyLevelChange(poziom);
 
   // 4. Opcja poziomu 4 z pochodzenia (np. "1 zaklęcie"), jeśli dostępna
   if (selectedLevel >= 4) {

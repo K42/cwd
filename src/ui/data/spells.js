@@ -13,6 +13,61 @@
 
 const SPELLS = [
   {
+    'id': 'ochrona_przed_smiercia',
+    'nazwa': 'Ochrona Przed Śmiercią',
+    'tradycja': 'smierc',
+    'tradycjaNazwa': 'Śmierć',
+    'krag': 0,
+    'kategoria': 'uzytkowe',
+    'opis': 'Cel: Jedno żywe stworzenie w bezpośrednim zasięgu. Czas trwania: 1 godzina. Dotykasz celu i naznaczasz go pieczęcią w kształcie czaszki, która pozostaje na jego ciele do końca trwania czaru. W tym czasie ofiara wykonuje testy na odpieranie efektów zaklęć Śmierci z 1 ułatwieniem, a rzuty na atak zaklęciami Śmierci przeciwko niej zyskują 1 utrudnienie. Dodatkowo kiedy cel wykonuje próby przeznaczenia, może rzucić dwukrotnie i użyć wyższego wyniku.',
+    'zrodlo': 'SUP',
+    'strona_zrodlowa': null
+  },
+  {
+    'id': 'morowe_powietrze',
+    'nazwa': 'Morowe Powietrze',
+    'tradycja': 'smierc',
+    'tradycjaNazwa': 'Śmierć',
+    'krag': 4,
+    'kategoria': 'atak',
+    'opis': 'Obszar: Spoczywający na podłożu sześcian o krawędzi 8 metrów i punkcie początkowym w dalekim zasięgu. Czas trwania: Koncentracja, do 1 minuty. Niezdrowo zielona mgła rozchodzi się po wskazanym obszarze, znacznie go przesłaniając, i utrzymuje się w nim na czas trwania zaklęcia lub dopóki nie rozproszy jej wiatr. Za każdym razem, kiedy koncentrujesz się, by podtrzymać ten efekt, możesz przesunąć obszar z mgłą do 5 metrów po podłożu. Kiedy mgła się pojawia, a także pod koniec każdej następnej rundy, wszystkie żywe istoty na jej obszarze muszą wykonać test Siły. Jeśli stworzenie jest poważnie ranne, zyskuje w tym teście 1 utrudnienie. Porażka oznacza, że ofiara otrzymuje 3k6 obrażeń i staje się zatruta na 1 rundę, sukces zaś – że otrzymuje tylko połowę obrażeń.',
+    'zrodlo': 'SUP',
+    'strona_zrodlowa': null
+  },
+  {
+    'id': 'ksiezycowy_most',
+    'nazwa': 'Księżycowy Most',
+    'tradycja': 'magia_niebianska',
+    'tradycjaNazwa': 'Magia Niebiańska',
+    'krag': 2,
+    'kategoria': 'uzytkowe',
+    'opis': 'Wymagania: Możesz rzucić to zaklęcie tylko w nocy lub pod ziemią. Obszar: Linia o długości 10 metrów, szerokości 2 metrów, grubości 2,5 centymetra i o punkcie początkowym w średnim zasięgu; jej końce muszą dotykać twardej powierzchni. Czas trwania: Koncentracja, do 1 minuty. Obszar wypełnia delikatne światło, które utrzymuje się w nim na czas trwania zaklęcia. Staje się ono ciałem stałym i jest w stanie utrzymać dowolny umieszczony na nim ciężar. Poświęcenie: Możesz poświęcić użycie tego zaklęcia, by rzucić palący promień.',
+    'zrodlo': 'SP',
+    'strona_zrodlowa': null
+  },
+  {
+    'id': 'osobliwosc',
+    'nazwa': 'Osobliwość',
+    'tradycja': 'chaos',
+    'tradycjaNazwa': 'Chaos',
+    'krag': 5,
+    'kategoria': 'atak',
+    'opis': 'Obszar: Sfera o promieniu 10 metrów i punkcie początkowym w dalekim zasięgu. Czas trwania: 1 runda. W punkcie początkowym zaklęcia pojawia się wirująca plama koloru, która pozostaje tam na czas trwania czaru. Gdy rzucasz osobliwość, niezabezpieczone obiekty wewnątrz jej obszaru działania przemieszczają się o 2k6 metrów w kierunku punktu początkowego. Każde stworzenie znajdujące się wewnątrz obszaru działania zaklęcia w momencie jego rzucenia lub na niego wchodzące musi wykonać test Siły z 1 utrudnieniem. Porażka oznacza, że przemieszcza się o 2k6 metrów w kierunku punktu początkowego i dopóki czar trwa, nie może się od niego oddalić. Każde stworzenie lub obiekt, które dotrze do punktu początkowego osobliwości, otrzymuje 10k6 obrażeń. Jeśli wskutek tych obrażeń zostanie obezwładnione, dojdzie także do całkowitego wymazania go z rzeczywistości, a jego ciało i dusza ulegną nieodwracalnemu zniszczeniu. Gdy efekt czaru dobiegnie końca, plama wybucha, zadając 4k6 obrażeń wszystkiemu wewnątrz obszaru działania zaklęcia. Każde znajdujące się tam stworzenie musi wykonać test Siły. Porażka oznacza, że zostaje powalone, a sukces, że otrzymuje tylko połowę obrażeń.',
+    'zrodlo': 'PG',
+    'strona_zrodlowa': null
+  },
+  {
+    'id': 'czarnostrzaly_z_zaswiatow',
+    'nazwa': 'Czarnostrzały Z Zaświatów',
+    'tradycja': 'magia_cienia',
+    'tradycjaNazwa': 'Magia Cienia',
+    'krag': 3,
+    'kategoria': 'atak',
+    'opis': 'Cel: Do trzech stworzeń w średnim zasięgu. Z czubków twoich palców wystrzeliwują trzy pociski syczącej ciemności, rozdzielone dowolnie pomiędzy cele. Dla każdej strzały wykonaj oparty na Intelekcie rzut na atak przeciwko Zręczności danego stworzenia. Sukces oznacza, że otrzymuje ono 2k6 obrażeń i zostaje odepchnięte od ciebie na 1k6 metrów. Rzut na atak 20+: Cel otrzymuje dodatkowe 1k6 obrażeń.',
+    'zrodlo': 'PG',
+    'strona_zrodlowa': null
+  },
+  {
     'id': 'dar_chaosu',
     'nazwa': 'Dar Chaosu',
     'tradycja': 'chaos',

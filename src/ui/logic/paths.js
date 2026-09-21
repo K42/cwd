@@ -40,7 +40,7 @@ function getPathsForLevel(poziom) {
     return {
       id: path.id,
       nazwa: path.nazwa,
-      zrodlo: 'PG',
+      zrodlo: path.zrodlo || 'PG',
       opis: path.opis,
       korzysci: {
         [poziom]: {
@@ -52,7 +52,10 @@ function getPathsForLevel(poziom) {
             nazwa: 'Magia',
             opis: descriptionMagic(pkt.magia)
           }] : []),
-          mod_atrybuty: {},
+          // Wymuszone podwyżki atrybutów (bez wyboru gracza) - np. Moloch z
+          // Chwalebnej Śmierci dostaje sztywne +1 do Siły obok jednej
+          // podwyżki do wyboru.
+          mod_atrybuty: pkt.mod_atrybuty || {},
           atrybuty_glowne: pkt.atrybuty_glowne || null,
           mod_drugorzedne: {
             zdrowie: parseInt(pkt.zdrowie?.replace('+', '') || '0'),

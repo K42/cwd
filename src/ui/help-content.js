@@ -118,9 +118,36 @@ function getStartContent() {
       </div>
       <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
       <ul>
+        <li>Przycisk <strong>"<svg class="icon"><use href="#icon-folder"></use></svg> Zapisz postać"</strong> na samej górze zapisuje postać w pamięci przeglądarki - zawsze w tym samym miejscu, więc kolejne zapisy nadpisują ten sam wpis zamiast tworzyć kopie. Przycisk jest aktywny tylko wtedy, gdy od ostatniego zapisu coś się zmieniło; obok widać stan zapisu.</li>
+        <li>Przycisk <strong>"<svg class="icon"><use href="#icon-bolt"></use></svg> Awans"</strong> podnosi poziom postaci o 1 (maksimum to 10) i od razu wypisuje, co trzeba wybrać na nowym poziomie - nową ścieżkę, punkty atrybutów, kurioza, srebrniki czy magię. To ta sama lista, co "Możliwe przeoczenia" niżej.</li>
+        <li>Jeśli coś zostało pominięte (np. bonus do atrybutu z pochodzenia, korzyść z pochodzenia na poziomie 4, losowanie srebrników, wybór ścieżki, magii albo Zamożności/wyposażenia), na samej górze zobaczysz listę <strong>"Możliwe przeoczenia"</strong> - to tylko informacja, nic nie blokuje; możesz wrócić do wskazanego kroku albo zignorować listę, jeśli dany element rzeczywiście ma być pusty</li>
+        <li>Możesz opcjonalnie wpisać <strong>imię postaci</strong> - trafia do nagłówka podglądu, do eksportu (i jest odtwarzane przy imporcie), a jeśli je wypełnisz, zostanie też użyte w nazwie eksportowanego pliku (zamiast pochodzenia)</li>
         <li>Podgląd aktualizuje się na bieżąco - nie trzeba niczego "zatwierdzać"</li>
         <li>Kliknij <strong>"<svg class="icon"><use href="#icon-page"></use></svg> Eksportuj do JSON"</strong> aby zapisać postać na dysku</li>
       </ul>
+    </div>
+
+    <h4><svg class="icon"><use href="#icon-dice"></use></svg> Boczne menu</h4>
+
+    <p>Z lewej strony (na telefonie: na dole ekranu) znajdziesz trzy przyciski dostępne na każdym kroku:</p>
+    <ul>
+      <li><strong><svg class="icon"><use href="#icon-plus-circle"></use></svg> Nowa postać</strong> - czyści wszystkie wybory i wraca do Kroku 1. Kreator poprosi o potwierdzenie, bo niezapisanych zmian nie da się odzyskać.</li>
+      <li><strong><svg class="icon"><use href="#icon-folder"></use></svg> Wczytaj postać</strong> - pokazuje listę postaci zapisanych w pamięci tej przeglądarki (zob. niżej).</li>
+      <li><strong><svg class="icon"><use href="#icon-dice"></use></svg> Wylosuj postać</strong> - najpierw pyta o poziom postaci, a potem losuje <em>wszystko</em> pozostałe: pochodzenie wraz z tabelami, ścieżki, rozdanie atrybutów, profesje, języki, kurioza, Zamożność i wyposażenie startowe. Poziom to jedyna rzecz, o której decydujesz. Krok 6 (Magia) zostaje nierozwiązany, bo jest opcjonalny, a w sklepie nie są robione żadne zakupy.</li>
+    </ul>
+
+    <h4><svg class="icon"><use href="#icon-folder"></use></svg> Zapis w pamięci przeglądarki</h4>
+
+    <p>Niezależnie od eksportu do pliku JSON możesz trzymać postać w pamięci przeglądarki:</p>
+    <ul>
+      <li>Zapis powstaje po kliknięciu <strong>"Zapisz postać"</strong> w Kroku 8 (Podgląd) - samo zajrzenie do podsumowania niczego nie nadpisuje. Wyjątkiem jest import postaci z pliku, który od razu tworzy zapis.</li>
+      <li>Dalsze zmiany tej samej postaci nadpisują ten sam wpis, zamiast tworzyć kolejne kopie.</li>
+      <li>Zapisane postacie otwierasz przyciskiem <strong>"Wczytaj postać"</strong> w bocznym menu - lista pokazuje imię (jeśli je wpisałeś), pochodzenie, poziom i datę zapisu.</li>
+      <li>Przycisk <strong>"Wyczyść pamięć przeglądarki"</strong> w tym oknie kasuje wszystkie zapisane postacie naraz. Tej operacji nie da się cofnąć, więc kreator prosi o potwierdzenie.</li>
+    </ul>
+
+    <div class="help-tip">
+      <strong><svg class="icon"><use href="#icon-tip"></use></svg> Uwaga:</strong> pamięć przeglądarki jest przypisana do tej konkretnej przeglądarki i urządzenia. Wyczyszczenie danych witryny albo otwarcie kreatora w innej przeglądarce oznacza brak tych postaci. Na trwałe zachowasz postać wyłącznie przez <strong>Eksportuj do JSON</strong>.
     </div>
   `;
 }
@@ -304,6 +331,20 @@ function getFAQContent() {
         <div class="faq-question">Jak wyczyścić tylko jeden wybór, bez resetowania całej postaci?</div>
         <div class="faq-answer">
           Każda sekcja wyboru (pochodzenie, poziom, ścieżka, atrybuty, profesja, język, kurioza) ma własny, mały przycisk <strong>"Wyczyść"</strong> - czyści tylko tę jedną sekcję, nie wpływając na resztę postaci.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Czy mogę wybrać coś przy losowaniu całej postaci?</div>
+        <div class="faq-answer">
+          Tak, jedną rzecz: poziom postaci. Po kliknięciu <strong>"<svg class="icon"><use href="#icon-dice"></use></svg> Wylosuj postać"</strong> w bocznym menu kreator najpierw pokazuje kafelki poziomów 0-10, a dopiero po wybraniu jednego losuje całą resztę i przenosi od razu do Kroku 8.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Gdzie znajdę postacie, które kreator zapisał sam?</div>
+        <div class="faq-answer">
+          W bocznym menu, pod przyciskiem <strong>"Wczytaj postać"</strong>. Kreator zapisuje postać w pamięci przeglądarki przy każdym dotarciu do Kroku 8 oraz po imporcie z pliku. To samo okno ma przycisk <strong>"Wyczyść pamięć przeglądarki"</strong>, który kasuje wszystkie zapisane postacie - bezpowrotnie, więc kreator prosi o potwierdzenie. Pamiętaj, że ten zapis żyje tylko w tej jednej przeglądarce; kopię na stałe robisz eksportem do JSON.
         </div>
       </div>
 

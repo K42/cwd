@@ -190,6 +190,9 @@
         <button type="button" class="side-menu-btn" id="btn-randomize-character" data-tooltip="Wylosuj postać — wybierz poziom, resztę (wszystkie kroki) losuje kreator i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać"><svg class="icon"><use href="#icon-dice"></use></svg></button>
     </nav>
 
+    <!-- Przewinięcie na samą górę: strony albo otwartego popupu (zob. initializeScrollTopButton()) -->
+    <button type="button" class="scroll-top-btn" id="btn-scroll-top" hidden title="Przewiń na górę" aria-label="Przewiń na górę"><svg class="icon"><use href="#icon-chevron-up"></use></svg></button>
+
     <div class="header">
         <h1><svg class="icon"><use href="#icon-swords"></use></svg> Kreator Postaci</h1>
         <h2>Cień Władcy Demonów</h2>
@@ -403,13 +406,18 @@
                 </div>
             </div>
 
-            <!-- Sekcja korzyści poziomu -->
-            <div id="level-benefits-section" class="level-benefits-section" style="display: none;">
-                <h4><svg class="icon"><use href="#icon-target"></use></svg> Korzyści Poziomu</h4>
-                <div class="benefit-category">
-                    <p>Korzyści dla poziomu <span id="selected-level-name">0</span>:</p>
-                    <div id="level-benefits-content">
-                        <!-- Korzyści będą wyświetlane dynamicznie -->
+            <!-- Sekcja korzyści poziomu (zwijana, domyślnie zwinięta) -->
+            <div id="level-benefits-section" class="level-benefits-section collapsible-section collapsed" style="display: none;">
+                <div class="collapsible-section-header" id="level-benefits-header" role="button" tabindex="0" aria-expanded="false" aria-controls="level-benefits-body">
+                    <h4><svg class="icon"><use href="#icon-target"></use></svg> Korzyści Poziomu</h4>
+                    <span class="collapsible-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
+                </div>
+                <div class="collapsible-section-body" id="level-benefits-body">
+                    <div class="benefit-category">
+                        <p>Korzyści postaci od poziomu 1 do poziomu <span id="selected-level-name">0</span> (włącznie):</p>
+                        <div id="level-benefits-content">
+                            <!-- Korzyści będą wyświetlane dynamicznie, poziom po poziomie -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -432,7 +440,7 @@
             </label>
         </div>
 
-        <div id="custom-attributes" style="display: none;">
+        <div id="custom-attributes" class="level-benefits-section" style="display: none;">
             <div class="flex-row-between">
                 <h4>Zmiana wartości atrybutów pochodzenia:</h4>
                 <button type="button" class="section-reset-btn" id="btn-reset-swap" title="Wyczyść zamianę atrybutów">Wyczyść</button>
@@ -498,22 +506,22 @@
             <div class="attributes-grid">
                 <div class="attribute-display">
                     <label>Siła:</label>
-                    <span id="strength-final">10</span>
+                    <span class="attribute-value" id="strength-final">10</span>
                     <span class="modifier" id="strength-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Zręczność:</label>
-                    <span id="agility-final">10</span>
+                    <span class="attribute-value" id="agility-final">10</span>
                     <span class="modifier" id="agility-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Intelekt:</label>
-                    <span id="intellect-final">10</span>
+                    <span class="attribute-value" id="intellect-final">10</span>
                     <span class="modifier" id="intellect-mod">+0</span>
                 </div>
                 <div class="attribute-display">
                     <label>Wola:</label>
-                    <span id="will-final">10</span>
+                    <span class="attribute-value" id="will-final">10</span>
                     <span class="modifier" id="will-mod">+0</span>
                 </div>
             </div>
@@ -773,7 +781,25 @@
     <div id="step-8" class="step">
         <div class="section">
             <h3><svg class="icon"><use href="#icon-scroll"></use></svg> Krok 8: Podgląd i Eksport</h3>
+
+            <div class="final-actions">
+                <button type="button" class="btn-secondary" id="btn-save-character" title="Zapisz postać w pamięci przeglądarki (nadpisuje ten sam zapis, jeśli postać była już zapisana lub wczytana)">
+                    <svg class="icon"><use href="#icon-folder"></use></svg> Zapisz postać
+                </button>
+                <button type="button" class="btn-secondary" id="btn-promote-character" title="Awans - podnosi poziom postaci o 1 i pokazuje, co trzeba wybrać na nowym poziomie">
+                    <svg class="icon"><use href="#icon-bolt"></use></svg> Awans
+                </button>
+                <span id="final-actions-feedback" class="final-actions-feedback"></span>
+            </div>
+
+            <div id="missing-items-warning"></div>
+
             <p>Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
+
+            <div class="form-group">
+                <label for="character-name">Imię postaci (opcjonalnie)</label>
+                <input type="text" id="character-name" placeholder="np. Aldric Volkov" maxlength="60" autocomplete="off">
+            </div>
 
             <div id="character-preview" class="character-preview">
                 <!-- Podgląd postaci -->

@@ -16,11 +16,13 @@ describe('Zaktualizowane dane pochodzeń', () => {
       expect(czlowiek.atrybuty_bazowe.wola).toBe(10);
     });
 
-    test('powinien mieć poprawną cechę specjalną', () => {
+    // PG str. 12, ramka "Tworzenie postaci: Człowiek", nie ma sekcji TALENTY -
+    // człowiek jako jedyne pochodzenie nie dostaje żadnej cechy specjalnej na
+    // starcie. Determinacja jest opcją korzyści poziomu 4 (test niżej).
+    test('nie powinien mieć cech specjalnych na poziomie startowym', () => {
       const czlowiek = ORIGINS.czlowiek;
-      
-      expect(czlowiek.cechy_specjalne).toHaveProperty('determinacja');
-      expect(czlowiek.cechy_specjalne.determinacja).toContain('punkt Determinacji');
+
+      expect(czlowiek.cechy_specjalne).toBeUndefined();
     });
 
     test('powinien mieć korzyści poziomu 4', () => {
@@ -182,8 +184,13 @@ describe('Zaktualizowane dane pochodzeń', () => {
         expect(pochodzenie).toHaveProperty('predkosc');
         expect(pochodzenie).toHaveProperty('jezyki');
         expect(pochodzenie).toHaveProperty('profesje');
-        expect(pochodzenie).toHaveProperty('cechy_specjalne');
         expect(pochodzenie).toHaveProperty('strona_zrodlowa');
+        // `cechy_specjalne` jest opcjonalne - człowiek nie ma żadnych
+        // (PG str. 12), więc wymaganie tego pola od wszystkich pochodzeń
+        // byłoby niezgodne z podręcznikiem.
+        if (pochodzenie.cechy_specjalne !== undefined) {
+          expect(typeof pochodzenie.cechy_specjalne).toBe('object');
+        }
       });
     });
 

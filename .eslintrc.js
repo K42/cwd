@@ -24,8 +24,5 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'warn',
     'prefer-template': 'warn'
-  },
-  globals: {
-    'DANE_GRY': 'readonly'
   }
 };

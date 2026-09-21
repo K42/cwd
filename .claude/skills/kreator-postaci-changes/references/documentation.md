@@ -34,9 +34,8 @@ postaci, napisz to explicite: "Brak - zmiana czysto wizualna/nawigacyjna".
 ```
 
 Ten plik jest ZAWSZE tworzony, niezależnie od tego, czy zmiana trafia też do
-`docs/APLIKACJA.md`/`README.md` (większe dokumenty opisowe aktualizuj przy
-zmianach, które faktycznie zmieniają ogólny obraz aplikacji, nie przy każdej
-drobnej poprawce).
+`README.md` (aktualizuj go przy zmianach, które faktycznie zmieniają ogólny
+obraz aplikacji, nie przy każdej drobnej poprawce).
 
 ## 2. Sekcja Pomocy w aplikacji (`src/ui/help-content.js`)
 

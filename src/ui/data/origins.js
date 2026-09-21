@@ -527,7 +527,7 @@ const ORIGINS = {
   kambion: {
     id: 'kambion',
     nazwa: 'Kambion',
-    zrodlo: 'RA', // Rozkoszna Agonia, "Tworzenie postaci: kambion" (str. 55 wg stopki PDF)
+    zrodlo: 'RA', // Rozkoszna Agonia, Rozdział 3 "Postaci z Piekła rodem" -> "Tworzenie postaci: Kambion" (str. 44 wg stopki PDF - str. 55 to okładka reklamowa innej książki na końcu PDF-a, nie treść origin-u)
     opis: 'Potomkowie diabłów i śmiertelników, naznaczeni piekielnym dziedzictwem.',
     atrybuty_bazowe: {
       sila: 10,
@@ -538,7 +538,7 @@ const ORIGINS = {
     rozmiar: '1/2 lub 1',
     predkosc: 10,
     jezyki: ['wspólny'],
-    // Rozkoszna Agonia str. 55: "Umiesz mówić w języku wspólnym." - brak
+    // Rozkoszna Agonia str. 44: "Umiesz mówić w języku wspólnym." - brak
     // dodatkowej profesji lub języka.
     profesje: [],
     cechy_specjalne: {
@@ -554,7 +554,7 @@ const ORIGINS = {
       zdrowie: '+5',
       opcje: ['1 zaklęcie', 'talent Obdarzenie splugawieniem']
     },
-    strona_zrodlowa: 55,
+    strona_zrodlowa: 44,
     status: 'kompletne'
   },
 

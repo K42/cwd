@@ -259,6 +259,24 @@ button:active {
     color: var(--info-bright);
 }
 
+/* Przypomnienie wybranego pochodzenia na górze Kroku 2 */
+.origin-summary {
+    background: var(--bg-2);
+    border-left: 4px solid var(--gold);
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: var(--radius);
+}
+
+.origin-summary h4 {
+    color: var(--gold-bright);
+    margin: 0 0 10px 0;
+}
+
+.origin-summary p {
+    margin: 6px 0;
+}
+
 .path-benefit-item {
     margin: 12px 0;
     padding-top: 10px;
@@ -300,12 +318,47 @@ button:active {
     margin: 15px 0;
 }
 
+/* Karta atrybutu w podglądzie postaci (Krok 8) - nazwa nad wartością */
 .attribute-box {
     background: var(--bg-2);
     border: 1px solid var(--border);
     padding: 10px;
     text-align: center;
     border-radius: var(--radius);
+}
+
+/* Kompaktowy wiersz atrybutu w Kroku 2 - nazwa i wartość w jednej linii */
+.attribute-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+}
+
+.attribute-display label {
+    flex: 1;
+    margin: 0;
+    font-weight: normal;
+    font-size: 0.95em;
+    color: var(--ink-dim);
+}
+
+.attribute-value {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--gold-bright);
+    text-align: right;
+    min-width: 1.4em;
+}
+
+.attribute-display .modifier {
+    font-size: 0.85em;
+    color: var(--ink-dim);
+    min-width: 2em;
+    text-align: right;
 }
 
 .error {
@@ -353,24 +406,60 @@ button:active {
     user-select: none;
 }
 
-/* Stan zwinięty */
-.origin-tile.compact {
-    padding: 15px;
-    min-height: auto;
+/* Górna część kafelka - obrazek + nagłówek/opis/atrybuty, ZAWSZE w tym samym
+   układzie flex (obrazek na pełną wysokość tej części), niezależnie od tego,
+   czy kafelek jest zwinięty czy rozwinięty. Tylko dodatkowa treść rozwinięta
+   (tabele, cechy, mechanika) wychodzi poniżej na pełną szerokość - zob.
+   .tile-content-expanded-extra. */
+.tile-top {
+    display: flex;
+    align-items: stretch;
 }
 
-.origin-tile.compact .tile-content-expanded {
+/* Miniatura pochodzenia - cała lewa strona górnej części kafelka, na pełną
+   wysokość tej części (rozciąga się razem z opisem/atrybutami, więc nigdy
+   nie zostaje puste miejsce obok niej). Bez własnego border-radius: to
+   overflow:hidden kafelka nadaje jej zaokrąglone rogi po lewej. */
+.origin-thumb {
+    width: 190px;
+    flex-shrink: 0;
+    align-self: stretch;
+    object-fit: cover;
+    background: var(--bg-1);
+}
+
+/* Reszta treści górnej części - zawsze na prawo od miniatury */
+.tile-body {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Stan zwinięty */
+.origin-tile.compact .tile-body {
+    padding: 15px;
+}
+
+.origin-tile.compact .tile-content-expanded-top,
+.origin-tile.compact .tile-content-expanded-extra {
     display: none !important;
 }
 
-/* Stan rozwinięty */
-.origin-tile.expanded {
+/* Stan rozwinięty - górna część (obrazek + opis + atrybuty) zostaje w tym
+   samym układzie co w stanie zwiniętym, tylko z dłuższym opisem. */
+.origin-tile.expanded .tile-body {
     padding: 20px;
-    min-height: 400px;
 }
 
 .origin-tile.expanded .tile-content-collapsed {
     display: none !important;
+}
+
+/* Dodatkowa treść rozwinięta (mechanika, informacje kulturowe, cechy
+   specjalne, tabele losowania, przycisk wyboru) - pod górną częścią, na
+   pełną szerokość całego kafelka, nie zwężona przez kolumnę obrazka. */
+.tile-content-expanded-extra {
+    padding: 20px;
+    border-top: 1px solid var(--border);
 }
 
 .origin-tile:hover {
@@ -401,6 +490,7 @@ button:active {
 .tile-header {
     display: flex;
     align-items: center;
+    gap: 12px;
     margin-bottom: 15px;
     position: relative;
 }
@@ -431,8 +521,10 @@ button:active {
     color: var(--ink);
 }
 
-/* Zawartość rozwinięta */
-.tile-content-expanded {
+/* Zawartość rozwinięta (obie części domyślnie skryte - JS przełącza display
+   przy rozwijaniu/zwijaniu, zob. expandTile()/collapseTile()) */
+.tile-content-expanded-top,
+.tile-content-expanded-extra {
     display: none;
 }
 
@@ -528,6 +620,22 @@ button:active {
 }
 
 .level-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--gold);
+    font-size: 18px;
+}
+
+/* Style dla sekcji obliczonych atrybutów (Krok 2) */
+.calculated-attributes {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: var(--radius-lg);
+}
+
+.calculated-attributes h4 {
     margin: 0 0 15px 0;
     color: var(--gold);
     font-size: 18px;
@@ -1899,6 +2007,40 @@ kbd {
     font-size: 1.3em;
 }
 
+/* Sekcja zwijana (np. "Korzyści Poziomu" w Kroku 2) - ten sam wzorzec co
+   akordeon ścieżek w Kroku 3: klikalny nagłówek + obracana strzałka. */
+.collapsible-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-section-header h4 {
+    margin: 0;
+}
+
+.collapsible-section-toggle-icon {
+    color: var(--gold);
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.collapsible-section.collapsed .collapsible-section-toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-section.collapsed .collapsible-section-body {
+    display: none;
+}
+
+.collapsible-section-body {
+    margin-top: 16px;
+}
+
 .benefit-category {
     background: var(--bg-2);
     border-left: 4px solid var(--info);
@@ -1951,19 +2093,94 @@ kbd {
 .magic-slot-mode-toggle {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.magic-slot-mode-toggle button {
-    flex: 1 1 auto;
-    min-width: 100px;
+/* Karty wyboru "Nowa tradycja" / "Zaklęcie" - wyraźnie odróżnione kolorem
+   lewej ramki (niebieski = tradycja, złoty = zaklęcie) i ikoną, żeby było
+   jasne na pierwszy rzut oka, która karta odpowiada za co. */
+.magic-mode-option {
+    flex: 1 1 160px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--info);
+    border-radius: var(--radius);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
 }
 
-.magic-slot-mode-toggle button.active {
-    background: var(--gold);
-    color: var(--bg-1, #1a1a1a);
-    font-weight: 600;
+.magic-mode-option .icon {
+    flex-shrink: 0;
+    font-size: 1.4em;
+    color: var(--info-bright);
+}
+
+.magic-mode-option--spell {
+    border-left-color: var(--gold);
+}
+
+.magic-mode-option--spell .icon {
+    color: var(--gold-bright);
+}
+
+.magic-mode-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.magic-mode-option-text strong {
+    font-size: 0.95em;
+}
+
+.magic-mode-option-text small {
+    font-size: 0.8em;
+    color: var(--ink-dim);
+}
+
+.magic-mode-option:hover {
+    border-color: var(--gold);
+    background: var(--bg-3);
+}
+
+.magic-mode-option.active {
+    background: linear-gradient(180deg, rgba(176, 141, 58, 0.14), var(--bg-2));
+    border-color: var(--gold-bright);
+}
+
+.magic-mode-option.active .magic-mode-option-text strong {
+    color: var(--gold-bright);
+}
+
+/* Etykieta kategorii ("Tradycja" / "Zaklęcie") nad przyciskiem wyboru w
+   kafelku magii - to samo rozróżnienie kolorem co w .magic-mode-option,
+   żeby karta z dwoma piętrami wyboru (np. tradycja + darmowe zaklęcie
+   kręgu 0) była czytelna na pierwszy rzut oka. */
+.magic-slot-picker-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1 1 100%;
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--info-bright);
+}
+
+.magic-slot-picker-label .icon {
+    font-size: 1.1em;
+}
+
+.magic-slot-picker--spell .magic-slot-picker-label {
+    color: var(--gold-bright);
 }
 
 .magic-slot-status {
@@ -1985,22 +2202,84 @@ kbd {
     font-size: 0.88em;
 }
 
+/* Krok 8 - pasek akcji na samej górze (zapis postaci, awans) */
+.final-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.final-actions-feedback {
+    font-size: 0.9em;
+    color: var(--ink-dim);
+}
+
+.final-actions-feedback.ok {
+    color: var(--success-bright);
+}
+
+.final-actions-feedback.info {
+    color: var(--gold-bright);
+}
+
+.final-actions-feedback.error {
+    color: var(--blood-bright);
+}
+
+/* Krok 8 - lista pominiętych wyborów (informacyjna, nigdy nie blokuje eksportu) */
+.missing-items-warning {
+    background: rgba(176, 141, 58, 0.10);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-lg);
+    padding: 15px 18px;
+    margin: 15px 0;
+}
+
+.missing-items-warning h4 {
+    margin: 0 0 10px 0;
+    color: var(--gold-bright);
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.missing-items-warning ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.missing-items-warning li {
+    margin: 6px 0;
+}
+
 .black-magic-roll-result {
     font-weight: 600;
 }
 
-/* Krok 4.5: przycisk otwarcia popupu + kafelek aktualnego wyboru (bez dropdownów) */
+/* Krok 4.5: przycisk otwarcia popupu + kafelek aktualnego wyboru (bez dropdownów).
+   Lewa ramka koloru kategorii (niebieski = tradycja, złoty = zaklęcie) grupuje
+   wizualnie etykietę, chip aktualnego wyboru i przycisk w jeden czytelny blok. */
 .magic-slot-picker {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: var(--bg-1);
+    border-left: 3px solid var(--info);
+    border-radius: var(--radius);
+}
+
+.magic-slot-picker--spell {
+    border-left-color: var(--gold);
 }
 
 .magic-slot-picker-secondary {
-    padding-top: 8px;
-    border-top: 1px dashed var(--border);
+    margin-top: 4px;
 }
 
 .magic-picked-chip {
@@ -2372,6 +2651,36 @@ kbd {
     z-index: 500;
 }
 
+/* Przewinięcie na górę - nad popupami (z-index > .modal-overlay), bo działa
+   także wewnątrz nich, przewijając ich treść zamiast całej strony. */
+.scroll-top-btn {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1100;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    font-size: 1.1em;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.1s;
+    padding: 0;
+}
+
+.scroll-top-btn:hover, .scroll-top-btn:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    transform: scale(1.08);
+}
+
 .side-menu-btn {
     width: 44px;
     height: 44px;
@@ -2423,6 +2732,22 @@ kbd {
        nie zasłaniało przycisków "Wstecz"/"Dalej" na dole każdego kroku. */
     .step-navigation {
         margin-bottom: 70px;
+    }
+
+    /* Na wąskich ekranach boczne menu leży na dole - przesuń przycisk
+       przewijania wyżej, żeby się z nim nie nakładał. */
+    .scroll-top-btn {
+        bottom: 74px;
+    }
+
+    .origin-thumb {
+        width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .origin-thumb {
+        width: 88px;
     }
 }
 
