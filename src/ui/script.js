@@ -2600,10 +2600,126 @@ function generateCardCharacterHtml() {
  */
 function updatePreviewCharacter() {
   if (!selectedOrigin) return;
+  renderMissingItemsWarning();
   const container = document.getElementById('character-preview');
   if (!container) return;
   const title = characterName ? `Podgląd Postaci: ${characterName}` : 'Podgląd Postaci';
   container.innerHTML = `<h4>${icon('scroll')} ${title}</h4>${generateCardCharacterHtml()}`;
+}
+
+/**
+ * Sprawdza wybory, które w tej aplikacji nigdzie nie są wymuszone (Kroki 6
+ * i 7 są w pełni opcjonalne z punktu widzenia nawigacji, a Krok 2 ma kilka
+ * pomocniczych wyborów bez blokady "Dalej"), a które w praktyce są ważne
+ * dla kompletności postaci wg podręcznika. Wywoływana wyłącznie do
+ * poinformowania gracza w Kroku 8 - nigdy do blokowania nawigacji między
+ * krokami.
+ * @returns {string[]} lista opisów brakujących elementów (pusta = nic nie brakuje)
+ */
+function calculateMissingItems() {
+  if (!selectedOrigin) return [];
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return [];
+
+  const missing = [];
+
+  // Ścieżki (Krok 3)
+  if (selectedLevel >= 1 && !selectedPaths.nowicjusz) {
+    missing.push('Nie wybrano ścieżki nowicjusza (Krok 3).');
+  }
+  if (selectedLevel >= 3 && !selectedPaths.ekspert) {
+    missing.push('Nie wybrano ścieżki eksperckiej (Krok 3).');
+  }
+  if (selectedLevel >= 7 && !selectedPaths.mistrz) {
+    missing.push('Nie wybrano ścieżki mistrzowskiej (Krok 3).');
+  }
+
+  // Bonus do atrybutu z pochodzenia (Krok 2, np. Człowiek +1, Elf +1 i +1)
+  if (pochodzenie.wybor_atrybutu && getSelectedAttributesBonus().length < pochodzenie.wybor_atrybutu.ilosc) {
+    missing.push(`Nie wybrano bonusu do atrybutu z pochodzenia ${pochodzenie.nazwa} (Krok 2).`);
+  }
+
+  // Atrybuty główne do rozdania (Krok 4)
+  const slotsAttr = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+  if (!slotsAttr.every(slotAttributesComplete)) {
+    missing.push('Nie rozdano wszystkich punktów zwiększenia atrybutów głównych (Krok 4).');
+  }
+
+  // Korzyść z Pochodzenia na poziomie 4 (Krok 2)
+  if (selectedLevel >= 4 && pochodzenie.poziom_4?.opcje?.length > 0 && !getCurrentSelectedLevel4Option()) {
+    missing.push('Nie wybrano korzyści z pochodzenia na poziomie 4 (Krok 2, sekcja "Korzyści z Pochodzenia").');
+  }
+
+  // Srebrniki za poziom (Krok 2, sekcja "Zasoby")
+  if (selectedLevel > 0 && randomizedSilver === null) {
+    missing.push('Nie wylosowano srebrników za poziom (Krok 2, sekcja "Zasoby na wyższym poziomie").');
+  }
+
+  // Profesje i języki (Krok 5)
+  const { slots } = calculateSlotsCharacter();
+  if (!slots.every(slot => slotAnswerComplete(slot))) {
+    missing.push('Nie wszystkie sloty profesji/języków są wypełnione (Krok 5).');
+  }
+
+  // Kurioza (Krok 5)
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length < kurioza) {
+    missing.push(`Nie wybrano wszystkich kuriozów (${selectedCurios.length}/${kurioza}) (Krok 5).`);
+  }
+
+  // Magia (Krok 6) - tylko jeśli pochodzenie/ścieżki faktycznie coś przyznają
+  const atomsMagic = getCurrentAtomsMagic();
+  if (atomsMagic.length > 0) {
+    const { resolutions } = calculateResolutionMagic(atomsMagic, magicChoices);
+    if (resolutions.some(r => !r.complete)) {
+      missing.push('Postać ma nierozwiązane wybory magii - tradycje lub zaklęcia (Krok 6).');
+    }
+  }
+
+  // Zamożność i wyposażenie startowe (Krok 7)
+  if (!equipmentWealthId) {
+    missing.push('Nie wybrano Zamożności - postać nie ma wyposażenia startowego (Krok 7).');
+  } else {
+    const incompleteGear = calculateAtomsGear(equipmentWealthId).some(atom => {
+      const wybor = equipmentChoices[atom.id];
+      if (atom.rodzaj === 'wybor_przedmiotu') return !wybor?.itemId;
+      if (!wybor) return true;
+      if (wybor.typ === 'zwoj_zaklecie') return !wybor.spellId;
+      if (wybor.typ === 'przedmiot') return !wybor.itemId;
+      return false;
+    });
+    if (incompleteGear) {
+      missing.push('Nie dokonano wszystkich wyborów wyposażenia startowego (Krok 7).');
+    }
+  }
+
+  return missing;
+}
+
+/**
+ * Renderuje na górze Kroku 8 listę rzeczy, które gracz mógł przeoczyć (zob.
+ * calculateMissingItems()) - czysto informacyjnie, nie blokuje eksportu.
+ */
+function renderMissingItemsWarning() {
+  const container = document.getElementById('missing-items-warning');
+  if (!container) return;
+
+  const missing = calculateMissingItems();
+  if (missing.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="missing-items-warning">
+      <h4>${icon('warning')} Możliwe przeoczenia</h4>
+      <ul>${missing.map(item => `<li>${item}</li>`).join('')}</ul>
+    </div>
+  `;
 }
 
 // ========== AC-016: Obsługa Korzyści Poziomu ==========
@@ -5410,6 +5526,8 @@ function newCharacter() {
   renderEquipmentSection();
   const importFeedback = document.getElementById('import-feedback');
   if (importFeedback) importFeedback.innerHTML = '';
+  const missingItemsWarning = document.getElementById('missing-items-warning');
+  if (missingItemsWarning) missingItemsWarning.innerHTML = '';
   currentSaveCacheId = null;
   characterName = '';
   const nameInput = document.getElementById('character-name');

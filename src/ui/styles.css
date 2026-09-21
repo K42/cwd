@@ -2093,6 +2093,33 @@ kbd {
     font-size: 0.88em;
 }
 
+/* Krok 8 - lista pominiętych wyborów (informacyjna, nigdy nie blokuje eksportu) */
+.missing-items-warning {
+    background: rgba(176, 141, 58, 0.10);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-lg);
+    padding: 15px 18px;
+    margin: 15px 0;
+}
+
+.missing-items-warning h4 {
+    margin: 0 0 10px 0;
+    color: var(--gold-bright);
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.missing-items-warning ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.missing-items-warning li {
+    margin: 6px 0;
+}
+
 .black-magic-roll-result {
     font-weight: 600;
 }
