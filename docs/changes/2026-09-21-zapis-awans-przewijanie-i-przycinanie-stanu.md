@@ -33,10 +33,16 @@ Podnosi poziom o 1 (maksimum 10 - tam kończy się Tabela Rozwoju w PG), a
 potem wypisuje, co nowy poziom daje do wybrania. Korzysta z tej samej listy
 `calculateMissingItems()`, co "Możliwe przeoczenia" - nie było potrzeby
 tworzenia osobnych komunikatów, bo lista już pokrywa wszystkie przypadki
-(nowa ścieżka, punkty atrybutów, kurioza, srebrniki, magia, korzyść z
-pochodzenia). Komunikat obok przycisku podsumowuje liczbę pozycji albo mówi
-wprost, że nowy poziom nie wymaga żadnych wyborów; osobny komunikat obsługuje
-próbę awansu powyżej 10 poziomu.
+(nowa ścieżka, punkty atrybutów, kurioza, magia, korzyść z pochodzenia).
+Komunikat obok przycisku podsumowuje liczbę pozycji albo mówi wprost, że nowy
+poziom nie wymaga żadnych wyborów; osobny komunikat obsługuje próbę awansu
+powyżej 10 poziomu.
+
+Awans **nie zeruje wylosowanych srebrników** (`applyLevelChange()` dostaje
+`keepSilverRoll: true`), w odróżnieniu od ręcznej zmiany poziomu w Kroku 2.
+Założenie: awans dotyczy postaci już używanej w grze, która po prostu ma swój
+majątek, a nie tworzonej od zera postaci bazowej - nie ma więc powodu kazać
+graczowi przerzucać pieniędzy przy każdym poziomie.
 
 ### 3. Zwijana sekcja "Korzyści Poziomu" (Krok 2), domyślnie zwinięta
 
@@ -75,9 +81,10 @@ odświeżeniem UI woła ona `pruneStateForLevel()`, które usuwa:
 4. kurioza ponad limit nowego poziomu,
 5. zaznaczoną opcję korzyści z pochodzenia, gdy poziom spadnie poniżej 4,
 6. wybory i rzuty ryzyka magii dla korzyści, których już nie ma,
-7. wylosowane srebrniki (ich liczba to 2k6 za każdy poziom, więc po zmianie
-   poziomu stary rzut nie pasuje i trzeba go powtórzyć - brak rzutu wypisuje
-   lista "Możliwe przeoczenia").
+7. wylosowane srebrniki (ich liczba to 2k6 za każdy poziom, więc po ręcznej
+   zmianie poziomu stary rzut nie pasuje i trzeba go powtórzyć - brak rzutu
+   wypisuje lista "Możliwe przeoczenia"). Wyjątkiem jest awans, który
+   zostawia srebrniki nietknięte (`keepSilverRoll`, zob. punkt 2).
 
 **Naprawiony przy okazji:** `updateOriginBenefitsContent()` przebudowywało
 radiobuttony korzyści z poziomu 4 bez zaznaczenia, więc **każda** zmiana
@@ -108,6 +115,10 @@ ustawień we wcześniejszych krokach.
     listą braków; wybrana korzyść z poziomu 4 ("1 zaklęcie") **przetrwała**
     awans (regresja naprawionego błędu); seria awansów dochodzi do 10 i
     dalsze kliknięcie zwraca komunikat o maksimum.
+  - Srebrniki: postać z wylosowanymi 34 srebrnikami po awansie 5 → 6 ma
+    nadal 34 srebrniki i **żadnego** wpisu o losowaniu na liście braków,
+    natomiast po ręcznej zmianie poziomu 6 → 3 w Kroku 2 rzut jest zerowany
+    ("Srebrniki: 0 (nie wylosowano)") i wpis wraca na listę.
   - Zejście z poziomu 7 na 2: znikają ścieżki ekspercka i mistrzowska, sloty
     atrybutów spadają z 15 do 5 elementów (zostaje tylko slot nowicjusza),
     kurioza z 4 na 2, opcja poziomu 4 wyczyszczona, srebrniki wyzerowane, a
