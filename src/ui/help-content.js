@@ -118,6 +118,8 @@ function getStartContent() {
       </div>
       <p>Ostatni krok pokazuje kompletną kartę postaci ze wszystkimi wybranymi opcjami:</p>
       <ul>
+        <li>Przycisk <strong>"<svg class="icon"><use href="#icon-folder"></use></svg> Zapisz postać"</strong> na samej górze zapisuje postać w pamięci przeglądarki - zawsze w tym samym miejscu, więc kolejne zapisy nadpisują ten sam wpis zamiast tworzyć kopie. Przycisk jest aktywny tylko wtedy, gdy od ostatniego zapisu coś się zmieniło; obok widać stan zapisu.</li>
+        <li>Przycisk <strong>"<svg class="icon"><use href="#icon-bolt"></use></svg> Awans"</strong> podnosi poziom postaci o 1 (maksimum to 10) i od razu wypisuje, co trzeba wybrać na nowym poziomie - nową ścieżkę, punkty atrybutów, kurioza, srebrniki czy magię. To ta sama lista, co "Możliwe przeoczenia" niżej.</li>
         <li>Jeśli coś zostało pominięte (np. bonus do atrybutu z pochodzenia, korzyść z pochodzenia na poziomie 4, losowanie srebrników, wybór ścieżki, magii albo Zamożności/wyposażenia), na samej górze zobaczysz listę <strong>"Możliwe przeoczenia"</strong> - to tylko informacja, nic nie blokuje; możesz wrócić do wskazanego kroku albo zignorować listę, jeśli dany element rzeczywiście ma być pusty</li>
         <li>Możesz opcjonalnie wpisać <strong>imię postaci</strong> - trafia do nagłówka podglądu, do eksportu (i jest odtwarzane przy imporcie), a jeśli je wypełnisz, zostanie też użyte w nazwie eksportowanego pliku (zamiast pochodzenia)</li>
         <li>Podgląd aktualizuje się na bieżąco - nie trzeba niczego "zatwierdzać"</li>
@@ -136,11 +138,11 @@ function getStartContent() {
 
     <h4><svg class="icon"><use href="#icon-folder"></use></svg> Zapis w pamięci przeglądarki</h4>
 
-    <p>Niezależnie od eksportu do pliku JSON kreator zapisuje postać sam:</p>
+    <p>Niezależnie od eksportu do pliku JSON możesz trzymać postać w pamięci przeglądarki:</p>
     <ul>
-      <li>Zapis następuje automatycznie za każdym razem, gdy dotrzesz do Kroku 8 (Podgląd), a także przy imporcie postaci z pliku.</li>
+      <li>Zapis powstaje po kliknięciu <strong>"Zapisz postać"</strong> w Kroku 8 (Podgląd) - samo zajrzenie do podsumowania niczego nie nadpisuje. Wyjątkiem jest import postaci z pliku, który od razu tworzy zapis.</li>
       <li>Dalsze zmiany tej samej postaci nadpisują ten sam wpis, zamiast tworzyć kolejne kopie.</li>
-      <li>Zapisane postacie otwierasz przyciskiem <strong>"Wczytaj postać"</strong> w bocznym menu - lista pokazuje pochodzenie, poziom i datę zapisu.</li>
+      <li>Zapisane postacie otwierasz przyciskiem <strong>"Wczytaj postać"</strong> w bocznym menu - lista pokazuje imię (jeśli je wpisałeś), pochodzenie, poziom i datę zapisu.</li>
       <li>Przycisk <strong>"Wyczyść pamięć przeglądarki"</strong> w tym oknie kasuje wszystkie zapisane postacie naraz. Tej operacji nie da się cofnąć, więc kreator prosi o potwierdzenie.</li>
     </ul>
 
