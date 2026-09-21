@@ -1634,8 +1634,13 @@ function showStep(stepNumber) {
 function saveCurrentCharacterToCache() {
   const data = buildExportData();
   if (!data) return false;
-  if (!currentSaveCacheId) currentSaveCacheId = generateSaveId();
-  saveCharacterToCache(currentSaveCacheId, data);
+  const id = currentSaveCacheId || generateSaveId();
+  // zapiszPostacDoCache() zwraca false, gdy localStorage odmówi zapisu
+  // (przepełniony limit, tryb prywatny, zablokowane dane witryny). Bez
+  // sprawdzenia tego wyniku postać byłaby oznaczona jako zapisana, mimo że
+  // w pamięci przeglądarki nic nie wylądowało.
+  if (!saveCharacterToCache(id, data)) return false;
+  currentSaveCacheId = id;
   lastSavedSnapshot = snapshotForComparison(data);
   return true;
 }
@@ -1691,7 +1696,16 @@ function saveCharacterOnDemand() {
     updateSaveButtonState();
     return;
   }
-  if (!saveCurrentCharacterToCache()) return;
+  if (!saveCurrentCharacterToCache()) {
+    // Zapis się nie udał - przycisk zostaje aktywny, a stan "niezapisane
+    // zmiany" nietknięty, żeby gracz nie stracił postaci w przekonaniu, że
+    // jest bezpieczna. Eksport do JSON działa niezależnie od localStorage.
+    if (feedback) {
+      feedback.className = 'final-actions-feedback error';
+      feedback.innerHTML = `${icon('warning')} Nie udało się zapisać w pamięci przeglądarki (może być pełna albo zablokowana). Użyj "Eksportuj do JSON", żeby nie stracić postaci.`;
+    }
+    return;
+  }
   updateSaveButtonState();
   if (feedback) {
     feedback.className = 'final-actions-feedback ok';
@@ -3768,11 +3782,18 @@ function handleFileImport(file) {
       await importCharacter(data);
       // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
       // id - dalsze zmiany trafią do tego samego zapisu po kliknięciu
-      // "Zapisz postać" w Kroku 8 (zob. zapiszPostacNaZadanie()).
-      currentSaveCacheId = generateSaveId();
-      saveCharacterToCache(currentSaveCacheId, data);
-      lastSavedSnapshot = snapshotForComparison(data);
-      showImportMessage('success', `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
+      // "Zapisz postać" w Kroku 8 (zob. zapiszPostacNaZadanie()). Gdy
+      // localStorage odmówi zapisu, sam import i tak się udał, więc mówimy
+      // o tym wprost zamiast udawać, że postać jest już w pamięci.
+      const nowyId = generateSaveId();
+      const zapisano = saveCharacterToCache(nowyId, data);
+      if (zapisano) {
+        currentSaveCacheId = nowyId;
+        lastSavedSnapshot = snapshotForComparison(data);
+      }
+      showImportMessage('success', zapisano
+        ? `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`
+        : `${icon('check')} Postać została pomyślnie zaimportowana, ale nie udało się jej zapisać w pamięci przeglądarki (może być pełna albo zablokowana) - pracujesz na danych z pliku.`);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Błąd importu postaci:', err);

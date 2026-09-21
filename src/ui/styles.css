@@ -2224,6 +2224,10 @@ kbd {
     color: var(--gold-bright);
 }
 
+.final-actions-feedback.error {
+    color: var(--blood-bright);
+}
+
 /* Krok 8 - lista pominiętych wyborów (informacyjna, nigdy nie blokuje eksportu) */
 .missing-items-warning {
     background: rgba(176, 141, 58, 0.10);
