@@ -1113,54 +1113,56 @@ function generateTilesOrigins(pochodzenia) {
  */
 function createShortCollapsedDescription(pochodzenie) {
   const descriptions = {
-    'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach.',
-    'automaton': 'Mechaniczne istoty stworzone przez dawnych magów.',
-    'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości.',
-    'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła.',
-    'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach.',
-    'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki.',
-    'faun': 'Leśne istoty o kozich nogach związane z naturą.',
-    'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu.',
-    'chochlik': 'Maleńkie istoty magiczne znane z psot.',
-    'elf': 'Długowieczne istoty o niezwykłej urodzie.',
-    'hobgoblin': 'Większe i bardziej wojownicze niż gobliny.',
-    'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie.',
-    'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły.',
-    'warg': 'Wilcze istoty o niezwykłej zwinności.',
-    'inkarnacja': 'Istoty wcielone z innych płaszczyzn.',
-    'kambion': 'Potomkowie demonów o mrocznych mocach.',
-    'jotunn': 'Potężni giganci z północnych krain.'
+    'czlowiek': 'Wszechstronni, zaradni i niezwykle liczni, ludzie zdominowali świat mimo prymitywnych początków, osiedlając się od gór po pustkowia.',
+    'automaton': 'Mechaniczne istoty złożone z blachy, śrub i trybów, ożywione duszami wyrwanymi z Zaświatów.',
+    'goblin': 'Wygnane przez Królową Faerie z krainy nieśmiertelnych, drobne i przemyślne istoty żyjące na śmietniskach i w kanałach ludzkich miast.',
+    'krasnolud': 'Krzepcy, nieufni górnicy i rzemieślnicy mieszkający w wykutych w skale miastach, gdzie strzegą swoich skarbców przed siłami cienia.',
+    'odmieniec': 'Magiczne podrzutki stworzone przez faerie, by ukryć porwanie ludzkiego dziecka, czasem żyjące na tyle długo, by stać się naprawdę sobą.',
+    'ork': 'Stworzeni czarną magią z pojmanych jotunów żołnierze Imperium, którzy niedawno powstali przeciw swoim panom i utopili tron we krwi.',
+    'faun': 'Potomkowie ludzi dotknięci magią faerie, o kozich nogach i rogach, nienależący w pełni ani do świata śmiertelników, ani do Pięknego Ludu.',
+    'niziol': 'Niewielcy, pełni szczęścia osadnicy, których niewzruszona nieustraszoność wynika z wiary, że obecne życie jest tylko jednym z wielu.',
+    'chochlik': 'Maleńkie, naturalnie niewidzialne faerie-psotniki, które dla zabawy płatają figle znacznie większym od siebie istotom.',
+    'elf': 'Nieśmiertelni panowie i damy krain faerie, którzy z rzadka miewają potomstwo i dlatego czasem porywają śmiertelne dzieci.',
+    'hobgoblin': 'Identyczni co do centymetra żołnierze stworzeni przez faerie z goblinów odartych z nieśmiertelności, wierzący, że wszyscy dzielą jedną duszę.',
+    'fomor': 'Najbardziej ludzkie z zwierzoludzi, kozłogłowe istoty poniewierane przez własnych, silniejszych pobratymców jako mięso armatnie.',
+    'niedzwiedziadlo': 'Potężne, niedźwiedziopodobne zwierzoludzie o niezwykłej sile, których najgroźniejsi łowcy głów zdobią pasy trofeami wrogów.',
+    'warg': 'Zaciekłe, wilczogłowe zwierzoludzie służące jako brutalna siła napędowa armii, gotowe mordować równie chętnie sojuszników, co wrogów.',
+    'inkarnacja': 'Bezcielesne fragmenty dawnych dżinnów, które zatraciły własną osobowość, wplatając swoje jestestwo w barierę chroniącą świat przed demonami.',
+    'kambion': 'Potomkowie diabłów i ludzi skazani na Piekło od chwili narodzin, choć niektórzy walczą z mrokiem czającym się w ich sercach.',
+    'jotunn': 'Olbrzymi z Mroźnego Bezdroża, którzy przez stulecia czekali na zemstę za niewolę i za przodków obróconych w orków.'
   };
-    
+
   return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
 /**
- * Tworzy rozszerzony opis pochodzenia (3 zdania) dla stanu rozwiniętego
+ * Tworzy rozszerzony opis pochodzenia dla stanu rozwiniętego - kilka zdań
+ * osnutych wokół konkretnych ciekawostek zaczerpniętych z podręczników
+ * (nie ogólnikowych fantasy sztampek), zachowujących ich ponury, surowy ton.
  * @param {Object} pochodzenie - Obiekt pochodzenia
  * @returns {string} Rozszerzony opis
  */
 function createExtendedDescription(pochodzenie) {
   const descriptions = {
-    'czlowiek': 'Wszechstronni i ambitni, dominują w cywilizowanych krainach. Mogą wybrać dowolną profesję i szybko dostosowują się do nowych wyzwań. Ich społeczeństwa opierają się na handlu, wiedzy i eksploracji.',
-    'automaton': 'Mechaniczne istoty stworzone przez dawnych magów, poszukujące własnej tożsamości. Nie oddychają, nie śpią i są odporne na choroby oraz trucizny. Zbudowane z metalu i magii, wykazują zdolności analityczne i precyzyjne wykonanie zadań.',
-    'goblin': 'Małe, zwinne istoty o wielkiej przebiegłości, znane z zamiłowania do mechaniki i psot. Gobliny tworzą skomplikowane urządzenia z dostępnych materiałów, często niebezpieczne i nieprzewidywalne. Ich społeczeństwa opierają się na hierarchii opartej na wynalazczości i sprycie.',
-    'krasnolud': 'Krzepcy i uparci mistrzowie rzemiosła, odporni na magię i posiadający widzenie w ciemności. Ich długowieczność pozwala im doskonalić umiejętności przez wieki, tworząc arcydzieła metalurgii i kamieniarstwa. Krasnoludy cenią tradycję, honor i solidną pracę.',
-    'odmieniec': 'Istoty zmienione przez magię o niezwykłych mocach, posiadające częściową odporność na efekty magiczne. Odmieniący często wyglądają inaczej niż ich przodkowie, zyskując fizyczne i magiczne zdolności. Ich społeczeństwa są tolerancyjne wobec różnorodności, ale niektórzy postrzegają ich jako zagrożenie.',
-    'ork': 'Wojownicze istoty o wielkiej sile i zamiłowaniu do walki, mogące wpadać w szał bojowy. Orki organizują się w klany oparte na hierarchii wojennej, gdzie pozycja zależy od umiejętności bojowych. Mimo dzikiej reputacji, potrafią być lojalnymi sojusznikami i mądrymi strategami.',
-    'faun': 'Leśne istoty o kozich nogach związane z naturą, potrafiące porozumiewać się ze zwierzętami. Fauny żyją w harmonii z przyrodą i są strażnikami lasów. Ich społeczeństwa są egalitarne i oparte na szacunku dla naturalnego porządku.',
-    'niziol': 'Małe, zwinne istoty znane z zamiłowania do komfortu, posiadające naturalne szczęście i zwinność. Nizioły są mistrzami architektury i inżynierii, tworząc imponujące konstrukcje. Ich społeczeństwa cenią współpracę, uczciwość i dbałość o szczegóły.',
-    'chochlik': 'Maleńkie istoty magiczne znane z psot, mogące latać i mające dostęp do chaotycznych zaklęć. Chochliki uwielbiają żarty i psikusy, ale potrafią być niezwykle pomocne. Ich mały rozmiar kompensują sprytem, magią i umiejętnością ukrywania się.',
-    'elf': 'Długowieczne istoty o niezwykłej urodzie, posiadające zdolności magiczne i widzenie w ciemności. Ich społeczeństwa są zorganizowane wokół magii i sztuki, żyjąc w harmonii z naturą. Elfy posiadają głęboką wiedzę o starożytnych tajemnicach i są mistrzami w dziedzinie łuku i magii.',
-    'hobgoblin': 'Większe i bardziej wojownicze niż gobliny, znane z dyscypliny bojowej i odporności na strach. Hobgobliny organizują się w struktury wojskowe, ceniąc dyscyplinę, strategię i taktykę. Ich społeczeństwa są hierarchiczne i oparte na zasadach wojskowych, z silnym naciskiem na honor i lojalność.',
-    'fomor': 'Potworne istoty z głębin o przerażającym wyglądzie, mogące oddychać pod wodą i mające mroczne moce. Fomory często mają zdeformowane ciała i umysły, ale potężne zdolności magiczne. Ich społeczeństwa są chaotyczne i oparte na sile, gdzie tylko najsilniejsi przetrwają.',
-    'niedzwiedziadlo': 'Istoty o niedźwiedzim wyglądzie znane z siły, posiadające naturalne pazury i mogące hibernować. Niedźwiedziadła żyją w surowym środowisku gór i lasów, gdzie ich siła i wytrzymałość są kluczowe. Ich społeczeństwa opierają się na hierarchii siły i szacunku dla natury.',
-    'warg': 'Wilcze istoty o niezwykłej zwinności, mające wyczulone zmysły i zdolności tropienia. Wargowie żyją w stadach, gdzie współpraca i komunikacja są kluczowe dla przetrwania. Ich społeczeństwa są oparte na lojalności wobec stada i szacunku dla hierarchii.',
-    'inkarnacja': 'Istoty wcielone z innych płaszczyzn, posiadające zdolności płaszczyznowe i odporność na magię. Inkarnacje mogą przybierać różne kształty, dostosowując się do potrzeb sytuacji. Ich społeczeństwa są płynne i adaptacyjne, gdzie tożsamość może być zmienna.',
-    'kambion': 'Potomkowie demonów o mrocznych mocach, odporni na ogień i mogący wywołać strach u wrogów. Kambionowie często czują się wyobcowani, nie należąc w pełni do żadnego świata. Ich społeczeństwa są tajemne i oparte na wzajemnym wsparciu w obliczu prześladowań.',
-    'jotunn': 'Potężni giganci z północnych krain, znani z siły, honoru bojowego i odporności na zimno. Jotunowie żyją w surowym środowisku, gdzie ich rozmiar i wytrzymałość są kluczowe. Ich społeczeństwa opierają się na tradycji, honorze i szacunku dla siły naturalnej.'
+    'czlowiek': 'Determinacja, zaradność i sama liczebność sprawiły, że ludzkość stała się największą i najbardziej rozprzestrzenioną populacją świata, a jej osady spotyka się od gór po moczary i pustkowia. Kolory skóry ludzi bywają zielone, niebieskie czy różowe, a wzrost i waga wahają się od 1 do ponad 2 metrów i od 25 do ponad 250 kilogramów. W plemiennej kulturze siła tkwi we wspólnocie, co bywa źródłem potęgi, ale też zarzewiem konfliktów między rywalizującymi grupami.',
+    'automaton': 'Automatony zbudowano z blachy, śrub, drutów, sprężyn i trybów, a ożywia je magia wiążąca z ciałem duszę wyrwaną z Zaświatów - działa ona jednak tylko, gdy pracują wewnętrzne mechanizmy. Każdy nosi gdzieś na ciele klucz, którym trzeba go nakręcić; gdy mechanizm stanie, automaton zapada w uśpienie i staje się bezdusznym przedmiotem. Imię zwykle nadaje im stwórca, choć niektóre wybierają je same, opierając się na wspomnieniach duszy zamkniętej w ich wnętrzu.',
+    'goblin': 'Dawno temu Królowa Faerie odebrała goblinom nieśmiertelność i wygnała ich do świata śmiertelników za przewinienia, które dziś pamięta już tylko ona. Żaden goblin nie wygląda jak drugi - świńskie ryje, wydatne kły, rogi czy wędrujące po ciele brodawki to tylko część ich fizycznych dziwactw. Wiele z nich ma przy tym osobliwe zwyczaje, jak przechowywanie obciętych paznokci w słoikach, by żadna wiedźma nie ukradła im imienia.',
+    'krasnolud': 'Krasnoludy żyją w okazałych miastach wydrążonych pod górami, skąd wypuszczają się na wyprawy w głąb ziemi po złoto i srebro, które potem chomikują w wielkich skarbcach. Zarówno mężczyźni, jak i kobiety noszą wymyślne brody zaplatane w symbole klanów i zdobione srebrnymi pierścieniami. Gburowate i podejrzliwe z natury, powstrzymują własną chciwość przekonaniem, że nieustannie obserwują je duchy przodków - dlatego cenią honor nad wszystko, by nie przynieść wstydu swojemu klanowi.',
+    'odmieniec': 'Faerie tworzą odmieńców z ożywionej magią ziemi, patyków i kamieni, by nadać im wygląd dziecka, które właśnie porwały - czar zwykle trwa tylko kilka tygodni, choć zdarza się, że utrzymuje się na tyle długo, że podrzutek wyrasta na prawdziwą osobę. Odarci z przebrania, odmieńcy mają pozbawione rysów twarze bez cech szczególnych, z wyjątkiem świecących zielono oczu. Ciągłe przybieranie cudzych tożsamości niszczy ich własną osobowość do tego stopnia, że wielu z nich nie pamięta, kim właściwie jest ani kim chciałoby być.',
+    'ork': 'Parający się czarną magią czarodzieje Imperium stworzyli orków z pojmanych jotunów sprowadzonych na sąd przed Alabastrowy Tron, odzierając tych dumnych wojowników z człowieczeństwa mrocznymi zaklęciami - dlatego w żyłach orków wciąż płynie krew olbrzymów. Po stuleciach niewolniczej służby orki powstały przeciw swoim panom; plotki głoszą, że ich król Katorżnik gołymi rękami udusił cesarza. Ich plamista skóra, poznaczona bliznami i pęcherzami po wadliwej magii, w połączeniu z bestialskimi rysami twarzy budzi grozę na polach bitew całego Imperium.',
+    'faun': 'Fauny zawdzięczają swój wygląd - kudłate nogi, kopyta i drobne rogi - domieszce krwi faerie lub śladom ich magii, nie zaś demonicznemu splugawieniu jak u zwierzoludzi, z którymi bywają mylone. Pośród Pięknego Ludu mają niski status błaznów, posłańców i zabawek dla elfich panów, dlatego wiele z nich żyje na mglistych granicach ukrytych królestw albo ucieka w odosobnione ludzkie osady. Ich ciekawość bywa zgubna, bo niektórzy podli magowie płacą wysoką cenę za faunią krew.',
+    'niziol': 'Niziołczy osadnicy przybyli do Imperium około sześciuset lat temu z zachodu, zawierając pokój z lokalnymi władcami i płacąc za ziemię złotymi monetami o niecodziennym biciu - w zamian zachowali wolność w zarządzaniu własnymi sprawami. Wierzą, że obecne życie jest tylko jednym z wielu, co czyni ich niemal nieczułymi na strach i sprawia, że rzadko popełniają krytyczne błędy - inni odczytują to jako niezwykłe szczęście, a niektóre skażone mrokiem dusze trzymają niziołki jako żywe amulety na fart. Powstanie orków na południu zaczęło jednak niszczyć ich sielskie ziemie, zmuszając coraz więcej niziołków do szukania nowego, bezpieczniejszego domu.',
+    'chochlik': 'Chochliki są naturalnie niewidzialne dla większości stworzeń - widzą je tylko dzieci, zwierzęta i istoty owładnięte szaleństwem, a samą zdolność tracą na chwilę w południe, o północy oraz o świcie i zmierzchu. Uwielbiają płatać figle, od podkradania drobiazgów po sprowadzanie drwali na obozowiska zwierzoludzi, tylko by zobaczyć, co się stanie. Ich mały wzrost i słodki głos bywają zgubne - bezwzględne gobliny czasem więzią je w klatkach, by sprzedać jako składnik mrocznych inkantacji.',
+    'elf': 'Elfy żyją wiecznie, o ile nie padną ofiarą przemocy lub katastrofy, a gdy dorosną, przestają się starzeć i zachowują niezmienną postać aż do śmierci. Mając potomstwo raz lub dwa razy w całym swoim życiu, niekiedy porywają śmiertelne dzieci i wychowują je przez kilka lat - jeśli dziecko okaże się zbyt prostackie, porzucają je własnemu, okrutnemu losowi. Swoich prawdziwych imion strzegą w tajemnicy, przyjmując na co dzień przydomki takie jak Księżyc na Nocnym Niebie czy Zimowy Dech, by żaden wścibski śmiertelnik nie zdołał ich przyzwać.',
+    'hobgoblin': 'Wysokie faerie stworzyły hobgobliny z goblinów, odbierając im nieśmiertelność i obdarzając siłą oraz odwagą potrzebną żołnierzom - w efekcie każdy hobgoblin mierzy dokładnie 164 centymetry i waży 75,3 kilograma, niezależnie od tego, jak dużo lub jak mało zjada. Wierzą, że wszyscy dzielą jedną duszę, więc nie boją się śmierci, dopóki żyje choć jeden z ich rodu, i przywołują imiona swoich panów - Królowej Faerie, Króla Goblinów czy Księcia Drozdów - gdy są zaskoczeni lub wściekli. Ich imię składa się z trzech liczb wyliczanych z imion przodków, a na co dzień zwracają się do siebie ostatnią z nich.',
+    'fomor': 'Fomory stanowią większość armii zwierzoludzi, ale wargi traktują je jak mięso armatnie, biczując, by szły na czele szarży - ich krótkie, pełne grozy życie kończą zwykle albo wrogowie, albo własni pobratymcy, którzy z nudy je torturują lub zjadają, gdy nie ma nic innego pod ręką. Mierzą około półtora metra i mają w większości ludzkie ciała, jeśli nie liczyć kozich głów z rogami i wyłupiastych oczu, a swoje słabe zbroje wykonują ze skóry ofiar. Mimo swojej pozycji na dole hierarchii są zdolne do tej samej okrutnej zaciekłości co inni zwierzoludzie.',
+    'niedzwiedziadlo': 'Niedźwiedzidła wyróżniają się wśród zwierzoludzi niezwykłą siłą i umiejętnością pochwycenia przeciwnika bez poświęcania na to akcji w walce. Najniebezpieczniejsze z nich, znane jako łowcy głów, ucinają głowy pokonanych wrogów i przywiązują je do pasa za włosy, często współpracując z armiami zwierzoludzi w zamian za najwyborniejszych niewolników. Podobnie jak inne istoty tego rodzaju, mówią mroczną mową i noszą ciężkie, utwardzone skórznie zdarte z ofiar.',
+    'warg': 'Wargi poganiają słabszych pobratymców szczeknięciami i pogróżkami, a na wrogów opadają, szarpiąc ich na strzępy - wielu z nich spędza tyle samo czasu, mordując niewinnych, co szlachtując własnych sojuszników, którzy wejdą im w drogę. Ich humanoidalne ciała pokrywa nierówne, zwykle brązowe futro, a wilcze pyski pełne są ostrych zębów przydatnych do rozdzierania mięsa; nie dbając o własny ekwipunek, po każdej bitwie przetrząsają ciała ofiar w poszukiwaniu zamienników. Berserkowie pośród nich, gdy nie walczą, ryją sobie w skórze wzory połamanymi kośćmi zabitych wrogów.',
+    'inkarnacja': 'Inkarnacje powstały, gdy liczne dżinny poświęciły się, by wykuć niewidzialną barierę odporną na demoniczne najazdy, i wplotły w nią swoje jestestwo tak głęboko, że zatraciły pamięć o tym, kim niegdyś były. Nie mając własnej fizycznej formy, muszą pożyczać ciała żywych, śmiertelnych istot - wchodzą do nich niczym podczas demonicznego opętania, spychając duszę gospodarza na bok, choć nie mogą wejść w faerie, trolle ani istoty bez duszy. Nie znając pojęć dobra i zła, robią to, co uznają za konieczne do ochrony rzeczywistości, nawet jeśli wymaga to poświęcenia niewinnych istot.',
+    'kambion': 'Diabły uwodzą śmiertelników obietnicą bogactwa, władzy lub cielesnych przyjemności, a jeśli taka schadzka skończy się ciążą - wyłącznie w relacji z ludźmi - potomek zawsze okazuje się kambionem. Niemal identyczne ze swoimi śmiertelnymi rodzicami, wszystkie noszą jakiś znak zdradzający piekielne pochodzenie duszy, od subtelnego wzoru symboli na karku do wyrastających z czoła rogów. Ponieważ dusze zrodzone z mroku można oczyścić jedynie w Piekle, wiele kambionów poddaje się swojej złej naturze w nadziei na lepsze miejsce w piekielnej hierarchii, choć nieliczne trzymają te impulsy w karbach i zwracają wewnętrzny mrok przeciw samemu Piekłu.',
+    'jotunn': 'W żyłach jotunów płynie krew olbrzymów, dzięki której dorastają do 2,5, a nawet 3 metrów wzrostu i ważą do 360 kilogramów, górując nawet nad najpotężniej zbudowanymi ludźmi. Wieki temu cesarscy żołnierze i magowie bitewni pokonali ich w wojnie, a z części jeńców czarną magią stworzono pierwsze orki, które przez stulecia służyły kolejnym cesarzom - dlatego jotunowie czekają na dzień, gdy Wielki Wilk pochłonie słońce i da im znak do podniesienia żagli po Imperium krwią. Wierzą w wyrd: nieodwołany, zapisany przez boga Grimnira los każdej istoty, dlatego przyjmują go bez oporu i gonią za chwałą aż do samego końca.'
   };
-    
+
   return descriptions[pochodzenie.id] || 'Nieznane pochodzenie.';
 }
 
