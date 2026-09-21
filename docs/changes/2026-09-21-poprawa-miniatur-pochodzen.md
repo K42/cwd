@@ -35,10 +35,23 @@ Poprawione pliki: `czlowiek, automaton, goblin, odmieniec, ork, chochlik, elf,
 faun, niziol, niedzwiedziadlo, inkarnacja, warg, kambion` (13 z 17). Bez zmian:
 `krasnolud, hobgoblin, fomor, jotunn` (już dobrze wykadrowane).
 
+**Poprawka (ten sam dzień):** pierwsza wersja kadru dla chochlika i elfa
+okazała się w drugą stronę - zbyt mocno dokadrowana (chochlik: sam profil
+twarzy, prawie bez ciała; elf: samo popiersie). Oba kadry powiększone, żeby
+było widać więcej sylwetki (ramiona, broń, pasek/kołczan), przy zachowaniu
+wystarczającego wycentrowania twarzy, żeby przetrwać przycinanie `cover` w
+stanie rozwiniętym (zob. punkt 3 wyżej) - w praktyce oznaczało to znalezienie
+kompromisu między "szeroki kadr = więcej sylwetki" i "wąski, wycentrowany
+kadr = twarz przetrwa też w stanie rozwiniętym", bo tekst z sąsiedniej
+kolumny podręcznika (chochlik) nie pozwala rozszerzyć kadru w stronę, w
+którą trzeba by go wycentrować idealnie.
+
 ## Dlaczego
 
 Prośba użytkownika: "przeanalizuj i popraw obrazki, nie wyglądają dobrze i źle
-się skalują, nie chce tam białych ramek, a postać ma być wycentrowana."
+się skalują, nie chce tam białych ramek, a postać ma być wycentrowana", a
+następnie poprawka: "popraw jeszcze chochlika (jest za bardzo wykadrowany)
+oraz elfa (również chciałbym nieco więcej jego sylwetki na obrazku)".
 
 ## Jak przetestowano
 
