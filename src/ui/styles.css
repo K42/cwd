@@ -2059,19 +2059,94 @@ kbd {
 .magic-slot-mode-toggle {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.magic-slot-mode-toggle button {
-    flex: 1 1 auto;
-    min-width: 100px;
+/* Karty wyboru "Nowa tradycja" / "Zaklęcie" - wyraźnie odróżnione kolorem
+   lewej ramki (niebieski = tradycja, złoty = zaklęcie) i ikoną, żeby było
+   jasne na pierwszy rzut oka, która karta odpowiada za co. */
+.magic-mode-option {
+    flex: 1 1 160px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--info);
+    border-radius: var(--radius);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
 }
 
-.magic-slot-mode-toggle button.active {
-    background: var(--gold);
-    color: var(--bg-1, #1a1a1a);
-    font-weight: 600;
+.magic-mode-option .icon {
+    flex-shrink: 0;
+    font-size: 1.4em;
+    color: var(--info-bright);
+}
+
+.magic-mode-option--spell {
+    border-left-color: var(--gold);
+}
+
+.magic-mode-option--spell .icon {
+    color: var(--gold-bright);
+}
+
+.magic-mode-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.magic-mode-option-text strong {
+    font-size: 0.95em;
+}
+
+.magic-mode-option-text small {
+    font-size: 0.8em;
+    color: var(--ink-dim);
+}
+
+.magic-mode-option:hover {
+    border-color: var(--gold);
+    background: var(--bg-3);
+}
+
+.magic-mode-option.active {
+    background: linear-gradient(180deg, rgba(176, 141, 58, 0.14), var(--bg-2));
+    border-color: var(--gold-bright);
+}
+
+.magic-mode-option.active .magic-mode-option-text strong {
+    color: var(--gold-bright);
+}
+
+/* Etykieta kategorii ("Tradycja" / "Zaklęcie") nad przyciskiem wyboru w
+   kafelku magii - to samo rozróżnienie kolorem co w .magic-mode-option,
+   żeby karta z dwoma piętrami wyboru (np. tradycja + darmowe zaklęcie
+   kręgu 0) była czytelna na pierwszy rzut oka. */
+.magic-slot-picker-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1 1 100%;
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--info-bright);
+}
+
+.magic-slot-picker-label .icon {
+    font-size: 1.1em;
+}
+
+.magic-slot-picker--spell .magic-slot-picker-label {
+    color: var(--gold-bright);
 }
 
 .magic-slot-status {
@@ -2124,18 +2199,27 @@ kbd {
     font-weight: 600;
 }
 
-/* Krok 4.5: przycisk otwarcia popupu + kafelek aktualnego wyboru (bez dropdownów) */
+/* Krok 4.5: przycisk otwarcia popupu + kafelek aktualnego wyboru (bez dropdownów).
+   Lewa ramka koloru kategorii (niebieski = tradycja, złoty = zaklęcie) grupuje
+   wizualnie etykietę, chip aktualnego wyboru i przycisk w jeden czytelny blok. */
 .magic-slot-picker {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: var(--bg-1);
+    border-left: 3px solid var(--info);
+    border-radius: var(--radius);
+}
+
+.magic-slot-picker--spell {
+    border-left-color: var(--gold);
 }
 
 .magic-slot-picker-secondary {
-    padding-top: 8px;
-    border-top: 1px dashed var(--border);
+    margin-top: 4px;
 }
 
 .magic-picked-chip {

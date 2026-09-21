@@ -4441,7 +4441,7 @@ function renderCardMagic(resolution) {
   } else if (atom.rodzaj === 'wybor_fixed') {
     const traditionName = TRADITIONS[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
     if (mode === 'tradycja') {
-      bodyHtml = `<p class="magic-slot-status ok">Tradycja ${traditionName} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
+      bodyHtml = `<p class="magic-slot-status ok">${icon('book')} Tradycja ${traditionName} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`;
       bodyHtml += renderChoiceFreeSpells(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
     } else {
       bodyHtml = renderChoiceSpells(atom.id, spellId, atom.tradycjaNazwa);
@@ -4449,8 +4449,14 @@ function renderCardMagic(resolution) {
   } else if (atom.rodzaj === 'wybor') {
     bodyHtml = `
       <div class="magic-slot-mode-toggle">
-        <button type="button" class="btn-secondary small ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">Nowa tradycja</button>
-        <button type="button" class="btn-secondary small ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">Zaklęcie</button>
+        <button type="button" class="magic-mode-option magic-mode-option--tradition ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">
+          ${icon('book')}
+          <span class="magic-mode-option-text"><strong>Nowa tradycja</strong><small>poznaj całą szkołę magii</small></span>
+        </button>
+        <button type="button" class="magic-mode-option magic-mode-option--spell ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">
+          ${icon('sparkle')}
+          <span class="magic-mode-option-text"><strong>Zaklęcie</strong><small>naucz się jednego czaru</small></span>
+        </button>
       </div>
     `;
     if (mode === 'tradycja') {
@@ -4483,7 +4489,8 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
   const nazwa = currentChoice ? (TRADITIONS[currentChoice]?.nazwa || currentChoice) : null;
   const black = currentChoice && isBlackMagic(currentChoice);
   return `
-    <div class="magic-slot-picker">
+    <div class="magic-slot-picker magic-slot-picker--tradition">
+      <span class="magic-slot-picker-label">${icon('book')} Tradycja</span>
       ${nazwa ? `
         <div class="magic-picked-chip">${nazwa}${black ? ` ${icon('warning')}` : ''}
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="Usuń wybór">${icon('x')}</button>
@@ -4504,7 +4511,8 @@ function renderChoiceTraditions(atomId, kategoria, currentChoice) {
 function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) {
   const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
-    <div class="magic-slot-picker">
+    <div class="magic-slot-picker magic-slot-picker--spell">
+      <span class="magic-slot-picker-label">${icon('sparkle')} Zaklęcie</span>
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (${spell.tradycjaNazwa}, krąg ${spell.krag})${isBlackMagic(spell.tradycja) ? ` ${icon('warning')}` : ''}
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="Usuń wybór">${icon('x')}</button>
@@ -4525,7 +4533,8 @@ function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null) 
 function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
   const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
   return `
-    <div class="magic-slot-picker magic-slot-picker-secondary">
+    <div class="magic-slot-picker magic-slot-picker--spell magic-slot-picker-secondary">
+      <span class="magic-slot-picker-label">${icon('sparkle')} Darmowe zaklęcie (krąg 0)</span>
       ${spell ? `
         <div class="magic-picked-chip">${spell.nazwa} (krąg 0)
           <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">${icon('x')}</button>
@@ -4720,6 +4729,7 @@ function renderTraditionPickerDynamicHtml() {
   const tiles = wynik.map(t => `
     <button type="button" class="picker-tile" data-pick-tradition="${t.id}">
       <div class="picker-tile-header"><span>${t.nazwa}</span></div>
+      ${t.opis ? `<p class="picker-tile-description">${t.opis}</p>` : ''}
       ${t.czarnaMagia ? `<div class="picker-tile-warning">${icon('warning')} Czarna magia - poznanie przyznaje 1 Splugawienie</div>` : ''}
     </button>
   `).join('') || '<p class="hint">Brak tradycji spełniających kryteria wyszukiwania.</p>';
