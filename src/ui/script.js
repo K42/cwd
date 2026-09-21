@@ -68,6 +68,7 @@ let characterName = ''; // opcjonalne imię wpisane w Kroku 8; trafia do eksport
 
 // --- Zapis w pamięci przeglądarki (localStorage) ---
 let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
+let lastSavedSnapshot = null; // zrzut `wybory` z chwili ostatniego zapisu - służy do wykrywania niezapisanych zmian
 
 // --- Popup "Wylosuj postać" (boczne menu) ---
 let randomizeCharacterLevel = 0; // poziom wybrany w popupie - jedyna rzecz, którą wybiera użytkownik, reszta jest losowana
@@ -208,8 +209,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     characterName = e.target.value;
     updatePreviewCharacter();
   });
+  document.getElementById('btn-save-character')?.addEventListener('click', saveCharacterOnDemand);
+  document.getElementById('btn-promote-character')?.addEventListener('click', promoteCharacter);
+  initializeCollapsibleSections();
+  initializeScrollTopButton();
   initializeTooltips();
 });
+
+/**
+ * Podpina zwijanie/rozwijanie sekcji oznaczonych klasą `.collapsible-section`
+ * (obecnie "Korzyści Poziomu" w Kroku 2, domyślnie zwinięta w index.html).
+ */
+function initializeCollapsibleSections() {
+  document.querySelectorAll('.collapsible-section-header').forEach(header => {
+    const section = header.closest('.collapsible-section');
+    if (!section) return;
+    const toggle = () => {
+      const collapsed = section.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', String(!collapsed));
+    };
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+}
+
+/**
+ * Zwraca element, który aktualnie się przewija: treść otwartego popupu
+ * (jeśli jakiś jest otwarty) albo całą stronę.
+ * @returns {{scroller: Element|Window, top: number}}
+ */
+function getActiveScrollContext() {
+  const openModalBody = [...document.querySelectorAll('.modal-overlay:not([hidden])')]
+    .map(overlay => overlay.querySelector('.modal-body'))
+    .find(Boolean);
+  if (openModalBody) return { scroller: openModalBody, top: openModalBody.scrollTop };
+  return { scroller: window, top: window.scrollY };
+}
+
+/**
+ * Przycisk "przewiń na górę" (prawy dolny róg) - działa zarówno dla całej
+ * strony, jak i dla treści otwartego popupu (wyboru zaklęcia, tradycji,
+ * ekwipunku itd.), bo te przewijają się niezależnie od strony pod spodem.
+ * Pokazuje się dopiero, gdy jest co przewijać.
+ */
+function initializeScrollTopButton() {
+  const btn = document.getElementById('btn-scroll-top');
+  if (!btn) return;
+
+  const refresh = () => {
+    btn.hidden = getActiveScrollContext().top <= 200;
+  };
+
+  btn.addEventListener('click', () => {
+    const { scroller } = getActiveScrollContext();
+    scroller.scrollTo({ top: 0, behavior: 'smooth' });
+    btn.hidden = true;
+  });
+
+  window.addEventListener('scroll', refresh, { passive: true });
+  document.querySelectorAll('.modal-body').forEach(body => {
+    body.addEventListener('scroll', refresh, { passive: true });
+  });
+  // Otwarcie/zamknięcie popupu zmienia kontekst przewijania, a samo w sobie
+  // nie generuje zdarzenia scroll - obserwuj więc atrybut [hidden] overlayów.
+  const observer = new MutationObserver(refresh);
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    observer.observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+  });
+  refresh();
+}
 
 /**
  * Ładuje dostępne opcje z serwera
@@ -271,24 +344,7 @@ function initializeLevels() {
   // Dodaj event listenery dla radio buttonów poziomów
   const levelInputs = document.querySelectorAll('input[name="poziom"]');
   levelInputs.forEach(input => {
-    input.addEventListener('change', async (e) => {
-      selectedLevel = parseInt(e.target.value);
-      updatePathsVisibility(selectedLevel);
-      updatePathsLevel(selectedLevel);
-      updatePathsSectionTitle(selectedLevel);
-      updateWealthSection(selectedLevel);
-      updateOriginBenefits(selectedLevel);
-
-      // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
-      // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
-      renderPathSectionsVisibility();
-      await renderPathSection(1);
-      await renderPathSection(3);
-      await renderPathSection(7);
-
-      // Załaduj korzyści dla wybranego poziomu
-      await loadBenefitsLevel(selectedLevel);
-    });
+    input.addEventListener('change', (e) => applyLevelChange(parseInt(e.target.value)));
   });
 
   // Inicjalizuj ścieżki dla poziomu 0 (domyślnego)
@@ -307,6 +363,113 @@ function initializeLevels() {
       randomizeToStep(step);
     });
   });
+}
+
+/**
+ * Ustawia nowy poziom postaci i odświeża wszystko, co od niego zależy.
+ * Wywoływana zarówno przez radio poziomu w Kroku 2, jak i przez przycisk
+ * "Awans" w Kroku 8 - dzięki temu obie drogi przechodzą przez to samo
+ * przycinanie stanu (zob. pruneStateForLevel()).
+ * @param {number} poziom - nowy poziom postaci (0-10)
+ */
+async function applyLevelChange(poziom) {
+  const poprzedniPoziom = selectedLevel;
+  selectedLevel = poziom;
+
+  // Wybory z wyższych poziomów (ścieżki, sloty, kurioza, magia...) przestają
+  // obowiązywać, gdy poziom spadnie - inaczej zostawałyby w postaci mimo
+  // tego, że nowy poziom ich nie przyznaje.
+  pruneStateForLevel(poziom, poprzedniPoziom);
+
+  updatePathsVisibility(poziom);
+  updatePathsLevel(poziom);
+  updatePathsSectionTitle(poziom);
+  updateWealthSection(poziom);
+  updateOriginBenefits(poziom);
+
+  // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
+  // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+
+  // Kroki zależne od poziomu i ścieżek - przerenderuj, żeby pokazywały stan
+  // po przycięciu, a nie nieaktualne wybory z poprzedniego poziomu.
+  renderAttributesSlotsSection();
+  renderProfessionsSection();
+  renderCuriosSection();
+  renderSpellsSection();
+  renderEquipmentSection();
+  updateStep3NextButton();
+  updateStep5NextButton();
+
+  // Załaduj korzyści dla wybranego poziomu
+  await loadBenefitsLevel(poziom);
+  updateCalculatedAttributes();
+  updatePreviewCharacter();
+}
+
+/**
+ * Usuwa z postaci wybory, których nowy poziom już nie przyznaje: ścieżki
+ * powyżej progu, sloty atrybutów i profesji z usuniętych ścieżek, nadmiarowe
+ * kurioza, wybory magii dla nieistniejących już korzyści, opcję z poziomu 4
+ * pochodzenia oraz wylosowane srebrniki (ich liczba zależy od poziomu).
+ * @param {number} poziom - nowy poziom postaci
+ * @param {number} poprzedniPoziom - poziom sprzed zmiany
+ */
+function pruneStateForLevel(poziom, poprzedniPoziom) {
+  if (poziom === poprzedniPoziom) return;
+
+  // 1. Ścieżki, do których nowy poziom nie daje już dostępu (resetSciezke()
+  //    odejmuje też przyznane przez nie korzyści).
+  if (poziom < 1 && selectedPaths.nowicjusz) resetPath('nowicjusz');
+  if (poziom < 3 && selectedPaths.ekspert) resetPath('ekspert');
+  if (poziom < 7 && selectedPaths.mistrz) resetPath('mistrz');
+
+  // 2. Sloty zwiększenia atrybutów (Krok 4) przyznane przez ścieżki, których
+  //    postać już nie ma.
+  const idsSlotowAtrybutow = new Set(calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  }).map(s => s.id));
+  Object.keys(selectedAttributesSlots).forEach(id => {
+    if (!idsSlotowAtrybutow.has(id)) delete selectedAttributesSlots[id];
+  });
+
+  // 3. Sloty profesji i języków (Krok 5) z usuniętych ścieżek.
+  const idsSlotowProfesji = new Set(calculateSlotsCharacter().slots.map(s => s.id));
+  Object.keys(answersSlots).forEach(id => {
+    if (!idsSlotowProfesji.has(id)) delete answersSlots[id];
+  });
+
+  // 4. Kurioza ponad limit nowego poziomu (progi 1/3/7).
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length > kurioza) selectedCurios = selectedCurios.slice(0, kurioza);
+
+  // 5. Opcja korzyści z pochodzenia na poziomie 4 - poniżej tego poziomu
+  //    postać jej nie ma, więc zaznaczony radiobutton trzeba wyczyścić
+  //    (pobierzAktualnieWybranaOpcjePoziom4() czyta go wprost z DOM).
+  if (poziom < 4 && selectedOrigin) {
+    document.querySelectorAll(`input[name="origin-option-${selectedOrigin}"]`).forEach(radio => { radio.checked = false; });
+  }
+
+  // 6. Wybory magii dla korzyści, których na nowym poziomie już nie ma
+  //    (liczone po przycięciu ścieżek i opcji poziomu 4 powyżej).
+  const idsAtomowMagii = new Set(getCurrentAtomsMagic().map(a => a.id));
+  Object.keys(magicChoices).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicChoices[id];
+  });
+  Object.keys(magicRiskResults).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicRiskResults[id];
+  });
+
+  // 7. Srebrniki - ich liczba to 2k6 za każdy poziom powyżej 0, więc po
+  //    zmianie poziomu poprzedni rzut przestaje pasować i trzeba go powtórzyć.
+  randomizedSilver = null;
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan) wealthSpan.textContent = 'Srebrniki: 0 (nie wylosowano)';
 }
 
 /**
@@ -670,7 +833,13 @@ function updateOriginBenefitsContent() {
   if (!pochodzenie || !pochodzenie.poziom_4) return;
   
   const benefits = pochodzenie.poziom_4;
-  
+
+  // Wybrana opcja żyje wyłącznie w DOM (zob. getCurrentSelectedLevel4Option()),
+  // a ta funkcja przebudowuje radiobuttony od zera - bez zapamiętania i
+  // przywrócenia zaznaczenia postać po każdej zmianie poziomu po cichu traciła
+  // korzyść z poziomu 4 (a wraz z nią np. przyznane przez nią zaklęcie).
+  const wybranaOpcja = getCurrentSelectedLevel4Option();
+
   // Wyświetl korzyści z pochodzenia dla poziomu 4
   content.innerHTML = `
     <div class="benefit-item">
@@ -689,7 +858,7 @@ function updateOriginBenefitsContent() {
           <div class="options-list">
             ${benefits.opcje.map(opcja => `
               <label class="option-choice">
-                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}">
+                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}"${opcja === wybranaOpcja ? ' checked' : ''}>
                 <span class="option-text">${opcja}</span>
               </label>
             `).join('')}
@@ -1438,10 +1607,10 @@ function showStep(stepNumber) {
   // aktualnyKrok = stepNumber; // Obecnie nieużywane
   updateBreadcrumbs(stepNumber);
 
-  // Każde dotarcie do Kroku 8 (Podgląd) zapisuje/nadpisuje bieżącą postać
-  // w pamięci przeglądarki - niezależnie od tego, czy trafiono tu przyciskiem
-  // "Dalej", z górnego menu, czy programowo (zob. losujCalaPostac()).
-  if (stepNumber === 8) saveCurrentCharacterToCache();
+  // Krok 8 nie zapisuje już postaci automatycznie - zapis następuje wyłącznie
+  // po kliknięciu "Zapisz postać" (zob. zapiszPostacNaZadanie()), żeby samo
+  // zajrzenie do podsumowania nie nadpisywało wcześniejszego zapisu.
+  if (stepNumber === 8) updateSaveButtonState();
 }
 
 /**
@@ -1449,12 +1618,110 @@ function showStep(stepNumber) {
  * cache - np. po imporcie) bieżącą postać w localStorage, w tym samym
  * formacie co eksport do JSON. Nic nie robi, jeśli postać jest niekompletna
  * (zbudujDaneEksportu() zwraca wtedy null).
+ * @returns {boolean} czy zapis faktycznie nastąpił
  */
 function saveCurrentCharacterToCache() {
   const data = buildExportData();
-  if (!data) return;
+  if (!data) return false;
   if (!currentSaveCacheId) currentSaveCacheId = generateSaveId();
   saveCharacterToCache(currentSaveCacheId, data);
+  lastSavedSnapshot = snapshotForComparison(data);
+  return true;
+}
+
+/**
+ * Zrzut danych postaci używany wyłącznie do wykrywania zmian od ostatniego
+ * zapisu. Pomija `utworzono` (znacznik czasu generowany przy każdym
+ * wywołaniu zbudujDaneEksportu()) i całe `podsumowanie` (wyliczane z
+ * `wybory`, więc nie niesie własnej informacji).
+ * @param {Object} data - wynik buildExportData()
+ * @returns {string}
+ */
+function snapshotForComparison(data) {
+  return JSON.stringify({ wersjaEksportu: data.wersjaEksportu, wybory: data.wybory });
+}
+
+/** Czy od ostatniego zapisu w pamięci przeglądarki coś się w postaci zmieniło. */
+function hasUnsavedChanges() {
+  const data = buildExportData();
+  if (!data) return false;
+  return snapshotForComparison(data) !== lastSavedSnapshot;
+}
+
+/**
+ * Włącza/wyłącza przycisk "Zapisz postać" w Kroku 8 zależnie od tego, czy
+ * jest co zapisywać, i opisuje aktualny stan zapisu obok przycisku.
+ */
+function updateSaveButtonState() {
+  const btn = document.getElementById('btn-save-character');
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!btn) return;
+
+  const zmiany = hasUnsavedChanges();
+  btn.disabled = !zmiany;
+  if (!feedback) return;
+  if (zmiany) {
+    feedback.className = 'final-actions-feedback';
+    feedback.textContent = lastSavedSnapshot ? 'Masz niezapisane zmiany.' : 'Postać nie jest jeszcze zapisana.';
+  } else {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.textContent = 'Wszystkie zmiany zapisane.';
+  }
+}
+
+/** Obsługa przycisku "Zapisz postać" w Kroku 8 - zapisuje do tego samego slotu w cache. */
+function saveCharacterOnDemand() {
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!hasUnsavedChanges()) {
+    if (feedback) {
+      feedback.className = 'final-actions-feedback ok';
+      feedback.textContent = 'Brak zmian do zapisania.';
+    }
+    updateSaveButtonState();
+    return;
+  }
+  if (!saveCurrentCharacterToCache()) return;
+  updateSaveButtonState();
+  if (feedback) {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.innerHTML = `${icon('check')} Zapisano w pamięci przeglądarki.`;
+  }
+}
+
+/**
+ * Obsługa przycisku "Awans" w Kroku 8: podnosi poziom postaci o 1 (maksimum
+ * to 10, bo tam kończy się Tabela Rozwoju w PG) i od razu pokazuje, co nowy
+ * poziom daje do wybrania - korzystając z tej samej listy "Możliwe
+ * przeoczenia", która pilnuje kompletności postaci (zob. calculateMissingItems()).
+ */
+async function promoteCharacter() {
+  const feedback = document.getElementById('final-actions-feedback');
+  const setFeedback = (klasa, tekst) => {
+    if (!feedback) return;
+    feedback.className = `final-actions-feedback ${klasa}`;
+    feedback.textContent = tekst;
+  };
+
+  if (!selectedOrigin) {
+    setFeedback('', 'Najpierw wybierz pochodzenie w Kroku 1.');
+    return;
+  }
+  if (selectedLevel >= 10) {
+    setFeedback('', 'Postać jest już na 10 poziomie - to maksimum Tabeli Rozwoju.');
+    return;
+  }
+
+  const nowyPoziom = selectedLevel + 1;
+  const radio = document.querySelector(`input[name="poziom"][value="${nowyPoziom}"]`);
+  if (radio) radio.checked = true;
+  await applyLevelChange(nowyPoziom);
+
+  const doWyboru = calculateMissingItems();
+  if (doWyboru.length > 0) {
+    setFeedback('info', `Awans na poziom ${nowyPoziom}. Do wybrania: ${doWyboru.length} ${doWyboru.length === 1 ? 'rzecz' : 'rzeczy'} - lista poniżej.`);
+  } else {
+    setFeedback('ok', `Awans na poziom ${nowyPoziom}. Ten poziom nie wymaga żadnych dodatkowych wyborów.`);
+  }
 }
 
 /**
@@ -2612,6 +2879,7 @@ function generateCardCharacterHtml() {
 function updatePreviewCharacter() {
   if (!selectedOrigin) return;
   renderMissingItemsWarning();
+  updateSaveButtonState();
   const container = document.getElementById('character-preview');
   if (!container) return;
   const title = characterName ? `Podgląd Postaci: ${characterName}` : 'Podgląd Postaci';
@@ -3485,10 +3753,11 @@ function handleFileImport(file) {
     try {
       await importCharacter(data);
       // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
-      // id - dalsze zmiany, aż do ponownego dotarcia do Kroku 8, nadpiszą
-      // ten sam zapis (zob. zapiszAktualnaPostacDoCache()).
+      // id - dalsze zmiany trafią do tego samego zapisu po kliknięciu
+      // "Zapisz postać" w Kroku 8 (zob. zapiszPostacNaZadanie()).
       currentSaveCacheId = generateSaveId();
       saveCharacterToCache(currentSaveCacheId, data);
+      lastSavedSnapshot = snapshotForComparison(data);
       showImportMessage('success', `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -5549,7 +5818,13 @@ function newCharacter() {
   if (importFeedback) importFeedback.innerHTML = '';
   const missingItemsWarning = document.getElementById('missing-items-warning');
   if (missingItemsWarning) missingItemsWarning.innerHTML = '';
+  const finalFeedback = document.getElementById('final-actions-feedback');
+  if (finalFeedback) {
+    finalFeedback.className = 'final-actions-feedback';
+    finalFeedback.textContent = '';
+  }
   currentSaveCacheId = null;
+  lastSavedSnapshot = null;
   characterName = '';
   const nameInput = document.getElementById('character-name');
   if (nameInput) nameInput.value = '';
@@ -5579,7 +5854,7 @@ function renderLoadCharacterList() {
   const all = Object.values(getSavedCharacters()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 
   if (all.length === 0) {
-    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisuje się automatycznie, gdy dotrzesz do Kroku 8 (Podgląd), oraz przy imporcie z pliku JSON.</p>';
+    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisujesz przyciskiem "Zapisz postać" w Kroku 8 (Podgląd); zapis powstaje też automatycznie przy imporcie z pliku JSON.</p>';
     return;
   }
 
@@ -5593,10 +5868,11 @@ function renderLoadCharacterList() {
     const originId = entry.data?.wybory?.pochodzenie;
     const pochodzenie = availableOrigin.find(p => p.id === originId)?.nazwa || originId || 'Nieznane pochodzenie';
     const poziom = entry.data?.wybory?.poziom ?? '?';
+    const imie = entry.data?.wybory?.imie;
     const data = entry.savedAt ? new Date(entry.savedAt).toLocaleString('pl-PL') : '';
     return `
           <div class="selected-item">
-            <span>${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
+            <span>${imie ? `<strong>${imie}</strong> - ` : ''}${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
             <button type="button" class="btn-secondary small" data-load-character="${entry.id}">Wczytaj</button>
           </div>
         `;
@@ -5625,6 +5901,7 @@ async function loadCharacterWithCache(id) {
   currentSaveCacheId = id;
   try {
     await importCharacter(entry.data);
+    lastSavedSnapshot = snapshotForComparison(entry.data);
     showImportMessage('success', `${icon('check')} Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -5703,21 +5980,11 @@ async function randomizeWholeCharacter(poziom) {
   });
 
   // 3. Poziom (0-10) - jedyna wartość niewylosowana, wybrana przez użytkownika
-  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama sekwencja co
-  //    listener zmiany radiobuttona (Krok 2)
-  selectedLevel = poziom;
-  const levelInput = document.querySelector(`input[name="poziom"][value="${selectedLevel}"]`);
+  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama ścieżka co zmiana
+  //    radiobuttona w Kroku 2
+  const levelInput = document.querySelector(`input[name="poziom"][value="${poziom}"]`);
   if (levelInput) levelInput.checked = true;
-  updatePathsVisibility(selectedLevel);
-  await updatePathsLevel(selectedLevel);
-  updatePathsSectionTitle(selectedLevel);
-  updateWealthSection(selectedLevel);
-  updateOriginBenefits(selectedLevel);
-  renderPathSectionsVisibility();
-  await renderPathSection(1);
-  await renderPathSection(3);
-  await renderPathSection(7);
-  await loadBenefitsLevel(selectedLevel);
+  await applyLevelChange(poziom);
 
   // 4. Opcja poziomu 4 z pochodzenia (np. "1 zaklęcie"), jeśli dostępna
   if (selectedLevel >= 4) {

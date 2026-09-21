@@ -2007,6 +2007,40 @@ kbd {
     font-size: 1.3em;
 }
 
+/* Sekcja zwijana (np. "Korzyści Poziomu" w Kroku 2) - ten sam wzorzec co
+   akordeon ścieżek w Kroku 3: klikalny nagłówek + obracana strzałka. */
+.collapsible-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-section-header h4 {
+    margin: 0;
+}
+
+.collapsible-section-toggle-icon {
+    color: var(--gold);
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.collapsible-section.collapsed .collapsible-section-toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-section.collapsed .collapsible-section-body {
+    display: none;
+}
+
+.collapsible-section-body {
+    margin-top: 16px;
+}
+
 .benefit-category {
     background: var(--bg-2);
     border-left: 4px solid var(--info);
@@ -2166,6 +2200,28 @@ kbd {
     padding: 8px 10px;
     margin-top: 8px;
     font-size: 0.88em;
+}
+
+/* Krok 8 - pasek akcji na samej górze (zapis postaci, awans) */
+.final-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.final-actions-feedback {
+    font-size: 0.9em;
+    color: var(--ink-dim);
+}
+
+.final-actions-feedback.ok {
+    color: var(--success-bright);
+}
+
+.final-actions-feedback.info {
+    color: var(--gold-bright);
 }
 
 /* Krok 8 - lista pominiętych wyborów (informacyjna, nigdy nie blokuje eksportu) */
@@ -2591,6 +2647,36 @@ kbd {
     z-index: 500;
 }
 
+/* Przewinięcie na górę - nad popupami (z-index > .modal-overlay), bo działa
+   także wewnątrz nich, przewijając ich treść zamiast całej strony. */
+.scroll-top-btn {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1100;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    font-size: 1.1em;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.1s;
+    padding: 0;
+}
+
+.scroll-top-btn:hover, .scroll-top-btn:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    transform: scale(1.08);
+}
+
 .side-menu-btn {
     width: 44px;
     height: 44px;
@@ -2642,6 +2728,12 @@ kbd {
        nie zasłaniało przycisków "Wstecz"/"Dalej" na dole każdego kroku. */
     .step-navigation {
         margin-bottom: 70px;
+    }
+
+    /* Na wąskich ekranach boczne menu leży na dole - przesuń przycisk
+       przewijania wyżej, żeby się z nim nie nakładał. */
+    .scroll-top-btn {
+        bottom: 74px;
     }
 
     .origin-thumb {
