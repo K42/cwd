@@ -371,15 +371,20 @@ function initializeLevels() {
  * "Awans" w Kroku 8 - dzięki temu obie drogi przechodzą przez to samo
  * przycinanie stanu (zob. pruneStateForLevel()).
  * @param {number} poziom - nowy poziom postaci (0-10)
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - czy zachować wylosowane
+ *   srebrniki. Domyślnie nie, bo ich liczba zależy od poziomu; wyjątkiem jest
+ *   awans w trakcie gry (zob. promoteCharacter()), gdzie postać po prostu ma
+ *   już swój majątek i nie przelicza go od nowa.
  */
-async function applyLevelChange(poziom) {
+async function applyLevelChange(poziom, { keepSilverRoll = false } = {}) {
   const poprzedniPoziom = selectedLevel;
   selectedLevel = poziom;
 
   // Wybory z wyższych poziomów (ścieżki, sloty, kurioza, magia...) przestają
   // obowiązywać, gdy poziom spadnie - inaczej zostawałyby w postaci mimo
   // tego, że nowy poziom ich nie przyznaje.
-  pruneStateForLevel(poziom, poprzedniPoziom);
+  pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll });
 
   updatePathsVisibility(poziom);
   updatePathsLevel(poziom);
@@ -417,8 +422,10 @@ async function applyLevelChange(poziom) {
  * pochodzenia oraz wylosowane srebrniki (ich liczba zależy od poziomu).
  * @param {number} poziom - nowy poziom postaci
  * @param {number} poprzedniPoziom - poziom sprzed zmiany
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - pomiń zerowanie rzutu na srebrniki
  */
-function pruneStateForLevel(poziom, poprzedniPoziom) {
+function pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll = false } = {}) {
   if (poziom === poprzedniPoziom) return;
 
   // 1. Ścieżki, do których nowy poziom nie daje już dostępu (resetSciezke()
@@ -465,11 +472,15 @@ function pruneStateForLevel(poziom, poprzedniPoziom) {
     if (!idsAtomowMagii.has(id)) delete magicRiskResults[id];
   });
 
-  // 7. Srebrniki - ich liczba to 2k6 za każdy poziom powyżej 0, więc po
-  //    zmianie poziomu poprzedni rzut przestaje pasować i trzeba go powtórzyć.
-  randomizedSilver = null;
-  const wealthSpan = document.getElementById('wealth-summary');
-  if (wealthSpan) wealthSpan.textContent = 'Srebrniki: 0 (nie wylosowano)';
+  // 7. Srebrniki - ich liczba to 2k6 za każdy poziom powyżej 0, więc przy
+  //    ręcznej zmianie poziomu (tworzenie/poprawianie postaci) poprzedni rzut
+  //    przestaje pasować i trzeba go powtórzyć. Awans w trakcie gry jest
+  //    wyjątkiem: postać ma już swój majątek i nie przelicza go od nowa.
+  if (!keepSilverRoll) {
+    randomizedSilver = null;
+    const wealthSpan = document.getElementById('wealth-summary');
+    if (wealthSpan) wealthSpan.textContent = 'Srebrniki: 0 (nie wylosowano)';
+  }
 }
 
 /**
@@ -1714,7 +1725,10 @@ async function promoteCharacter() {
   const nowyPoziom = selectedLevel + 1;
   const radio = document.querySelector(`input[name="poziom"][value="${nowyPoziom}"]`);
   if (radio) radio.checked = true;
-  await applyLevelChange(nowyPoziom);
+  // Awans zakłada postać już używaną w grze, która ma swój majątek - w
+  // przeciwieństwie do ręcznej zmiany poziomu nie każemy więc losować
+  // srebrników od nowa.
+  await applyLevelChange(nowyPoziom, { keepSilverRoll: true });
 
   const doWyboru = calculateMissingItems();
   if (doWyboru.length > 0) {
